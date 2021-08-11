@@ -1,0 +1,125 @@
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Subject: kernel/hung_task.c: Monitor killed tasks.
+
+syzbot's current top report is "no output from test machine" where the
+userspace process failed to spawn a new test process for 300 seconds for
+some reason.  One of reasons which can result in this report is that an
+already spawned test process was unable to terminate (e.g.  trapped at an
+unkillable retry loop due to some bug) after SIGKILL was sent to that
+process.  Therefore, reporting when a thread is failing to terminate
+despite a fatal signal is pending would give us more useful information.
+
+In the context of syzbot's testing where there are only 2 CPUs in the
+target VM (which means that only small number of threads and not so much
+memory) and threads get SIGKILL after 5 seconds from fork(), being unable
+to reach do_exit() within 10 seconds is likely a sign of something went
+wrong.  Therefore, I would like to try this patch in linux-next.git for
+feasibility testing whether this patch helps finding more bugs and
+reproducers for such bugs, by bringing "unable to terminate threads"
+reports out of "no output from test machine" reports.
+
+Potential bad effect of this patch will be that kernel code becomes
+killable without addressing the root cause of being unable to terminate,
+for use of killable wait will bypass both TASK_UNINTERRUPTIBLE stall test
+and SIGKILL after 5 seconds behavior, which will result in failing to
+detect in real systems where SIGKILL won't be sent after 5 seconds when
+something went wrong.
+
+This version shares existing sysctl settings (e.g.  check interval,
+timeout, whether to panic) used for detecting TASK_UNINTERRUPTIBLE
+threads.  We will likely want to use different sysctl settings for
+monitoring killed threads.  But let's start as linux-next.git patch
+without introducing new sysctl settings.  We can add sysctl settings
+before sending to linux.git.
+
+Link: http://lkml.kernel.org/r/60d1d7f6-b201-3dcb-a51b-76a31bcfa919@i-love.sakura.ne.jp
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: "Paul E. McKenney" <paulmck@kernel.org>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Liu Chuansheng <chuansheng.liu@intel.com>
+Cc: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+Cc: linux-kernel@vger.kernel.org
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/sched.h |    1 
+ kernel/hung_task.c    |   44 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+
+--- a/include/linux/sched.h~kernel-hung_taskc-monitor-killed-tasks
++++ a/include/linux/sched.h
+@@ -990,6 +990,7 @@ struct task_struct {
+ #ifdef CONFIG_DETECT_HUNG_TASK
+ 	unsigned long			last_switch_count;
+ 	unsigned long			last_switch_time;
++	unsigned long			killed_time;
+ #endif
+ 	/* Filesystem information: */
+ 	struct fs_struct		*fs;
+--- a/kernel/hung_task.c~kernel-hung_taskc-monitor-killed-tasks
++++ a/kernel/hung_task.c
+@@ -145,6 +145,47 @@ static void check_hung_task(struct task_
+ 	touch_nmi_watchdog();
+ }
+ 
++static void check_killed_task(struct task_struct *t, unsigned long timeout)
++{
++	unsigned long stamp = t->killed_time;
++
++	/*
++	 * Ensure the task is not frozen.
++	 * Also, skip vfork and any other user process that freezer should skip.
++	 */
++	if (unlikely(t->flags & (PF_FROZEN | PF_FREEZER_SKIP)))
++		return;
++	/*
++	 * Skip threads which are already inside do_exit(), for exit_mm() etc.
++	 * might take many seconds.
++	 */
++	if (t->flags & PF_EXITING)
++		return;
++	if (!stamp) {
++		stamp = jiffies;
++		if (!stamp)
++			stamp++;
++		t->killed_time = stamp;
++		return;
++	}
++	if (time_is_after_jiffies(stamp + timeout * HZ))
++		return;
++	trace_sched_process_hang(t);
++	if (sysctl_hung_task_panic) {
++		console_verbose();
++		hung_task_call_panic = true;
++	}
++	/*
++	 * This thread failed to terminate for more than
++	 * sysctl_hung_task_timeout_secs seconds, complain:
++	 */
++	pr_err("INFO: task %s:%d can't die for more than %ld seconds.\n",
++	       t->comm, t->pid, (jiffies - stamp) / HZ);
++	sched_show_task(t);
++	hung_task_show_lock = true;
++	touch_nmi_watchdog();
++}
++
+ /*
+  * To avoid extending the RCU grace period for an unbounded amount of time,
+  * periodically exit the critical section and enter a new one.
+@@ -196,6 +237,9 @@ static void check_hung_uninterruptible_t
+ 				goto unlock;
+ 			last_break = jiffies;
+ 		}
++		/* Check threads which are about to terminate. */
++		if (unlikely(fatal_signal_pending(t)))
++			check_killed_task(t, timeout);
+ 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
+ 		if (READ_ONCE(t->__state) == TASK_UNINTERRUPTIBLE)
+ 			check_hung_task(t, timeout);
+_

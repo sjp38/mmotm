@@ -1,0 +1,26 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: add -mmN to EXTRAVERSION
+
+- add -mmN to EXTRAVERSION
+
+- Add a marker to make the v4l build environment happier
+
+Signed-off-by: Michael Krufky <mkrufky@m1k.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/Makefile~mm
++++ a/Makefile
+@@ -2,7 +2,7 @@
+ VERSION = 5
+ PATCHLEVEL = 14
+ SUBLEVEL = 0
+-EXTRAVERSION = -rc5
++EXTRAVERSION = -rc5-mm1
+ NAME = Opossums on Parade
+ 
+ # *DOCUMENTATION*
+_

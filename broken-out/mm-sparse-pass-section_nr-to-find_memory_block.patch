@@ -1,0 +1,70 @@
+From: Ohhoon Kwon <ohoono.kwon@samsung.com>
+Subject: mm: sparse: pass section_nr to find_memory_block
+
+With CONFIG_SPARSEMEM_EXTREME enabled, __section_nr() which converts
+mem_section to section_nr could be costly since it iterates all section
+roots to check if the given mem_section is in its range.
+
+On the other hand, __nr_to_section() which converts section_nr to
+mem_section can be done in O(1).
+
+Let's pass section_nr instead of mem_section ptr to find_memory_block() in
+order to reduce needless iterations.
+
+Link: https://lkml.kernel.org/r/20210707150212.855-3-ohoono.kwon@samsung.com
+Signed-off-by: Ohhoon Kwon <ohoono.kwon@samsung.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Cc: Baoquan He <bhe@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    4 +---
+ drivers/base/memory.c                           |    4 ++--
+ include/linux/memory.h                          |    2 +-
+ 3 files changed, 4 insertions(+), 6 deletions(-)
+
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c~mm-sparse-pass-section_nr-to-find_memory_block
++++ a/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -211,13 +211,11 @@ static int update_lmb_associativity_inde
+ static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
+ {
+ 	unsigned long section_nr;
+-	struct mem_section *mem_sect;
+ 	struct memory_block *mem_block;
+ 
+ 	section_nr = pfn_to_section_nr(PFN_DOWN(lmb->base_addr));
+-	mem_sect = __nr_to_section(section_nr);
+ 
+-	mem_block = find_memory_block(mem_sect);
++	mem_block = find_memory_block(section_nr);
+ 	return mem_block;
+ }
+ 
+--- a/drivers/base/memory.c~mm-sparse-pass-section_nr-to-find_memory_block
++++ a/drivers/base/memory.c
+@@ -578,9 +578,9 @@ static struct memory_block *find_memory_
+ /*
+  * Called under device_hotplug_lock.
+  */
+-struct memory_block *find_memory_block(struct mem_section *section)
++struct memory_block *find_memory_block(unsigned long section_nr)
+ {
+-	unsigned long block_id = memory_block_id(__section_nr(section));
++	unsigned long block_id = memory_block_id(section_nr);
+ 
+ 	return find_memory_block_by_id(block_id);
+ }
+--- a/include/linux/memory.h~mm-sparse-pass-section_nr-to-find_memory_block
++++ a/include/linux/memory.h
+@@ -90,7 +90,7 @@ int create_memory_block_devices(unsigned
+ void remove_memory_block_devices(unsigned long start, unsigned long size);
+ extern void memory_dev_init(void);
+ extern int memory_notify(unsigned long val, void *v);
+-extern struct memory_block *find_memory_block(struct mem_section *);
++extern struct memory_block *find_memory_block(unsigned long section_nr);
+ typedef int (*walk_memory_blocks_func_t)(struct memory_block *, void *);
+ extern int walk_memory_blocks(unsigned long start, unsigned long size,
+ 			      void *arg, walk_memory_blocks_func_t func);
+_

@@ -1,0 +1,31 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: fs-epoll-use-a-per-cpu-counter-for-users-watches-count-fix-fix
+
+tweak user_epoll_alloc(), per Guenter
+
+Link: https://lkml.kernel.org/r/20210804191421.GA1900577@roeck-us.net
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/user.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/kernel/user.c~fs-epoll-use-a-per-cpu-counter-for-users-watches-count-fix-fix
++++ a/kernel/user.c
+@@ -133,8 +133,9 @@ static int user_epoll_alloc(struct user_
+ {
+ #ifdef CONFIG_EPOLL
+ 	return percpu_counter_init(&up->epoll_watches, 0, GFP_KERNEL);
+-#endif
++#else
+ 	return 0;
++#endif
+ }
+ 
+ static void user_epoll_free(struct user_struct *up)
+_

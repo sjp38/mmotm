@@ -1,0 +1,65 @@
+From: Ohhoon Kwon <ohoono.kwon@samsung.com>
+Subject: mm: sparse: remove __section_nr() function
+
+As the last users of __section_nr() are gone, let's remove unused function
+__section_nr().
+
+Link: https://lkml.kernel.org/r/20210707150212.855-4-ohoono.kwon@samsung.com
+Signed-off-by: Ohhoon Kwon <ohoono.kwon@samsung.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Cc: Baoquan He <bhe@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mmzone.h |    1 -
+ mm/sparse.c            |   26 --------------------------
+ 2 files changed, 27 deletions(-)
+
+--- a/include/linux/mmzone.h~mm-sparse-remove-__section_nr-function
++++ a/include/linux/mmzone.h
+@@ -1342,7 +1342,6 @@ static inline struct mem_section *__nr_t
+ 		return NULL;
+ 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
+ }
+-extern unsigned long __section_nr(struct mem_section *ms);
+ extern size_t mem_section_usage_size(void);
+ 
+ /*
+--- a/mm/sparse.c~mm-sparse-remove-__section_nr-function
++++ a/mm/sparse.c
+@@ -109,32 +109,6 @@ static inline int sparse_index_init(unsi
+ }
+ #endif
+ 
+-#ifdef CONFIG_SPARSEMEM_EXTREME
+-unsigned long __section_nr(struct mem_section *ms)
+-{
+-	unsigned long root_nr;
+-	struct mem_section *root = NULL;
+-
+-	for (root_nr = 0; root_nr < NR_SECTION_ROOTS; root_nr++) {
+-		root = __nr_to_section(root_nr * SECTIONS_PER_ROOT);
+-		if (!root)
+-			continue;
+-
+-		if ((ms >= root) && (ms < (root + SECTIONS_PER_ROOT)))
+-		     break;
+-	}
+-
+-	VM_BUG_ON(!root);
+-
+-	return (root_nr * SECTIONS_PER_ROOT) + (ms - root);
+-}
+-#else
+-unsigned long __section_nr(struct mem_section *ms)
+-{
+-	return (unsigned long)(ms - mem_section[0]);
+-}
+-#endif
+-
+ /*
+  * During early boot, before section_mem_map is used for an actual
+  * mem_map, we use section_mem_map to store the section's NUMA
+_

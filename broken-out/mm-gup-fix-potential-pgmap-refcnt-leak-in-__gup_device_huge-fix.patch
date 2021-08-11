@@ -1,0 +1,36 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge-fix
+
+simplify, cleanup
+
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/gup.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- a/mm/gup.c~mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge-fix
++++ a/mm/gup.c
+@@ -2247,14 +2247,13 @@ static int __gup_device_huge(unsigned lo
+ 		pgmap = get_dev_pagemap(pfn, pgmap);
+ 		if (unlikely(!pgmap)) {
+ 			undo_dev_pagemap(nr, nr_start, flags, pages);
+-			return 0;
++			break;
+ 		}
+ 		SetPageReferenced(page);
+ 		pages[*nr] = page;
+ 		if (unlikely(!try_grab_page(page, flags))) {
+ 			undo_dev_pagemap(nr, nr_start, flags, pages);
+-			put_dev_pagemap(pgmap);
+-			return 0;
++			break;
+ 		}
+ 		(*nr)++;
+ 		pfn++;
+_

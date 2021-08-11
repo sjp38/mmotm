@@ -1,0 +1,113 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: mm, slub: return slab page from get_partial() and set c->page afterwards
+
+The function get_partial() finds a suitable page on a partial list,
+acquires and returns its freelist and assigns the page pointer to
+kmem_cache_cpu.  In later patch we will need more control over the
+kmem_cache_cpu.page assignment, so instead of passing a kmem_cache_cpu
+pointer, pass a pointer to a pointer to a page that get_partial() can fill
+and the caller can assign the kmem_cache_cpu.page pointer.  No functional
+change as all of this still happens with disabled IRQs.
+
+Link: https://lkml.kernel.org/r/20210805152000.12817-10-vbabka@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Jann Horn <jannh@google.com>
+Cc: Jesper Dangaard Brouer <brouer@redhat.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/slub.c |   21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
+
+--- a/mm/slub.c~mm-slub-return-slab-page-from-get_partial-and-set-c-page-afterwards
++++ a/mm/slub.c
+@@ -2003,7 +2003,7 @@ static inline bool pfmemalloc_match(stru
+  * Try to allocate a partial slab from a specific node.
+  */
+ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
+-				struct kmem_cache_cpu *c, gfp_t flags)
++			      struct page **ret_page, gfp_t flags)
+ {
+ 	struct page *page, *page2;
+ 	void *object = NULL;
+@@ -2032,7 +2032,7 @@ static void *get_partial_node(struct kme
+ 
+ 		available += objects;
+ 		if (!object) {
+-			c->page = page;
++			*ret_page = page;
+ 			stat(s, ALLOC_FROM_PARTIAL);
+ 			object = t;
+ 		} else {
+@@ -2052,7 +2052,7 @@ static void *get_partial_node(struct kme
+  * Get a page from somewhere. Search in increasing NUMA distances.
+  */
+ static void *get_any_partial(struct kmem_cache *s, gfp_t flags,
+-		struct kmem_cache_cpu *c)
++			     struct page **ret_page)
+ {
+ #ifdef CONFIG_NUMA
+ 	struct zonelist *zonelist;
+@@ -2094,7 +2094,7 @@ static void *get_any_partial(struct kmem
+ 
+ 			if (n && cpuset_zone_allowed(zone, flags) &&
+ 					n->nr_partial > s->min_partial) {
+-				object = get_partial_node(s, n, c, flags);
++				object = get_partial_node(s, n, ret_page, flags);
+ 				if (object) {
+ 					/*
+ 					 * Don't check read_mems_allowed_retry()
+@@ -2116,7 +2116,7 @@ static void *get_any_partial(struct kmem
+  * Get a partial page, lock it and return it.
+  */
+ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+-		struct kmem_cache_cpu *c)
++			 struct page **ret_page)
+ {
+ 	void *object;
+ 	int searchnode = node;
+@@ -2124,11 +2124,11 @@ static void *get_partial(struct kmem_cac
+ 	if (node == NUMA_NO_NODE)
+ 		searchnode = numa_mem_id();
+ 
+-	object = get_partial_node(s, get_node(s, searchnode), c, flags);
++	object = get_partial_node(s, get_node(s, searchnode), ret_page, flags);
+ 	if (object || node != NUMA_NO_NODE)
+ 		return object;
+ 
+-	return get_any_partial(s, flags, c);
++	return get_any_partial(s, flags, ret_page);
+ }
+ 
+ #ifdef CONFIG_PREEMPTION
+@@ -2740,9 +2740,11 @@ new_slab:
+ 		goto redo;
+ 	}
+ 
+-	freelist = get_partial(s, gfpflags, node, c);
+-	if (freelist)
++	freelist = get_partial(s, gfpflags, node, &page);
++	if (freelist) {
++		c->page = page;
+ 		goto check_new_page;
++	}
+ 
+ 	page = new_slab(s, gfpflags, node);
+ 
+@@ -2766,7 +2768,6 @@ new_slab:
+ 	c->page = page;
+ 
+ check_new_page:
+-	page = c->page;
+ 	if (likely(!kmem_cache_debug(s) && pfmemalloc_match(page, gfpflags)))
+ 		goto load_freelist;
+ 
+_

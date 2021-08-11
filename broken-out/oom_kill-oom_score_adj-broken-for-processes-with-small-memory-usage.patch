@@ -1,0 +1,55 @@
+From: Corey Minyard <cminyard@mvista.com>
+Subject: oom_kill: oom_score_adj broken for processes with small memory usage
+
+If you have a process with less than 1000 totalpages, the calculation:
+
+  adj = (long)p->signal->oom_score_adj;
+  ...
+  adj *= totalpages / 1000;
+
+will always result in adj being zero no matter what oom_score_adj is,
+which could result in the wrong process being picked for killing.
+
+Fix by adding 1000 to totalpages before dividing.
+
+
+I ran across this trying to diagnose another problem where I set up a
+cgroup with a small amount of memory and couldn't get a test program to
+work right.
+
+I'm not sure this is quite right, to keep closer to the current behavior
+you could do:
+
+	if (totalpages >= 1000) adj *= totalpages / 1000;
+
+but that would map 0-1999 to the same value.  But this at least shows the
+issue.  I can provide a test program the shows the issue, but I think it's
+pretty obvious from the code.  
+
+Link: https://lkml.kernel.org/r/20210701125430.836308-1-minyard@acm.org
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: David Rientjes <rientjes@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/oom_kill.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- a/mm/oom_kill.c~oom_kill-oom_score_adj-broken-for-processes-with-small-memory-usage
++++ a/mm/oom_kill.c
+@@ -234,8 +234,11 @@ long oom_badness(struct task_struct *p,
+ 		mm_pgtables_bytes(p->mm) / PAGE_SIZE;
+ 	task_unlock(p);
+ 
+-	/* Normalize to oom_score_adj units */
+-	adj *= totalpages / 1000;
++	/*
++	 * Normalize to oom_score_adj units.  You should never
++	 * multiply by zero here, or oom_score_adj will not work.
++	 */
++	adj *= (totalpages + 1000) / 1000;
+ 	points += adj;
+ 
+ 	return points;
+_

@@ -1,0 +1,66 @@
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: powerpc/64s: enable MMU_LAZY_TLB_SHOOTDOWN
+
+On a 16-socket 192-core POWER8 system, a context switching benchmark
+with as many software threads as CPUs (so each switch will go in and
+out of idle), upstream can achieve a rate of about 1 million context
+switches per second. After this patch it goes up to 118 million.
+
+No real datya for real world workloads unfortunately.  I think it's
+always been a "known" cacheline, it just showed up badly on
+will-it-scale tests recently when Anton was doing a sweep of low
+hanging scalability issues on big systems.
+
+We have some very big systems running certain in-memory databases that
+get into very high contention conditions on mutexes that push context
+switch rates right up and with idle times pretty high, which would get
+a lot of parallel context switching between user and idle thread, we
+might be getting a bit of this contention there.
+
+It's not something at the top of profiles though.  And on
+multi-threaded workloads like this, the normal refcounting of the user
+mm still has fundmaental contention.  It's tricky to get the change
+tested on these workloads (machine time is very limited and I can't
+drive the software).
+
+I suspect it could also show in things that do high net or disk IO
+rates (enough to need a lot of cores), and do some user processing
+steps along the way.  You'd potentially get a lot of idle switching.
+
+
+This infrastructure could be beneficial to other architectures.  The
+cacheline is going to bounce in the same situations on other archs, so
+I would say yes.  Rik at one stage had some patches to try avoid it for
+x86 some years ago, I don't know what happened to those.
+
+The way powerpc has to maintain mm_cpumask for its TLB flushing makes
+it relatively easy to do this shootdown, and we decided the additional
+IPIs were less of a concern than the bouncing.  Others have different
+concerns, but I tried to make it generic and add comments explaining
+what other archs can do, or possibly different ways it might be
+achieved.
+
+Link: https://lkml.kernel.org/r/20210605014216.446867-5-npiggin@gmail.com
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Anton Blanchard <anton@ozlabs.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/powerpc/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/arch/powerpc/Kconfig~powerpc-64s-enable-mmu_lazy_tlb_shootdown
++++ a/arch/powerpc/Kconfig
+@@ -253,6 +253,7 @@ config PPC
+ 	select IRQ_FORCED_THREADING
+ 	select MMU_GATHER_PAGE_SIZE
+ 	select MMU_GATHER_RCU_TABLE_FREE
++	select MMU_LAZY_TLB_SHOOTDOWN		if PPC_BOOK3S_64
+ 	select MODULES_USE_ELF_RELA
+ 	select NEED_DMA_MAP_STATE		if PPC64 || NOT_COHERENT_CACHE
+ 	select NEED_SG_DMA_LENGTH
+_

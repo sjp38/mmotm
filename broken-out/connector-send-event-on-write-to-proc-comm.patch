@@ -1,0 +1,46 @@
+From: Ohhoon Kwon <ohoono.kwon@samsung.com>
+Subject: connector: send event on write to /proc/[pid]/comm
+
+While comm change event via prctl has been reported to proc connector by
+'commit f786ecba4158 ("connector: add comm change event report to proc
+connector")', connector listeners were missing comm changes by explicit
+writes on /proc/[pid]/comm.
+
+Let explicit writes on /proc/[pid]/comm report to proc connector.
+
+Link: https://lkml.kernel.org/r/20210701133458epcms1p68e9eb9bd0eee8903ba26679a37d9d960@epcms1p6
+Signed-off-by: Ohhoon Kwon <ohoono.kwon@samsung.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/base.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/fs/proc/base.c~connector-send-event-on-write-to-proc-comm
++++ a/fs/proc/base.c
+@@ -95,6 +95,7 @@
+ #include <linux/posix-timers.h>
+ #include <linux/time_namespace.h>
+ #include <linux/resctrl.h>
++#include <linux/cn_proc.h>
+ #include <trace/events/oom.h>
+ #include "internal.h"
+ #include "fd.h"
+@@ -1674,8 +1675,10 @@ static ssize_t comm_write(struct file *f
+ 	if (!p)
+ 		return -ESRCH;
+ 
+-	if (same_thread_group(current, p))
++	if (same_thread_group(current, p)) {
+ 		set_task_comm(p, buffer);
++		proc_comm_connector(p);
++	}
+ 	else
+ 		count = -EINVAL;
+ 
+_

@@ -1,0 +1,48 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/vmstat: correct some wrong comments
+
+Patch series "Cleanup for vmstat".
+
+This series contains cleanups to remove unneeded return value, correct
+wrong comment and simplify the array size calculation.  More details can
+be found in the respective changelogs.
+
+
+This patch (of 3):
+
+Correct wrong fls(mem+1) to fls(mem)+1 and remove the duplicated comment
+with quiet_vmstat().
+
+Link: https://lkml.kernel.org/r/20210715122911.15700-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20210715122911.15700-2-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmstat.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+--- a/mm/vmstat.c~mm-vmstat-correct-some-wrong-comments
++++ a/mm/vmstat.c
+@@ -204,7 +204,7 @@ int calculate_normal_threshold(struct zo
+ 	 *
+ 	 * Some sample thresholds:
+ 	 *
+-	 * Threshold	Processors	(fls)	Zonesize	fls(mem+1)
++	 * Threshold	Processors	(fls)	Zonesize	fls(mem)+1
+ 	 * ------------------------------------------------------------------
+ 	 * 8		1		1	0.9-1 GB	4
+ 	 * 16		2		2	0.9-1 GB	4
+@@ -1876,11 +1876,6 @@ static void vmstat_update(struct work_st
+ }
+ 
+ /*
+- * Switch off vmstat processing and then fold all the remaining differentials
+- * until the diffs stay at zero. The function is used by NOHZ and can only be
+- * invoked when tick processing is not active.
+- */
+-/*
+  * Check if the diffs for a certain cpu indicate that
+  * an update is needed.
+  */
+_

@@ -1,0 +1,51 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge-fix-fix
+
+fix return value
+
+Reviewed-by: John Hubbard <jhubbard@nvidia.com>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/gup.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/mm/gup.c~mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge-fix-fix
++++ a/mm/gup.c
+@@ -2240,6 +2240,7 @@ static int __gup_device_huge(unsigned lo
+ {
+ 	int nr_start = *nr;
+ 	struct dev_pagemap *pgmap = NULL;
++	int ret = 1;
+ 
+ 	do {
+ 		struct page *page = pfn_to_page(pfn);
+@@ -2247,12 +2248,14 @@ static int __gup_device_huge(unsigned lo
+ 		pgmap = get_dev_pagemap(pfn, pgmap);
+ 		if (unlikely(!pgmap)) {
+ 			undo_dev_pagemap(nr, nr_start, flags, pages);
++			ret = 0;
+ 			break;
+ 		}
+ 		SetPageReferenced(page);
+ 		pages[*nr] = page;
+ 		if (unlikely(!try_grab_page(page, flags))) {
+ 			undo_dev_pagemap(nr, nr_start, flags, pages);
++			ret = 0;
+ 			break;
+ 		}
+ 		(*nr)++;
+@@ -2260,7 +2263,7 @@ static int __gup_device_huge(unsigned lo
+ 	} while (addr += PAGE_SIZE, addr != end);
+ 
+ 	put_dev_pagemap(pgmap);
+-	return 1;
++	return ret;
+ }
+ 
+ static int __gup_device_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+_

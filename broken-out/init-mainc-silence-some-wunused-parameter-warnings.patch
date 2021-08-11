@@ -1,0 +1,107 @@
+From: Andrew Halaney <ahalaney@redhat.com>
+Subject: init/main.c: silence some -Wunused-parameter warnings
+
+There are a bunch of callbacks with unused arguments, go ahead and silence
+those so "make KCFLAGS=-W init/main.o" is a little quieter.  Here's a
+little sample:
+
+init/main.c:182:43: warning: unused parameter 'str' [-Wunused-parameter]
+static int __init set_reset_devices(char *str)
+
+Link: https://lkml.kernel.org/r/20210519162341.1275452-1-ahalaney@redhat.com
+Signed-off-by: Andrew Halaney <ahalaney@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ init/main.c |   25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
+
+--- a/init/main.c~init-mainc-silence-some-wunused-parameter-warnings
++++ a/init/main.c
+@@ -181,7 +181,7 @@ EXPORT_SYMBOL_GPL(static_key_initialized
+ unsigned int reset_devices;
+ EXPORT_SYMBOL(reset_devices);
+ 
+-static int __init set_reset_devices(char *str)
++static int __init set_reset_devices(char *str __always_unused)
+ {
+ 	reset_devices = 1;
+ 	return 1;
+@@ -231,13 +231,13 @@ static bool __init obsolete_checksetup(c
+ unsigned long loops_per_jiffy = (1<<12);
+ EXPORT_SYMBOL(loops_per_jiffy);
+ 
+-static int __init debug_kernel(char *str)
++static int __init debug_kernel(char *str __always_unused)
+ {
+ 	console_loglevel = CONSOLE_LOGLEVEL_DEBUG;
+ 	return 0;
+ }
+ 
+-static int __init quiet_kernel(char *str)
++static int __init quiet_kernel(char *str __always_unused)
+ {
+ 	console_loglevel = CONSOLE_LOGLEVEL_QUIET;
+ 	return 0;
+@@ -470,7 +470,7 @@ static void __init setup_boot_config(voi
+ 	get_boot_config_from_initrd(NULL, NULL);
+ }
+ 
+-static int __init warn_bootconfig(char *str)
++static int __init warn_bootconfig(char *str __always_unused)
+ {
+ 	pr_warn("WARNING: 'bootconfig' found on the kernel command line but CONFIG_BOOT_CONFIG is not set.\n");
+ 	return 0;
+@@ -496,7 +496,8 @@ static void __init repair_env_string(cha
+ 
+ /* Anything after -- gets handed straight to init. */
+ static int __init set_init_arg(char *param, char *val,
+-			       const char *unused, void *arg)
++			       const char *unused __always_unused,
++			       void *arg __always_unused)
+ {
+ 	unsigned int i;
+ 
+@@ -521,7 +522,8 @@ static int __init set_init_arg(char *par
+  * unused parameters (modprobe will find them in /proc/cmdline).
+  */
+ static int __init unknown_bootoption(char *param, char *val,
+-				     const char *unused, void *arg)
++				     const char *unused __always_unused,
++				     void *arg __always_unused)
+ {
+ 	size_t len = strlen(param);
+ 
+@@ -716,7 +718,8 @@ noinline void __ref rest_init(void)
+ 
+ /* Check for early params. */
+ static int __init do_early_param(char *param, char *val,
+-				 const char *unused, void *arg)
++				 const char *unused __always_unused,
++				 void *arg __always_unused)
+ {
+ 	const struct obs_kernel_param *p;
+ 
+@@ -1334,8 +1337,10 @@ static const char *initcall_level_names[
+ 	"late",
+ };
+ 
+-static int __init ignore_unknown_bootoption(char *param, char *val,
+-			       const char *unused, void *arg)
++static int __init ignore_unknown_bootoption(char *param __always_unused,
++					    char *val __always_unused,
++					    const char *unused __always_unused,
++					    void *arg __always_unused)
+ {
+ 	return 0;
+ }
+@@ -1472,7 +1477,7 @@ void __weak free_initmem(void)
+ 	free_initmem_default(POISON_FREE_INITMEM);
+ }
+ 
+-static int __ref kernel_init(void *unused)
++static int __ref kernel_init(void *unused __always_unused)
+ {
+ 	int ret;
+ 
+_

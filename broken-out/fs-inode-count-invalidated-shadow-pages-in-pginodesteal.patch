@@ -1,0 +1,77 @@
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: fs: inode: count invalidated shadow pages in pginodesteal
+
+pginodesteal is supposed to capture the impact that inode reclaim has on
+the page cache state.  Currently, it doesn't consider shadow pages that
+get dropped this way, even though this can have a significant impact on
+paging behavior, memory pressure calculations etc.
+
+To improve visibility into these effects, make sure shadow pages get
+counted when they get dropped through inode reclaim.
+
+This changes the return value semantics of invalidate_mapping_pages()
+semantics slightly, but the only two users are the inode shrinker itsel
+and a usb driver that logs it for debugging purposes.
+
+Link: https://lkml.kernel.org/r/20210614211904.14420-3-hannes@cmpxchg.org
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/inode.c    |    2 +-
+ mm/truncate.c |   20 ++++++++++----------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+--- a/fs/inode.c~fs-inode-count-invalidated-shadow-pages-in-pginodesteal
++++ a/fs/inode.c
+@@ -768,7 +768,7 @@ static enum lru_status inode_lru_isolate
+ 		return LRU_ROTATE;
+ 	}
+ 
+-	if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++	if (inode_has_buffers(inode) || !mapping_empty(&inode->i_data)) {
+ 		__iget(inode);
+ 		spin_unlock(&inode->i_lock);
+ 		spin_unlock(lru_lock);
+--- a/mm/truncate.c~fs-inode-count-invalidated-shadow-pages-in-pginodesteal
++++ a/mm/truncate.c
+@@ -483,8 +483,9 @@ static unsigned long __invalidate_mappin
+ 			index = indices[i];
+ 
+ 			if (xa_is_value(page)) {
+-				invalidate_exceptional_entry(mapping, index,
+-							     page);
++				count += invalidate_exceptional_entry(mapping,
++								      index,
++								      page);
+ 				continue;
+ 			}
+ 			index += thp_nr_pages(page) - 1;
+@@ -512,19 +513,18 @@ static unsigned long __invalidate_mappin
+ }
+ 
+ /**
+- * invalidate_mapping_pages - Invalidate all the unlocked pages of one inode
+- * @mapping: the address_space which holds the pages to invalidate
++ * invalidate_mapping_pages - Invalidate all clean, unlocked cache of one inode
++ * @mapping: the address_space which holds the cache to invalidate
+  * @start: the offset 'from' which to invalidate
+  * @end: the offset 'to' which to invalidate (inclusive)
+  *
+- * This function only removes the unlocked pages, if you want to
+- * remove all the pages of one inode, you must call truncate_inode_pages.
++ * This function removes pages that are clean, unmapped and unlocked,
++ * as well as shadow entries. It will not block on IO activity.
+  *
+- * invalidate_mapping_pages() will not block on IO activity. It will not
+- * invalidate pages which are dirty, locked, under writeback or mapped into
+- * pagetables.
++ * If you want to remove all the pages of one inode, regardless of
++ * their use and writeback state, use truncate_inode_pages().
+  *
+- * Return: the number of the pages that were invalidated
++ * Return: the number of the cache entries that were invalidated
+  */
+ unsigned long invalidate_mapping_pages(struct address_space *mapping,
+ 		pgoff_t start, pgoff_t end)
+_

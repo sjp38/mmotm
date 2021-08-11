@@ -1,0 +1,47 @@
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: mm: change fault_in_pages_* to have an unsigned size parameter
+
+fault_in_pages_writeable() and fault_in_pages_readable() treat the size
+parameter as unsigned, doing pointer math with the value, so make this
+explicit and set it to be a size_t type which all callers currently treat
+it as anyway.
+
+This solves the issue where static checkers get nervous seeing pointer
+arithmetic happening with a signed value.
+
+Link: https://lkml.kernel.org/r/20210727111136.457638-1-gregkh@linuxfoundation.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reported-by: Jordy Zomer <jordy@pwning.systems>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: David Howells <dhowells@redhat.com>
+Cc: William Kucharski <william.kucharski@oracle.com>
+Cc: "Darrick J. Wong" <djwong@kernel.org>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/pagemap.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/include/linux/pagemap.h~mm-change-fault_in_pages_-to-have-an-unsigned-size-parameter
++++ a/include/linux/pagemap.h
+@@ -786,7 +786,7 @@ extern void add_page_wait_queue(struct p
+ /*
+  * Fault everything in given userspace address range in.
+  */
+-static inline int fault_in_pages_writeable(char __user *uaddr, int size)
++static inline int fault_in_pages_writeable(char __user *uaddr, size_t size)
+ {
+ 	char __user *end = uaddr + size - 1;
+ 
+@@ -813,7 +813,7 @@ static inline int fault_in_pages_writeab
+ 	return 0;
+ }
+ 
+-static inline int fault_in_pages_readable(const char __user *uaddr, int size)
++static inline int fault_in_pages_readable(const char __user *uaddr, size_t size)
+ {
+ 	volatile char c;
+ 	const char __user *end = uaddr + size - 1;
+_

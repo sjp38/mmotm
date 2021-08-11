@@ -1,0 +1,89 @@
+From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Subject: mm/mempolicy: convert from atomic_t to refcount_t on mempolicy->refcnt
+
+refcount_t type and corresponding API can protect refcounters from
+accidental underflow and overflow and further use-after-free situations.
+
+Link: https://lkml.kernel.org/r/1626683671-64407-1-git-send-email-xiyuyang19@fudan.edu.cn
+Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
+Acked-by: Ben Widawsky <ben.widawsky@intel.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Feng Tang <feng.tang@intel.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Yanfei Xu <yanfei.xu@windriver.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mempolicy.h |    5 +++--
+ mm/mempolicy.c            |    8 ++++----
+ 2 files changed, 7 insertions(+), 6 deletions(-)
+
+--- a/include/linux/mempolicy.h~mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt
++++ a/include/linux/mempolicy.h
+@@ -6,6 +6,7 @@
+ #ifndef _LINUX_MEMPOLICY_H
+ #define _LINUX_MEMPOLICY_H 1
+ 
++#include <linux/refcount.h>
+ #include <linux/sched.h>
+ #include <linux/mmzone.h>
+ #include <linux/dax.h>
+@@ -43,7 +44,7 @@ struct mm_struct;
+  * to 1, representing the caller of mpol_dup().
+  */
+ struct mempolicy {
+-	atomic_t refcnt;
++	refcount_t refcnt;
+ 	unsigned short mode; 	/* See MPOL_* above */
+ 	unsigned short flags;	/* See set_mempolicy() MPOL_F_* above */
+ 	nodemask_t nodes;	/* interleave/bind/perfer */
+@@ -94,7 +95,7 @@ static inline struct mempolicy *mpol_dup
+ static inline void mpol_get(struct mempolicy *pol)
+ {
+ 	if (pol)
+-		atomic_inc(&pol->refcnt);
++		refcount_inc(&pol->refcnt);
+ }
+ 
+ extern bool __mpol_equal(struct mempolicy *a, struct mempolicy *b);
+--- a/mm/mempolicy.c~mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt
++++ a/mm/mempolicy.c
+@@ -298,7 +298,7 @@ static struct mempolicy *mpol_new(unsign
+ 	policy = kmem_cache_alloc(policy_cache, GFP_KERNEL);
+ 	if (!policy)
+ 		return ERR_PTR(-ENOMEM);
+-	atomic_set(&policy->refcnt, 1);
++	refcount_set(&policy->refcnt, 1);
+ 	policy->mode = mode;
+ 	policy->flags = flags;
+ 
+@@ -308,7 +308,7 @@ static struct mempolicy *mpol_new(unsign
+ /* Slow path of a mpol destructor. */
+ void __mpol_put(struct mempolicy *p)
+ {
+-	if (!atomic_dec_and_test(&p->refcnt))
++	if (!refcount_dec_and_test(&p->refcnt))
+ 		return;
+ 	kmem_cache_free(policy_cache, p);
+ }
+@@ -2290,7 +2290,7 @@ struct mempolicy *__mpol_dup(struct memp
+ 		nodemask_t mems = cpuset_mems_allowed(current);
+ 		mpol_rebind_policy(new, &mems);
+ 	}
+-	atomic_set(&new->refcnt, 1);
++	refcount_set(&new->refcnt, 1);
+ 	return new;
+ }
+ 
+@@ -2581,7 +2581,7 @@ restart:
+ 					goto alloc_new;
+ 
+ 				*mpol_new = *n->policy;
+-				atomic_set(&mpol_new->refcnt, 1);
++				refcount_set(&mpol_new->refcnt, 1);
+ 				sp_node_init(n_new, end, n->end, mpol_new);
+ 				n->end = start;
+ 				sp_insert(sp, n_new);
+_

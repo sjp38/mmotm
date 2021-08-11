@@ -1,0 +1,46 @@
+From: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
+Subject: fs/coredump.c: log if a core dump is aborted due to changed file permissions
+
+For obvious security reasons, a core dump is aborted if the filesystem
+cannot preserve ownership or permissions of the dump file.
+
+This affects filesystems like e.g.  vfat, but also something like a 9pfs
+share in a Qemu test setup, running as a regular user, depending on the
+security model used.  In those cases, the result is an empty core file and
+a confused user.
+
+To hopefully safe other people a lot of time figuring out the cause, this
+patch adds a simple log message for those specific cases.
+
+Link: https://lkml.kernel.org/r/20210701233151.102720-1-david.oberhollenzer@sigma-star.at
+Signed-off-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/coredump.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+--- a/fs/coredump.c~log-if-a-core-dump-is-aborted-due-to-changed-file-permissions
++++ a/fs/coredump.c
+@@ -782,10 +782,17 @@ void do_coredump(const kernel_siginfo_t
+ 		 * filesystem.
+ 		 */
+ 		mnt_userns = file_mnt_user_ns(cprm.file);
+-		if (!uid_eq(i_uid_into_mnt(mnt_userns, inode), current_fsuid()))
++		if (!uid_eq(i_uid_into_mnt(mnt_userns, inode),
++			    current_fsuid())) {
++			pr_info_ratelimited("Core dump to |%s aborted: cannot preserve file owner\n",
++					    cn.corename);
+ 			goto close_fail;
+-		if ((inode->i_mode & 0677) != 0600)
++		}
++		if ((inode->i_mode & 0677) != 0600) {
++			pr_info_ratelimited("Core dump to |%s aborted: cannot preserve file permissions\n",
++					    cn.corename);
+ 			goto close_fail;
++		}
+ 		if (!(cprm.file->f_mode & FMODE_CAN_WRITE))
+ 			goto close_fail;
+ 		if (do_truncate(mnt_userns, cprm.file->f_path.dentry,
+_

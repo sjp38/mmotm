@@ -1,0 +1,41 @@
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+Subject: mm: mark idle page tracking as BROKEN
+
+In discussion with other MM developers around how idle page tracking
+should be fixed for transparent huge pages, several expressed the opinion
+that it should be removed as it is inefficient at accomplishing the job
+that it is supposed to, and we have better mechanisms (eg uffd) for
+accomplishing the same goals these days.
+
+Mark the feature as BROKEN for now and we can remove it entirely in a few
+months if nobody complains.  It is not enabled by Android, ChromeOS,
+Debian, Fedora or SUSE.  Red Hat enabled it with RHEL-8.1 and UEK followed
+suit, but I have been unable to find why RHEL enabled it.
+
+Link: https://lkml.kernel.org/r/20210612000714.775825-1-willy@infradead.org
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+Acked-by: Yu Zhao <yuzhao@google.com>
+Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+SeongJae Park <sj38.park@gmail.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Rafael Aquini <aquini@redhat.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/Kconfig~mm-mark-idle-page-tracking-as-broken
++++ a/mm/Kconfig
+@@ -744,7 +744,7 @@ config DEFERRED_STRUCT_PAGE_INIT
+ 
+ config IDLE_PAGE_TRACKING
+ 	bool "Enable idle page tracking"
+-	depends on SYSFS && MMU
++	depends on SYSFS && MMU && BROKEN
+ 	select PAGE_EXTENSION if !64BIT
+ 	help
+ 	  This feature allows to estimate the amount of user pages that have
+_

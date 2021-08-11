@@ -1,0 +1,31 @@
+From: Matthew Wilcox <willy@parisc-linux.org>
+Subject: Releasing resources with children
+
+What does it mean to release a resource with children?  Should the children
+become children of the released resource's parent?  Should they be released
+too?  Should we fail the release?
+
+I bet we have no callers who expect this right now, but with
+insert_resource() we may get some.  At the point where someone hits this
+BUG we can figure out what semantics we want.
+
+Signed-off-by: Matthew Wilcox <willy@parisc-linux.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/resource.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/kernel/resource.c~releasing-resources-with-children
++++ a/kernel/resource.c
+@@ -221,6 +221,8 @@ static int __release_resource(struct res
+ 		}
+ 	}
+ 
++	WARN_ON(old->child);
++
+ 	p = &old->parent->child;
+ 	for (;;) {
+ 		tmp = *p;
+_

@@ -1,0 +1,62 @@
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: fixup! mm: simplify compat numa syscalls
+
+When compat user space asks for more data than the kernel has in its
+nodemask, get_mempolicy() now either leaks kernel stack data to user space
+or, if either VMAP_STACK or KASAN are enabled, causes a crash like
+
+Unable to handle kernel pointer dereference in virtual kernel address space
+Failing address: 0000038003e7c000 TEID: 0000038003e7c803
+Fault in home space mode while using kernel ASCE.
+AS:00000001fb388007 R3:000000008021c007 S:0000000082142000 P:0000000000000400
+Oops: 0011 ilc:3 [#1] SMP
+CPU: 0 PID: 1017495 Comm: get_mempolicy Tainted: G           OE     5.14.0-20210730.rc3.git0.4ccc9e2db7ac.300.fc34.s390x+next #1
+Hardware name: IBM 2827 H66 708 (LPAR)
+Krnl PSW : 0704e00180000000 00000001f9f11000 (compat_put_bitmap+0x48/0xd0)
+           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:3 CC:2 PM:0 RI:0 EA:3
+Krnl GPRS: 0000000000810000 0000000000000000 000000007d9df1c0 0000038003e7c008
+           0000000000000004 000000007d9df1c4 0000038003e7be40 0000000000010000
+           0000000000008000 0000000000000000 0000000000000390 00000000000001c8
+           000000020d6ea000 000002aa00401a48 00000001fa0a85fa 0000038003e7bd50
+Krnl Code: 00000001f9f10ff4: a7bb0001            aghi    %r11,1
+           00000001f9f10ff8: 41303008            la      %r3,8(%r3)
+          #00000001f9f10ffc: 41502004            la      %r5,4(%r2)
+          >00000001f9f11000: e3103ff8ff04        lg      %r1,-8(%r3)
+           00000001f9f11006: 5010f0a4            st      %r1,164(%r15)
+           00000001f9f1100a: a50e0081            llilh   %r0,129
+           00000001f9f1100e: c8402000f0a4        mvcos   0(%r2),164(%r15),%r4
+           00000001f9f11014: 1799                xr      %r9,%r9
+Call Trace:
+ [<00000001f9f11000>] compat_put_bitmap+0x48/0xd0
+ [<00000001fa0a85fa>] kernel_get_mempolicy+0x102/0x178
+ [<00000001fa0a86b0>] __s390_sys_get_mempolicy+0x40/0x50
+ [<00000001fa92be30>] __do_syscall+0x1c0/0x1e8
+ [<00000001fa939148>] system_call+0x78/0xa0
+Last Breaking-Event-Address:
+ [<0000038003e7bc00>] 0x38003e7bc00
+Kernel panic - not syncing: Fatal exception: panic_on_oops
+
+Fix it by copying the correct size in compat mode again.
+
+Link: https://lkml.kernel.org/r/20210730143417.3700653-1-arnd@kernel.org
+Link: https://lore.kernel.org/lkml/YQPLG20V3dmOfq3a@osiris/
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mempolicy.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/mempolicy.c~mm-simplify-compat-numa-syscalls-fix
++++ a/mm/mempolicy.c
+@@ -1438,6 +1438,7 @@ static int copy_nodes_to_user(unsigned l
+ 		if (clear_user((char __user *)mask + nbytes, copy - nbytes))
+ 			return -EFAULT;
+ 		copy = nbytes;
++		maxnode = nr_node_ids;
+ 	}
+ 
+ 	if (compat)
+_

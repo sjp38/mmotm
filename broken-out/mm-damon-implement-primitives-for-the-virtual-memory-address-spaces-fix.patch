@@ -1,0 +1,23 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-damon-implement-primitives-for-the-virtual-memory-address-spaces-fix
+
+mm/damon/vaddr.c needs highmem.h for kunmap_atomic()
+
+Cc: SeongJae Park <sjpark@amazon.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/vaddr.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/damon/vaddr.c~mm-damon-implement-primitives-for-the-virtual-memory-address-spaces-fix
++++ a/mm/damon/vaddr.c
+@@ -10,6 +10,7 @@
+ #include <linux/damon.h>
+ #include <linux/mm.h>
+ #include <linux/mmu_notifier.h>
++#include <linux/highmem.h>
+ #include <linux/page_idle.h>
+ #include <linux/random.h>
+ #include <linux/sched/mm.h>
+_

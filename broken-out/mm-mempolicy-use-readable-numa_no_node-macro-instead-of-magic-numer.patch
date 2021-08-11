@@ -1,0 +1,39 @@
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+Subject: mm/mempolicy: use readable NUMA_NO_NODE macro instead of magic numer
+
+The caller of mpol_misplaced() already use NUMA_NO_NODE to check whether
+current page node is misplaced, thus using NUMA_NO_NODE in
+mpol_misplaced() instead of magic number is more readable.
+
+Link: https://lkml.kernel.org/r/1b77c0ce21183fa86f4db250b115cf5e27396528.1627558356.git.baolin.wang@linux.alibaba.com
+Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mempolicy.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/mm/mempolicy.c~mm-mempolicy-use-readable-numa_no_node-macro-instead-of-magic-numer
++++ a/mm/mempolicy.c
+@@ -2425,8 +2425,8 @@ static void sp_free(struct sp_node *n)
+  * node id.  Policy determination "mimics" alloc_page_vma().
+  * Called from fault path where we know the vma and faulting address.
+  *
+- * Return: -1 if the page is in a node that is valid for this policy, or a
+- * suitable node ID to allocate a replacement page from.
++ * Return: NUMA_NO_NODE if the page is in a node that is valid for this
++ * policy, or a suitable node ID to allocate a replacement page from.
+  */
+ int mpol_misplaced(struct page *page, struct vm_area_struct *vma, unsigned long addr)
+ {
+@@ -2437,7 +2437,7 @@ int mpol_misplaced(struct page *page, st
+ 	int thiscpu = raw_smp_processor_id();
+ 	int thisnid = cpu_to_node(thiscpu);
+ 	int polnid = NUMA_NO_NODE;
+-	int ret = -1;
++	int ret = NUMA_NO_NODE;
+ 
+ 	pol = get_vma_policy(vma, addr);
+ 	if (!(pol->flags & MPOL_F_MOF))
+_

@@ -1,0 +1,37 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-compaction-optimize-proactive-compaction-deferrals-fix
+
+tweak comment
+
+Cc: Charan Teja Reddy <charante@codeaurora.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Khalid Aziz <khalid.aziz@oracle.com>
+Cc: Nitin Gupta <nigupta@nvidia.com>
+Cc: Vinayak Menon <vinmenon@codeaurora.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/compaction.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- a/mm/compaction.c~mm-compaction-optimize-proactive-compaction-deferrals-fix
++++ a/mm/compaction.c
+@@ -2909,11 +2909,11 @@ static int kcompactd(void *p)
+ 			kcompactd_do_work(pgdat);
+ 			psi_memstall_leave(&pflags);
+ 			/*
+-			 * Reset the timeout value. The defer timeout by
+-			 * proactive compaction can effectively lost
+-			 * here but that is fine as the condition of the
+-			 * zone changed substantionally and carrying on
+-			 * with the previous defer is not useful.
++			 * Reset the timeout value. The defer timeout from
++			 * proactive compaction is lost here but that is fine
++			 * as the condition of the zone changing substantionally
++			 * then carrying on with the previous defer interval is
++			 * not useful.
+ 			 */
+ 			timeout = default_timeout;
+ 			continue;
+_

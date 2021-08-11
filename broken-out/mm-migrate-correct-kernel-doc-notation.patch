@@ -1,0 +1,27 @@
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: mm/migrate: correct kernel-doc notation
+
+Use the expected "Return:" format to prevent a kernel-doc warning.
+
+mm/migrate.c:1157: warning: Excess function parameter 'returns' description in 'next_demotion_node'
+
+Link: https://lkml.kernel.org/r/20210808203151.10632-1-rdunlap@infradead.org
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/migrate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/migrate.c~mm-migrate-correct-kernel-doc-notation
++++ a/mm/migrate.c
+@@ -1149,7 +1149,7 @@ static int node_demotion[MAX_NUMNODES] _
+  * next_demotion_node() - Get the next node in the demotion path
+  * @node: The starting node to lookup the next node
+  *
+- * @returns: node id for next memory node in the demotion path hierarchy
++ * Return: node id for next memory node in the demotion path hierarchy
+  * from @node; NUMA_NO_NODE if @node is terminal.  This does not keep
+  * @node online or guarantee that it *continues* to be the next demotion
+  * target.
+_

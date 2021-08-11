@@ -1,0 +1,34 @@
+From: SeongJae Park <sjpark@amazon.de>
+Subject: mm/damon/Kconfig: Remove unnecessary PAGE_EXTENSION setup
+
+Commit 13d49dbd0123 ("mm/damon: implement primitives for the virtual
+memory address spaces") of linux-mm[1] makes DAMON_VADDR to set
+PAGE_IDLE_FLAG.  PAGE_IDLE_FLAG sets PAGE_EXTENSION if !64BIT.  However,
+DAMON_VADDR do the same work again.  This commit removes the unnecessary
+duplicate.
+
+[1] https://github.com/hnaz/linux-mm/commit/13d49dbd0123
+
+Link: https://lkml.kernel.org/r/20210806095153.6444-2-sj38.park@gmail.com
+Fixes: 13d49dbd0123 ("mm/damon: implement primitives for the virtual memory address spaces")
+Signed-off-by: SeongJae Park <sjpark@amazon.de>
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/Kconfig |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/mm/damon/Kconfig~mm-damon-implement-primitives-for-the-virtual-memory-address-spaces-fix-2
++++ a/mm/damon/Kconfig
+@@ -15,7 +15,6 @@ config DAMON
+ config DAMON_VADDR
+ 	bool "Data access monitoring primitives for virtual address spaces"
+ 	depends on DAMON && MMU
+-	select PAGE_EXTENSION if !64BIT
+ 	select PAGE_IDLE_FLAG
+ 	help
+ 	  This builds the default data access monitoring primitives for DAMON
+_

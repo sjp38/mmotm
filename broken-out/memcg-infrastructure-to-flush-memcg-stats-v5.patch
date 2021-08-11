@@ -1,0 +1,37 @@
+From: Shakeel Butt <shakeelb@google.com>
+Subject: memcg-infrastructure-to-flush-memcg-stats-v5
+
+fix sleep-in-wrong context bug
+
+Link: https://lkml.kernel.org/r/20210716212137.1391164-2-shakeelb@google.com
+Signed-off-by: Shakeel Butt <shakeelb@google.com>
+Reported-by: Yang Yingliang <yangyingliang@huawei.com>
+Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Hillf Danton <hdanton@sina.com>
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Michal Koutný <mkoutny@suse.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Tejun Heo <tj@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memcontrol.c~memcg-infrastructure-to-flush-memcg-stats-v5
++++ a/mm/memcontrol.c
+@@ -5350,7 +5350,7 @@ void mem_cgroup_flush_stats(void)
+ 	if (!spin_trylock(&stats_flush_lock))
+ 		return;
+ 
+-	cgroup_rstat_flush(root_mem_cgroup->css.cgroup);
++	cgroup_rstat_flush_irqsafe(root_mem_cgroup->css.cgroup);
+ 	spin_unlock(&stats_flush_lock);
+ }
+ 
+_

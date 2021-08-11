@@ -1,0 +1,110 @@
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: mm: simplify compat_sys_move_pages
+
+The compat move_pages() implementation uses compat_alloc_user_space() for
+converting the pointer array.  Moving the compat handling into the
+function itself is a bit simpler and lets us avoid the
+compat_alloc_user_space() call.
+
+Link: https://lkml.kernel.org/r/20210727144859.4150043-4-arnd@kernel.org
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Feng Tang <feng.tang@intel.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/migrate.c |   45 ++++++++++++++++++++++++++++++---------------
+ 1 file changed, 30 insertions(+), 15 deletions(-)
+
+--- a/mm/migrate.c~mm-simplify-compat_sys_move_pages
++++ a/mm/migrate.c
+@@ -1899,6 +1899,23 @@ set_status:
+ 	mmap_read_unlock(mm);
+ }
+ 
++static int get_compat_pages_array(const void __user *chunk_pages[],
++				  const void __user * __user *pages,
++				  unsigned long chunk_nr)
++{
++	compat_uptr_t __user *pages32 = (compat_uptr_t __user *)pages;
++	compat_uptr_t p;
++	int i;
++
++	for (i = 0; i < chunk_nr; i++) {
++		if (get_user(p, pages32 + i))
++			return -EFAULT;
++		chunk_pages[i] = compat_ptr(p);
++	}
++
++	return 0;
++}
++
+ /*
+  * Determine the nodes of a user array of pages and store it in
+  * a user array of status.
+@@ -1918,8 +1935,15 @@ static int do_pages_stat(struct mm_struc
+ 		if (chunk_nr > DO_PAGES_STAT_CHUNK_NR)
+ 			chunk_nr = DO_PAGES_STAT_CHUNK_NR;
+ 
+-		if (copy_from_user(chunk_pages, pages, chunk_nr * sizeof(*chunk_pages)))
+-			break;
++		if (in_compat_syscall()) {
++			if (get_compat_pages_array(chunk_pages, pages,
++						   chunk_nr))
++				break;
++		} else {
++			if (copy_from_user(chunk_pages, pages,
++				      chunk_nr * sizeof(*chunk_pages)))
++				break;
++		}
+ 
+ 		do_pages_stat_array(mm, chunk_nr, chunk_pages, chunk_status);
+ 
+@@ -2024,23 +2048,14 @@ SYSCALL_DEFINE6(move_pages, pid_t, pid,
+ 
+ #ifdef CONFIG_COMPAT
+ COMPAT_SYSCALL_DEFINE6(move_pages, pid_t, pid, compat_ulong_t, nr_pages,
+-		       compat_uptr_t __user *, pages32,
++		       compat_uptr_t __user *, pages,
+ 		       const int __user *, nodes,
+ 		       int __user *, status,
+ 		       int, flags)
+ {
+-	const void __user * __user *pages;
+-	int i;
+-
+-	pages = compat_alloc_user_space(nr_pages * sizeof(void *));
+-	for (i = 0; i < nr_pages; i++) {
+-		compat_uptr_t p;
+-
+-		if (get_user(p, pages32 + i) ||
+-			put_user(compat_ptr(p), pages + i))
+-			return -EFAULT;
+-	}
+-	return kernel_move_pages(pid, nr_pages, pages, nodes, status, flags);
++	return kernel_move_pages(pid, nr_pages,
++				 (const void __user *__user *)pages,
++				 nodes, status, flags);
+ }
+ #endif /* CONFIG_COMPAT */
+ 
+_

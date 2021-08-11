@@ -1,0 +1,142 @@
+From: Toshiki Fukasawa <t-fukasawa@vx.jp.nec.com>
+Subject: /proc/kpageflags: do not use uninitialized struct pages
+
+A kernel panic was observed during reading /proc/kpageflags for first few
+pfns allocated by pmem namespace:
+
+BUG: unable to handle page fault for address: fffffffffffffffe
+[  114.495280] #PF: supervisor read access in kernel mode
+[  114.495738] #PF: error_code(0x0000) - not-present page
+[  114.496203] PGD 17120e067 P4D 17120e067 PUD 171210067 PMD 0
+[  114.496713] Oops: 0000 [#1] SMP PTI
+[  114.497037] CPU: 9 PID: 1202 Comm: page-types Not tainted 5.3.0-rc1 #1
+[  114.497621] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.11.0-0-g63451fca13-prebuilt.qemu-project.org 04/01/2014
+[  114.498706] RIP: 0010:stable_page_flags+0x27/0x3f0
+[  114.499142] Code: 82 66 90 66 66 66 66 90 48 85 ff 0f 84 d1 03 00 00 41 54 55 48 89 fd 53 48 8b 57 08 48 8b 1f 48 8d 42 ff 83 e2 01 48 0f 44 c7 <48> 8b 00 f6 c4 02 0f 84 57 03 00 00 45 31 e4 48 8b 55 08 48 89 ef
+[  114.500788] RSP: 0018:ffffa5e601a0fe60 EFLAGS: 00010202
+[  114.501373] RAX: fffffffffffffffe RBX: ffffffffffffffff RCX: 0000000000000000
+[  114.502009] RDX: 0000000000000001 RSI: 00007ffca13a7310 RDI: ffffd07489000000
+[  114.502637] RBP: ffffd07489000000 R08: 0000000000000001 R09: 0000000000000000
+[  114.503270] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000240000
+[  114.503896] R13: 0000000000080000 R14: 00007ffca13a7310 R15: ffffa5e601a0ff08
+[  114.504530] FS:  00007f0266c7f540(0000) GS:ffff962dbbac0000(0000) knlGS:0000000000000000
+[  114.505245] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  114.505754] CR2: fffffffffffffffe CR3: 000000023a204000 CR4: 00000000000006e0
+[  114.506401] Call Trace:
+[  114.506660]  kpageflags_read+0xb1/0x130
+[  114.507051]  proc_reg_read+0x39/0x60
+[  114.507387]  vfs_read+0x8a/0x140
+[  114.507686]  ksys_pread64+0x61/0xa0
+[  114.508021]  do_syscall_64+0x5f/0x1a0
+[  114.508372]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[  114.508844] RIP: 0033:0x7f0266ba426b
+
+The reason for the panic is that stable_page_flags() which parses the page
+flags uses uninitialized struct pages reserved by the ZONE_DEVICE driver.
+
+Earlier approach to fix this was discussed here:
+https://marc.info/?l=linux-mm&m=152964770000672&w=2
+
+This is another approach.  To avoid using the uninitialized struct page,
+immediately return with KPF_RESERVED at the beginning of
+stable_page_flags() if the page is reserved by ZONE_DEVICE driver.
+
+Dan said:
+
+: The nvdimm implementation uses vmem_altmap to arrange for the 'struct
+: page' array to be allocated from a reservation of a pmem namespace.  A
+: namespace in this mode contains an info-block that consumes the first
+: 8K of the namespace capacity, capacity designated for page mapping,
+: capacity for padding the start of data to optionally 4K, 2MB, or 1GB
+: (on x86), and then the namespace data itself.  The implementation
+: specifies a section aligned (now sub-section aligned) address to
+: arch_add_memory() to establish the linear mapping to map the metadata,
+: and then vmem_altmap indicates to memmap_init_zone() which pfns
+: represent data.  The implementation only specifies enough 'struct page'
+: capacity for pfn_to_page() to operate on the data space, not the
+: namespace metadata space.
+: 
+: The proposal to validate ZONE_DEVICE pfns against the altmap seems the
+: right approach to me.
+
+Link: http://lkml.kernel.org/r/20190725023100.31141-3-t-fukasawa@vx.jp.nec.com
+Signed-off-by: Toshiki Fukasawa <t-fukasawa@vx.jp.nec.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Junichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/page.c           |    3 +++
+ include/linux/memremap.h |    6 ++++++
+ mm/memremap.c            |   20 ++++++++++++++++++++
+ 3 files changed, 29 insertions(+)
+
+--- a/fs/proc/page.c~proc-kpageflags-do-not-use-uninitialized-struct-pages
++++ a/fs/proc/page.c
+@@ -117,6 +117,9 @@ u64 stable_page_flags(struct page *page)
+ 	if (!page)
+ 		return BIT_ULL(KPF_NOPAGE);
+ 
++	if (pfn_zone_device_reserved(page_to_pfn(page)))
++		return BIT_ULL(KPF_RESERVED);
++
+ 	k = page->flags;
+ 	u = 0;
+ 
+--- a/include/linux/memremap.h~proc-kpageflags-do-not-use-uninitialized-struct-pages
++++ a/include/linux/memremap.h
+@@ -131,6 +131,7 @@ static inline struct vmem_altmap *pgmap_
+ }
+ 
+ #ifdef CONFIG_ZONE_DEVICE
++bool pfn_zone_device_reserved(unsigned long pfn);
+ void *memremap_pages(struct dev_pagemap *pgmap, int nid);
+ void memunmap_pages(struct dev_pagemap *pgmap);
+ void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap);
+@@ -143,6 +144,11 @@ unsigned long vmem_altmap_offset(struct
+ void vmem_altmap_free(struct vmem_altmap *altmap, unsigned long nr_pfns);
+ unsigned long memremap_compat_align(void);
+ #else
++static inline bool pfn_zone_device_reserved(unsigned long pfn)
++{
++	return false;
++}
++
+ static inline void *devm_memremap_pages(struct device *dev,
+ 		struct dev_pagemap *pgmap)
+ {
+--- a/mm/memremap.c~proc-kpageflags-do-not-use-uninitialized-struct-pages
++++ a/mm/memremap.c
+@@ -109,6 +109,26 @@ static unsigned long pfn_next(unsigned l
+ 	return pfn + 1;
+ }
+ 
++/*
++ * This returns true if the page is reserved by ZONE_DEVICE driver.
++ */
++bool pfn_zone_device_reserved(unsigned long pfn)
++{
++	struct dev_pagemap *pgmap;
++	struct vmem_altmap *altmap;
++	bool ret = false;
++
++	pgmap = get_dev_pagemap(pfn, NULL);
++	if (!pgmap)
++		return ret;
++	altmap = pgmap_altmap(pgmap);
++	if (altmap && pfn < (altmap->base_pfn + altmap->reserve))
++		ret = true;
++	put_dev_pagemap(pgmap);
++
++	return ret;
++}
++
+ #define for_each_device_pfn(pfn, map, i) \
+ 	for (pfn = pfn_first(map, i); pfn < pfn_end(map, i); pfn = pfn_next(pfn))
+ 
+_

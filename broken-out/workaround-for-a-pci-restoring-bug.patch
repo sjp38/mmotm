@@ -1,0 +1,42 @@
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: pci: test for unexpectedly disabled bridges
+
+The all-ones value is not just a "device didn't exist" case, it's also
+potentially a quite valid value, so not restoring it would be wrong.
+
+What *would* be interesting is to hear where the bad values came from in
+the first place.  It sounds like the device state is saved after the PCI
+bus controller in front of the device has been crapped on, resulting in the
+PCI config cycles never reaching the device at all.
+
+Something along this patch (together with suspend/resume debugging output)
+migth help pinpoint it.  But it really sounds like something totally
+brokenly turned off the PCI bridge (some ACPI shutdown crud?  I wouldn't be
+entirely surprised)
+
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/pci/pci.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+--- a/drivers/pci/pci.c~workaround-for-a-pci-restoring-bug
++++ a/drivers/pci/pci.c
+@@ -1575,6 +1575,15 @@ static void pci_restore_ltr_state(struct
+ int pci_save_state(struct pci_dev *dev)
+ {
+ 	int i;
++	u32 val;
++
++	/* Unable to read PCI device/manufacturer state? Something is seriously wrong! */
++	if (pci_read_config_dword(dev, 0, &val) || val == 0xffffffff) {
++		printk("Broken read from PCI device %s\n", pci_name(dev));
++		WARN_ON(1);
++		return -1;
++	}
++
+ 	/* XXX: 100% dword access ok here? */
+ 	for (i = 0; i < 16; i++) {
+ 		pci_read_config_dword(dev, i * 4, &dev->saved_config_space[i]);
+_

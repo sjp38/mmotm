@@ -1,0 +1,80 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: mm, slab: make flush_slab() possible to call with irqs enabled
+
+Currently flush_slab() is always called with disabled IRQs if it's needed,
+but the following patches will change that, so add a parameter to control
+IRQ disabling within the function, which only protects the kmem_cache_cpu
+manipulation and not the call to deactivate_slab() which doesn't need it.
+
+Link: https://lkml.kernel.org/r/20210805152000.12817-29-vbabka@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Jann Horn <jannh@google.com>
+Cc: Jesper Dangaard Brouer <brouer@redhat.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/slub.c |   24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+--- a/mm/slub.c~mm-slab-make-flush_slab-possible-to-call-with-irqs-enabled
++++ a/mm/slub.c
+@@ -2480,16 +2480,28 @@ static void put_cpu_partial(struct kmem_
+ #endif	/* CONFIG_SLUB_CPU_PARTIAL */
+ }
+ 
+-static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
++static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c,
++			      bool lock)
+ {
+-	void *freelist = c->freelist;
+-	struct page *page = c->page;
++	unsigned long flags;
++	void *freelist;
++	struct page *page;
++
++	if (lock)
++		local_irq_save(flags);
++
++	freelist = c->freelist;
++	page = c->page;
+ 
+ 	c->page = NULL;
+ 	c->freelist = NULL;
+ 	c->tid = next_tid(c->tid);
+ 
+-	deactivate_slab(s, page, freelist);
++	if (lock)
++		local_irq_restore(flags);
++
++	if (page)
++		deactivate_slab(s, page, freelist);
+ 
+ 	stat(s, CPUSLAB_FLUSH);
+ }
+@@ -2499,7 +2511,7 @@ static inline void __flush_cpu_slab(stru
+ 	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
+ 
+ 	if (c->page)
+-		flush_slab(s, c);
++		flush_slab(s, c, false);
+ 
+ 	unfreeze_partials_cpu(s, c);
+ }
+@@ -2515,7 +2527,7 @@ static void flush_cpu_slab(void *d)
+ 	struct kmem_cache_cpu *c = this_cpu_ptr(s->cpu_slab);
+ 
+ 	if (c->page)
+-		flush_slab(s, c);
++		flush_slab(s, c, false);
+ 
+ 	unfreeze_partials(s);
+ }
+_

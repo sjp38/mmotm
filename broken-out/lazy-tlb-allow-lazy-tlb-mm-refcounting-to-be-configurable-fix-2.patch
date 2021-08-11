@@ -1,0 +1,40 @@
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: lazy-tlb-allow-lazy-tlb-mm-refcounting-to-be-configurable-fix-2
+
+Explain the requirements for lazy tlb mm refcounting in the comment,
+to help with archs that may want to disable this by some means other
+than MMU_LAZY_TLB_SHOOTDOWN.
+
+Link: https://lkml.kernel.org/r/1623121605.j47gdpccep.astroid@bobo.none
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Cc: Anton Blanchard <anton@ozlabs.org>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/Kconfig |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+--- a/arch/Kconfig~lazy-tlb-allow-lazy-tlb-mm-refcounting-to-be-configurable-fix-2
++++ a/arch/Kconfig
+@@ -426,6 +426,16 @@ config ARCH_WANT_IRQS_OFF_ACTIVATE_MM
+ 	  shootdowns should enable this.
+ 
+ # Use normal mm refcounting for MMU_LAZY_TLB kernel thread references.
++# MMU_LAZY_TLB_REFCOUNT=n can improve the scalability of context switching
++# to/from kernel threads when the same mm is running on a lot of CPUs (a large
++# multi-threaded application), by reducing contention on the mm refcount.
++#
++# This can be disabled if the architecture ensures no CPUs are using an mm as a
++# "lazy tlb" beyond its final refcount (i.e., by the time __mmdrop frees the mm
++# or its kernel page tables). This could be arranged by arch_exit_mmap(), or
++# final exit(2) TLB flush, for example. arch code must also ensure the
++# _lazy_tlb variants of mmgrab/mmdrop are used when dropping the lazy reference
++# to a kthread ->active_mm (non-arch code has been converted already).
+ config MMU_LAZY_TLB_REFCOUNT
+ 	def_bool y
+ 
+_

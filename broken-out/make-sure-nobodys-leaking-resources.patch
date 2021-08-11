@@ -1,0 +1,38 @@
+From: Matthew Wilcox <matthew@wil.cx>
+Subject: Make sure nobody's leaking resources
+
+Currently, releasing a resource also releases all of its children.  That
+made sense when request_resource was the main method of dividing up the
+memory map.  With the increased use of insert_resource, it seems to me that
+we should instead reparent the newly orphaned resources.  Before we do
+that, let's make sure that nobody's actually relying on the current
+semantics.
+
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+Cc: Greg KH <greg@kroah.com>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/resource.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- a/kernel/resource.c~make-sure-nobodys-leaking-resources
++++ a/kernel/resource.c
+@@ -213,6 +213,14 @@ static int __release_resource(struct res
+ {
+ 	struct resource *tmp, **p, *chd;
+ 
++	if (old->child) {
++		static int warned;
++		if (warned < 5) {
++			warned++;
++			WARN_ON(1);
++		}
++	}
++
+ 	p = &old->parent->child;
+ 	for (;;) {
+ 		tmp = *p;
+_

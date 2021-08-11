@@ -1,0 +1,28 @@
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: percpu: remove export of pcpu_base_addr
+
+This is not needed by any modules, so remove the export.
+
+Link: https://lkml.kernel.org/r/20210722185814.504541-1-gregkh@linuxfoundation.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Christoph Lameter <cl@linux.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/percpu.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/mm/percpu.c~percpu-remove-export-of-pcpu_base_addr
++++ a/mm/percpu.c
+@@ -146,7 +146,6 @@ static unsigned int pcpu_high_unit_cpu _
+ 
+ /* the address of the first chunk which starts with the kernel static area */
+ void *pcpu_base_addr __ro_after_init;
+-EXPORT_SYMBOL_GPL(pcpu_base_addr);
+ 
+ static const int *pcpu_unit_map __ro_after_init;		/* cpu -> unit */
+ const unsigned long *pcpu_unit_offsets __ro_after_init;	/* cpu -> unit offset */
+_

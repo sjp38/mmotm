@@ -1,0 +1,31 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-damon-implement-a-debugfs-based-user-space-interface-fix
+
+remove unneeded "alloc failed" printks
+
+Cc: SeongJae Park <sjpark@amazon.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/dbgfs.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/mm/damon/dbgfs.c~mm-damon-implement-a-debugfs-based-user-space-interface-fix
++++ a/mm/damon/dbgfs.c
+@@ -373,14 +373,11 @@ static int __init damon_dbgfs_init(void)
+ 	int rc;
+ 
+ 	dbgfs_ctxs = kmalloc(sizeof(*dbgfs_ctxs), GFP_KERNEL);
+-	if (!dbgfs_ctxs) {
+-		pr_err("%s: dbgfs ctxs alloc failed\n", __func__);
++	if (!dbgfs_ctxs)
+ 		return -ENOMEM;
+-	}
+ 	dbgfs_ctxs[0] = dbgfs_new_ctx();
+ 	if (!dbgfs_ctxs[0]) {
+ 		kfree(dbgfs_ctxs);
+-		pr_err("%s: dbgfs ctx alloc failed\n", __func__);
+ 		return -ENOMEM;
+ 	}
+ 	dbgfs_nr_ctxs = 1;
+_

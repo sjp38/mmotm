@@ -1,0 +1,43 @@
+From: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
+Subject: mm: KSM: fix data type
+
+ksm_stable_node_chains_prune_millisecs is declared as int, but in
+stable__node_chains_prune_millisecs_store(), it can store values up to
+UINT_MAX.  Change its type to unsigned int.
+
+Link: https://lkml.kernel.org/r/20210806111351.GA71845@asus
+Signed-off-by: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
+Cc: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/ksm.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/mm/ksm.c~mm-ksm-fix-data-type
++++ a/mm/ksm.c
+@@ -259,7 +259,7 @@ static unsigned long ksm_stable_node_cha
+ static unsigned long ksm_stable_node_dups;
+ 
+ /* Delay in pruning stale stable_node_dups in the stable_node_chains */
+-static int ksm_stable_node_chains_prune_millisecs = 2000;
++static unsigned int ksm_stable_node_chains_prune_millisecs = 2000;
+ 
+ /* Maximum number of page slots sharing a stable node */
+ static int ksm_max_page_sharing = 256;
+@@ -3105,11 +3105,11 @@ stable_node_chains_prune_millisecs_store
+ 					 struct kobj_attribute *attr,
+ 					 const char *buf, size_t count)
+ {
+-	unsigned long msecs;
++	unsigned int msecs;
+ 	int err;
+ 
+-	err = kstrtoul(buf, 10, &msecs);
+-	if (err || msecs > UINT_MAX)
++	err = kstrtouint(buf, 10, &msecs);
++	if (err)
+ 		return -EINVAL;
+ 
+ 	ksm_stable_node_chains_prune_millisecs = msecs;
+_
