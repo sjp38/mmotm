@@ -11,9 +11,12 @@ to=$2
 
 diff_output=$(git diff "$from".."$to" --name-status | grep broken-out/)
 
-dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out')
-added=$(echo "$diff_output" | grep '^A' | grep 'broken-out')
-modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out')
+dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out/' | \
+	awk -F'broken-out/' '{print $2}')
+added=$(echo "$diff_output" | grep '^A' | grep 'broken-out/' | \
+	awk -F'broken-out/' '{print $2}')
+modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out/' | \
+	awk -F'broken-out/' '{print $2}')
 
 echo "Dropped"
 echo "----"
