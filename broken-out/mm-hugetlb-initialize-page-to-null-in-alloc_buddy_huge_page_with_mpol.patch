@@ -1,0 +1,48 @@
+From: Nathan Chancellor <nathan@kernel.org>
+Subject: mm/hugetlb: Initialize page to NULL in alloc_buddy_huge_page_with_mpol()
+
+Clang warns:
+
+mm/hugetlb.c:2162:6: warning: variable 'page' is used uninitialized
+whenever 'if' condition is false [-Wsometimes-uninitialized]
+        if (mpol_is_preferred_many(mpol)) {
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mm/hugetlb.c:2172:7: note: uninitialized use occurs here
+        if (!page)
+             ^~~~
+mm/hugetlb.c:2162:2: note: remove the 'if' if its condition is always
+true
+        if (mpol_is_preferred_many(mpol)) {
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+mm/hugetlb.c:2155:19: note: initialize the variable 'page' to silence
+this warning
+        struct page *page;
+                         ^
+                          = NULL
+1 warning generated.
+
+Initialize page to NULL like in dequeue_huge_page_vma() so that page is
+not used uninitialized.
+
+Link: https://lkml.kernel.org/r/20210810200632.3812797-1-nathan@kernel.org
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Feng Tang <feng.tang@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/hugetlb.c~mm-hugetlb-initialize-page-to-null-in-alloc_buddy_huge_page_with_mpol
++++ a/mm/hugetlb.c
+@@ -2088,7 +2088,7 @@ static
+ struct page *alloc_buddy_huge_page_with_mpol(struct hstate *h,
+ 		struct vm_area_struct *vma, unsigned long addr)
+ {
+-	struct page *page;
++	struct page *page = NULL;
+ 	struct mempolicy *mpol;
+ 	gfp_t gfp_mask = htlb_alloc_mask(h);
+ 	int nid;
+_

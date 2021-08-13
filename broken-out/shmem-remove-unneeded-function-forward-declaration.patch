@@ -1,0 +1,28 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: shmem: remove unneeded function forward declaration
+
+The forward declaration for shmem_should_replace_page() and
+shmem_replace_page() is unnecessary.  Remove them.
+
+Link: https://lkml.kernel.org/r/20210812120350.49801-4-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/shmem.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/mm/shmem.c~shmem-remove-unneeded-function-forward-declaration
++++ a/mm/shmem.c
+@@ -135,9 +135,6 @@ static unsigned long shmem_default_max_i
+ }
+ #endif
+ 
+-static bool shmem_should_replace_page(struct page *page, gfp_t gfp);
+-static int shmem_replace_page(struct page **pagep, gfp_t gfp,
+-				struct shmem_inode_info *info, pgoff_t index);
+ static int shmem_swapin_page(struct inode *inode, pgoff_t index,
+ 			     struct page **pagep, enum sgp_type sgp,
+ 			     gfp_t gfp, struct vm_area_struct *vma,
+_

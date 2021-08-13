@@ -11,13 +11,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  mm/page-writeback.c        |  145 ++++++++++++++++++++---------------
  5 files changed, 174 insertions(+), 125 deletions(-)
 
---- /dev/null
+--- a/drivers/net/mctp/Makefile~linux-next-rejects
 +++ a/drivers/net/mctp/Makefile
 @@ -0,0 +1 @@
 +#dummy
 --- a/include/linux/memcontrol.h~linux-next-rejects
 +++ a/include/linux/memcontrol.h
-@@ -704,26 +704,25 @@ static inline bool mem_cgroup_below_min(
+@@ -692,26 +692,25 @@ static inline bool mem_cgroup_below_min(
  		page_counter_read(&memcg->memory);
  }
  
@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  void __mem_cgroup_uncharge_list(struct list_head *page_list);
-@@ -734,7 +733,7 @@ static inline void mem_cgroup_uncharge_l
+@@ -722,7 +721,7 @@ static inline void mem_cgroup_uncharge_l
  	__mem_cgroup_uncharge_list(page_list);
  }
  
@@ -149,7 +149,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* _LINUX_MM_PAGE_IDLE_H */
 --- a/mm/memcontrol.c~linux-next-rejects
 +++ a/mm/memcontrol.c
-@@ -6678,9 +6678,10 @@ void mem_cgroup_calculate_protection(str
+@@ -6679,9 +6679,10 @@ void mem_cgroup_calculate_protection(str
  			atomic_long_read(&parent->memory.children_low_usage)));
  }
  
@@ -162,7 +162,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int ret;
  
  	ret = try_charge(memcg, gfp, nr_pages);
-@@ -6688,38 +6689,37 @@ static int charge_memcg(struct page *pag
+@@ -6689,38 +6690,37 @@ static int charge_memcg(struct page *pag
  		goto out;
  
  	css_get(&memcg->css);
@@ -214,7 +214,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	css_put(&memcg->css);
  
  	return ret;
-@@ -6755,7 +6755,7 @@ int mem_cgroup_swapin_charge_page(struct
+@@ -6756,7 +6756,7 @@ int mem_cgroup_swapin_charge_page(struct
  		memcg = get_mem_cgroup_from_mm(mm);
  	rcu_read_unlock();
  
@@ -223,7 +223,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	css_put(&memcg->css);
  	return ret;
-@@ -6884,28 +6884,28 @@ static void uncharge_folio(struct folio
+@@ -6885,28 +6885,28 @@ static void uncharge_folio(struct folio
  			ug->nr_memory += nr_pages;
  		ug->pgpgout++;
  
@@ -260,7 +260,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	uncharge_batch(&ug);
  }
  
-@@ -6919,52 +6919,49 @@ void __mem_cgroup_uncharge(struct page *
+@@ -6920,52 +6920,49 @@ void __mem_cgroup_uncharge(struct page *
  void __mem_cgroup_uncharge_list(struct list_head *page_list)
  {
  	struct uncharge_gather ug;
@@ -333,7 +333,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		if (do_memsw_account())
 --- a/mm/page-writeback.c~linux-next-rejects
 +++ a/mm/page-writeback.c
-@@ -2730,48 +2730,49 @@ bool folio_clear_dirty_for_io(struct fol
+@@ -2728,48 +2728,49 @@ bool folio_clear_dirty_for_io(struct fol
  		 * We use this sequence to make sure that
  		 *  (a) we account for dirty stats properly
  		 *  (b) we tell the low-level filesystem to
@@ -398,7 +398,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static void wb_inode_writeback_start(struct bdi_writeback *wb)
  {
-@@ -2791,27 +2792,28 @@ static void wb_inode_writeback_end(struc
+@@ -2789,27 +2790,28 @@ static void wb_inode_writeback_end(struc
  	queue_delayed_work(bdi_wq, &wb->bw_dwork, BANDWIDTH_INTERVAL);
  }
  
@@ -435,7 +435,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				if (!mapping_tagged(mapping,
  						    PAGECACHE_TAG_WRITEBACK))
  					wb_inode_writeback_end(wb);
-@@ -2862,84 +2864,105 @@ bool __folio_start_writeback(struct foli
+@@ -2860,84 +2862,105 @@ bool __folio_start_writeback(struct foli
  			if (bdi->capabilities & BDI_CAP_WRITEBACK_ACCT) {
  				struct bdi_writeback *wb = inode_to_wb(inode);
  

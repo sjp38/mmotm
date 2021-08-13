@@ -1,0 +1,26 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: mm, slub: fix memory and cpu hotplug related lock ordering issues - fix
+
+Make __kmem_cache_do_shrink static to silence "no previous prototype" warning.
+
+Link: https://lkml.kernel.org/r/60e50d8c-ccfa-1036-5a03-2b1a9d25f958@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/slub.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/slub.c~mm-slub-move-flush_cpu_slab-invocations-__free_slab-invocations-out-of-irq-context-fix-2
++++ a/mm/slub.c
+@@ -4396,7 +4396,7 @@ EXPORT_SYMBOL(kfree);
+  * being allocated from last increasing the chance that the last objects
+  * are freed in them.
+  */
+-int __kmem_cache_do_shrink(struct kmem_cache *s)
++static int __kmem_cache_do_shrink(struct kmem_cache *s)
+ {
+ 	int node;
+ 	int i;
+_

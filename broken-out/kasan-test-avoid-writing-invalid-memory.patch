@@ -1,0 +1,86 @@
+From: Andrey Konovalov <andreyknvl@gmail.com>
+Subject: kasan: test: avoid writing invalid memory
+
+Multiple KASAN tests do writes past the allocated objects or writes to
+freed memory.  Turn these writes into reads to avoid corrupting memory. 
+Otherwise, these tests might lead to crashes with the HW_TAGS mode, as it
+neither uses quarantine nor redzones.
+
+Link: https://lkml.kernel.org/r/c3cd2a383e757e27dd9131635fc7d09a48a49cf9.1628779805.git.andreyknvl@gmail.com
+Signed-off-by: Andrey Konovalov <andreyknvl@gmail.com>
+Reviewed-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/test_kasan.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+--- a/lib/test_kasan.c~kasan-test-avoid-writing-invalid-memory
++++ a/lib/test_kasan.c
+@@ -167,7 +167,7 @@ static void kmalloc_node_oob_right(struc
+ 	ptr = kmalloc_node(size, GFP_KERNEL, 0);
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+ 
+-	KUNIT_EXPECT_KASAN_FAIL(test, ptr[size] = 0);
++	KUNIT_EXPECT_KASAN_FAIL(test, ptr[0] = ptr[size]);
+ 	kfree(ptr);
+ }
+ 
+@@ -203,7 +203,7 @@ static void kmalloc_pagealloc_uaf(struct
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+ 	kfree(ptr);
+ 
+-	KUNIT_EXPECT_KASAN_FAIL(test, ptr[0] = 0);
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[0]);
+ }
+ 
+ static void kmalloc_pagealloc_invalid_free(struct kunit *test)
+@@ -237,7 +237,7 @@ static void pagealloc_oob_right(struct k
+ 	ptr = page_address(pages);
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+ 
+-	KUNIT_EXPECT_KASAN_FAIL(test, ptr[size] = 0);
++	KUNIT_EXPECT_KASAN_FAIL(test, ptr[0] = ptr[size]);
+ 	free_pages((unsigned long)ptr, order);
+ }
+ 
+@@ -252,7 +252,7 @@ static void pagealloc_uaf(struct kunit *
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+ 	free_pages((unsigned long)ptr, order);
+ 
+-	KUNIT_EXPECT_KASAN_FAIL(test, ptr[0] = 0);
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[0]);
+ }
+ 
+ static void kmalloc_large_oob_right(struct kunit *test)
+@@ -514,7 +514,7 @@ static void kmalloc_uaf(struct kunit *te
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+ 
+ 	kfree(ptr);
+-	KUNIT_EXPECT_KASAN_FAIL(test, *(ptr + 8) = 'x');
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[8]);
+ }
+ 
+ static void kmalloc_uaf_memset(struct kunit *test)
+@@ -553,7 +553,7 @@ again:
+ 		goto again;
+ 	}
+ 
+-	KUNIT_EXPECT_KASAN_FAIL(test, ptr1[40] = 'x');
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr1)[40]);
+ 	KUNIT_EXPECT_PTR_NE(test, ptr1, ptr2);
+ 
+ 	kfree(ptr2);
+@@ -700,7 +700,7 @@ static void ksize_unpoisons_memory(struc
+ 	ptr[size] = 'x';
+ 
+ 	/* This one must. */
+-	KUNIT_EXPECT_KASAN_FAIL(test, ptr[real_size] = 'y');
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[real_size]);
+ 
+ 	kfree(ptr);
+ }
+_

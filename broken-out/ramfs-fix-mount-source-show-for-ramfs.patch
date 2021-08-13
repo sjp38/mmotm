@@ -1,0 +1,35 @@
+From: yangerkun <yangerkun@huawei.com>
+Subject: ramfs: fix mount source show for ramfs
+
+ramfs_parse_param does not parse the key "source", and will convert
+-ENOPARAM to 0.  This will skip calling vfs_parse_fs_param_source() in
+vfs_parse_fs_param(), which leads to always presenting "none" as the mount
+source for ramfs.  Fix it by parsing "source" in ramfs_parse_param().
+
+Link: https://lkml.kernel.org/r/20210811122811.2288041-1-yangerkun@huawei.com
+Signed-off-by: yangerkun <yangerkun@huawei.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Yu Kuai <yukuai3@huawei.com>
+Cc: ErKun Yang <yangerkun@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/ramfs/inode.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/fs/ramfs/inode.c~ramfs-fix-mount-source-show-for-ramfs
++++ a/fs/ramfs/inode.c
+@@ -202,6 +202,10 @@ static int ramfs_parse_param(struct fs_c
+ 	struct ramfs_fs_info *fsi = fc->s_fs_info;
+ 	int opt;
+ 
++	opt = vfs_parse_fs_param_source(fc, param);
++	if (opt != -ENOPARAM)
++		return opt;
++
+ 	opt = fs_parse(fc, ramfs_fs_parameters, param, &result);
+ 	if (opt < 0) {
+ 		/*
+_

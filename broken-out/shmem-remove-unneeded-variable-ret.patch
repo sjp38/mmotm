@@ -1,0 +1,45 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: shmem: remove unneeded variable ret
+
+Patch series "Cleanups for shmem".
+
+This series contains cleanups to remove unneeded variable, header file,
+function forward declaration and so on.  More details can be found in the
+respective changelogs.
+
+
+This patch (of 4):
+
+The local variable ret is always equal to -ENOMEM and never touched.  So
+remove it and return -ENOMEM directly to simplify the code.
+
+Link: https://lkml.kernel.org/r/20210812120350.49801-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20210812120350.49801-2-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/shmem.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/shmem.c~shmem-remove-unneeded-variable-ret
++++ a/mm/shmem.c
+@@ -3616,7 +3616,6 @@ static int shmem_fill_super(struct super
+ 	struct shmem_options *ctx = fc->fs_private;
+ 	struct inode *inode;
+ 	struct shmem_sb_info *sbinfo;
+-	int err = -ENOMEM;
+ 
+ 	/* Round up to L1_CACHE_BYTES to resist false sharing */
+ 	sbinfo = kzalloc(max((int)sizeof(struct shmem_sb_info),
+@@ -3694,7 +3693,7 @@ static int shmem_fill_super(struct super
+ 
+ failed:
+ 	shmem_put_super(sb);
+-	return err;
++	return -ENOMEM;
+ }
+ 
+ static int shmem_get_tree(struct fs_context *fc)
+_

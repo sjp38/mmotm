@@ -1,0 +1,35 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: shmem: include header file to declare swap_info
+
+It's bad to extern swap_info[] in .c.  Include corresponding header file
+instead.
+
+Link: https://lkml.kernel.org/r/20210812120350.49801-5-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/shmem.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/shmem.c~shmem-include-header-file-to-declare-swap_info
++++ a/mm/shmem.c
+@@ -38,6 +38,7 @@
+ #include <linux/hugetlb.h>
+ #include <linux/frontswap.h>
+ #include <linux/fs_parser.h>
++#include <linux/swapfile.h>
+ 
+ static struct vfsmount *shm_mnt;
+ 
+@@ -1152,8 +1153,6 @@ static void shmem_evict_inode(struct ino
+ 	clear_inode(inode);
+ }
+ 
+-extern struct swap_info_struct *swap_info[];
+-
+ static int shmem_find_swap_entries(struct address_space *mapping,
+ 				   pgoff_t start, unsigned int nr_entries,
+ 				   struct page **entries, pgoff_t *indices,
+_

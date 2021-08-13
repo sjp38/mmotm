@@ -1,0 +1,36 @@
+From: Andrey Konovalov <andreyknvl@gmail.com>
+Subject: kasan: test: clean up ksize_uaf
+
+Some KASAN tests use global variables to store function returns values so
+that the compiler doesn't optimize away these functions.
+
+ksize_uaf() doesn't call any functions, so it doesn't need to use
+kasan_int_result.  Use volatile accesses instead, to be consistent with
+other similar tests.
+
+Link: https://lkml.kernel.org/r/a1fc34faca4650f4a6e4dfb3f8d8d82c82eb953a.1628779805.git.andreyknvl@gmail.com
+Signed-off-by: Andrey Konovalov <andreyknvl@gmail.com>
+Reviewed-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/test_kasan.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/lib/test_kasan.c~kasan-test-clean-up-ksize_uaf
++++ a/lib/test_kasan.c
+@@ -737,8 +737,8 @@ static void ksize_uaf(struct kunit *test
+ 	kfree(ptr);
+ 
+ 	KUNIT_EXPECT_KASAN_FAIL(test, ksize(ptr));
+-	KUNIT_EXPECT_KASAN_FAIL(test, kasan_int_result = *ptr);
+-	KUNIT_EXPECT_KASAN_FAIL(test, kasan_int_result = *(ptr + size));
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[0]);
++	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[size]);
+ }
+ 
+ static void kasan_stack_oob(struct kunit *test)
+_

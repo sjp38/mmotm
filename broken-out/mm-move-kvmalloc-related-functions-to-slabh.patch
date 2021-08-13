@@ -15,9 +15,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
  drivers/of/kexec.c   |    1 +
- include/linux/mm.h   |   32 --------------------------------
- include/linux/slab.h |   32 ++++++++++++++++++++++++++++++++
- 3 files changed, 33 insertions(+), 32 deletions(-)
+ include/linux/mm.h   |   34 ----------------------------------
+ include/linux/slab.h |   34 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 35 insertions(+), 34 deletions(-)
 
 --- a/drivers/of/kexec.c~mm-move-kvmalloc-related-functions-to-slabh
 +++ a/drivers/of/kexec.c
@@ -28,10 +28,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +#include <linux/slab.h>
  #include <linux/types.h>
  
- /* relevant device tree properties */
+ #define RNG_SEED_SIZE		128
 --- a/include/linux/mm.h~mm-move-kvmalloc-related-functions-to-slabh
 +++ a/include/linux/mm.h
-@@ -800,38 +800,6 @@ static inline int is_vmalloc_or_module_a
+@@ -795,40 +795,6 @@ static inline int is_vmalloc_or_module_a
  }
  #endif
  
@@ -64,6 +64,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -	return kvmalloc_array(n, size, flags | __GFP_ZERO);
 -}
 -
+-extern void *kvrealloc(const void *p, size_t oldsize, size_t newsize,
+-		gfp_t flags);
 -extern void kvfree(const void *addr);
 -extern void kvfree_sensitive(const void *addr, size_t len);
 -
@@ -72,11 +74,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return atomic_read(compound_mapcount_ptr(head)) + 1;
 --- a/include/linux/slab.h~mm-move-kvmalloc-related-functions-to-slabh
 +++ a/include/linux/slab.h
-@@ -732,6 +732,38 @@ static inline void *kzalloc_node(size_t
+@@ -732,6 +732,40 @@ static inline void *kzalloc_node(size_t
  	return kmalloc_node(size, flags | __GFP_ZERO, node);
  }
  
-+void *kvmalloc_node(size_t size, gfp_t flags, int node);
++extern void *kvmalloc_node(size_t size, gfp_t flags, int node);
 +static inline void *kvmalloc(size_t size, gfp_t flags)
 +{
 +	return kvmalloc_node(size, flags, NUMA_NO_NODE);
@@ -105,8 +107,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	return kvmalloc_array(n, size, flags | __GFP_ZERO);
 +}
 +
-+void kvfree(const void *addr);
-+void kvfree_sensitive(const void *addr, size_t len);
++extern void *kvrealloc(const void *p, size_t oldsize, size_t newsize,
++		gfp_t flags);
++extern void kvfree(const void *addr);
++extern void kvfree_sensitive(const void *addr, size_t len);
 +
  unsigned int kmem_cache_size(struct kmem_cache *s);
  void __init kmem_cache_init_late(void);
