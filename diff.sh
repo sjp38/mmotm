@@ -51,6 +51,14 @@ do
 	esac
 done
 
+if [ "$from" = "" ] && [ "$to" = "" ]
+then
+	last_change=$(git log --oneline -- broken-out/ | head -n 1 | \
+		awk '{print $1}')
+	from="$last_change^"
+	to="$last_change"
+fi
+
 diff_output=$(git diff "$from".."$to" --name-status | grep broken-out/)
 
 dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out/' | \
