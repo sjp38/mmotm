@@ -6,6 +6,7 @@ pr_usage() {
 	echo "OPTION"
 	echo "  --from <commit>	start point of the diff"
 	echo "  --to <commit>	end point of the diff"
+	echo "  -h, --help	show this usage"
 }
 
 pr_usage_exit() {
@@ -37,6 +38,9 @@ do
 		to=$2
 		shift 2
 		continue
+		;;
+	"--help" | "-h")
+		pr_usage_exit 0
 		;;
 	*)
 		if [ $# -ne 0 ]
