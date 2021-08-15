@@ -1,13 +1,51 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]
-then
-	echo "Usage: $0 <from> <to>"
-	exit 1
-fi
+pr_usage() {
+	echo "Usage: $0 [OPTION]..."
+	echo
+	echo "OPTION"
+	echo "  --from <commit>	start point of the diff"
+	echo "  --to <commit>	end point of the diff"
+}
 
-from=$1
-to=$2
+pr_usage_exit() {
+	exit_code=$1
+
+	pr_usage
+	exit "$exit_code"
+}
+
+while [ $# -ne 0 ]
+do
+	case $1 in
+	"--from")
+		if [ $# -lt 2 ]
+		then
+			echo "<commit> not given"
+			pr_usage_exit 1
+		fi
+		from=$2
+		shift 2
+		continue
+		;;
+	"--to")
+		if [ $# -lt 2 ]
+		then
+			echo "<commit> not given"
+			pr_usage_exit 1
+		fi
+		to=$2
+		shift 2
+		continue
+		;;
+	*)
+		if [ $# -ne 0 ]
+		then
+			pr_usage_exit 1
+		fi
+		;;
+	esac
+done
 
 diff_output=$(git diff "$from".."$to" --name-status | grep broken-out/)
 
