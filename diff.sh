@@ -72,7 +72,7 @@ from_date=$(git show -s --format=%ci $from)
 to_date=$(git show -s --format=%ci $to)
 
 echo "Dropped"
-echo "----"
+echo "-------"
 echo
 echo "$dropped"
 echo
