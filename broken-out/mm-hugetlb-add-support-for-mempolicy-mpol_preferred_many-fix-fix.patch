@@ -34,9 +34,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  mm/hugetlb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/hugetlb.c~mm-hugetlb-initialize-page-to-null-in-alloc_buddy_huge_page_with_mpol
+--- a/mm/hugetlb.c~mm-hugetlb-add-support-for-mempolicy-mpol_preferred_many-fix-fix
 +++ a/mm/hugetlb.c
-@@ -2088,7 +2088,7 @@ static
+@@ -2152,7 +2152,7 @@ static
  struct page *alloc_buddy_huge_page_with_mpol(struct hstate *h,
  		struct vm_area_struct *vma, unsigned long addr)
  {

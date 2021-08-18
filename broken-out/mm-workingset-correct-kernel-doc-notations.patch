@@ -13,8 +13,8 @@ Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/workingset.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/workingset.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/mm/workingset.c~mm-workingset-correct-kernel-doc-notations
 +++ a/mm/workingset.c
@@ -27,13 +27,4 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * of the evicted @page so that a later refault can be detected.
   */
  void *workingset_eviction(struct page *page, struct mem_cgroup *target_memcg)
-@@ -274,7 +274,7 @@ void *workingset_eviction(struct page *p
- 
- /**
-  * workingset_refault - evaluate the refault of a previously evicted folio
-- * @page: the freshly allocated replacement folio
-+ * @folio: the freshly allocated replacement folio
-  * @shadow: shadow entry of the evicted folio
-  *
-  * Calculates and evaluates the refault distance of the previously
 _

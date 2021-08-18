@@ -1,0 +1,47 @@
+From: Yury Norov <yury.norov@gmail.com>
+Subject: find: micro-optimize for_each_{set,clear}_bit()
+
+The macros iterate thru all set/clear bits in a bitmap.  They search a
+first bit using find_first_bit(), and the rest bits using find_next_bit().
+
+Since find_next_bit() is called shortly after find_first_bit(), we can
+save few lines of I-cache by not using find_first_bit().
+
+Link: https://lkml.kernel.org/r/20210814211713.180533-12-yury.norov@gmail.com
+Signed-off-by: Yury Norov <yury.norov@gmail.com>
+Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Alexander Lobakin <alobakin@pm.me>
+Cc: Alexey Klimov <aklimov@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: kernel test robot <lkp@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/find.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/include/linux/find.h~find-micro-optimize-for_each_setclear_bit
++++ a/include/linux/find.h
+@@ -280,7 +280,7 @@ unsigned long find_next_bit_le(const voi
+ #endif
+ 
+ #define for_each_set_bit(bit, addr, size) \
+-	for ((bit) = find_first_bit((addr), (size));		\
++	for ((bit) = find_next_bit((addr), (size), 0);		\
+ 	     (bit) < (size);					\
+ 	     (bit) = find_next_bit((addr), (size), (bit) + 1))
+ 
+@@ -291,7 +291,7 @@ unsigned long find_next_bit_le(const voi
+ 	     (bit) = find_next_bit((addr), (size), (bit) + 1))
+ 
+ #define for_each_clear_bit(bit, addr, size) \
+-	for ((bit) = find_first_zero_bit((addr), (size));	\
++	for ((bit) = find_next_zero_bit((addr), (size), 0);	\
+ 	     (bit) < (size);					\
+ 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
+ 
+_

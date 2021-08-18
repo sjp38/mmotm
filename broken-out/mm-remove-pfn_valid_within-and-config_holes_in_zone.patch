@@ -216,7 +216,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		page = pfn_to_page(pfn);
  		if (!PageBuddy(page)) {
  			/*
-@@ -8827,9 +8810,6 @@ struct page *has_unmovable_pages(struct
+@@ -8828,9 +8811,6 @@ struct page *has_unmovable_pages(struct
  	}
  
  	for (; iter < pageblock_nr_pages - offset; iter++) {

@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  							&cc->migratepages);
 --- a/mm/gup.c~mm-migrate-enable-returning-precise-migrate_pages-success-count
 +++ a/mm/gup.c
-@@ -1771,7 +1771,7 @@ static long check_and_migrate_movable_pa
+@@ -1772,7 +1772,7 @@ static long check_and_migrate_movable_pa
  	if (!list_empty(&movable_page_list)) {
  		ret = migrate_pages(&movable_page_list, alloc_migration_target,
  				    NULL, (unsigned long)&mtc, MIGRATE_SYNC,
@@ -173,7 +173,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			list_del(&page->lru);
 --- a/mm/page_alloc.c~mm-migrate-enable-returning-precise-migrate_pages-success-count
 +++ a/mm/page_alloc.c
-@@ -8989,7 +8989,7 @@ static int __alloc_contig_migrate_range(
+@@ -8990,7 +8990,7 @@ static int __alloc_contig_migrate_range(
  		cc->nr_migratepages -= nr_reclaimed;
  
  		ret = migrate_pages(&cc->migratepages, alloc_migration_target,

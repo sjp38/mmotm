@@ -1,0 +1,74 @@
+From: Yury Norov <yury.norov@gmail.com>
+Subject: bitops: replace for_each_*_bit_from() with for_each_*_bit() where appropriate
+
+A couple of kernel functions call for_each_*_bit_from() with start bit
+equal to 0.  Replace them with for_each_*_bit().
+
+No functional changes, but might improve on readability.
+
+Link: https://lkml.kernel.org/r/20210814211713.180533-13-yury.norov@gmail.com
+Signed-off-by: Yury Norov <yury.norov@gmail.com>
+Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Alexander Lobakin <alobakin@pm.me>
+Cc: Alexey Klimov <aklimov@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: kernel test robot <lkp@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/kernel/apic/vector.c         |    4 ++--
+ drivers/gpu/drm/etnaviv/etnaviv_gpu.c |    4 ++--
+ drivers/hwmon/ltc2992.c               |    3 +--
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+--- a/arch/x86/kernel/apic/vector.c~replace-for_each__bit_from-with-for_each__bit-where-appropriate
++++ a/arch/x86/kernel/apic/vector.c
+@@ -760,9 +760,9 @@ void __init lapic_update_legacy_vectors(
+ 
+ void __init lapic_assign_system_vectors(void)
+ {
+-	unsigned int i, vector = 0;
++	unsigned int i, vector;
+ 
+-	for_each_set_bit_from(vector, system_vectors, NR_VECTORS)
++	for_each_set_bit(vector, system_vectors, NR_VECTORS)
+ 		irq_matrix_assign_system(vector_matrix, vector, false);
+ 
+ 	if (nr_legacy_irqs() > 1)
+--- a/drivers/gpu/drm/etnaviv/etnaviv_gpu.c~replace-for_each__bit_from-with-for_each__bit-where-appropriate
++++ a/drivers/gpu/drm/etnaviv/etnaviv_gpu.c
+@@ -1032,7 +1032,7 @@ pm_put:
+ 
+ void etnaviv_gpu_recover_hang(struct etnaviv_gpu *gpu)
+ {
+-	unsigned int i = 0;
++	unsigned int i;
+ 
+ 	dev_err(gpu->dev, "recover hung GPU!\n");
+ 
+@@ -1045,7 +1045,7 @@ void etnaviv_gpu_recover_hang(struct etn
+ 
+ 	/* complete all events, the GPU won't do it after the reset */
+ 	spin_lock(&gpu->event_spinlock);
+-	for_each_set_bit_from(i, gpu->event_bitmap, ETNA_NR_EVENTS)
++	for_each_set_bit(i, gpu->event_bitmap, ETNA_NR_EVENTS)
+ 		complete(&gpu->event_free);
+ 	bitmap_zero(gpu->event_bitmap, ETNA_NR_EVENTS);
+ 	spin_unlock(&gpu->event_spinlock);
+--- a/drivers/hwmon/ltc2992.c~replace-for_each__bit_from-with-for_each__bit-where-appropriate
++++ a/drivers/hwmon/ltc2992.c
+@@ -248,8 +248,7 @@ static int ltc2992_gpio_get_multiple(str
+ 
+ 	gpio_status = reg;
+ 
+-	gpio_nr = 0;
+-	for_each_set_bit_from(gpio_nr, mask, LTC2992_GPIO_NR) {
++	for_each_set_bit(gpio_nr, mask, LTC2992_GPIO_NR) {
+ 		if (test_bit(LTC2992_GPIO_BIT(gpio_nr), &gpio_status))
+ 			set_bit(gpio_nr, bits);
+ 	}
+_

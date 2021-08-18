@@ -101,7 +101,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			if (!mnt->mnt_devname)
  				goto out_free_id;
  		}
-@@ -4222,7 +4223,7 @@ void __init mnt_init(void)
+@@ -4236,7 +4237,7 @@ void __init mnt_init(void)
  	int err;
  
  	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount),

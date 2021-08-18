@@ -1,0 +1,46 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/hwpoison: remove unneeded variable unmap_success
+
+Patch series "Cleanups and fixup for hwpoison"
+
+This series contains cleanups to remove unneeded variable, fix some
+obsolete comments and so on.  Also we fix potential pte_unmap_unlock on
+wrong pte.  More details can be found in the respective changelogs.
+
+
+This patch (of 4):
+
+unmap_success is used to indicate whether page is successfully unmapped
+but it's irrelated with ZONE_DEVICE page and unmap_success is always true
+here.  Remove this unneeded one.
+
+Link: https://lkml.kernel.org/r/20210814105131.48814-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20210814105131.48814-2-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/memory-failure.c~mm-hwpoison-remove-unneeded-variable-unmap_success
++++ a/mm/memory-failure.c
+@@ -1512,7 +1512,6 @@ static int memory_failure_dev_pagemap(un
+ 		struct dev_pagemap *pgmap)
+ {
+ 	struct page *page = pfn_to_page(pfn);
+-	const bool unmap_success = true;
+ 	unsigned long size = 0;
+ 	struct to_kill *tk;
+ 	LIST_HEAD(tokill);
+@@ -1584,7 +1583,7 @@ static int memory_failure_dev_pagemap(un
+ 		start = (page->index << PAGE_SHIFT) & ~(size - 1);
+ 		unmap_mapping_range(page->mapping, start, size, 0);
+ 	}
+-	kill_procs(&tokill, flags & MF_MUST_KILL, !unmap_success, pfn, flags);
++	kill_procs(&tokill, flags & MF_MUST_KILL, false, pfn, flags);
+ 	rc = 0;
+ unlock:
+ 	dax_unlock_page(page, cookie);
+_

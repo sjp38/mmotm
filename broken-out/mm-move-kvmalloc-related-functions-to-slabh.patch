@@ -4,6 +4,7 @@ Subject: mm: move kvmalloc-related functions to slab.h
 Not all files in the kernel should include mm.h.  Migrating callers from
 kmalloc to kvmalloc is easier if the kvmalloc functions are in slab.h.
 
+[akpm@linux-foundation.org: move the new kvrealloc() also]
 Link: https://lkml.kernel.org/r/20210622215757.3525604-1-willy@infradead.org
 Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
 Acked-by: Pekka Enberg <penberg@kernel.org>

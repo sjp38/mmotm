@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/mm/page_alloc.c~mm-report-a-more-useful-address-for-reclaim-acquisition
 +++ a/mm/page_alloc.c
-@@ -4550,14 +4550,14 @@ static bool __need_reclaim(gfp_t gfp_mas
+@@ -4549,14 +4549,14 @@ static bool __need_reclaim(gfp_t gfp_mas
  	return true;
  }
  
@@ -71,7 +71,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  void fs_reclaim_acquire(gfp_t gfp_mask)
-@@ -4566,7 +4566,7 @@ void fs_reclaim_acquire(gfp_t gfp_mask)
+@@ -4565,7 +4565,7 @@ void fs_reclaim_acquire(gfp_t gfp_mask)
  
  	if (__need_reclaim(gfp_mask)) {
  		if (gfp_mask & __GFP_FS)
@@ -80,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #ifdef CONFIG_MMU_NOTIFIER
  		lock_map_acquire(&__mmu_notifier_invalidate_range_start_map);
-@@ -4583,7 +4583,7 @@ void fs_reclaim_release(gfp_t gfp_mask)
+@@ -4582,7 +4582,7 @@ void fs_reclaim_release(gfp_t gfp_mask)
  
  	if (__need_reclaim(gfp_mask)) {
  		if (gfp_mask & __GFP_FS)

@@ -22,7 +22,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~fix-zone_id-may-be-used-uninitialized-in-this-function-warning
 +++ a/mm/page_alloc.c
-@@ -6714,7 +6714,7 @@ static void __init memmap_init(void)
+@@ -6715,7 +6715,7 @@ static void __init memmap_init(void)
  {
  	unsigned long start_pfn, end_pfn;
  	unsigned long hole_pfn = 0;

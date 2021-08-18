@@ -1,0 +1,53 @@
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: devfreq: use HZ macros
+
+HZ unit conversion macros are available in units.h, use them and remove
+the duplicate definition.
+
+The new macro has an unsigned long type.
+
+All the code is dealing with unsigned long and the code using the macro is
+doing a coercitive cast to unsigned long.
+
+Link: https://lkml.kernel.org/r/20210816114732.1834145-5-daniel.lezcano@linaro.org
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Christian Eggers <ceggers@arri.de>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Jonathan Cameron <jic23@kernel.org>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Lukasz Luba <lukasz.luba@arm.com>
+Cc: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Peter Meerwald <pmeerw@pmeerw.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/devfreq/devfreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/devfreq/devfreq.c~devfreq-use-hz-macros
++++ a/drivers/devfreq/devfreq.c
+@@ -27,6 +27,7 @@
+ #include <linux/hrtimer.h>
+ #include <linux/of.h>
+ #include <linux/pm_qos.h>
++#include <linux/units.h>
+ #include "governor.h"
+ 
+ #define CREATE_TRACE_POINTS
+@@ -34,7 +35,6 @@
+ 
+ #define IS_SUPPORTED_FLAG(f, name) ((f & DEVFREQ_GOV_FLAG_##name) ? true : false)
+ #define IS_SUPPORTED_ATTR(f, name) ((f & DEVFREQ_GOV_ATTR_##name) ? true : false)
+-#define HZ_PER_KHZ	1000
+ 
+ static struct class *devfreq_class;
+ static struct dentry *devfreq_debugfs;
+_

@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/namespace.c~memcg-enable-accounting-for-new-namesapces-and-struct-nsproxy
 +++ a/fs/namespace.c
-@@ -3289,7 +3289,7 @@ static struct mnt_namespace *alloc_mnt_n
+@@ -3303,7 +3303,7 @@ static struct mnt_namespace *alloc_mnt_n
  	if (!ucounts)
  		return ERR_PTR(-ENOSPC);
  

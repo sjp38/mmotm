@@ -1,0 +1,34 @@
+From: liuhailong <liuhailong@oppo.com>
+Subject: mm: add kernel_misc_reclaimable in show_free_areas
+
+Print NR_KERNEL_MISC_RECLAIMABLE stat from show_free_areas() so users can
+check whether the shrinker is working correctly and to show the current
+memory usage.
+
+Link: https://lkml.kernel.org/r/20210813104725.4562-1-liuhailong@oppo.com
+Signed-off-by: liuhailong <liuhailong@oppo.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/mm/page_alloc.c~mm-add-kernel_misc_reclaimable-in-show_free_areas
++++ a/mm/page_alloc.c
+@@ -5903,6 +5903,7 @@ void show_free_areas(unsigned int filter
+ 		" unevictable:%lu dirty:%lu writeback:%lu\n"
+ 		" slab_reclaimable:%lu slab_unreclaimable:%lu\n"
+ 		" mapped:%lu shmem:%lu pagetables:%lu bounce:%lu\n"
++		" kernel_misc_reclaimable:%lu\n"
+ 		" free:%lu free_pcp:%lu free_cma:%lu\n",
+ 		global_node_page_state(NR_ACTIVE_ANON),
+ 		global_node_page_state(NR_INACTIVE_ANON),
+@@ -5919,6 +5920,7 @@ void show_free_areas(unsigned int filter
+ 		global_node_page_state(NR_SHMEM),
+ 		global_node_page_state(NR_PAGETABLE),
+ 		global_zone_page_state(NR_BOUNCE),
++		global_node_page_state(NR_KERNEL_MISC_RECLAIMABLE),
+ 		global_zone_page_state(NR_FREE_PAGES),
+ 		free_pcp,
+ 		global_zone_page_state(NR_FREE_CMA_PAGES));
+_

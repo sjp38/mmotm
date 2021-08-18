@@ -14,7 +14,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-use-in_task-in-mm-page_allocc
 +++ a/mm/page_alloc.c
-@@ -4212,7 +4212,7 @@ static void warn_alloc_show_mem(gfp_t gf
+@@ -4211,7 +4211,7 @@ static void warn_alloc_show_mem(gfp_t gf
  		if (tsk_is_oom_victim(current) ||
  		    (current->flags & (PF_MEMALLOC | PF_EXITING)))
  			filter &= ~SHOW_MEM_FILTER_NODES;
@@ -23,7 +23,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		filter &= ~SHOW_MEM_FILTER_NODES;
  
  	show_mem(filter, nodemask);
-@@ -4698,7 +4698,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
+@@ -4697,7 +4697,7 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
  		 * comment for __cpuset_node_allowed().
  		 */
  		alloc_flags &= ~ALLOC_CPUSET;
@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		alloc_flags |= ALLOC_HARDER;
  
  	alloc_flags = gfp_to_alloc_flags_cma(gfp_mask, alloc_flags);
-@@ -5158,7 +5158,7 @@ static inline bool prepare_alloc_pages(g
+@@ -5157,7 +5157,7 @@ static inline bool prepare_alloc_pages(g
  		 * When we are in the interrupt context, it is irrelevant
  		 * to the current task context. It means that any node ok.
  		 */

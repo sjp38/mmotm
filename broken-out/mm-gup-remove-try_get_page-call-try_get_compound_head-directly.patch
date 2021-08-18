@@ -1,0 +1,104 @@
+From: John Hubbard <jhubbard@nvidia.com>
+Subject: mm/gup: remove try_get_page(), call try_get_compound_head() directly
+
+try_get_page() is very similar to try_get_compound_head(), and in fact
+try_get_page() has fallen a little behind in terms of maintenance:
+try_get_compound_head() handles speculative page references more
+thoroughly.
+
+There are only two try_get_page() callsites, so just call
+try_get_compound_head() directly from those, and remove try_get_page()
+entirely.
+
+Also, seeing as how this changes try_get_compound_head() into a non-static
+function, provide some kerneldoc documentation for it.
+
+Link: https://lkml.kernel.org/r/20210813044133.1536842-4-jhubbard@nvidia.com
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/s390/mm/fault.c |    2 +-
+ fs/pipe.c            |    2 +-
+ include/linux/mm.h   |   10 +---------
+ mm/gup.c             |   21 +++++++++++++++++----
+ 4 files changed, 20 insertions(+), 15 deletions(-)
+
+--- a/arch/s390/mm/fault.c~mm-gup-remove-try_get_page-call-try_get_compound_head-directly
++++ a/arch/s390/mm/fault.c
+@@ -817,7 +817,7 @@ void do_secure_storage_access(struct pt_
+ 		break;
+ 	case KERNEL_FAULT:
+ 		page = phys_to_page(addr);
+-		if (unlikely(!try_get_page(page)))
++		if (unlikely(!try_get_compound_head(page, 1)))
+ 			break;
+ 		rc = arch_make_page_accessible(page);
+ 		put_page(page);
+--- a/fs/pipe.c~mm-gup-remove-try_get_page-call-try_get_compound_head-directly
++++ a/fs/pipe.c
+@@ -191,7 +191,7 @@ EXPORT_SYMBOL(generic_pipe_buf_try_steal
+  */
+ bool generic_pipe_buf_get(struct pipe_inode_info *pipe, struct pipe_buffer *buf)
+ {
+-	return try_get_page(buf->page);
++	return try_get_compound_head(buf->page, 1);
+ }
+ EXPORT_SYMBOL(generic_pipe_buf_get);
+ 
+--- a/include/linux/mm.h~mm-gup-remove-try_get_page-call-try_get_compound_head-directly
++++ a/include/linux/mm.h
+@@ -1217,15 +1217,7 @@ bool __must_check try_grab_page(struct p
+ struct page *try_grab_compound_head(struct page *page, int refs,
+ 				    unsigned int flags);
+ 
+-
+-static inline __must_check bool try_get_page(struct page *page)
+-{
+-	page = compound_head(page);
+-	if (WARN_ON_ONCE(page_ref_count(page) <= 0))
+-		return false;
+-	page_ref_inc(page);
+-	return true;
+-}
++struct page *try_get_compound_head(struct page *page, int refs);
+ 
+ static inline void put_page(struct page *page)
+ {
+--- a/mm/gup.c~mm-gup-remove-try_get_page-call-try_get_compound_head-directly
++++ a/mm/gup.c
+@@ -62,11 +62,24 @@ static void put_page_refs(struct page *p
+ 	put_page(page);
+ }
+ 
+-/*
+- * Return the compound head page with ref appropriately incremented,
+- * or NULL if that failed.
++/**
++ * try_get_compound_head() - return the compound head page with refcount
++ * appropriately incremented, or NULL if that failed.
++ *
++ * This handles potential refcount overflow correctly. It also works correclty
++ * for various lockless get_user_pages()-related callers, due to the use of
++ * page_cache_add_speculative().
++ *
++ * Even though the name includes "compound_head", this function is still
++ * appropriate for callers that have a non-compound @page to get.
++ *
++ * @page:  pointer to page to be gotten
++ * @refs:  the value to add to the page's refcount
++ *
++ * Return: head page (with refcount appropriately incremented) for success, or
++ * NULL upon failure.
+  */
+-static inline struct page *try_get_compound_head(struct page *page, int refs)
++struct page *try_get_compound_head(struct page *page, int refs)
+ {
+ 	struct page *head = compound_head(page);
+ 
+_

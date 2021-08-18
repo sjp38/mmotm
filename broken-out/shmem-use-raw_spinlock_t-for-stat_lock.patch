@@ -17,7 +17,7 @@ preemption.
 
 Link: https://lkml.kernel.org/r/20210806142916.jdwkb5bx62q5fwfo@linutronix.de
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Hugh Dickins <hughd@google.com>
+Acked-by: Hugh Dickins <hughd@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -102,7 +102,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  	return mpol;
  }
-@@ -3500,9 +3501,10 @@ static int shmem_reconfigure(struct fs_c
+@@ -3488,9 +3489,10 @@ static int shmem_reconfigure(struct fs_c
  	struct shmem_options *ctx = fc->fs_private;
  	struct shmem_sb_info *sbinfo = SHMEM_SB(fc->root->d_sb);
  	unsigned long inodes;
@@ -114,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	inodes = sbinfo->max_inodes - sbinfo->free_inodes;
  	if ((ctx->seen & SHMEM_SEEN_BLOCKS) && ctx->blocks) {
  		if (!sbinfo->max_blocks) {
-@@ -3547,14 +3549,15 @@ static int shmem_reconfigure(struct fs_c
+@@ -3535,14 +3537,15 @@ static int shmem_reconfigure(struct fs_c
  	 * Preserve previous mempolicy unless mpol remount option was specified.
  	 */
  	if (ctx->mpol) {
@@ -133,7 +133,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return invalfc(fc, "%s", err);
  }
  
-@@ -3671,7 +3674,7 @@ static int shmem_fill_super(struct super
+@@ -3659,7 +3662,7 @@ static int shmem_fill_super(struct super
  	sbinfo->mpol = ctx->mpol;
  	ctx->mpol = NULL;
  

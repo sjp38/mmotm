@@ -328,7 +328,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	init_per_zone_wmark_min();
 --- a/mm/page_alloc.c~mm-track-present-early-pages-per-zone
 +++ a/mm/page_alloc.c
-@@ -7253,6 +7253,9 @@ static void __init calculate_node_totalp
+@@ -7254,6 +7254,9 @@ static void __init calculate_node_totalp
  			zone->zone_start_pfn = 0;
  		zone->spanned_pages = size;
  		zone->present_pages = real_size;

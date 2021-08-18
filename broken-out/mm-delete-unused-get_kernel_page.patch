@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/mm.h~mm-delete-unused-get_kernel_page
 +++ a/include/linux/mm.h
-@@ -1815,7 +1815,6 @@ int __account_locked_vm(struct mm_struct
+@@ -1839,7 +1839,6 @@ int __account_locked_vm(struct mm_struct
  struct kvec;
  int get_kernel_pages(const struct kvec *iov, int nr_pages, int write,
  			struct page **pages);

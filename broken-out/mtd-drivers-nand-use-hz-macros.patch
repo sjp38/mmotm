@@ -1,0 +1,48 @@
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: mtd/drivers/nand: use HZ macros
+
+HZ unit conversion macros are available in units.h, use them and remove
+the duplicate definition.
+
+Link: https://lkml.kernel.org/r/20210816114732.1834145-10-daniel.lezcano@linaro.org
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Christian Eggers <ceggers@arri.de>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Jonathan Cameron <jic23@kernel.org>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Lukasz Luba <lukasz.luba@arm.com>
+Cc: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Peter Meerwald <pmeerw@pmeerw.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/mtd/nand/raw/intel-nand-controller.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/mtd/nand/raw/intel-nand-controller.c~mtd-drivers-nand-use-hz-macros
++++ a/drivers/mtd/nand/raw/intel-nand-controller.c
+@@ -20,6 +20,7 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
++#include <linux/units.h>
+ #include <asm/unaligned.h>
+ 
+ #define EBU_CLC			0x000
+@@ -102,7 +103,6 @@
+ 
+ #define MAX_CS	2
+ 
+-#define HZ_PER_MHZ	1000000L
+ #define USEC_PER_SEC	1000000L
+ 
+ struct ebu_nand_cs {
+_

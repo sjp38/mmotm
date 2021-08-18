@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/Kconfig.debug~math-rational_kunit_test-should-depend-on-rational-instead-of-selecting-it
 +++ a/lib/Kconfig.debug
-@@ -2466,8 +2466,7 @@ config SLUB_KUNIT_TEST
+@@ -2468,8 +2468,7 @@ config SLUB_KUNIT_TEST
  
  config RATIONAL_KUNIT_TEST
  	tristate "KUnit test for rational.c" if !KUNIT_ALL_TESTS

@@ -1,0 +1,32 @@
+From: Mike Rapoport <rppt@linux.ibm.com>
+Subject: mmflags.h: add missing __GFP_ZEROTAGS and __GFP_SKIP_KASAN_POISON names
+
+Add missing names of __GFP_ZEROTAGS and __GFP_SKIP_KASAN_POISON flags to
+__def_gfpflag_names.
+
+Link: https://lkml.kernel.org/r/20210816133502.590-1-rppt@kernel.org
+Fixes: 013bb59dbb7c ("arm64: mte: handle tags zeroing at page allocation time")
+Fixes: c275c5c6d50a ("kasan: disable freed user page poisoning with HW tags")
+Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/trace/events/mmflags.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/include/trace/events/mmflags.h~mmflagsh-add-missing-__gfp_zerotags-and-__gfp_skip_kasan_poison-names
++++ a/include/trace/events/mmflags.h
+@@ -48,7 +48,9 @@
+ 	{(unsigned long)__GFP_WRITE,		"__GFP_WRITE"},		\
+ 	{(unsigned long)__GFP_RECLAIM,		"__GFP_RECLAIM"},	\
+ 	{(unsigned long)__GFP_DIRECT_RECLAIM,	"__GFP_DIRECT_RECLAIM"},\
+-	{(unsigned long)__GFP_KSWAPD_RECLAIM,	"__GFP_KSWAPD_RECLAIM"}\
++	{(unsigned long)__GFP_KSWAPD_RECLAIM,	"__GFP_KSWAPD_RECLAIM"},\
++	{(unsigned long)__GFP_ZEROTAGS,		"__GFP_ZEROTAGS"},	\
++	{(unsigned long)__GFP_SKIP_KASAN_POISON,"__GFP_SKIP_KASAN_POISON"}\
+ 
+ #define show_gfp_flags(flags)						\
+ 	(flags) ? __print_flags(flags, "|",				\
+_

@@ -47,7 +47,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/Kconfig.debug~lib-test-convert-test_sortc-to-use-kunit
 +++ a/lib/Kconfig.debug
-@@ -2084,8 +2084,9 @@ config TEST_MIN_HEAP
+@@ -2086,8 +2086,9 @@ config TEST_MIN_HEAP
  	  If unsure, say N.
  
  config TEST_SORT

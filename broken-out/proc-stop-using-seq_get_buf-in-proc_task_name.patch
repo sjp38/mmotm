@@ -6,6 +6,7 @@ seq_file abstraction.
 
 Link: https://lkml.kernel.org/r/20210810151945.1795567-1-hch@lst.de
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
 Cc: Alexey Dobriyan <adobriyan@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

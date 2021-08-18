@@ -1,0 +1,144 @@
+From: Yury Norov <yury.norov@gmail.com>
+Subject: arch: remove GENERIC_FIND_FIRST_BIT entirely
+
+In 5.12 cycle we enabled GENERIC_FIND_FIRST_BIT config option for ARM64
+and MIPS.  It increased performance and shrunk .text size; and so far I
+didn't receive any negative feedback on the change.
+
+https://lore.kernel.org/linux-arch/20210225135700.1381396-1-yury.norov@gmail.com/
+
+Now I think it's a good time to switch all architectures to use
+find_{first,last}_bit() unconditionally, and so remove corresponding
+config option.
+
+The patch does't introduce functioal changes for arc, arm, arm64, mips,
+m68k, s390 and x86, for other architectures I expect improvement both in
+performance and .text size.
+
+Link: https://lkml.kernel.org/r/20210814211713.180533-5-yury.norov@gmail.com
+Signed-off-by: Yury Norov <yury.norov@gmail.com>
+Tested-by: Alexander Lobakin <alobakin@pm.me> (mips)
+Reviewed-by: Alexander Lobakin <alobakin@pm.me> (mips)
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Acked-by: Will Deacon <will@kernel.org>
+Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Alexey Klimov <aklimov@redhat.com>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: kernel test robot <lkp@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arc/Kconfig     |    1 -
+ arch/arm64/Kconfig   |    1 -
+ arch/mips/Kconfig    |    1 -
+ arch/s390/Kconfig    |    1 -
+ arch/x86/Kconfig     |    1 -
+ arch/x86/um/Kconfig  |    1 -
+ include/linux/find.h |   13 -------------
+ lib/Kconfig          |    3 ---
+ 8 files changed, 22 deletions(-)
+
+--- a/arch/arc/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/arch/arc/Kconfig
+@@ -20,7 +20,6 @@ config ARC
+ 	select COMMON_CLK
+ 	select DMA_DIRECT_REMAP
+ 	select GENERIC_ATOMIC64 if !ISA_ARCV2 || !(ARC_HAS_LL64 && ARC_HAS_LLSC)
+-	select GENERIC_FIND_FIRST_BIT
+ 	# for now, we don't need GENERIC_IRQ_PROBE, CONFIG_GENERIC_IRQ_CHIP
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_PCI_IOMAP
+--- a/arch/arm64/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/arch/arm64/Kconfig
+@@ -119,7 +119,6 @@ config ARM64
+ 	select GENERIC_CPU_AUTOPROBE
+ 	select GENERIC_CPU_VULNERABILITIES
+ 	select GENERIC_EARLY_IOREMAP
+-	select GENERIC_FIND_FIRST_BIT
+ 	select GENERIC_IDLE_POLL_SETUP
+ 	select GENERIC_IRQ_IPI
+ 	select GENERIC_IRQ_PROBE
+--- a/arch/mips/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/arch/mips/Kconfig
+@@ -30,7 +30,6 @@ config MIPS
+ 	select GENERIC_ATOMIC64 if !64BIT
+ 	select GENERIC_CMOS_UPDATE
+ 	select GENERIC_CPU_AUTOPROBE
+-	select GENERIC_FIND_FIRST_BIT
+ 	select GENERIC_GETTIMEOFDAY
+ 	select GENERIC_IOMAP
+ 	select GENERIC_IRQ_PROBE
+--- a/arch/s390/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/arch/s390/Kconfig
+@@ -126,7 +126,6 @@ config S390
+ 	select GENERIC_CPU_AUTOPROBE
+ 	select GENERIC_CPU_VULNERABILITIES
+ 	select GENERIC_ENTRY
+-	select GENERIC_FIND_FIRST_BIT
+ 	select GENERIC_GETTIMEOFDAY
+ 	select GENERIC_PTDUMP
+ 	select GENERIC_SMP_IDLE_THREAD
+--- a/arch/x86/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/arch/x86/Kconfig
+@@ -133,7 +133,6 @@ config X86
+ 	select GENERIC_CPU_VULNERABILITIES
+ 	select GENERIC_EARLY_IOREMAP
+ 	select GENERIC_ENTRY
+-	select GENERIC_FIND_FIRST_BIT
+ 	select GENERIC_IOMAP
+ 	select GENERIC_IRQ_EFFECTIVE_AFF_MASK	if SMP
+ 	select GENERIC_IRQ_MATRIX_ALLOCATOR	if X86_LOCAL_APIC
+--- a/arch/x86/um/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/arch/x86/um/Kconfig
+@@ -8,7 +8,6 @@ endmenu
+ 
+ config UML_X86
+ 	def_bool y
+-	select GENERIC_FIND_FIRST_BIT
+ 
+ config 64BIT
+ 	bool "64-bit kernel" if "$(SUBARCH)" = "x86"
+--- a/include/linux/find.h~arch-remove-generic_find_first_bit-entirely
++++ a/include/linux/find.h
+@@ -101,8 +101,6 @@ unsigned long find_next_zero_bit(const u
+ }
+ #endif
+ 
+-#ifdef CONFIG_GENERIC_FIND_FIRST_BIT
+-
+ #ifndef find_first_bit
+ /**
+  * find_first_bit - find the first set bit in a memory region
+@@ -147,17 +145,6 @@ unsigned long find_first_zero_bit(const
+ }
+ #endif
+ 
+-#else /* CONFIG_GENERIC_FIND_FIRST_BIT */
+-
+-#ifndef find_first_bit
+-#define find_first_bit(addr, size) find_next_bit((addr), (size), 0)
+-#endif
+-#ifndef find_first_zero_bit
+-#define find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
+-#endif
+-
+-#endif /* CONFIG_GENERIC_FIND_FIRST_BIT */
+-
+ #ifndef find_last_bit
+ /**
+  * find_last_bit - find the last set bit in a memory region
+--- a/lib/Kconfig~arch-remove-generic_find_first_bit-entirely
++++ a/lib/Kconfig
+@@ -59,9 +59,6 @@ config GENERIC_STRNLEN_USER
+ config GENERIC_NET_UTILS
+ 	bool
+ 
+-config GENERIC_FIND_FIRST_BIT
+-	bool
+-
+ source "lib/math/Kconfig"
+ 
+ config NO_GENERIC_PCI_IOPORT_MAP
+_

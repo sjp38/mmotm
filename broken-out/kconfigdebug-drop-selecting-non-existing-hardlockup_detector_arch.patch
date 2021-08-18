@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/Kconfig.debug~kconfigdebug-drop-selecting-non-existing-hardlockup_detector_arch
 +++ a/lib/Kconfig.debug
-@@ -1062,7 +1062,6 @@ config HARDLOCKUP_DETECTOR
+@@ -1064,7 +1064,6 @@ config HARDLOCKUP_DETECTOR
  	depends on HAVE_HARDLOCKUP_DETECTOR_PERF || HAVE_HARDLOCKUP_DETECTOR_ARCH
  	select LOCKUP_DETECTOR
  	select HARDLOCKUP_DETECTOR_PERF if HAVE_HARDLOCKUP_DETECTOR_PERF

@@ -1,0 +1,34 @@
+From: SeongJae Park <sjpark@amazon.de>
+Subject: mm/damon/Kconfig: Hide PAGE_IDLE_FLAG from users
+
+Commit 2a058a1a9914 ("mm/idle_page_tracking: make PG_idle reusable") of
+linux-mm[1] makes CONFIG_PAGE_IDLE_FLAG option to be presented to the
+user.  However, the option is hard to be understood by users.  Also, it is
+not intended to be set by users but other kernel subsystems like DAMON or
+IDLE_PAGE_TRACKING.  To avoid confusions, this commit removes the prompt
+so that the option is not presented to the user.
+
+[1] https://github.com/hnaz/linux-mm/commit/2a058a1a9914
+
+Link: https://lkml.kernel.org/r/20210813081238.34705-1-sj38.park@gmail.com
+Signed-off-by: SeongJae Park <sjpark@amazon.de>
+Suggested-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/Kconfig~mm-idle_page_tracking-make-pg_idle-reusable-fix-2
++++ a/mm/Kconfig
+@@ -740,7 +740,7 @@ config DEFERRED_STRUCT_PAGE_INIT
+ 	  initialisation.
+ 
+ config PAGE_IDLE_FLAG
+-	bool "Add PG_idle and PG_young flags"
++	bool
+ 	select PAGE_EXTENSION if !64BIT
+ 	help
+ 	  This adds PG_idle and PG_young flags to 'struct page'.  PTE Accessed
+_

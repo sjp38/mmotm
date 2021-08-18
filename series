@@ -2,38 +2,17 @@ origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
-#mm/kasan
-kasan-kmemleak-reset-tags-when-scanning-block.patch
-kasan-slub-reset-tag-when-printing-address.patch
-#
-#mm/slub
-slub-fix-kmalloc_pagealloc_invalid_free-unit-test.patch
-#
-mm-slub-fix-slub_debug-disablement-for-list-of-slabs.patch
-#
-#mm/madvise
-mm-madvise-report-sigbus-as-efault-for-madv_populate_readwrite.patch
-#
-#mm/memcg
-mm-memcg-fix-incorrect-flushing-of-lruvec-data-in-obj_stock.patch
-#
-#lib
-lib-use-pfn_phys-in-devmem_is_allowed.patch
-#
-#init
-init-move-usermodehelper_enable-to-populate_rootfs.patch
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/shmem
 revert-mm-shmem-fix-shmem_swapin-race-with-swapoff.patch
 revert-mm-swap-check-if-swap-backing-device-is-congested-or-not.patch
 #
-#mm/hugetlb
-mm-hugetlb-initialize-page-to-null-in-alloc_buddy_huge_page_with_mpol.patch
-#
 #mm/pagealloc
 mm-page_alloc-dont-corrupt-pcppage_migratetype.patch
+#
+#mm/tracing
+mmflagsh-add-missing-__gfp_zerotags-and-__gfp_skip_kasan_poison-names.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -159,8 +138,6 @@ procfs-prevent-unpriveleged-processes-accessing-fdinfo-dir.patch
 #NEXT_PATCHES_START input
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kbuild
-makefile-remove-stale-cc-option-checks.patch
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START scripts
 #NEXT_PATCHES_END
@@ -351,6 +328,8 @@ mm-slub-restructure-new-page-checks-in-___slab_alloc.patch
 mm-slub-simplify-kmem_cache_cpu-and-tid-setup.patch
 mm-slub-move-disabling-enabling-irqs-to-___slab_alloc.patch
 mm-slub-do-initial-checks-in-___slab_alloc-with-irqs-enabled.patch
+mm-slub-do-initial-checks-in-___slab_alloc-with-irqs-enabled-fix.patch
+mm-slub-do-initial-checks-in-___slab_alloc-with-irqs-enabled-fix-fix.patch
 mm-slub-move-disabling-irqs-closer-to-get_partial-in-___slab_alloc.patch
 mm-slub-restore-irqs-around-calling-new_slab.patch
 mm-slub-validate-slab-from-partial-list-or-page-allocator-before-making-it-cpu-slab.patch
@@ -374,6 +353,7 @@ mm-slub-optionally-save-restore-irqs-in-slab_lock.patch
 mm-slub-make-slab_lock-disable-irqs-with-preempt_rt.patch
 mm-slub-protect-put_cpu_partial-with-disabled-irqs-instead-of-cmpxchg.patch
 mm-slub-use-migrate_disable-on-preempt_rt.patch
+#mm-slub-convert-kmem_cpu_slab-protection-to-local_lock.patch: https://lkml.kernel.org/r/2666777.vCjUEy5FO1@sven-desktop
 mm-slub-convert-kmem_cpu_slab-protection-to-local_lock.patch
 #
 #mm/kcsan
@@ -393,8 +373,9 @@ mm-debug_vm_pgtable-use-struct-pgtable_debug_args-in-pgd-and-p4d-modifying-tests
 mm-debug_vm_pgtable-remove-unused-code.patch
 mm-debug_vm_pgtable-fix-corrupted-page-flag.patch
 #
-#
 mm-report-a-more-useful-address-for-reclaim-acquisition.patch
+#
+mm-add-kernel_misc_reclaimable-in-show_free_areas.patch
 #
 #mm-mark-idle-page-tracking-as-broken.patch: https://lkml.kernel.org/r/f6c50c9f-f26b-50f7-ac5f-93ffa83b95cb@redhat.com
 mm-mark-idle-page-tracking-as-broken.patch
@@ -426,6 +407,10 @@ mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge.patch
 mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge-fix.patch
 mm-gup-fix-potential-pgmap-refcnt-leak-in-__gup_device_huge-fix-fix.patch
 mm-gup-use-helper-page_aligned-in-populate_vma_page_range.patch
+#
+mm-gup-documentation-corrections-for-gup-pup.patch
+mm-gup-small-refactoring-simplify-try_grab_page.patch
+mm-gup-remove-try_get_page-call-try_get_compound_head-directly.patch
 #
 #mm/swap
 fs-mm-fix-race-in-unlinking-swapfile.patch
@@ -570,11 +555,25 @@ mm-page_alloc-make-alloc_node_mem_map-__init-rather-than-__ref.patch
 mm-use-in_task-in-mm-page_allocc.patch
 #
 #mm/memory-failure
+mm-hwpoison-remove-unneeded-variable-unmap_success.patch
+mm-hwpoison-fix-potential-pte_unmap_unlock-pte-error.patch
+mm-hwpoison-change-argument-struct-page-hpagep-to-hpage.patch
+mm-hwpoison-fix-some-obsolete-comments.patch
 #
 #mm/hugetlb
+#hugetlb-simplify-prep_compound_gigantic_page-ref-count-racing-code.patch+N: https://lkml.kernel.org/r/000000000000fbad4305c982f836@google.com
 hugetlb-simplify-prep_compound_gigantic_page-ref-count-racing-code.patch
 hugetlb-drop-ref-count-earlier-after-page-allocation.patch
 hugetlb-before-freeing-hugetlb-page-set-dtor-to-appropriate-value.patch
+#
+#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
+#hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch
+#hugetlb-add-demote-bool-to-gigantic-page-routines.patch
+#hugetlb-add-hugetlb-demote-page-support.patch
+#hugetlb-document-the-demote-sysfs-interfaces.patch
+#hugetlb-vmemmap-optimizations-when-demoting-hugetlb-pages.patch
+#hugetlb-prepare-destroy-and-prep-routines-for-vmemmap-optimized-pages.patch
+#hugetlb-optimized-demote-vmemmap-optimizatized-pages.patch
 #
 #mm/userfaultfd
 #userfaultfd-change-mmap_changing-to-atomic.patch+2: acks?
@@ -636,6 +635,7 @@ mm-mempolicy-add-mpol_preferred_many-for-multiple-preferred-nodes.patch
 mm-memplicy-add-page-allocation-function-for-mpol_preferred_many-policy.patch
 mm-hugetlb-add-support-for-mempolicy-mpol_preferred_many.patch
 mm-hugetlb-add-support-for-mempolicy-mpol_preferred_many-fix.patch
+mm-hugetlb-add-support-for-mempolicy-mpol_preferred_many-fix-fix.patch
 mm-mempolicy-advertise-new-mpol_preferred_many.patch
 mm-mempolicy-unify-the-create-func-for-bind-interleave-prefer-many-policies.patch
 #
@@ -643,6 +643,7 @@ mm-use-in_task-in-mempolicy_slab_node.patch
 #
 #mm/mempool
 #mm/memblock
+memblock-make-memblock_find_in_range-method-private.patch
 #
 #mm/oom-kill
 mm-introduce-process_mrelease-system-call.patch
@@ -684,6 +685,7 @@ selftests-vm-add-ksm-merging-across-nodes-test.patch
 mm-ksm-fix-data-type.patch
 #
 selftests-vm-add-ksm-merging-time-test.patch
+#selftests-vm-add-cow-time-test-for-ksm-pages.patch: https://lkml.kernel.org/r/20210816154817.GM5469@sequoia
 selftests-vm-add-cow-time-test-for-ksm-pages.patch
 #
 #mm/page-poison
@@ -756,6 +758,8 @@ mm-highmem-remove-deprecated-kmap_atomic.patch
 #mm/support
 #mm/zram
 #mm/cleanups
+mm-in_irq-cleanup.patch
+#
 #mm/kfence
 kfence-show-cpu-and-timestamp-in-alloc-free-info.patch
 #
@@ -767,6 +771,7 @@ mm-damon-adaptively-adjust-regions.patch
 mm-idle_page_tracking-make-pg_idle-reusable.patch
 mm-idle_page_tracking-make-pg_idle-reusable-fix.patch
 mm-idle_page_tracking-make-pg_idle-reusable-fix-fix.patch
+mm-idle_page_tracking-make-pg_idle-reusable-fix-2.patch
 mm-damon-implement-primitives-for-the-virtual-memory-address-spaces.patch
 mm-damon-implement-primitives-for-the-virtual-memory-address-spaces-fix.patch
 mm-damon-implement-primitives-for-the-virtual-memory-address-spaces-fix-2.patch
@@ -845,6 +850,16 @@ arch-kconfig-fix-spelling-mistake-seperate-separate.patch
 #
 once-fix-trivia-typo-not-note.patch
 #
+units-change-from-l-to-ul.patch
+units-add-the-hz-macros.patch
+thermal-drivers-devfreq_cooling-use-hz-macros.patch
+devfreq-use-hz-macros.patch
+iio-drivers-as73211-use-hz-macros.patch
+hwmon-drivers-mr75203-use-hz-macros.patch
+iio-drivers-hid-sensor-use-hz-macros.patch
+i2c-drivers-ov02q10-use-hz-macros.patch
+mtd-drivers-nand-use-hz-macros.patch
+phy-drivers-stm32-use-hz-macros.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sparse
@@ -904,6 +919,26 @@ lib-iov_iterc-fix-kernel-doc-warnings.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitops
+bitops-protect-find_first_zero_bit-properly.patch
+bitops-move-find_bit__le-functions-from-leh-to-findh.patch
+#include-move-findh-from-asm_generic-to-linux.patch: rename
+include-move-findh-from-asm_generic-to-linux.patch
+arch-remove-generic_find_first_bit-entirely.patch
+lib-add-find_first_and_bit.patch
+cpumask-use-find_first_and_bit.patch
+all-replace-find_next_zero_bit-with-find_first_zero_bit-where-appropriate.patch
+#tools-sync-tools-bitmap-with-mother-linux.patch: rename
+tools-sync-tools-bitmap-with-mother-linux.patch
+cpumask-replace-cpumask_next_-with-cpumask_first_-where-appropriate.patch
+include-linux-move-for_each_bit-macros-from-bitopsh-to-findh.patch
+find-micro-optimize-for_each_setclear_bit.patch
+replace-for_each__bit_from-with-for_each__bit-where-appropriate.patch
+tools-rename-bitmap_alloc-to-bitmap_zalloc.patch
+mm-percpu-micro-optimize-pcpu_is_populated.patch
+bitmap-unify-find_bit-operations.patch
+lib-bitmap-add-performance-test-for-bitmap_print_to_pagebuf.patch
+vsprintf-rework-bitmap_list_string.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START llist
 #NEXT_PATCHES_END
@@ -918,6 +953,8 @@ lib-iov_iterc-fix-kernel-doc-warnings.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START checkpatch
 checkpatch-support-wide-strings.patch
+#
+checkpatch-make-email-address-check-case-insensitive.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START crc
@@ -954,6 +991,7 @@ ramfs-fix-mount-source-show-for-ramfs.patch
 #NEXT_PATCHES_START rwsem
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START init
+init-move-usermodehelper_enable-to-populate_rootfs.patch
 #
 trap-cleanup-trap_init.patch
 #
@@ -1321,8 +1359,6 @@ ipc-replace-costly-bailout-check-in-sysvipc_find_ipc.patch
 # next
 linux-next.patch
 linux-next-rejects.patch
-linux-next-rejects-fix.patch
-linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #mm/vmscan
 mm-workingset-correct-kernel-doc-notations.patch
@@ -1492,3 +1528,13 @@ workaround-for-a-pci-restoring-bug.patch
 #[failures]memblock-make-memblock_find_in_range-method-private.patch
 #[obsolete]shmem_swapin_page-fix-error-processing-for-get_swap_device.patch
 #[merged]kernel-cpuc-eliminate-all-kernel-doc-warnings.patch
+#[failures]makefile-remove-stale-cc-option-checks.patch
+#[folded-merged]linux-next-rejects-fix.patch
+#[obsolete]linux-next-git-rejects.patch
+#[merged]kasan-kmemleak-reset-tags-when-scanning-block.patch
+#[merged]kasan-slub-reset-tag-when-printing-address.patch
+#[merged]slub-fix-kmalloc_pagealloc_invalid_free-unit-test.patch
+#[merged]mm-slub-fix-slub_debug-disablement-for-list-of-slabs.patch
+#[merged]mm-madvise-report-sigbus-as-efault-for-madv_populate_readwrite.patch
+#[merged]mm-memcg-fix-incorrect-flushing-of-lruvec-data-in-obj_stock.patch
+#[merged]lib-use-pfn_phys-in-devmem_is_allowed.patch
