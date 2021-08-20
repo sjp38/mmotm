@@ -1,8 +1,13 @@
 From: Mike Rapoport <rppt@linux.ibm.com>
 Subject: mmflags.h: add missing __GFP_ZEROTAGS and __GFP_SKIP_KASAN_POISON names
 
-Add missing names of __GFP_ZEROTAGS and __GFP_SKIP_KASAN_POISON flags to
-__def_gfpflag_names.
+printk("%pGg") outputs these two flags as hexadecimal number, rather
+than as a string, e.g:
+
+	GFP_KERNEL|0x1800000
+
+Fix this by adding missing names of __GFP_ZEROTAGS and
+__GFP_SKIP_KASAN_POISON flags to __def_gfpflag_names.
 
 Link: https://lkml.kernel.org/r/20210816133502.590-1-rppt@kernel.org
 Fixes: 013bb59dbb7c ("arm64: mte: handle tags zeroing at page allocation time")

@@ -1,0 +1,84 @@
+From: Kees Cook <keescook@chromium.org>
+Subject: Compiler Attributes: add __alloc_size() for better bounds checking
+
+Patch series "Add __alloc_size() for better bounds checking", v2.
+
+GCC and Clang both use the "alloc_size" attribute to assist with bounds
+checking around the use of allocation functions.  Add the attribute,
+adjust the Makefile to silence needless warnings, and add the hints to the
+allocators where possible.  These changes have been in use for a while now
+in GrapheneOS.
+
+
+This patch (of 2):
+
+GCC and Clang can use the "alloc_size" attribute to better inform the
+results of __builtin_object_size() (for compile-time constant values). 
+Clang can additionally use alloc_size to inform the results of
+__builtin_dynamic_object_size() (for run-time values).
+
+Because GCC sees the frequent use of struct_size() as an allocator size
+argument, and notices it can return SIZE_MAX (the overflow indication), it
+complains about these call sites may overflow (since SIZE_MAX is greater
+than the default -Walloc-size-larger-than=PTRDIFF_MAX).  This isn't
+helpful since we already know a SIZE_MAX will be caught at run-time (this
+was an intentional design).  Instead, just disable this check as it is
+both a false positive and redundant.  (Clang does not have this warning
+option.)
+
+Link: https://lkml.kernel.org/r/20210818214021.2476230-1-keescook@chromium.org
+Link: https://lkml.kernel.org/r/20210818214021.2476230-2-keescook@chromium.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: Miguel Ojeda <ojeda@kernel.org>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: Andy Whitcroft <apw@canonical.com>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Daniel Micay <danielmicay@gmail.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Dwaipayan Ray <dwaipayanray1@gmail.com>
+Cc: Joe Perches <joe@perches.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Makefile                            |    6 ++++++
+ include/linux/compiler_attributes.h |    6 ++++++
+ 2 files changed, 12 insertions(+)
+
+--- a/include/linux/compiler_attributes.h~compiler-attributes-add-__alloc_size-for-better-bounds-checking
++++ a/include/linux/compiler_attributes.h
+@@ -55,6 +55,12 @@
+ #define __aligned_largest               __attribute__((__aligned__))
+ 
+ /*
++ *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-alloc_005fsize-function-attribute
++ * clang: https://clang.llvm.org/docs/AttributeReference.html#alloc-size
++ */
++#define __alloc_size(x, ...)		__attribute__((__alloc_size__(x, ## __VA_ARGS__)))
++
++/*
+  * Note: users of __always_inline currently do not write "inline" themselves,
+  * which seems to be required by gcc to apply the attribute according
+  * to its docs (and also "warning: always_inline function might not be
+--- a/Makefile~compiler-attributes-add-__alloc_size-for-better-bounds-checking
++++ a/Makefile
+@@ -1078,6 +1078,12 @@ KBUILD_CFLAGS += $(call cc-disable-warni
+ # Enabled with W=2, disabled by default as noisy
+ KBUILD_CFLAGS += $(call cc-disable-warning, maybe-uninitialized)
+ 
++ifdef CONFIG_CC_IS_GCC
++# The allocators already balk at large sizes, so silence the compiler
++# warnings for bounds checks involving those possible values.
++KBUILD_CFLAGS += -Wno-alloc-size-larger-than
++endif
++
+ # disable invalid "can't wrap" optimizations for signed / pointers
+ KBUILD_CFLAGS	+= -fno-strict-overflow
+ 
+_

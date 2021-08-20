@@ -8,10 +8,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  drivers/net/mctp/Makefile  |    1 
  include/linux/memcontrol.h |   17 +---
  include/linux/page_idle.h  |   47 +++++++++--
+ include/linux/units.h      |   16 +++
  mm/memcontrol.c            |   89 ++++++++++-----------
  mm/page-writeback.c        |  145 ++++++++++++++++++++---------------
  mm/page_alloc.c            |    4 
- 6 files changed, 176 insertions(+), 127 deletions(-)
+ 7 files changed, 192 insertions(+), 127 deletions(-)
 
 --- a/drivers/net/mctp/Makefile~linux-next-rejects
 +++ a/drivers/net/mctp/Makefile
@@ -333,6 +334,26 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!mem_cgroup_is_root(memcg)) {
  		page_counter_charge(&memcg->memory, nr_pages);
  		if (do_memsw_account())
+--- a/mm/page_alloc.c~linux-next-rejects
++++ a/mm/page_alloc.c
+@@ -1296,7 +1296,7 @@ static __always_inline bool free_pages_p
+ 		 * Do not let hwpoison pages hit pcplists/buddy
+ 		 * Untie memcg state and reset page's owner
+ 		 */
+-		if (memcg_kmem_enabled() && PageMemcgKmem(page))
++		if (memcg_kmem_enabled() && folio_memcg_kmem(page_folio(page)))
+ 			__memcg_kmem_uncharge_page(page, order);
+ 		reset_page_owner(page, order);
+ 		return false;
+@@ -1326,7 +1326,7 @@ static __always_inline bool free_pages_p
+ 	}
+ 	if (PageMappingFlags(page))
+ 		page->mapping = NULL;
+-	if (memcg_kmem_enabled() && PageMemcgKmem(page))
++	if (memcg_kmem_enabled() && folio_memcg_kmem(page_folio(page)))
+ 		__memcg_kmem_uncharge_page(page, order);
+ 	if (check_free)
+ 		bad += check_free_page(page);
 --- a/mm/page-writeback.c~linux-next-rejects
 +++ a/mm/page-writeback.c
 @@ -2728,48 +2728,49 @@ bool folio_clear_dirty_for_io(struct fol
@@ -581,24 +602,29 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 -EXPORT_SYMBOL_GPL(wait_for_stable_page);
 +EXPORT_SYMBOL_GPL(folio_wait_stable);
---- a/mm/page_alloc.c~linux-next-rejects
-+++ a/mm/page_alloc.c
-@@ -1296,7 +1296,7 @@ static __always_inline bool free_pages_p
- 		 * Do not let hwpoison pages hit pcplists/buddy
- 		 * Untie memcg state and reset page's owner
- 		 */
--		if (memcg_kmem_enabled() && PageMemcgKmem(page))
-+		if (memcg_kmem_enabled() && folio_memcg_kmem(page_folio(page)))
- 			__memcg_kmem_uncharge_page(page, order);
- 		reset_page_owner(page, order);
- 		return false;
-@@ -1326,7 +1326,7 @@ static __always_inline bool free_pages_p
- 	}
- 	if (PageMappingFlags(page))
- 		page->mapping = NULL;
--	if (memcg_kmem_enabled() && PageMemcgKmem(page))
-+	if (memcg_kmem_enabled() && folio_memcg_kmem(page_folio(page)))
- 		__memcg_kmem_uncharge_page(page, order);
- 	if (check_free)
- 		bad += check_free_page(page);
+--- a/include/linux/units.h~linux-next-rejects
++++ a/include/linux/units.h
+@@ -8,6 +8,22 @@
+ #define KHZ_PER_MHZ		1000UL
+ #define HZ_PER_MHZ		1000000UL
+ 
++/* Metric prefixes in accordance with Système international (d'unités) */
++#define PETA	1000000000000000ULL
++#define TERA	1000000000000ULL
++#define GIGA	1000000000UL
++#define MEGA	1000000UL
++#define KILO	1000UL
++#define HECTO	100UL
++#define DECA	10UL
++#define DECI	10UL
++#define CENTI	100UL
++#define MILLI	1000UL
++#define MICRO	1000000UL
++#define NANO	1000000000UL
++#define PICO	1000000000000ULL
++#define FEMTO	1000000000000000ULL
++
+ #define MILLIWATT_PER_WATT	1000UL
+ #define MICROWATT_PER_MILLIWATT	1000UL
+ #define MICROWATT_PER_WATT	1000000UL
 _

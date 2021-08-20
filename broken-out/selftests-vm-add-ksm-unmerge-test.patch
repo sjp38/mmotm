@@ -10,9 +10,9 @@ test is run as follows: ./ksm_tests -U
 Link: https://lkml.kernel.org/r/c0f55420440d704d5b094275b4365aa1b2ad46b5.1626252248.git.zhansayabagdaulet@gmail.com
 Signed-off-by: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
 Reviewed-by: Pavel Tatashin <pasha.tatashin@soleen.com>
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Cc: Hugh Dickins <hughd@google.com>
 Cc: Shuah Khan <shuah@kernel.org>
-Cc: Tyler Hicks <tyhicks@linux.microsoft.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

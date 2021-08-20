@@ -1,0 +1,35 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: mm, slab: simplify lockdep_assert_held in lockdep_assert_held()
+
+Sebastian reports [1] that the special version of lockdep_assert_held() for a
+local lock with PREEMPT_RT is no longer necessary, and we can simplify.
+
+[1] https://lore.kernel.org/linux-mm/20210817153937.hxnuh7mqp6vuiyws@linutronix.de/
+
+This is a fixup for mmotm patch
+mm-slub-convert-kmem_cpu_slab-protection-to-local_lock.patch
+
+Link: https://lkml.kernel.org/r/7e9ccf34-57d1-786b-2dfd-3b9ba78e1b32@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/slub.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+--- a/mm/slub.c~mm-slub-convert-kmem_cpu_slab-protection-to-local_lock-fix
++++ a/mm/slub.c
+@@ -2913,11 +2913,7 @@ redo:
+ 
+ load_freelist:
+ 
+-#ifdef CONFIG_PREEMPT_RT
+-	lockdep_assert_held(this_cpu_ptr(&s->cpu_slab->lock.lock));
+-#else
+ 	lockdep_assert_held(this_cpu_ptr(&s->cpu_slab->lock));
+-#endif
+ 
+ 	/*
+ 	 * freelist is pointing to the list of objects to be used.
+_

@@ -65,7 +65,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return object;
  }
  
-@@ -2752,8 +2753,10 @@ new_slab:
+@@ -2765,8 +2766,10 @@ new_slab:
  			local_irq_restore(flags);
  			goto reread_page;
  		}
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		page = c->page = slub_percpu_partial(c);
  		slub_set_percpu_partial(c, page);
-@@ -2762,18 +2765,9 @@ new_slab:
+@@ -2775,18 +2778,9 @@ new_slab:
  		goto redo;
  	}
  

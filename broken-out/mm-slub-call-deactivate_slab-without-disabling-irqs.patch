@@ -35,7 +35,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/slub.c~mm-slub-call-deactivate_slab-without-disabling-irqs
 +++ a/mm/slub.c
-@@ -2752,8 +2752,8 @@ deactivate_slab:
+@@ -2765,8 +2765,8 @@ deactivate_slab:
  	freelist = c->freelist;
  	c->page = NULL;
  	c->freelist = NULL;
@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  new_slab:
  
-@@ -2821,18 +2821,32 @@ check_new_page:
+@@ -2834,18 +2834,32 @@ check_new_page:
  		 */
  		goto return_single;
  

@@ -70,7 +70,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return 0;
 --- a/init/main.c~init-move-usermodehelper_enable-to-populate_rootfs
 +++ a/init/main.c
-@@ -1387,7 +1387,6 @@ static void __init do_basic_setup(void)
+@@ -1392,7 +1392,6 @@ static void __init do_basic_setup(void)
  	driver_init();
  	init_irq_proc();
  	do_ctors();

@@ -147,7 +147,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -}
 --- a/arch/powerpc/kernel/traps.c~trap-cleanup-trap_init
 +++ a/arch/powerpc/kernel/traps.c
-@@ -2210,11 +2210,6 @@ DEFINE_INTERRUPT_HANDLER(kernel_bad_stac
+@@ -2215,11 +2215,6 @@ DEFINE_INTERRUPT_HANDLER(kernel_bad_stac
  	die("Bad kernel stack pointer", regs, SIGABRT);
  }
  
@@ -185,7 +185,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -}
 --- a/init/main.c~trap-cleanup-trap_init
 +++ a/init/main.c
-@@ -772,6 +772,8 @@ void __init __weak poking_init(void) { }
+@@ -777,6 +777,8 @@ void __init __weak poking_init(void) { }
  
  void __init __weak pgtable_cache_init(void) { }
  

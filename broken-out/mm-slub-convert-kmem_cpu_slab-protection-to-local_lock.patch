@@ -210,7 +210,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (page)
  		deactivate_slab(s, page, freelist);
-@@ -2836,9 +2878,9 @@ redo:
+@@ -2849,9 +2891,9 @@ redo:
  		goto deactivate_slab;
  
  	/* must check again c->page in case we got preempted and it changed */
@@ -222,7 +222,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		goto reread_page;
  	}
  	freelist = c->freelist;
-@@ -2849,7 +2891,7 @@ redo:
+@@ -2862,7 +2904,7 @@ redo:
  
  	if (!freelist) {
  		c->page = NULL;
@@ -231,7 +231,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		stat(s, DEACTIVATE_BYPASS);
  		goto new_slab;
  	}
-@@ -2858,7 +2900,11 @@ redo:
+@@ -2871,7 +2913,11 @@ redo:
  
  load_freelist:
  
@@ -244,7 +244,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * freelist is pointing to the list of objects to be used.
-@@ -2868,39 +2914,39 @@ load_freelist:
+@@ -2881,39 +2927,39 @@ load_freelist:
  	VM_BUG_ON(!c->page->frozen);
  	c->freelist = get_freepointer(s, freelist);
  	c->tid = next_tid(c->tid);
@@ -292,7 +292,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		stat(s, CPU_PARTIAL_ALLOC);
  		goto redo;
  	}
-@@ -2953,7 +2999,7 @@ check_new_page:
+@@ -2966,7 +3012,7 @@ check_new_page:
  
  retry_load_page:
  
@@ -301,7 +301,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (unlikely(c->page)) {
  		void *flush_freelist = c->freelist;
  		struct page *flush_page = c->page;
-@@ -2962,7 +3008,7 @@ retry_load_page:
+@@ -2975,7 +3021,7 @@ retry_load_page:
  		c->freelist = NULL;
  		c->tid = next_tid(c->tid);
  
@@ -310,7 +310,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		deactivate_slab(s, flush_page, flush_freelist);
  
-@@ -3081,7 +3127,15 @@ redo:
+@@ -3094,7 +3140,15 @@ redo:
  
  	object = c->freelist;
  	page = c->page;
@@ -327,7 +327,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		object = __slab_alloc(s, gfpflags, node, addr, c);
  	} else {
  		void *next_object = get_freepointer_safe(s, object);
-@@ -3341,6 +3395,7 @@ redo:
+@@ -3354,6 +3408,7 @@ redo:
  	barrier();
  
  	if (likely(page == c->page)) {
@@ -335,7 +335,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		void **freelist = READ_ONCE(c->freelist);
  
  		set_freepointer(s, tail_obj, freelist);
-@@ -3353,6 +3408,31 @@ redo:
+@@ -3366,6 +3421,31 @@ redo:
  			note_cmpxchg_failure("slab_free", s, tid);
  			goto redo;
  		}
@@ -367,7 +367,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		stat(s, FREE_FASTPATH);
  	} else
  		__slab_free(s, page, head, tail_obj, cnt, addr);
-@@ -3531,7 +3611,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
+@@ -3544,7 +3624,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
  	 * handlers invoking normal fastpath.
  	 */
  	c = slub_get_cpu_ptr(s->cpu_slab);
@@ -376,7 +376,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for (i = 0; i < size; i++) {
  		void *object = kfence_alloc(s, s->object_size, flags);
-@@ -3552,7 +3632,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
+@@ -3565,7 +3645,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
  			 */
  			c->tid = next_tid(c->tid);
  
@@ -385,7 +385,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  			/*
  			 * Invoking slow path likely have side-effect
-@@ -3566,7 +3646,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
+@@ -3579,7 +3659,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
  			c = this_cpu_ptr(s->cpu_slab);
  			maybe_wipe_obj_freeptr(s, p[i]);
  
@@ -394,7 +394,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  			continue; /* goto for-loop */
  		}
-@@ -3575,7 +3655,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
+@@ -3588,7 +3668,7 @@ int kmem_cache_alloc_bulk(struct kmem_ca
  		maybe_wipe_obj_freeptr(s, p[i]);
  	}
  	c->tid = next_tid(c->tid);

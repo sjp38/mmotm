@@ -78,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -2742,7 +2748,10 @@ deactivate_slab:
+@@ -2755,7 +2761,10 @@ deactivate_slab:
  		local_irq_restore(flags);
  		goto reread_page;
  	}
@@ -90,7 +90,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	local_irq_restore(flags);
  
  new_slab:
-@@ -2821,11 +2830,7 @@ check_new_page:
+@@ -2834,11 +2843,7 @@ check_new_page:
  return_single:
  
  	local_irq_save(flags);

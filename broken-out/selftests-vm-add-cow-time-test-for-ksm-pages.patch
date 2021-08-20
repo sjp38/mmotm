@@ -12,26 +12,25 @@ compared with performance of non-shared pages.
 
 The test is run as follows: ./ksm_tests -C
 The output:
-        Total size:    15 MiB
+	Total size:    15 MiB
 
-        Not merged pages:
-        Total time:     0.001903112 s
-        Average speed:  3678.186 MiB/s
+	Not merged pages:
+	Total time:     0.002185489 s
+	Average speed:  3202.945 MiB/s
 
-        Merged pages:
-        Total time:     0.006215680 s
-        Average speed:  1126.184 MiB/s
+	Merged pages:
+	Total time:     0.004386872 s
+	Average speed:  1595.670 MiB/s
 
-Link: https://lkml.kernel.org/r/eb4d348a90329b20d9659b86a501c9625efe4fab.1628199399.git.zhansayabagdaulet@gmail.com
+Link: https://lkml.kernel.org/r/1d03ee0d1b341959d4b61672c6401d498bff5652.1629386192.git.zhansayabagdaulet@gmail.com
 Signed-off-by: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
-Cc: Shuah Khan <shuah@kernel.org>
-Cc: Tyler Hicks <tyhicks@linux.microsoft.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/vm/ksm_tests.c |   84 ++++++++++++++++++++++-
- 1 file changed, 81 insertions(+), 3 deletions(-)
+ tools/testing/selftests/vm/ksm_tests.c |   86 ++++++++++++++++++++++-
+ 1 file changed, 83 insertions(+), 3 deletions(-)
 
 --- a/tools/testing/selftests/vm/ksm_tests.c~selftests-vm-add-cow-time-test-for-ksm-pages
 +++ a/tools/testing/selftests/vm/ksm_tests.c
@@ -55,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	printf(" -a: specify the access protections of pages.\n"
  	       "     <prot> must be of the form [rwx].\n"
-@@ -455,6 +457,75 @@ err_out:
+@@ -455,6 +457,77 @@ err_out:
  	return KSFT_FAIL;
  }
  
@@ -64,7 +63,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	void *map_ptr;
 +	struct timespec start_time, end_time;
 +	unsigned long cow_time_ns;
-+	int page_count = 4000;
++
++	/* page_count must be less than 2*page_size */
++	size_t page_count = 4000;
 +
 +	map_ptr = allocate_memory(NULL, prot, mapping, '*', page_size * page_count);
 +	if (!map_ptr)
@@ -74,7 +75,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		perror("clock_gettime");
 +		return KSFT_FAIL;
 +	}
-+	for (size_t i = 0; i < page_count; i = i + 2)
++	for (size_t i = 0; i < page_count - 1; i = i + 2)
 +		memset(map_ptr + page_size * i, '-', 1);
 +	if (clock_gettime(CLOCK_MONOTONIC_RAW, &end_time)) {
 +		perror("clock_gettime");
@@ -91,10 +92,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	printf("Average speed:  %.3f MiB/s\n\n", ((page_size * (page_count / 2)) / MB) /
 +					       ((double)cow_time_ns / NSEC_PER_SEC));
 +
-+	/* Create 2000 pairs of duplicated pages */
-+	for (size_t i = 0; i < page_count; i = i + 2) {
-+		memset(map_ptr + page_size * i, '+', i + 1);
-+		memset(map_ptr + page_size * (i + 1), '+', i + 1);
++	/* Create 2000 pairs of duplicate pages */
++	for (size_t i = 0; i < page_count - 1; i = i + 2) {
++		memset(map_ptr + page_size * i, '+', i / 2 + 1);
++		memset(map_ptr + page_size * (i + 1), '+', i / 2 + 1);
 +	}
 +	if (ksm_merge_pages(map_ptr, page_size * page_count, start_time, timeout))
 +		goto err_out;
@@ -103,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		perror("clock_gettime");
 +		goto err_out;
 +	}
-+	for (size_t i = 0; i < page_count; i = i + 2)
++	for (size_t i = 0; i < page_count - 1; i = i + 2)
 +		memset(map_ptr + page_size * i, '-', 1);
 +	if (clock_gettime(CLOCK_MONOTONIC_RAW, &end_time)) {
 +		perror("clock_gettime");
@@ -131,7 +132,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  int main(int argc, char *argv[])
  {
  	int ret, opt;
-@@ -468,7 +539,7 @@ int main(int argc, char *argv[])
+@@ -468,7 +541,7 @@ int main(int argc, char *argv[])
  	bool merge_across_nodes = KSM_MERGE_ACROSS_NODES_DEFAULT;
  	long size_MB = 0;
  
@@ -140,7 +141,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		switch (opt) {
  		case 'a':
  			prot = str_to_prot(optarg);
-@@ -522,6 +593,9 @@ int main(int argc, char *argv[])
+@@ -522,6 +595,9 @@ int main(int argc, char *argv[])
  		case 'P':
  			test_name = KSM_MERGE_TIME;
  			break;
@@ -150,7 +151,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		default:
  			return KSFT_FAIL;
  		}
-@@ -571,6 +645,10 @@ int main(int argc, char *argv[])
+@@ -571,6 +647,10 @@ int main(int argc, char *argv[])
  		ret = ksm_merge_time(MAP_PRIVATE | MAP_ANONYMOUS, prot, ksm_scan_limit_sec,
  				     size_MB);
  		break;

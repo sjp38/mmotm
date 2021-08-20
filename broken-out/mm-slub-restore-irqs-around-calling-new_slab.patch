@@ -46,7 +46,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!page)
  		return NULL;
  
-@@ -2785,16 +2780,17 @@ new_objects:
+@@ -2798,16 +2793,17 @@ new_objects:
  		goto check_new_page;
  	}
  

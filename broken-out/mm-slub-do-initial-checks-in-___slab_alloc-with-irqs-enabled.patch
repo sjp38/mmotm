@@ -8,6 +8,11 @@ percpu slab and it's suitable for our allocation.
 Now we have to recheck c->page after actually disabling irqs as an
 allocation in irq handler might have replaced it.
 
+Because we call pfmemalloc_match() as one of the checks, we might hit
+VM_BUG_ON_PAGE(!PageSlab(page)) in PageSlabPfmemalloc in case we get
+interrupted and the page is freed.  Thus introduce a
+pfmemalloc_match_unsafe() variant that lacks the PageSlab check.
+
 Link: https://lkml.kernel.org/r/20210805152000.12817-14-vbabka@suse.cz
 Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
 Acked-by: Mel Gorman <mgorman@techsingularity.net>

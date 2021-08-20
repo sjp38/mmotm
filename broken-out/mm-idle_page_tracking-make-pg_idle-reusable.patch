@@ -125,7 +125,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* _LINUX_MM_PAGE_IDLE_H */
 --- a/include/trace/events/mmflags.h~mm-idle_page_tracking-make-pg_idle-reusable
 +++ a/include/trace/events/mmflags.h
-@@ -73,7 +73,7 @@
+@@ -75,7 +75,7 @@
  #define IF_HAVE_PG_HWPOISON(flag,string)
  #endif
  

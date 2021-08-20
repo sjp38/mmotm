@@ -10,9 +10,9 @@ usual duplicate pages.  The test is run as follows: ./ksm_tests -Z
 Link: https://lkml.kernel.org/r/6d0caab00d4bdccf5e3791cb95cf6dfd5eb85e45.1626252248.git.zhansayabagdaulet@gmail.com
 Signed-off-by: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
 Reviewed-by: Pavel Tatashin <pasha.tatashin@soleen.com>
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Cc: Hugh Dickins <hughd@google.com>
 Cc: Shuah Khan <shuah@kernel.org>
-Cc: Tyler Hicks <tyhicks@linux.microsoft.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

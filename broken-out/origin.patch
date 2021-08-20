@@ -1,4 +1,4 @@
-GIT a2824f19e6065a0d3735acd9fe7155b104e7edf5
+GIT d6d09a6942050f21b065a134169002b4d6b701ef
 
 diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
 index e322676039f4..b00dbc5fac2b 100644
@@ -78,6 +78,19 @@ index e8ccab50ebf6..69639f9624f5 100644
  	}
  
  	vmcb_mark_dirty(svm->vmcb, VMCB_INTR);
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index ca3b02dcbbfa..64b772c5d1c9 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -1768,7 +1768,7 @@ config CRYPTO_DRBG_HMAC
+ 	bool
+ 	default y
+ 	select CRYPTO_HMAC
+-	select CRYPTO_SHA256
++	select CRYPTO_SHA512
+ 
+ config CRYPTO_DRBG_HASH
+ 	bool "Enable Hash DRBG"
 diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
 index 4b49df2dfd23..afb37aac09e8 100644
 --- a/drivers/block/virtio_blk.c
@@ -570,6 +583,76 @@ index e1a141135992..72eaef2caeb1 100644
  	/* Queue shouldn't already be set up. */
  	if (ops->get_vq_ready(vdpa, index))
  		return ERR_PTR(-ENOENT);
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 0117d867ecf8..06f9f167222b 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -9226,8 +9226,14 @@ static int btrfs_rename_exchange(struct inode *old_dir,
+ 	bool dest_log_pinned = false;
+ 	bool need_abort = false;
+ 
+-	/* we only allow rename subvolume link between subvolumes */
+-	if (old_ino != BTRFS_FIRST_FREE_OBJECTID && root != dest)
++	/*
++	 * For non-subvolumes allow exchange only within one subvolume, in the
++	 * same inode namespace. Two subvolumes (represented as directory) can
++	 * be exchanged as they're a logical link and have a fixed inode number.
++	 */
++	if (root != dest &&
++	    (old_ino != BTRFS_FIRST_FREE_OBJECTID ||
++	     new_ino != BTRFS_FIRST_FREE_OBJECTID))
+ 		return -EXDEV;
+ 
+ 	/* close the race window with snapshot create/destroy ioctl */
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 8e6ef62aeb1c..678dee2a8228 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -444,9 +444,6 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
+ #endif
+ 
+ 	/*
+-	 * Epoll nonsensically wants a wakeup whether the pipe
+-	 * was already empty or not.
+-	 *
+ 	 * If it wasn't empty we try to merge new data into
+ 	 * the last buffer.
+ 	 *
+@@ -455,9 +452,9 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
+ 	 * spanning multiple pages.
+ 	 */
+ 	head = pipe->head;
+-	was_empty = true;
++	was_empty = pipe_empty(head, pipe->tail);
+ 	chars = total_len & (PAGE_SIZE-1);
+-	if (chars && !pipe_empty(head, pipe->tail)) {
++	if (chars && !was_empty) {
+ 		unsigned int mask = pipe->ring_size - 1;
+ 		struct pipe_buffer *buf = &pipe->bufs[(head - 1) & mask];
+ 		int offset = buf->offset + buf->len;
+@@ -590,8 +587,11 @@ pipe_write(struct kiocb *iocb, struct iov_iter *from)
+ 	 * This is particularly important for small writes, because of
+ 	 * how (for example) the GNU make jobserver uses small writes to
+ 	 * wake up pending jobs
++	 *
++	 * Epoll nonsensically wants a wakeup whether the pipe
++	 * was already empty or not.
+ 	 */
+-	if (was_empty) {
++	if (was_empty || pipe->poll_usage) {
+ 		wake_up_interruptible_sync_poll(&pipe->rd_wait, EPOLLIN | EPOLLRDNORM);
+ 		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
+ 	}
+@@ -654,6 +654,9 @@ pipe_poll(struct file *filp, poll_table *wait)
+ 	struct pipe_inode_info *pipe = filp->private_data;
+ 	unsigned int head, tail;
+ 
++	/* Epoll has some historical nasty semantics, this enables them */
++	pipe->poll_usage = 1;
++
+ 	/*
+ 	 * Reading pipe state only -- no need for acquiring the semaphore.
+ 	 *
 diff --git a/include/linux/mlx5/mlx5_ifc_vdpa.h b/include/linux/mlx5/mlx5_ifc_vdpa.h
 index 98b56b75c625..1a9c9d94cb59 100644
 --- a/include/linux/mlx5/mlx5_ifc_vdpa.h
@@ -594,6 +677,26 @@ index 98b56b75c625..1a9c9d94cb59 100644
  };
  
  struct mlx5_ifc_virtio_q_bits {
+diff --git a/include/linux/pipe_fs_i.h b/include/linux/pipe_fs_i.h
+index 5d2705f1d01c..fc5642431b92 100644
+--- a/include/linux/pipe_fs_i.h
++++ b/include/linux/pipe_fs_i.h
+@@ -48,6 +48,7 @@ struct pipe_buffer {
+  *	@files: number of struct file referring this pipe (protected by ->i_lock)
+  *	@r_counter: reader counter
+  *	@w_counter: writer counter
++ *	@poll_usage: is this pipe used for epoll, which has crazy wakeups?
+  *	@fasync_readers: reader side fasync
+  *	@fasync_writers: writer side fasync
+  *	@bufs: the circular array of pipe buffers
+@@ -70,6 +71,7 @@ struct pipe_inode_info {
+ 	unsigned int files;
+ 	unsigned int r_counter;
+ 	unsigned int w_counter;
++	unsigned int poll_usage;
+ 	struct page *tmp_page;
+ 	struct fasync_struct *fasync_readers;
+ 	struct fasync_struct *fasync_writers;
 diff --git a/include/linux/vdpa.h b/include/linux/vdpa.h
 index 3357ac98878d..8cfe49d201dd 100644
 --- a/include/linux/vdpa.h
@@ -668,6 +771,36 @@ index f5b8246e8aa1..8d97aba78c3a 100644
  
  /* Change NUL term back to "=", to make "param" the whole string. */
  static void __init repair_env_string(char *param, char *val)
+diff --git a/kernel/cfi.c b/kernel/cfi.c
+index e17a56639766..9594cfd1cf2c 100644
+--- a/kernel/cfi.c
++++ b/kernel/cfi.c
+@@ -248,9 +248,9 @@ static inline cfi_check_fn find_shadow_check_fn(unsigned long ptr)
+ {
+ 	cfi_check_fn fn;
+ 
+-	rcu_read_lock_sched();
++	rcu_read_lock_sched_notrace();
+ 	fn = ptr_to_check_fn(rcu_dereference_sched(cfi_shadow), ptr);
+-	rcu_read_unlock_sched();
++	rcu_read_unlock_sched_notrace();
+ 
+ 	return fn;
+ }
+@@ -269,11 +269,11 @@ static inline cfi_check_fn find_module_check_fn(unsigned long ptr)
+ 	cfi_check_fn fn = NULL;
+ 	struct module *mod;
+ 
+-	rcu_read_lock_sched();
++	rcu_read_lock_sched_notrace();
+ 	mod = __module_address(ptr);
+ 	if (mod)
+ 		fn = mod->cfi_check;
+-	rcu_read_unlock_sched();
++	rcu_read_unlock_sched_notrace();
+ 
+ 	return fn;
+ }
 diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
 index d567b1717c4c..3ee23f4d437f 100644
 --- a/kernel/trace/Kconfig
@@ -684,6 +817,83 @@ index d567b1717c4c..3ee23f4d437f 100644
  config FUNCTION_PROFILER
  	bool "Kernel function profiler"
  	depends on FUNCTION_TRACER
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 33899a71fdc1..a1adb29ef5c1 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2897,14 +2897,26 @@ int tracepoint_printk_sysctl(struct ctl_table *table, int write,
+ 
+ void trace_event_buffer_commit(struct trace_event_buffer *fbuffer)
+ {
++	enum event_trigger_type tt = ETT_NONE;
++	struct trace_event_file *file = fbuffer->trace_file;
++
++	if (__event_trigger_test_discard(file, fbuffer->buffer, fbuffer->event,
++			fbuffer->entry, &tt))
++		goto discard;
++
+ 	if (static_key_false(&tracepoint_printk_key.key))
+ 		output_printk(fbuffer);
+ 
+ 	if (static_branch_unlikely(&trace_event_exports_enabled))
+ 		ftrace_exports(fbuffer->event, TRACE_EXPORT_EVENT);
+-	event_trigger_unlock_commit_regs(fbuffer->trace_file, fbuffer->buffer,
+-				    fbuffer->event, fbuffer->entry,
+-				    fbuffer->trace_ctx, fbuffer->regs);
++
++	trace_buffer_unlock_commit_regs(file->tr, fbuffer->buffer,
++			fbuffer->event, fbuffer->trace_ctx, fbuffer->regs);
++
++discard:
++	if (tt)
++		event_triggers_post_call(file, tt);
++
+ }
+ EXPORT_SYMBOL_GPL(trace_event_buffer_commit);
+ 
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index a180abf76d4e..4a0e693000c6 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -1389,38 +1389,6 @@ event_trigger_unlock_commit(struct trace_event_file *file,
+ 		event_triggers_post_call(file, tt);
+ }
+ 
+-/**
+- * event_trigger_unlock_commit_regs - handle triggers and finish event commit
+- * @file: The file pointer associated with the event
+- * @buffer: The ring buffer that the event is being written to
+- * @event: The event meta data in the ring buffer
+- * @entry: The event itself
+- * @trace_ctx: The tracing context flags.
+- *
+- * This is a helper function to handle triggers that require data
+- * from the event itself. It also tests the event against filters and
+- * if the event is soft disabled and should be discarded.
+- *
+- * Same as event_trigger_unlock_commit() but calls
+- * trace_buffer_unlock_commit_regs() instead of trace_buffer_unlock_commit().
+- */
+-static inline void
+-event_trigger_unlock_commit_regs(struct trace_event_file *file,
+-				 struct trace_buffer *buffer,
+-				 struct ring_buffer_event *event,
+-				 void *entry, unsigned int trace_ctx,
+-				 struct pt_regs *regs)
+-{
+-	enum event_trigger_type tt = ETT_NONE;
+-
+-	if (!__event_trigger_test_discard(file, buffer, event, entry, &tt))
+-		trace_buffer_unlock_commit_regs(file->tr, buffer, event,
+-						trace_ctx, regs);
+-
+-	if (tt)
+-		event_triggers_post_call(file, tt);
+-}
+-
+ #define FILTER_PRED_INVALID	((unsigned short)-1)
+ #define FILTER_PRED_IS_RIGHT	(1 << 15)
+ #define FILTER_PRED_FOLD	(1 << 15)
 diff --git a/kernel/trace/trace_events_hist.c b/kernel/trace/trace_events_hist.c
 index 949ef09dc537..a48aa2a2875b 100644
 --- a/kernel/trace/trace_events_hist.c
@@ -798,6 +1008,158 @@ index a7e3c24dee13..b61eefe5ccf5 100644
  	tracer_tracing_off(tr);
  }
  
+diff --git a/sound/firewire/oxfw/oxfw-stream.c b/sound/firewire/oxfw/oxfw-stream.c
+index 0ef242fdd3bc..fff18b5d4e05 100644
+--- a/sound/firewire/oxfw/oxfw-stream.c
++++ b/sound/firewire/oxfw/oxfw-stream.c
+@@ -153,7 +153,7 @@ static int init_stream(struct snd_oxfw *oxfw, struct amdtp_stream *stream)
+ 	struct cmp_connection *conn;
+ 	enum cmp_direction c_dir;
+ 	enum amdtp_stream_direction s_dir;
+-	unsigned int flags = CIP_UNAWARE_SYT;
++	unsigned int flags = 0;
+ 	int err;
+ 
+ 	if (!(oxfw->quirks & SND_OXFW_QUIRK_BLOCKING_TRANSMISSION))
+@@ -161,6 +161,13 @@ static int init_stream(struct snd_oxfw *oxfw, struct amdtp_stream *stream)
+ 	else
+ 		flags |= CIP_BLOCKING;
+ 
++	// OXFW 970/971 has no function to generate playback timing according to the sequence
++	// of value in syt field, thus the packet should include NO_INFO value in the field.
++	// However, some models just ignore data blocks in packet with NO_INFO for audio data
++	// processing.
++	if (!(oxfw->quirks & SND_OXFW_QUIRK_IGNORE_NO_INFO_PACKET))
++		flags |= CIP_UNAWARE_SYT;
++
+ 	if (stream == &oxfw->tx_stream) {
+ 		conn = &oxfw->out_conn;
+ 		c_dir = CMP_OUTPUT;
+diff --git a/sound/firewire/oxfw/oxfw.c b/sound/firewire/oxfw/oxfw.c
+index 84971d78d152..cb5b5e3a481b 100644
+--- a/sound/firewire/oxfw/oxfw.c
++++ b/sound/firewire/oxfw/oxfw.c
+@@ -159,8 +159,10 @@ static int detect_quirks(struct snd_oxfw *oxfw, const struct ieee1394_device_id
+ 		return snd_oxfw_scs1x_add(oxfw);
+ 	}
+ 
+-	if (entry->vendor_id == OUI_APOGEE && entry->model_id == MODEL_DUET_FW)
+-		oxfw->quirks |= SND_OXFW_QUIRK_BLOCKING_TRANSMISSION;
++	if (entry->vendor_id == OUI_APOGEE && entry->model_id == MODEL_DUET_FW) {
++		oxfw->quirks |= SND_OXFW_QUIRK_BLOCKING_TRANSMISSION |
++				SND_OXFW_QUIRK_IGNORE_NO_INFO_PACKET;
++	}
+ 
+ 	/*
+ 	 * TASCAM FireOne has physical control and requires a pair of additional
+diff --git a/sound/firewire/oxfw/oxfw.h b/sound/firewire/oxfw/oxfw.h
+index ee47abcb0c90..c13034f6c2ca 100644
+--- a/sound/firewire/oxfw/oxfw.h
++++ b/sound/firewire/oxfw/oxfw.h
+@@ -42,6 +42,11 @@ enum snd_oxfw_quirk {
+ 	SND_OXFW_QUIRK_BLOCKING_TRANSMISSION = 0x04,
+ 	// Stanton SCS1.d and SCS1.m support unique transaction.
+ 	SND_OXFW_QUIRK_SCS_TRANSACTION = 0x08,
++	// Apogee Duet FireWire ignores data blocks in packet with NO_INFO for audio data
++	// processing, while output level meter moves. Any value in syt field of packet takes
++	// the device to process audio data even if the value is invalid in a point of
++	// IEC 61883-1/6.
++	SND_OXFW_QUIRK_IGNORE_NO_INFO_PACKET = 0x10,
+ };
+ 
+ /* This is an arbitrary number for convinience. */
+diff --git a/sound/pci/hda/hda_generic.c b/sound/pci/hda/hda_generic.c
+index e97d00585e8e..481d8f8d3396 100644
+--- a/sound/pci/hda/hda_generic.c
++++ b/sound/pci/hda/hda_generic.c
+@@ -3460,7 +3460,7 @@ static int cap_put_caller(struct snd_kcontrol *kcontrol,
+ 	struct hda_gen_spec *spec = codec->spec;
+ 	const struct hda_input_mux *imux;
+ 	struct nid_path *path;
+-	int i, adc_idx, err = 0;
++	int i, adc_idx, ret, err = 0;
+ 
+ 	imux = &spec->input_mux;
+ 	adc_idx = kcontrol->id.index;
+@@ -3470,9 +3470,13 @@ static int cap_put_caller(struct snd_kcontrol *kcontrol,
+ 		if (!path || !path->ctls[type])
+ 			continue;
+ 		kcontrol->private_value = path->ctls[type];
+-		err = func(kcontrol, ucontrol);
+-		if (err < 0)
++		ret = func(kcontrol, ucontrol);
++		if (ret < 0) {
++			err = ret;
+ 			break;
++		}
++		if (ret > 0)
++			err = 1;
+ 	}
+ 	mutex_unlock(&codec->control_mutex);
+ 	if (err >= 0 && spec->cap_sync_hook)
+diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+index 0322b289505e..0062c18b646a 100644
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -883,10 +883,11 @@ static unsigned int azx_get_pos_skl(struct azx *chip, struct azx_dev *azx_dev)
+ 	return azx_get_pos_posbuf(chip, azx_dev);
+ }
+ 
+-static void azx_shutdown_chip(struct azx *chip)
++static void __azx_shutdown_chip(struct azx *chip, bool skip_link_reset)
+ {
+ 	azx_stop_chip(chip);
+-	azx_enter_link_reset(chip);
++	if (!skip_link_reset)
++		azx_enter_link_reset(chip);
+ 	azx_clear_irq_pending(chip);
+ 	display_power(chip, false);
+ }
+@@ -895,6 +896,11 @@ static void azx_shutdown_chip(struct azx *chip)
+ static DEFINE_MUTEX(card_list_lock);
+ static LIST_HEAD(card_list);
+ 
++static void azx_shutdown_chip(struct azx *chip)
++{
++	__azx_shutdown_chip(chip, false);
++}
++
+ static void azx_add_card_list(struct azx *chip)
+ {
+ 	struct hda_intel *hda = container_of(chip, struct hda_intel, chip);
+@@ -2385,7 +2391,7 @@ static void azx_shutdown(struct pci_dev *pci)
+ 		return;
+ 	chip = card->private_data;
+ 	if (chip && chip->running)
+-		azx_shutdown_chip(chip);
++		__azx_shutdown_chip(chip, true);
+ }
+ 
+ /* PCI IDs */
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index a065260d0d20..96f32eaa24df 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -8332,6 +8332,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x1028, 0x0a2e, "Dell", ALC236_FIXUP_DELL_AIO_HEADSET_MIC),
+ 	SND_PCI_QUIRK(0x1028, 0x0a30, "Dell", ALC236_FIXUP_DELL_AIO_HEADSET_MIC),
+ 	SND_PCI_QUIRK(0x1028, 0x0a58, "Dell", ALC255_FIXUP_DELL_HEADSET_MIC),
++	SND_PCI_QUIRK(0x1028, 0x0a61, "Dell XPS 15 9510", ALC289_FIXUP_DUAL_SPK),
+ 	SND_PCI_QUIRK(0x1028, 0x164a, "Dell", ALC293_FIXUP_DELL1_MIC_NO_PRESENCE),
+ 	SND_PCI_QUIRK(0x1028, 0x164b, "Dell", ALC293_FIXUP_DELL1_MIC_NO_PRESENCE),
+ 	SND_PCI_QUIRK(0x103c, 0x1586, "HP", ALC269_FIXUP_HP_MUTE_LED_MIC2),
+diff --git a/sound/pci/hda/patch_via.c b/sound/pci/hda/patch_via.c
+index a5c1a2c4eae4..773a136161f1 100644
+--- a/sound/pci/hda/patch_via.c
++++ b/sound/pci/hda/patch_via.c
+@@ -1041,6 +1041,7 @@ static const struct hda_fixup via_fixups[] = {
+ };
+ 
+ static const struct snd_pci_quirk vt2002p_fixups[] = {
++	SND_PCI_QUIRK(0x1043, 0x13f7, "Asus B23E", VIA_FIXUP_POWER_SAVE),
+ 	SND_PCI_QUIRK(0x1043, 0x1487, "Asus G75", VIA_FIXUP_ASUS_G75),
+ 	SND_PCI_QUIRK(0x1043, 0x8532, "Asus X202E", VIA_FIXUP_INTMIC_BOOST),
+ 	SND_PCI_QUIRK_VENDOR(0x1558, "Clevo", VIA_FIXUP_POWER_SAVE),
 diff --git a/tools/virtio/Makefile b/tools/virtio/Makefile
 index b587b9a7a124..0d7bbe49359d 100644
 --- a/tools/virtio/Makefile

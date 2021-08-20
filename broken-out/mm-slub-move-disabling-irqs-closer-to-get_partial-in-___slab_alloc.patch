@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/slub.c~mm-slub-move-disabling-irqs-closer-to-get_partial-in-___slab_alloc
 +++ a/mm/slub.c
-@@ -2679,11 +2679,6 @@ reread_page:
+@@ -2692,11 +2692,6 @@ reread_page:
  		if (unlikely(node != NUMA_NO_NODE &&
  			     !node_isset(node, slab_nodes)))
  			node = NUMA_NO_NODE;
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		goto new_slab;
  	}
  redo:
-@@ -2724,6 +2719,7 @@ redo:
+@@ -2737,6 +2732,7 @@ redo:
  
  	if (!freelist) {
  		c->page = NULL;
@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		stat(s, DEACTIVATE_BYPASS);
  		goto new_slab;
  	}
-@@ -2753,12 +2749,19 @@ deactivate_slab:
+@@ -2766,12 +2762,19 @@ deactivate_slab:
  		goto reread_page;
  	}
  	deactivate_slab(s, page, c->freelist, c);
@@ -67,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		page = c->page = slub_percpu_partial(c);
  		slub_set_percpu_partial(c, page);
  		local_irq_restore(flags);
-@@ -2766,6 +2769,16 @@ new_slab:
+@@ -2779,6 +2782,16 @@ new_slab:
  		goto redo;
  	}
  
@@ -84,7 +84,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	freelist = get_partial(s, gfpflags, node, &page);
  	if (freelist) {
  		c->page = page;
-@@ -2798,15 +2811,18 @@ new_slab:
+@@ -2811,15 +2824,18 @@ new_slab:
  check_new_page:
  
  	if (kmem_cache_debug(s)) {

@@ -1,0 +1,24 @@
+From: Jason Wang <wangborong@cdjrlc.com>
+Subject: ia64: fix typo in a comment
+
+s/when when/when/
+
+Link: https://lkml.kernel.org/r/20210817112500.12848-1-wangborong@cdjrlc.com
+Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/ia64/kernel/acpi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/ia64/kernel/acpi.c~ia64-fix-typo-in-a-comment
++++ a/arch/ia64/kernel/acpi.c
+@@ -906,6 +906,6 @@ EXPORT_SYMBOL(acpi_unregister_ioapic);
+ /*
+  * acpi_suspend_lowlevel() - save kernel state and suspend.
+  *
+- * TBD when when IA64 starts to support suspend...
++ * TBD when IA64 starts to support suspend...
+  */
+ int acpi_suspend_lowlevel(void) { return 0; }
+_

@@ -1,7 +1,7 @@
 From: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
 Subject: selftests: vm: add KSM merging time test
 
-patch series "add KSM performance tests", v2.
+Patch series "add KSM performance tests", v3.
 
 Extend KSM self tests with a performance benchmark.  These tests are not
 part of regular regression testing, as they are mainly intended to be used
@@ -21,11 +21,10 @@ The output:
 	Total time:    0.201106786 s
 	Average speed:  497.248 MiB/s
 
-Link: https://lkml.kernel.org/r/cover.1628199399.git.zhansayabagdaulet@gmail.com
-Link: https://lkml.kernel.org/r/318b946ac80cc9205c89d0962048378f7ce0705b.1628199399.git.zhansayabagdaulet@gmail.com
+Link: https://lkml.kernel.org/r/cover.1629386192.git.zhansayabagdaulet@gmail.com
+Link: https://lkml.kernel.org/r/318b946ac80cc9205c89d0962048378f7ce0705b.1629386192.git.zhansayabagdaulet@gmail.com
 Signed-off-by: Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
-Cc: Shuah Khan <shuah@kernel.org>
-Cc: Tyler Hicks <tyhicks@linux.microsoft.com>
+Reviewed-by: Tyler Hicks <tyhicks@linux.microsoft.com>
 Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
@@ -152,7 +151,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				merge_across_nodes = 1;
  			break;
 +		case 's':
-+			size_MB = atol(optarg);
++			size_MB = atoi(optarg);
 +			if (size_MB <= 0) {
 +				printf("Size must be greater than 0\n");
 +				return KSFT_FAIL;

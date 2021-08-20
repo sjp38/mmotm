@@ -95,7 +95,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Use the cpu notifier to insure that the cpu slabs are flushed when
   * necessary.
-@@ -4114,7 +4120,7 @@ int __kmem_cache_shutdown(struct kmem_ca
+@@ -4127,7 +4133,7 @@ int __kmem_cache_shutdown(struct kmem_ca
  	int node;
  	struct kmem_cache_node *n;
  
@@ -104,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Attempt to free all objects */
  	for_each_kmem_cache_node(s, node, n) {
  		free_partial(s, n);
-@@ -4390,7 +4396,7 @@ EXPORT_SYMBOL(kfree);
+@@ -4403,7 +4409,7 @@ EXPORT_SYMBOL(kfree);
   * being allocated from last increasing the chance that the last objects
   * are freed in them.
   */
@@ -113,7 +113,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	int node;
  	int i;
-@@ -4402,7 +4408,6 @@ int __kmem_cache_shrink(struct kmem_cach
+@@ -4415,7 +4421,6 @@ int __kmem_cache_shrink(struct kmem_cach
  	unsigned long flags;
  	int ret = 0;
  
@@ -121,7 +121,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	for_each_kmem_cache_node(s, node, n) {
  		INIT_LIST_HEAD(&discard);
  		for (i = 0; i < SHRINK_PROMOTE_MAX; i++)
-@@ -4452,13 +4457,21 @@ int __kmem_cache_shrink(struct kmem_cach
+@@ -4465,13 +4470,21 @@ int __kmem_cache_shrink(struct kmem_cach
  	return ret;
  }
  

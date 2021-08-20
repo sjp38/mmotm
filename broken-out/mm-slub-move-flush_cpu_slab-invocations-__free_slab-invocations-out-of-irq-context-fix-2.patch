@@ -14,7 +14,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/slub.c~mm-slub-move-flush_cpu_slab-invocations-__free_slab-invocations-out-of-irq-context-fix-2
 +++ a/mm/slub.c
-@@ -4396,7 +4396,7 @@ EXPORT_SYMBOL(kfree);
+@@ -4409,7 +4409,7 @@ EXPORT_SYMBOL(kfree);
   * being allocated from last increasing the chance that the last objects
   * are freed in them.
   */
