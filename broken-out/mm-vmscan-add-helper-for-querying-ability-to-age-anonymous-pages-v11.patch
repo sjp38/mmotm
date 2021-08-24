@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-add-helper-for-querying-ability-to-age-anonymous-pages-v11
 +++ a/mm/vmscan.c
-@@ -2742,7 +2742,7 @@ static bool can_age_anon_pages(struct pg
+@@ -2753,7 +2753,7 @@ static bool can_age_anon_pages(struct pg
  		return true;
  
  	/* Also valuable if anon pages can be demoted: */

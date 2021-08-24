@@ -46,7 +46,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-remove-the-pagedirty-check-after-madv_free-pages-are-page_ref_freezed
 +++ a/mm/vmscan.c
-@@ -1736,11 +1736,14 @@ retry:
+@@ -1739,11 +1739,14 @@ retry:
  			/* follow __remove_mapping for reference */
  			if (!page_ref_freeze(page, 1))
  				goto keep_locked;

@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-consider-anonymous-pages-without-swap-v11
 +++ a/mm/vmscan.c
-@@ -552,7 +552,7 @@ static inline bool can_reclaim_anon_page
+@@ -555,7 +555,7 @@ static inline bool can_reclaim_anon_page
  	 *
  	 * Can it be reclaimed from this node via demotion?
  	 */

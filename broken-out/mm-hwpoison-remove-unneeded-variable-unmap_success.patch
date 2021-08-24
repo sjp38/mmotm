@@ -17,7 +17,7 @@ here.  Remove this unneeded one.
 Link: https://lkml.kernel.org/r/20210814105131.48814-1-linmiaohe@huawei.com
 Link: https://lkml.kernel.org/r/20210814105131.48814-2-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -26,7 +26,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory-failure.c~mm-hwpoison-remove-unneeded-variable-unmap_success
 +++ a/mm/memory-failure.c
-@@ -1512,7 +1512,6 @@ static int memory_failure_dev_pagemap(un
+@@ -1518,7 +1518,6 @@ static int memory_failure_dev_pagemap(un
  		struct dev_pagemap *pgmap)
  {
  	struct page *page = pfn_to_page(pfn);
@@ -34,7 +34,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long size = 0;
  	struct to_kill *tk;
  	LIST_HEAD(tokill);
-@@ -1584,7 +1583,7 @@ static int memory_failure_dev_pagemap(un
+@@ -1590,7 +1589,7 @@ static int memory_failure_dev_pagemap(un
  		start = (page->index << PAGE_SHIFT) & ~(size - 1);
  		unmap_mapping_range(page->mapping, start, size, 0);
  	}

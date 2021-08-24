@@ -17,7 +17,6 @@ Cc: Alexander Lobakin <alobakin@pm.me>
 Cc: Alexey Klimov <aklimov@redhat.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: kernel test robot <lkp@intel.com>
 Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

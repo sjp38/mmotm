@@ -1,0 +1,35 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory_hotplug: make HWPoisoned dirty swapcache pages unmovable
+
+HWPoisoned dirty swapcache pages are kept for killing owner processes.  We
+should not offline these pages or do_swap_page() would access the offline
+pages and lead to bad ending.
+
+Link: https://lkml.kernel.org/r/20210821094246.10149-4-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Chris Goldsworthy <cgoldswo@codeaurora.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory_hotplug.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+--- a/mm/memory_hotplug.c~mm-memory_hotplug-make-hwpoisoned-dirty-swapcache-pages-unmovable
++++ a/mm/memory_hotplug.c
+@@ -1664,6 +1664,12 @@ static int scan_movable_pages(unsigned l
+ 		 */
+ 		if (PageOffline(page) && page_count(page))
+ 			return -EBUSY;
++		/*
++		 * HWPoisoned dirty swapcache pages are definitely unmovable
++		 * because they are kept for killing owner processes.
++		 */
++		if (PageHWPoison(page) && PageSwapCache(page))
++			return -EBUSY;
+ 
+ 		if (!PageHuge(page))
+ 			continue;
+_

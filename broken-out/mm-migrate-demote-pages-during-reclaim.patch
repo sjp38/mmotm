@@ -92,7 +92,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <linux/delayacct.h>
  #include <linux/sysctl.h>
  #include <linux/oom.h>
-@@ -118,6 +119,9 @@ struct scan_control {
+@@ -121,6 +122,9 @@ struct scan_control {
  	/* The file pages on the current node are dangerously low */
  	unsigned int file_is_tiny:1;
  
@@ -102,7 +102,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Allocation order */
  	s8 order;
  
-@@ -515,6 +519,17 @@ static long add_nr_deferred(long nr, str
+@@ -518,6 +522,17 @@ static long add_nr_deferred(long nr, str
  	return atomic_long_add_return(nr, &shrinker->nr_deferred[nid]);
  }
  
@@ -120,7 +120,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * This misses isolated pages which are not accounted for to save counters.
   * As the data only determines if reclaim or compaction continues, it is
-@@ -1267,6 +1282,49 @@ static void page_check_dirty_writeback(s
+@@ -1270,6 +1285,49 @@ static void page_check_dirty_writeback(s
  		mapping->a_ops->is_dirty_writeback(page, dirty, writeback);
  }
  
@@ -170,7 +170,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * shrink_page_list() returns the number of reclaimed pages
   */
-@@ -1278,12 +1336,16 @@ static unsigned int shrink_page_list(str
+@@ -1281,12 +1339,16 @@ static unsigned int shrink_page_list(str
  {
  	LIST_HEAD(ret_pages);
  	LIST_HEAD(free_pages);
@@ -187,7 +187,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	while (!list_empty(page_list)) {
  		struct address_space *mapping;
  		struct page *page;
-@@ -1433,6 +1495,17 @@ static unsigned int shrink_page_list(str
+@@ -1436,6 +1498,17 @@ static unsigned int shrink_page_list(str
  		}
  
  		/*
@@ -205,7 +205,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		 * Anonymous process memory has backing store?
  		 * Try to allocate it some swap space here.
  		 * Lazyfree page could be freed directly
-@@ -1683,6 +1756,17 @@ keep:
+@@ -1686,6 +1759,17 @@ keep:
  		list_add(&page->lru, &ret_pages);
  		VM_BUG_ON_PAGE(PageLRU(page) || PageUnevictable(page), page);
  	}
@@ -223,7 +223,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	pgactivate = stat->nr_activate[0] + stat->nr_activate[1];
  
-@@ -2330,6 +2414,7 @@ unsigned long reclaim_pages(struct list_
+@@ -2333,6 +2417,7 @@ unsigned long reclaim_pages(struct list_
  		.may_writepage = 1,
  		.may_unmap = 1,
  		.may_swap = 1,

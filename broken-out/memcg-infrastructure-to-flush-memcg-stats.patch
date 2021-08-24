@@ -65,7 +65,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  void __mod_memcg_lruvec_state(struct lruvec *lruvec, enum node_stat_item idx,
  			      int val);
  void __mod_lruvec_kmem_state(void *p, enum node_stat_item idx, int val);
-@@ -1437,6 +1439,10 @@ static inline unsigned long lruvec_page_
+@@ -1438,6 +1440,10 @@ static inline unsigned long lruvec_page_
  	return node_page_state(lruvec_pgdat(lruvec), idx);
  }
  
@@ -142,7 +142,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct mem_cgroup *memcg = mem_cgroup_from_css(css);
 --- a/mm/vmscan.c~memcg-infrastructure-to-flush-memcg-stats
 +++ a/mm/vmscan.c
-@@ -2893,6 +2893,12 @@ static void shrink_node(pg_data_t *pgdat
+@@ -2904,6 +2904,12 @@ static void shrink_node(pg_data_t *pgdat
  	target_lruvec = mem_cgroup_lruvec(sc->target_mem_cgroup, pgdat);
  
  again:

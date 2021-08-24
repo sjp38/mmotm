@@ -150,6 +150,31 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	folio_clear_idle(page_folio(page));
 +}
  #endif /* _LINUX_MM_PAGE_IDLE_H */
+--- a/include/linux/units.h~linux-next-rejects
++++ a/include/linux/units.h
+@@ -8,6 +8,22 @@
+ #define KHZ_PER_MHZ		1000UL
+ #define HZ_PER_MHZ		1000000UL
+ 
++/* Metric prefixes in accordance with Système international (d'unités) */
++#define PETA	1000000000000000ULL
++#define TERA	1000000000000ULL
++#define GIGA	1000000000UL
++#define MEGA	1000000UL
++#define KILO	1000UL
++#define HECTO	100UL
++#define DECA	10UL
++#define DECI	10UL
++#define CENTI	100UL
++#define MILLI	1000UL
++#define MICRO	1000000UL
++#define NANO	1000000000UL
++#define PICO	1000000000000ULL
++#define FEMTO	1000000000000000ULL
++
+ #define MILLIWATT_PER_WATT	1000UL
+ #define MICROWATT_PER_MILLIWATT	1000UL
+ #define MICROWATT_PER_WATT	1000000UL
 --- a/mm/memcontrol.c~linux-next-rejects
 +++ a/mm/memcontrol.c
 @@ -6708,9 +6708,10 @@ void mem_cgroup_calculate_protection(str
@@ -602,29 +627,4 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 -EXPORT_SYMBOL_GPL(wait_for_stable_page);
 +EXPORT_SYMBOL_GPL(folio_wait_stable);
---- a/include/linux/units.h~linux-next-rejects
-+++ a/include/linux/units.h
-@@ -8,6 +8,22 @@
- #define KHZ_PER_MHZ		1000UL
- #define HZ_PER_MHZ		1000000UL
- 
-+/* Metric prefixes in accordance with Système international (d'unités) */
-+#define PETA	1000000000000000ULL
-+#define TERA	1000000000000ULL
-+#define GIGA	1000000000UL
-+#define MEGA	1000000UL
-+#define KILO	1000UL
-+#define HECTO	100UL
-+#define DECA	10UL
-+#define DECI	10UL
-+#define CENTI	100UL
-+#define MILLI	1000UL
-+#define MICRO	1000000UL
-+#define NANO	1000000000UL
-+#define PICO	1000000000000ULL
-+#define FEMTO	1000000000000000ULL
-+
- #define MILLIWATT_PER_WATT	1000UL
- #define MICROWATT_PER_MILLIWATT	1000UL
- #define MICROWATT_PER_WATT	1000000UL
 _

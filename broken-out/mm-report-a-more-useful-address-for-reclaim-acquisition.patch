@@ -91,7 +91,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  EXPORT_SYMBOL_GPL(fs_reclaim_release);
 --- a/mm/vmscan.c~mm-report-a-more-useful-address-for-reclaim-acquisition
 +++ a/mm/vmscan.c
-@@ -3801,7 +3801,7 @@ static int balance_pgdat(pg_data_t *pgda
+@@ -3812,7 +3812,7 @@ static int balance_pgdat(pg_data_t *pgda
  
  	set_task_reclaim_state(current, &sc.reclaim_state);
  	psi_memstall_enter(&pflags);
@@ -100,7 +100,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	count_vm_event(PAGEOUTRUN);
  
-@@ -3927,9 +3927,9 @@ restart:
+@@ -3938,9 +3938,9 @@ restart:
  			wake_up_all(&pgdat->pfmemalloc_wait);
  
  		/* Check if kswapd should be suspending */
@@ -112,7 +112,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		if (ret || kthread_should_stop())
  			break;
  
-@@ -3981,7 +3981,7 @@ out:
+@@ -3992,7 +3992,7 @@ out:
  	}
  
  	snapshot_refaults(NULL, pgdat);

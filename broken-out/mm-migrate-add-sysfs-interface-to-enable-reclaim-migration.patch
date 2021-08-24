@@ -169,7 +169,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +#endif
 --- a/mm/vmscan.c~mm-migrate-add-sysfs-interface-to-enable-reclaim-migration
 +++ a/mm/vmscan.c
-@@ -521,6 +521,8 @@ static long add_nr_deferred(long nr, str
+@@ -524,6 +524,8 @@ static long add_nr_deferred(long nr, str
  
  static bool can_demote(int nid, struct scan_control *sc)
  {
@@ -178,7 +178,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (sc) {
  		if (sc->no_demotion)
  			return false;
-@@ -531,8 +533,7 @@ static bool can_demote(int nid, struct s
+@@ -534,8 +536,7 @@ static bool can_demote(int nid, struct s
  	if (next_demotion_node(nid) == NUMA_NO_NODE)
  		return false;
  

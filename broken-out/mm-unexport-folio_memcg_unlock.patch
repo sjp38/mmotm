@@ -1,0 +1,44 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: mm: unexport folio_memcg_{,un}lock
+
+Patch series "unexport memcg locking helpers".
+
+Neither the old page-based nor the new folio-based memcg locking helpers
+are used in modular code at all, so drop the exports.
+
+
+This patch (of 2):
+
+folio_memcg_{,un}lock are only used in built-in core mm code.
+
+Link: https://lkml.kernel.org/r/20210820095815.445392-1-hch@lst.de
+Link: https://lkml.kernel.org/r/20210820095815.445392-2-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- a/mm/memcontrol.c~mm-unexport-folio_memcg_unlock
++++ a/mm/memcontrol.c
+@@ -2014,7 +2014,6 @@ again:
+ 	memcg->move_lock_task = current;
+ 	memcg->move_lock_flags = flags;
+ }
+-EXPORT_SYMBOL(folio_memcg_lock);
+ 
+ void lock_page_memcg(struct page *page)
+ {
+@@ -2048,7 +2047,6 @@ void folio_memcg_unlock(struct folio *fo
+ {
+ 	__folio_memcg_unlock(folio_memcg(folio));
+ }
+-EXPORT_SYMBOL(folio_memcg_unlock);
+ 
+ void unlock_page_memcg(struct page *page)
+ {
+_

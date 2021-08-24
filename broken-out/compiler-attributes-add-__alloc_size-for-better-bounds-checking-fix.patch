@@ -1,0 +1,32 @@
+From: Kees Cook <keescook@chromium.org>
+Subject: compiler-attributes-add-__alloc_size-for-better-bounds-checking-fix
+
+fix warning
+
+cc1: warning: unrecognized command line option '-Wno-alloc-size-larger-than'
+
+Ew. Thanks for letting me know. I thought I'd verified this existed in
+gcc going back to 4.9, but it looks like I did something wrong in that
+test.
+
+Link: https://lkml.kernel.org/r/202108202248.921E8C66@keescook
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/Makefile~compiler-attributes-add-__alloc_size-for-better-bounds-checking-fix
++++ a/Makefile
+@@ -1081,7 +1081,7 @@ KBUILD_CFLAGS += $(call cc-disable-warni
+ ifdef CONFIG_CC_IS_GCC
+ # The allocators already balk at large sizes, so silence the compiler
+ # warnings for bounds checks involving those possible values.
+-KBUILD_CFLAGS += -Wno-alloc-size-larger-than
++KBUILD_CFLAGS += $(call cc-option, -Wno-alloc-size-larger-than)
+ endif
+ 
+ # disable invalid "can't wrap" optimizations for signed / pointers
+_

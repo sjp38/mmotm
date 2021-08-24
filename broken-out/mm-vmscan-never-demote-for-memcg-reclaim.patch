@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-never-demote-for-memcg-reclaim
 +++ a/mm/vmscan.c
-@@ -521,8 +521,13 @@ static long add_nr_deferred(long nr, str
+@@ -524,8 +524,13 @@ static long add_nr_deferred(long nr, str
  
  static bool can_demote(int nid, struct scan_control *sc)
  {

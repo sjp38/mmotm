@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-add-helper-for-querying-ability-to-age-anonymous-pages
 +++ a/mm/vmscan.c
-@@ -2730,6 +2730,21 @@ out:
+@@ -2741,6 +2741,21 @@ out:
  	}
  }
  
@@ -58,7 +58,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
  {
  	unsigned long nr[NR_LRU_LISTS];
-@@ -2839,7 +2854,8 @@ static void shrink_lruvec(struct lruvec
+@@ -2850,7 +2865,8 @@ static void shrink_lruvec(struct lruvec
  	 * Even if we did not try to evict anon pages at all, we want to
  	 * rebalance the anon lru active/inactive ratio.
  	 */
@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		shrink_active_list(SWAP_CLUSTER_MAX, lruvec,
  				   sc, LRU_ACTIVE_ANON);
  }
-@@ -3674,7 +3690,7 @@ static void age_active_anon(struct pglis
+@@ -3685,7 +3701,7 @@ static void age_active_anon(struct pglis
  	struct mem_cgroup *memcg;
  	struct lruvec *lruvec;
  

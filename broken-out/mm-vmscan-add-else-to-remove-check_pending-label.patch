@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-add-else-to-remove-check_pending-label
 +++ a/mm/vmscan.c
-@@ -3574,18 +3574,14 @@ static bool throttle_direct_reclaim(gfp_
+@@ -3585,18 +3585,14 @@ static bool throttle_direct_reclaim(gfp_
  	 * blocked waiting on the same lock. Instead, throttle for up to a
  	 * second before continuing.
  	 */

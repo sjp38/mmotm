@@ -86,7 +86,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	PG_young,
  	PG_idle,
  #endif
-@@ -439,7 +439,7 @@ PAGEFLAG_FALSE(HWPoison)
+@@ -441,7 +441,7 @@ PAGEFLAG_FALSE(HWPoison)
  #define __PG_HWPOISON 0
  #endif
  

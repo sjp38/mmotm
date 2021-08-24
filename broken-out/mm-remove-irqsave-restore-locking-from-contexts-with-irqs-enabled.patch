@@ -121,7 +121,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/vmscan.c~mm-remove-irqsave-restore-locking-from-contexts-with-irqs-enabled
 +++ a/mm/vmscan.c
-@@ -1049,14 +1049,13 @@ static pageout_t pageout(struct page *pa
+@@ -1052,14 +1052,13 @@ static pageout_t pageout(struct page *pa
  static int __remove_mapping(struct address_space *mapping, struct page *page,
  			    bool reclaimed, struct mem_cgroup *target_memcg)
  {
@@ -137,7 +137,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
  	 * The non racy check for a busy page.
  	 *
-@@ -1097,7 +1096,7 @@ static int __remove_mapping(struct addre
+@@ -1100,7 +1099,7 @@ static int __remove_mapping(struct addre
  		if (reclaimed && !mapping_exiting(mapping))
  			shadow = workingset_eviction(page, target_memcg);
  		__delete_from_swap_cache(page, swap, shadow);
@@ -146,7 +146,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		put_swap_page(page, swap);
  	} else {
  		void (*freepage)(struct page *);
-@@ -1123,7 +1122,7 @@ static int __remove_mapping(struct addre
+@@ -1126,7 +1125,7 @@ static int __remove_mapping(struct addre
  		    !mapping_exiting(mapping) && !dax_mapping(mapping))
  			shadow = workingset_eviction(page, target_memcg);
  		__delete_from_page_cache(page, shadow);
@@ -155,7 +155,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		if (freepage != NULL)
  			freepage(page);
-@@ -1132,7 +1131,7 @@ static int __remove_mapping(struct addre
+@@ -1135,7 +1134,7 @@ static int __remove_mapping(struct addre
  	return 1;
  
  cannot_free:

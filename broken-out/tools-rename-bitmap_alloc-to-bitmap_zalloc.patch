@@ -16,7 +16,6 @@ Acked-by: Jiri Olsa <jolsa@redhat.com>
 Cc: Alexander Lobakin <alobakin@pm.me>
 Cc: Alexey Klimov <aklimov@redhat.com>
 Cc: Dennis Zhou <dennis@kernel.org>
-Cc: kernel test robot <lkp@intel.com>
 Cc: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

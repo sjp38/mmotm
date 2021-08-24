@@ -8,7 +8,7 @@ siginfo_t->si_addr value for non-recoverable memory faults").
 
 Link: https://lkml.kernel.org/r/20210814105131.48814-5-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

@@ -47,7 +47,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		PGSCAN_DIRECT_THROTTLE,
 --- a/mm/vmscan.c~mm-vmscan-add-page-demotion-counter
 +++ a/mm/vmscan.c
-@@ -1322,6 +1322,11 @@ static unsigned int demote_page_list(str
+@@ -1325,6 +1325,11 @@ static unsigned int demote_page_list(str
  			    target_nid, MIGRATE_ASYNC, MR_DEMOTION,
  			    &nr_succeeded);
  

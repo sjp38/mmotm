@@ -366,7 +366,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/vmscan.c~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/mm/vmscan.c
-@@ -1055,6 +1055,8 @@ static int __remove_mapping(struct addre
+@@ -1058,6 +1058,8 @@ static int __remove_mapping(struct addre
  	BUG_ON(!PageLocked(page));
  	BUG_ON(mapping != page_mapping(page));
  
@@ -375,7 +375,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	xa_lock_irq(&mapping->i_pages);
  	/*
  	 * The non racy check for a busy page.
-@@ -1123,6 +1125,9 @@ static int __remove_mapping(struct addre
+@@ -1126,6 +1128,9 @@ static int __remove_mapping(struct addre
  			shadow = workingset_eviction(page, target_memcg);
  		__delete_from_page_cache(page, shadow);
  		xa_unlock_irq(&mapping->i_pages);
@@ -385,7 +385,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		if (freepage != NULL)
  			freepage(page);
-@@ -1132,6 +1137,8 @@ static int __remove_mapping(struct addre
+@@ -1135,6 +1140,8 @@ static int __remove_mapping(struct addre
  
  cannot_free:
  	xa_unlock_irq(&mapping->i_pages);

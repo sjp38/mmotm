@@ -83,7 +83,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
 --- a/mm/memory-failure.c~mm-migrate-enable-returning-precise-migrate_pages-success-count
 +++ a/mm/memory-failure.c
-@@ -2092,7 +2092,7 @@ static int __soft_offline_page(struct pa
+@@ -2099,7 +2099,7 @@ static int __soft_offline_page(struct pa
  
  	if (isolate_page(hpage, &pagelist)) {
  		ret = migrate_pages(&pagelist, alloc_migration_target, NULL,

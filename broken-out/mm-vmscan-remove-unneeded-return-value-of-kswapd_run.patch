@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifdef CONFIG_SWAP
 --- a/mm/vmscan.c~mm-vmscan-remove-unneeded-return-value-of-kswapd_run
 +++ a/mm/vmscan.c
-@@ -4430,23 +4430,20 @@ unsigned long shrink_all_memory(unsigned
+@@ -4441,23 +4441,20 @@ unsigned long shrink_all_memory(unsigned
   * This kswapd start function will be called by init and node-hot-add.
   * On node-hot-add, kswapd will moved to proper cpus if cpus are hot-added.
   */

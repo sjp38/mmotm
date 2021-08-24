@@ -29,7 +29,7 @@ option.)
 Link: https://lkml.kernel.org/r/20210818214021.2476230-1-keescook@chromium.org
 Link: https://lkml.kernel.org/r/20210818214021.2476230-2-keescook@chromium.org
 Signed-off-by: Kees Cook <keescook@chromium.org>
-Cc: Miguel Ojeda <ojeda@kernel.org>
+Reviewed-by: Miguel Ojeda <ojeda@kernel.org>
 Reviewed-by: Nathan Chancellor <nathan@kernel.org>
 Cc: Nick Desaulniers <ndesaulniers@google.com>
 Cc: Andy Whitcroft <apw@canonical.com>
@@ -68,9 +68,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * to its docs (and also "warning: always_inline function might not be
 --- a/Makefile~compiler-attributes-add-__alloc_size-for-better-bounds-checking
 +++ a/Makefile
-@@ -1078,6 +1078,12 @@ KBUILD_CFLAGS += $(call cc-disable-warni
- # Enabled with W=2, disabled by default as noisy
- KBUILD_CFLAGS += $(call cc-disable-warning, maybe-uninitialized)
+@@ -1094,6 +1094,12 @@ ifdef CONFIG_CC_IS_GCC
+ KBUILD_CFLAGS += -Wno-maybe-uninitialized
+ endif
  
 +ifdef CONFIG_CC_IS_GCC
 +# The allocators already balk at large sizes, so silence the compiler

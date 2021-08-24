@@ -1,0 +1,47 @@
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+Subject: mm: migrate: introduce a local variable to get the number of pages
+
+Use thp_nr_pages() instead of compound_nr() to get the number of pages for
+THP page, meanwhile introducing a local variable 'nr_pages' to avoid
+getting the number of pages repeatedly.
+
+Link: https://lkml.kernel.org/r/a8e331ac04392ee230c79186330fb05e86a2aa77.1629447552.git.baolin.wang@linux.alibaba.com
+Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/migrate.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/migrate.c~mm-migrate-introduce-a-local-variable-to-get-the-number-of-pages
++++ a/mm/migrate.c
+@@ -2100,6 +2100,7 @@ out:
+ static int numamigrate_isolate_page(pg_data_t *pgdat, struct page *page)
+ {
+ 	int page_lru;
++	int nr_pages = thp_nr_pages(page);
+ 
+ 	VM_BUG_ON_PAGE(compound_order(page) && !PageTransHuge(page), page);
+ 
+@@ -2108,7 +2109,7 @@ static int numamigrate_isolate_page(pg_d
+ 		return 0;
+ 
+ 	/* Avoid migrating to a node that is nearly full */
+-	if (!migrate_balanced_pgdat(pgdat, compound_nr(page)))
++	if (!migrate_balanced_pgdat(pgdat, nr_pages))
+ 		return 0;
+ 
+ 	if (isolate_lru_page(page))
+@@ -2116,7 +2117,7 @@ static int numamigrate_isolate_page(pg_d
+ 
+ 	page_lru = page_is_file_lru(page);
+ 	mod_node_page_state(page_pgdat(page), NR_ISOLATED_ANON + page_lru,
+-				thp_nr_pages(page));
++			    nr_pages);
+ 
+ 	/*
+ 	 * Isolating the page has taken another reference, so the
+_

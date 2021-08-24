@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline unsigned long lruvec_page_state(struct lruvec *lruvec,
  					      enum node_stat_item idx)
  {
-@@ -1390,6 +1400,11 @@ static inline void mod_memcg_state(struc
+@@ -1391,6 +1401,11 @@ static inline void mod_memcg_state(struc
  {
  }
  

@@ -6,7 +6,7 @@ modified.  Changing to use *hpage to simplify the code.
 
 Link: https://lkml.kernel.org/r/20210814105131.48814-4-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -15,7 +15,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory-failure.c~mm-hwpoison-change-argument-struct-page-hpagep-to-hpage
 +++ a/mm/memory-failure.c
-@@ -1265,14 +1265,13 @@ static int get_hwpoison_page(struct page
+@@ -1271,14 +1271,13 @@ static int get_hwpoison_page(struct page
   * the pages and send SIGBUS to the processes if the data was dirty.
   */
  static bool hwpoison_user_mappings(struct page *p, unsigned long pfn,
@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	bool mlocked = PageMlocked(hpage);
  
  	/*
-@@ -1497,7 +1496,7 @@ static int memory_failure_hugetlb(unsign
+@@ -1503,7 +1502,7 @@ static int memory_failure_hugetlb(unsign
  		goto out;
  	}
  
@@ -40,7 +40,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		action_result(pfn, MF_MSG_UNMAP_FAILED, MF_IGNORED);
  		res = -EBUSY;
  		goto out;
-@@ -1777,7 +1776,7 @@ try_again:
+@@ -1783,7 +1782,7 @@ try_again:
  	 * Now take care of user space mappings.
  	 * Abort on fail: __delete_from_page_cache() assumes unmapped page.
  	 */

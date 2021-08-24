@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmscan.c~mm-vmscan-remove-misleading-setting-to-sc-priority
 +++ a/mm/vmscan.c
-@@ -1824,7 +1824,6 @@ unsigned int reclaim_clean_pages_from_li
+@@ -1827,7 +1827,6 @@ unsigned int reclaim_clean_pages_from_li
  {
  	struct scan_control sc = {
  		.gfp_mask = GFP_KERNEL,
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		.may_unmap = 1,
  	};
  	struct reclaim_stat stat;
-@@ -2449,7 +2448,6 @@ unsigned long reclaim_pages(struct list_
+@@ -2452,7 +2451,6 @@ unsigned long reclaim_pages(struct list_
  	unsigned int noreclaim_flag;
  	struct scan_control sc = {
  		.gfp_mask = GFP_KERNEL,
