@@ -53,10 +53,8 @@ done
 
 if [ "$from" = "" ] && [ "$to" = "" ]
 then
-	last_change=$(git log --oneline -- broken-out/ | head -n 1 | \
-		awk '{print $1}')
-	from="$last_change^"
-	to="$last_change"
+	to=$(git log --oneline -- broken-out/ | head -n 1 | awk '{print $1}')
+	from="$to^"
 fi
 
 diff_output=$(git diff "$from".."$to" --name-status | grep broken-out/)
@@ -85,9 +83,9 @@ echo
 echo "$modified"
 echo
 
-dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out' | wc -l)
-added=$(echo "$diff_output" | grep '^A' | grep 'broken-out' | wc -l)
-modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out' | wc -l)
+nr_dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out' | wc -l)
+nr_added=$(echo "$diff_output" | grep '^A' | grep 'broken-out' | wc -l)
+nr_modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out' | wc -l)
 
-echo "summary: $dropped drop, $added add, $modified modified"
+echo "summary: $nr_dropped drop, $nr_added add, $nr_modified modified"
 echo "# the changes are updated in $to_date"
