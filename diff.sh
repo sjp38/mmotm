@@ -67,8 +67,6 @@ added=$(echo "$diff_output" | grep '^A' | grep 'broken-out/' | \
 	awk -F'broken-out/' '{print $2}')
 modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out/' | \
 	awk -F'broken-out/' '{print $2}')
-
-from_date=$(git show -s --format=%ci $from)
 to_date=$(git show -s --format=%ci $to)
 
 echo "Dropped"
@@ -92,4 +90,4 @@ added=$(echo "$diff_output" | grep '^A' | grep 'broken-out' | wc -l)
 modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out' | wc -l)
 
 echo "summary: $dropped drop, $added add, $modified modified"
-echo "# from $from_date to $to_date"
+echo "# the changes are updated in $to_date"
