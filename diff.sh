@@ -57,14 +57,11 @@ then
 	from="$to^"
 fi
 
-diff_output=$(git diff "$from".."$to" --name-status | grep broken-out/)
+diff_output=$(git diff "$from".."$to" --name-status -- broken-out/)
 
-dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out/' | \
-	awk -F'broken-out/' '{print $2}')
-added=$(echo "$diff_output" | grep '^A' | grep 'broken-out/' | \
-	awk -F'broken-out/' '{print $2}')
-modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out/' | \
-	awk -F'broken-out/' '{print $2}')
+dropped=$(echo "$diff_output" | grep '^D' | awk -F'broken-out/' '{print $2}')
+added=$(echo "$diff_output" | grep '^A' | awk -F'broken-out/' '{print $2}')
+modified=$(echo "$diff_output" | grep '^M' | awk -F'broken-out/' '{print $2}')
 to_date=$(git show -s --format=%ci $to)
 
 echo "Dropped"
@@ -83,9 +80,9 @@ echo
 echo "$modified"
 echo
 
-nr_dropped=$(echo "$diff_output" | grep '^D' | grep 'broken-out' | wc -l)
-nr_added=$(echo "$diff_output" | grep '^A' | grep 'broken-out' | wc -l)
-nr_modified=$(echo "$diff_output" | grep '^M' | grep 'broken-out' | wc -l)
+nr_dropped=$(echo "$diff_output" | grep '^D' | wc -l)
+nr_added=$(echo "$diff_output" | grep '^A' | wc -l)
+nr_modified=$(echo "$diff_output" | grep '^M' | wc -l)
 
 echo "summary: $nr_dropped drop, $nr_added add, $nr_modified modified"
 echo "# the changes are updated in $to_date"
