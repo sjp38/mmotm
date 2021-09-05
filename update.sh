@@ -1,7 +1,7 @@
 #!/bin/bash
 
 bindir=$(dirname "$0")
-cd $bindir || exit 1
+cd "$bindir" || exit 1
 
 rm -f mmotm-readme.txt
 wget https://www.ozlabs.org/~akpm/mmotm/mmotm-readme.txt
