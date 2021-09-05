@@ -9,6 +9,7 @@ do
 	added=$(echo "$diff_output" | grep '^A' | wc -l)
 	modified=$(echo "$diff_output" | grep '^M' | wc -l)
 	date=$(git show "$commit:.DATE" | head -n 1)
+	base=$(git show "$commit:.DATE" | tail -n 1)
 
-	echo "$date: $added adds, $modified modifications, $dropped drops"
+	echo "$date: based on $base, $added adds, $modified modifications, $dropped drops"
 done
