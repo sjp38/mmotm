@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern bool __mpol_equal(struct mempolicy *a, struct mempolicy *b);
 --- a/mm/mempolicy.c~mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt
 +++ a/mm/mempolicy.c
-@@ -298,7 +298,7 @@ static struct mempolicy *mpol_new(unsign
+@@ -293,7 +293,7 @@ static struct mempolicy *mpol_new(unsign
  	policy = kmem_cache_alloc(policy_cache, GFP_KERNEL);
  	if (!policy)
  		return ERR_PTR(-ENOMEM);
@@ -59,7 +59,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	policy->mode = mode;
  	policy->flags = flags;
  
-@@ -308,7 +308,7 @@ static struct mempolicy *mpol_new(unsign
+@@ -303,7 +303,7 @@ static struct mempolicy *mpol_new(unsign
  /* Slow path of a mpol destructor. */
  void __mpol_put(struct mempolicy *p)
  {
@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return;
  	kmem_cache_free(policy_cache, p);
  }
-@@ -2290,7 +2290,7 @@ struct mempolicy *__mpol_dup(struct memp
+@@ -2243,7 +2243,7 @@ struct mempolicy *__mpol_dup(struct memp
  		nodemask_t mems = cpuset_mems_allowed(current);
  		mpol_rebind_policy(new, &mems);
  	}
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return new;
  }
  
-@@ -2581,7 +2581,7 @@ restart:
+@@ -2538,7 +2538,7 @@ restart:
  					goto alloc_new;
  
  				*mpol_new = *n->policy;

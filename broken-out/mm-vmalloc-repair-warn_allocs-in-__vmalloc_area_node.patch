@@ -1,0 +1,57 @@
+From: Vasily Averin <vvs@virtuozzo.com>
+Subject: mm/vmalloc: repair warn_alloc()s in __vmalloc_area_node()
+
+Commit f255935b9767 ("mm: cleanup the gfp_mask handling in
+__vmalloc_area_node") added __GFP_NOWARN to gfp_mask unconditionally
+however it disabled all output inside warn_alloc() call.  This patch saves
+original gfp_mask and provides it to all warn_alloc() calls.
+
+Link: https://lkml.kernel.org/r/f4f3187b-9684-e426-565d-827c2a9bbb0e@virtuozzo.com
+Fixes: f255935b9767 ("mm: cleanup the gfp_mask handling in __vmalloc_area_node")
+Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/mm/vmalloc.c~mm-vmalloc-repair-warn_allocs-in-__vmalloc_area_node
++++ a/mm/vmalloc.c
+@@ -2884,6 +2884,7 @@ static void *__vmalloc_area_node(struct
+ 				 int node)
+ {
+ 	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
++	const gfp_t orig_gfp_mask = gfp_mask;
+ 	unsigned long addr = (unsigned long)area->addr;
+ 	unsigned long size = get_vm_area_size(area);
+ 	unsigned long array_size;
+@@ -2904,7 +2905,7 @@ static void *__vmalloc_area_node(struct
+ 	}
+ 
+ 	if (!area->pages) {
+-		warn_alloc(gfp_mask, NULL,
++		warn_alloc(orig_gfp_mask, NULL,
+ 			"vmalloc error: size %lu, failed to allocated page array size %lu",
+ 			nr_small_pages * PAGE_SIZE, array_size);
+ 		free_vm_area(area);
+@@ -2924,7 +2925,7 @@ static void *__vmalloc_area_node(struct
+ 	 * allocation request, free them via __vfree() if any.
+ 	 */
+ 	if (area->nr_pages != nr_small_pages) {
+-		warn_alloc(gfp_mask, NULL,
++		warn_alloc(orig_gfp_mask, NULL,
+ 			"vmalloc error: size %lu, page order %u, failed to allocate pages",
+ 			area->nr_pages * PAGE_SIZE, page_order);
+ 		goto fail;
+@@ -2932,7 +2933,7 @@ static void *__vmalloc_area_node(struct
+ 
+ 	if (vmap_pages_range(addr, addr + size, prot, area->pages,
+ 			page_shift) < 0) {
+-		warn_alloc(gfp_mask, NULL,
++		warn_alloc(orig_gfp_mask, NULL,
+ 			"vmalloc error: size %lu, failed to map pages",
+ 			area->nr_pages * PAGE_SIZE);
+ 		goto fail;
+_

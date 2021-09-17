@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/filemap.c~mm-remove-bogus-vm_bug_on
 +++ a/mm/filemap.c
-@@ -2038,7 +2038,6 @@ unsigned find_lock_entries(struct addres
+@@ -2093,7 +2093,6 @@ unsigned find_lock_entries(struct addres
  		if (!xa_is_value(page)) {
  			if (page->index < start)
  				goto put;

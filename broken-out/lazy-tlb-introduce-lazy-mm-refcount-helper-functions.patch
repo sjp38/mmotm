@@ -21,6 +21,8 @@ lazy tlb mm reference to the returned reference.  If the lazy tlb mm
 reference is no longer identical to a normal reference, this trick does
 not work, so that is changed to be explicit about the two references.
 
+[npiggin@gmail.com: fix a refcounting bug in kthread_use_mm]
+  Link: https://lkml.kernel.org/r/1623125298.bx63h3mopj.astroid@bobo.none
 Link: https://lkml.kernel.org/r/20210605014216.446867-1-npiggin@gmail.com
 Link: https://lkml.kernel.org/r/20210605014216.446867-2-npiggin@gmail.com
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
@@ -39,9 +41,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  include/linux/sched/mm.h             |   11 +++++++++++
  kernel/cpu.c                         |    2 +-
  kernel/exit.c                        |    2 +-
- kernel/kthread.c                     |   11 +++++++----
+ kernel/kthread.c                     |   21 +++++++++++++--------
  kernel/sched/core.c                  |   15 ++++++++-------
- 9 files changed, 34 insertions(+), 19 deletions(-)
+ 9 files changed, 40 insertions(+), 23 deletions(-)
 
 --- a/arch/arm/mach-rpc/ecard.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/arch/arm/mach-rpc/ecard.c
@@ -56,7 +58,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 --- a/arch/powerpc/kernel/smp.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/arch/powerpc/kernel/smp.c
-@@ -1556,7 +1556,7 @@ void start_secondary(void *unused)
+@@ -1582,7 +1582,7 @@ void start_secondary(void *unused)
  	if (IS_ENABLED(CONFIG_PPC32))
  		setup_kup();
  
@@ -67,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	smp_store_cpu_info(cpu);
 --- a/arch/powerpc/mm/book3s64/radix_tlb.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/arch/powerpc/mm/book3s64/radix_tlb.c
-@@ -785,10 +785,10 @@ void exit_lazy_flush_tlb(struct mm_struc
+@@ -786,10 +786,10 @@ void exit_lazy_flush_tlb(struct mm_struc
  	if (current->active_mm == mm) {
  		WARN_ON_ONCE(current->mm != NULL);
  		/* Is a kernel thread and is using mm as the lazy tlb */
@@ -82,7 +84,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
 --- a/fs/exec.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/fs/exec.c
-@@ -1026,9 +1026,9 @@ static int exec_mmap(struct mm_struct *m
+@@ -1028,9 +1028,9 @@ static int exec_mmap(struct mm_struct *m
  		setmax_mm_hiwater_rss(&tsk->signal->maxrss, old_mm);
  		mm_update_next_owner(old_mm);
  		mmput(old_mm);
@@ -116,7 +118,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * @mm: The address space to pin.
 --- a/kernel/cpu.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/kernel/cpu.c
-@@ -603,7 +603,7 @@ static int finish_cpu(unsigned int cpu)
+@@ -613,7 +613,7 @@ static int finish_cpu(unsigned int cpu)
  	 */
  	if (mm != &init_mm)
  		idle->active_mm = &init_mm;
@@ -138,10 +140,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	task_lock(current);
 --- a/kernel/kthread.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/kernel/kthread.c
-@@ -1350,14 +1350,14 @@ void kthread_use_mm(struct mm_struct *mm
+@@ -1350,14 +1350,19 @@ void kthread_use_mm(struct mm_struct *mm
  	WARN_ON_ONCE(!(tsk->flags & PF_KTHREAD));
  	WARN_ON_ONCE(tsk->mm);
  
++	/*
++	 * It's possible that tsk->active_mm == mm here, but we must
++	 * still mmgrab(mm) and mmdrop_lazy_tlb(active_mm), because lazy
++	 * mm may not have its own refcount (see mmgrab/drop_lazy_tlb()).
++	 */
 +	mmgrab(mm);
 +
  	task_lock(tsk);
@@ -156,16 +163,22 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	tsk->mm = mm;
  	membarrier_update_current_mm(mm);
  	switch_mm_irqs_off(active_mm, mm, tsk);
-@@ -1377,7 +1377,7 @@ void kthread_use_mm(struct mm_struct *mm
- 	 * mmdrop(), or explicitly with smp_mb().
+@@ -1374,12 +1379,9 @@ void kthread_use_mm(struct mm_struct *mm
+ 	 * memory barrier after storing to tsk->mm, before accessing
+ 	 * user-space memory. A full memory barrier for membarrier
+ 	 * {PRIVATE,GLOBAL}_EXPEDITED is implicitly provided by
+-	 * mmdrop(), or explicitly with smp_mb().
++	 * mmdrop_lazy_tlb().
  	 */
- 	if (active_mm != mm)
+-	if (active_mm != mm)
 -		mmdrop(active_mm);
-+		mmdrop_lazy_tlb(active_mm);
- 	else
- 		smp_mb();
+-	else
+-		smp_mb();
++	mmdrop_lazy_tlb(active_mm);
  
-@@ -1411,10 +1411,13 @@ void kthread_unuse_mm(struct mm_struct *
+ 	to_kthread(tsk)->oldfs = force_uaccess_begin();
+ }
+@@ -1411,10 +1413,13 @@ void kthread_unuse_mm(struct mm_struct *
  	local_irq_disable();
  	tsk->mm = NULL;
  	membarrier_update_current_mm(NULL);
@@ -181,7 +194,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/kernel/sched/core.c~lazy-tlb-introduce-lazy-mm-refcount-helper-functions
 +++ a/kernel/sched/core.c
-@@ -4572,13 +4572,14 @@ static struct rq *finish_task_switch(str
+@@ -4831,13 +4831,14 @@ static struct rq *finish_task_switch(str
  	 * rq->curr, before returning to userspace, so provide them here:
  	 *
  	 * - a full memory barrier for {PRIVATE,GLOBAL}_EXPEDITED, implicitly
@@ -198,7 +211,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (unlikely(prev_state == TASK_DEAD)) {
  		if (prev->sched_class->task_dead)
  			prev->sched_class->task_dead(prev);
-@@ -4641,9 +4642,9 @@ context_switch(struct rq *rq, struct tas
+@@ -4900,9 +4901,9 @@ context_switch(struct rq *rq, struct tas
  
  	/*
  	 * kernel -> kernel   lazy + transfer active
@@ -210,7 +223,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 *   user ->   user   switch
  	 */
  	if (!next->mm) {                                // to kernel
-@@ -4651,7 +4652,7 @@ context_switch(struct rq *rq, struct tas
+@@ -4910,7 +4911,7 @@ context_switch(struct rq *rq, struct tas
  
  		next->active_mm = prev->active_mm;
  		if (prev->mm)                           // from user
@@ -219,7 +232,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		else
  			prev->active_mm = NULL;
  	} else {                                        // to user
-@@ -4667,7 +4668,7 @@ context_switch(struct rq *rq, struct tas
+@@ -4926,7 +4927,7 @@ context_switch(struct rq *rq, struct tas
  		switch_mm_irqs_off(prev->active_mm, next->mm, next);
  
  		if (!prev->mm) {                        // from kernel
@@ -228,7 +241,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			rq->prev_mm = prev->active_mm;
  			prev->active_mm = NULL;
  		}
-@@ -9037,7 +9038,7 @@ void __init sched_init(void)
+@@ -9441,7 +9442,7 @@ void __init sched_init(void)
  	/*
  	 * The boot idle thread does lazy MMU switching as well:
  	 */

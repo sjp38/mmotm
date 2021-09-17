@@ -1,0 +1,108 @@
+From: Vasily Averin <vvs@virtuozzo.com>
+Subject: memcg: prohibit unconditional exceeding the limit of dying tasks
+
+The kernel currently allows dying tasks to exceed the memcg limits.  The
+allocation is expected to be the last one and the occupied memory will be
+freed soon.
+
+This is not always true because it can be part of the huge vmalloc
+allocation.  Allowed once, they will repeat over and over again.  Moreover
+lifetime of the allocated object can differ from the lifetime of the dying
+task.
+
+Multiple such allocations running concurrently can not only overuse the
+memcg limit, but can lead to a global out of memory and, in the worst
+case, cause the host to panic.
+
+This patch removes checks for exceeding of the memcg limit for dying
+tasks.  Also it breaks endless loop for tasks bypassed by the oom killer. 
+In addition, it renames should_force_charge() helper to task_is_dying()
+because now its use do not lead to the forced charge.
+
+Link: https://lkml.kernel.org/r/817a6ce2-4da9-72ac-c5b9-edd398d28a15@virtuozzo.com
+Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
+Suggested-by: Michal Hocko <mhocko@suse.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |   27 ++++++++-------------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
+
+--- a/mm/memcontrol.c~memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks
++++ a/mm/memcontrol.c
+@@ -242,7 +242,7 @@ enum res_type {
+ 	     iter != NULL;				\
+ 	     iter = mem_cgroup_iter(NULL, iter, NULL))
+ 
+-static inline bool should_force_charge(void)
++static inline bool task_is_dying(void)
+ {
+ 	return tsk_is_oom_victim(current) || fatal_signal_pending(current) ||
+ 		(current->flags & PF_EXITING);
+@@ -1580,7 +1580,7 @@ static bool mem_cgroup_out_of_memory(str
+ 	 * A few threads which were not waiting at mutex_lock_killable() can
+ 	 * fail to bail out. Therefore, check again after holding oom_lock.
+ 	 */
+-	ret = should_force_charge() || out_of_memory(&oc);
++	ret = task_is_dying() || out_of_memory(&oc);
+ 
+ unlock:
+ 	mutex_unlock(&oom_lock);
+@@ -2535,6 +2535,7 @@ static int try_charge_memcg(struct mem_c
+ 	struct page_counter *counter;
+ 	enum oom_status oom_status;
+ 	unsigned long nr_reclaimed;
++	bool passed_oom = false;
+ 	bool may_swap = true;
+ 	bool drained = false;
+ 	unsigned long pflags;
+@@ -2570,15 +2571,6 @@ retry:
+ 		goto force;
+ 
+ 	/*
+-	 * Unlike in global OOM situations, memcg is not in a physical
+-	 * memory shortage.  Allow dying and OOM-killed tasks to
+-	 * bypass the last charges so that they can exit quickly and
+-	 * free their memory.
+-	 */
+-	if (unlikely(should_force_charge()))
+-		goto force;
+-
+-	/*
+ 	 * Prevent unbounded recursion when reclaim operations need to
+ 	 * allocate memory. This might exceed the limits temporarily,
+ 	 * but we prefer facilitating memory reclaim and getting back
+@@ -2635,8 +2627,9 @@ retry:
+ 	if (gfp_mask & __GFP_RETRY_MAYFAIL)
+ 		goto nomem;
+ 
+-	if (fatal_signal_pending(current))
+-		goto force;
++	/* Avoid endless loop for tasks bypassed by the oom killer */
++	if (passed_oom && task_is_dying())
++		goto nomem;
+ 
+ 	/*
+ 	 * keep retrying as long as the memcg oom killer is able to make
+@@ -2645,14 +2638,10 @@ retry:
+ 	 */
+ 	oom_status = mem_cgroup_oom(mem_over_limit, gfp_mask,
+ 		       get_order(nr_pages * PAGE_SIZE));
+-	switch (oom_status) {
+-	case OOM_SUCCESS:
++	if (oom_status == OOM_SUCCESS) {
++		passed_oom = true;
+ 		nr_retries = MAX_RECLAIM_RETRIES;
+ 		goto retry;
+-	case OOM_FAILED:
+-		goto force;
+-	default:
+-		goto nomem;
+ 	}
+ nomem:
+ 	if (!(gfp_mask & __GFP_NOFAIL))
+_

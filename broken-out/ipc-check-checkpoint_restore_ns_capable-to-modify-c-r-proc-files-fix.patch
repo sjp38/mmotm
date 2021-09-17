@@ -1,0 +1,26 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: ipc-check-checkpoint_restore_ns_capable-to-modify-c-r-proc-files-fix
+
+ipc/ipc_sysctl.c needs capability.h for checkpoint_restore_ns_capable()
+
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Manfred Spraul <manfred@colorfullife.com>
+Cc: Michal Clapinski <mclapinski@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ ipc/ipc_sysctl.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/ipc/ipc_sysctl.c~ipc-check-checkpoint_restore_ns_capable-to-modify-c-r-proc-files-fix
++++ a/ipc/ipc_sysctl.c
+@@ -10,6 +10,7 @@
+ #include <linux/nsproxy.h>
+ #include <linux/sysctl.h>
+ #include <linux/uaccess.h>
++#include <linux/capability.h>
+ #include <linux/ipc_namespace.h>
+ #include <linux/msg.h>
+ #include "util.h"
+_

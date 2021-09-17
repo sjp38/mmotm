@@ -1,0 +1,37 @@
+From: Jan Harkes <jaharkes@cs.cmu.edu>
+Subject: coda: check for async upcall request using local state
+
+Originally flagged by Smatch because the code implicitly assumed outSize
+is not NULL for non-async upcalls because of a flag that was (not) set in
+req->uc_flags.
+
+However req->uc_flags field is in shared state and although the current
+code will not allow it to be changed before the async request check the
+code is more robust when it tests against the local outSize variable.
+
+Link: https://lkml.kernel.org/r/20210908140308.18491-3-jaharkes@cs.cmu.edu
+Signed-off-by: Jan Harkes <jaharkes@cs.cmu.edu>
+Cc: Alex Shi <alex.shi@linux.alibaba.com>
+Cc: Jing Yangyang <jing.yangyang@zte.com.cn>
+Cc: Xin Tan <tanxin.ctf@gmail.com>
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Cc: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/coda/upcall.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/fs/coda/upcall.c~coda-check-for-async-upcall-request-using-local-state
++++ a/fs/coda/upcall.c
+@@ -744,7 +744,8 @@ static int coda_upcall(struct venus_comm
+ 	list_add_tail(&req->uc_chain, &vcp->vc_pending);
+ 	wake_up_interruptible(&vcp->vc_waitq);
+ 
+-	if (req->uc_flags & CODA_REQ_ASYNC) {
++	/* We can return early on asynchronous requests */
++	if (outSize == NULL) {
+ 		mutex_unlock(&vcp->vc_mutex);
+ 		return 0;
+ 	}
+_

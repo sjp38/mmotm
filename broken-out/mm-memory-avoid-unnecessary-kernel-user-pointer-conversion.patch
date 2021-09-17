@@ -1,0 +1,38 @@
+From: Amit Daniel Kachhap <amit.kachhap@arm.com>
+Subject: mm/memory.c: avoid unnecessary kernel/user pointer conversion
+
+Annotating a pointer from __user to kernel and then back again might
+confuse sparse.  In copy_huge_page_from_user() it can be avoided by
+removing the intermediate variable since it is never used.
+
+Link: https://lkml.kernel.org/r/20210914150820.19326-1-amit.kachhap@arm.com
+Signed-off-by: Amit Daniel Kachhap <amit.kachhap@arm.com>
+Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Vincenzo Frascino <Vincenzo.Frascino@arm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+--- a/mm/memory.c~mm-memory-avoid-unnecessary-kernel-user-pointer-conversion
++++ a/mm/memory.c
+@@ -5411,7 +5411,6 @@ long copy_huge_page_from_user(struct pag
+ 				unsigned int pages_per_huge_page,
+ 				bool allow_pagefault)
+ {
+-	void *src = (void *)usr_src;
+ 	void *page_kaddr;
+ 	unsigned long i, rc = 0;
+ 	unsigned long ret_val = pages_per_huge_page * PAGE_SIZE;
+@@ -5424,8 +5423,7 @@ long copy_huge_page_from_user(struct pag
+ 		else
+ 			page_kaddr = kmap_atomic(subpage);
+ 		rc = copy_from_user(page_kaddr,
+-				(const void __user *)(src + i * PAGE_SIZE),
+-				PAGE_SIZE);
++				usr_src + i * PAGE_SIZE, PAGE_SIZE);
+ 		if (allow_pagefault)
+ 			kunmap(subpage);
+ 		else
+_

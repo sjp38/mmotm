@@ -55,7 +55,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/arch/powerpc/Kconfig~powerpc-64s-enable-mmu_lazy_tlb_shootdown
 +++ a/arch/powerpc/Kconfig
-@@ -253,6 +253,7 @@ config PPC
+@@ -249,6 +249,7 @@ config PPC
  	select IRQ_FORCED_THREADING
  	select MMU_GATHER_PAGE_SIZE
  	select MMU_GATHER_RCU_TABLE_FREE

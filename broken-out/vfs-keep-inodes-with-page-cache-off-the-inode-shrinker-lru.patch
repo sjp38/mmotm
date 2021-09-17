@@ -76,7 +76,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/inode.c~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/fs/inode.c
-@@ -424,11 +424,20 @@ void ihold(struct inode *inode)
+@@ -426,11 +426,20 @@ void ihold(struct inode *inode)
  }
  EXPORT_SYMBOL(ihold);
  
@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		inode->i_state |= I_REFERENCED;
  }
  
-@@ -439,16 +448,11 @@ static void inode_lru_list_add(struct in
+@@ -441,16 +450,11 @@ static void inode_lru_list_add(struct in
   */
  void inode_add_lru(struct inode *inode)
  {
@@ -117,7 +117,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru))
  		this_cpu_dec(nr_unused);
  }
-@@ -724,10 +728,6 @@ again:
+@@ -726,10 +730,6 @@ again:
  /*
   * Isolate the inode from the LRU in preparation for freeing it.
   *
@@ -128,7 +128,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * If the inode has the I_REFERENCED flag set, then it means that it has been
   * used recently - the flag is set in iput_final(). When we encounter such an
   * inode, clear the flag and move it to the back of the LRU so it gets another
-@@ -743,31 +743,39 @@ static enum lru_status inode_lru_isolate
+@@ -745,31 +745,39 @@ static enum lru_status inode_lru_isolate
  	struct inode	*inode = container_of(item, struct inode, i_lru);
  
  	/*
@@ -174,7 +174,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (inode_has_buffers(inode) || !mapping_empty(&inode->i_data)) {
  		__iget(inode);
  		spin_unlock(&inode->i_lock);
-@@ -1634,7 +1642,7 @@ static void iput_final(struct inode *ino
+@@ -1636,7 +1644,7 @@ static void iput_final(struct inode *ino
  	if (!drop &&
  	    !(inode->i_state & I_DONTCACHE) &&
  	    (sb->s_flags & SB_ACTIVE)) {
@@ -185,7 +185,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
 --- a/fs/internal.h~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/fs/internal.h
-@@ -145,7 +145,6 @@ extern int vfs_open(const struct path *,
+@@ -149,7 +149,6 @@ extern int vfs_open(const struct path *,
   * inode.c
   */
  extern long prune_icache_sb(struct super_block *sb, struct shrink_control *sc);
@@ -195,7 +195,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
 --- a/include/linux/fs.h~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/include/linux/fs.h
-@@ -3219,6 +3219,7 @@ static inline void remove_inode_hash(str
+@@ -3192,6 +3192,7 @@ static inline void remove_inode_hash(str
  }
  
  extern void inode_sb_list_add(struct inode *inode);
@@ -264,7 +264,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  enum mapping_flags {
 --- a/mm/filemap.c~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/mm/filemap.c
-@@ -260,9 +260,13 @@ void delete_from_page_cache(struct page
+@@ -262,9 +262,13 @@ void delete_from_page_cache(struct page
  	struct address_space *mapping = page_mapping(page);
  
  	BUG_ON(!PageLocked(page));
@@ -278,7 +278,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	page_cache_free_page(mapping, page);
  }
-@@ -338,6 +342,7 @@ void delete_from_page_cache_batch(struct
+@@ -340,6 +344,7 @@ void delete_from_page_cache_batch(struct
  	if (!pagevec_count(pvec))
  		return;
  
@@ -286,7 +286,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	xa_lock_irq(&mapping->i_pages);
  	for (i = 0; i < pagevec_count(pvec); i++) {
  		trace_mm_filemap_delete_from_page_cache(pvec->pages[i]);
-@@ -346,6 +351,9 @@ void delete_from_page_cache_batch(struct
+@@ -348,6 +353,9 @@ void delete_from_page_cache_batch(struct
  	}
  	page_cache_delete_batch(mapping, pvec);
  	xa_unlock_irq(&mapping->i_pages);
@@ -338,7 +338,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	pvec->nr = j;
  }
  
-@@ -566,6 +576,7 @@ invalidate_complete_page2(struct address
+@@ -567,6 +577,7 @@ invalidate_complete_page2(struct address
  	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
  		return 0;
  
@@ -346,7 +346,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	xa_lock_irq(&mapping->i_pages);
  	if (PageDirty(page))
  		goto failed;
-@@ -573,6 +584,9 @@ invalidate_complete_page2(struct address
+@@ -574,6 +585,9 @@ invalidate_complete_page2(struct address
  	BUG_ON(page_has_private(page));
  	__delete_from_page_cache(page, NULL);
  	xa_unlock_irq(&mapping->i_pages);
@@ -356,7 +356,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (mapping->a_ops->freepage)
  		mapping->a_ops->freepage(page);
-@@ -581,6 +595,7 @@ invalidate_complete_page2(struct address
+@@ -582,6 +596,7 @@ invalidate_complete_page2(struct address
  	return 1;
  failed:
  	xa_unlock_irq(&mapping->i_pages);
@@ -366,7 +366,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/vmscan.c~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/mm/vmscan.c
-@@ -1058,6 +1058,8 @@ static int __remove_mapping(struct addre
+@@ -1105,6 +1105,8 @@ static int __remove_mapping(struct addre
  	BUG_ON(!PageLocked(page));
  	BUG_ON(mapping != page_mapping(page));
  
@@ -375,7 +375,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	xa_lock_irq(&mapping->i_pages);
  	/*
  	 * The non racy check for a busy page.
-@@ -1126,6 +1128,9 @@ static int __remove_mapping(struct addre
+@@ -1173,6 +1175,9 @@ static int __remove_mapping(struct addre
  			shadow = workingset_eviction(page, target_memcg);
  		__delete_from_page_cache(page, shadow);
  		xa_unlock_irq(&mapping->i_pages);
@@ -385,7 +385,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		if (freepage != NULL)
  			freepage(page);
-@@ -1135,6 +1140,8 @@ static int __remove_mapping(struct addre
+@@ -1182,6 +1187,8 @@ static int __remove_mapping(struct addre
  
  cannot_free:
  	xa_unlock_irq(&mapping->i_pages);

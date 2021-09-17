@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #define RNG_SEED_SIZE		128
 --- a/include/linux/mm.h~mm-move-kvmalloc-related-functions-to-slabh
 +++ a/include/linux/mm.h
-@@ -795,40 +795,6 @@ static inline int is_vmalloc_or_module_a
+@@ -799,40 +799,6 @@ static inline int is_vmalloc_or_module_a
  }
  #endif
  

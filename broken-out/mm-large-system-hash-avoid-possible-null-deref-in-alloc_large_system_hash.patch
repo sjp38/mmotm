@@ -1,0 +1,30 @@
+From: Eric Dumazet <edumazet@google.com>
+Subject: mm/large system hash: avoid possible NULL deref in alloc_large_system_hash
+
+If __vmalloc() returned NULL, is_vm_area_hugepages(NULL) will fault if
+CONFIG_HAVE_ARCH_HUGE_VMALLOC=y
+
+Link: https://lkml.kernel.org/r/20210915212530.2321545-1-eric.dumazet@gmail.com
+Fixes: 121e6f3258fe ("mm/vmalloc: hugepage vmalloc mappings")
+Signed-off-by: Eric Dumazet <edumazet@google.com>
+Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/page_alloc.c~mm-large-system-hash-avoid-possible-null-deref-in-alloc_large_system_hash
++++ a/mm/page_alloc.c
+@@ -8756,7 +8756,8 @@ void *__init alloc_large_system_hash(con
+ 		} else if (get_order(size) >= MAX_ORDER || hashdist) {
+ 			table = __vmalloc(size, gfp_flags);
+ 			virt = true;
+-			huge = is_vm_area_hugepages(table);
++			if (table)
++				huge = is_vm_area_hugepages(table);
+ 		} else {
+ 			/*
+ 			 * If bucketsize is not a power-of-two, we may free
+_

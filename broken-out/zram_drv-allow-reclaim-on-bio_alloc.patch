@@ -1,0 +1,29 @@
+From: Jaewon Kim <jaewon31.kim@samsung.com>
+Subject: zram_drv: allow reclaim on bio_alloc
+
+The read_from_bdev_async is not called on atomic context.  So GFP_NOIO is
+available rather than GFP_ATOMIC.  If there were reclaimable pages with
+GFP_NOIO, we can avoid allocation failure and page fault failure.
+
+Link: https://lkml.kernel.org/r/20210908005241.28062-1-jaewon31.kim@samsung.com
+Signed-off-by: Jaewon Kim <jaewon31.kim@samsung.com>
+Reported-by: Yong-Taek Lee <ytk.lee@samsung.com>
+Acked-by: Minchan Kim <minchan@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/block/zram/zram_drv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/block/zram/zram_drv.c~zram_drv-allow-reclaim-on-bio_alloc
++++ a/drivers/block/zram/zram_drv.c
+@@ -587,7 +587,7 @@ static int read_from_bdev_async(struct z
+ {
+ 	struct bio *bio;
+ 
+-	bio = bio_alloc(GFP_ATOMIC, 1);
++	bio = bio_alloc(GFP_NOIO, 1);
+ 	if (!bio)
+ 		return -ENOMEM;
+ 
+_

@@ -1,0 +1,24 @@
+From: Imran Khan <imran.f.khan@oracle.com>
+Subject: lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v3
+
+export stack_depot_snprint() to modules
+
+Link: https://lkml.kernel.org/r/20210916133535.3592491-4-imran.f.khan@oracle.com
+Signed-off-by: Imran Khan <imran.f.khan@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/stackdepot.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/lib/stackdepot.c~lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v3
++++ a/lib/stackdepot.c
+@@ -237,6 +237,7 @@ int stack_depot_snprint(depot_stack_hand
+ 	return nr_entries ? stack_trace_snprint(buf, size, entries, nr_entries,
+ 						spaces) : 0;
+ }
++EXPORT_SYMBOL_GPL(stack_depot_snprint);
+ 
+ /**
+  * stack_depot_print - print stack entries from a depot
+_

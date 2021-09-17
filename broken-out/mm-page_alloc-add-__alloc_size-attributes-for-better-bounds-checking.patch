@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/gfp.h~mm-page_alloc-add-__alloc_size-attributes-for-better-bounds-checking
 +++ a/include/linux/gfp.h
-@@ -618,8 +618,10 @@ static inline struct folio *folio_alloc(
+@@ -608,8 +608,10 @@ static inline struct page *alloc_pages(g
  extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
  extern unsigned long get_zeroed_page(gfp_t gfp_mask);
  
