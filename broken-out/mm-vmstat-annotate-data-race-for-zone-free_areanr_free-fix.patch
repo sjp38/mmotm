@@ -1,0 +1,42 @@
+From: Liu Shixin <liushixin2@huawei.com>
+Subject: mm-vmstat-annotate-data-race-for-zone-free_areanr_free-fix
+
+add comments
+
+Link: https://lkml.kernel.org/r/20210918084655.2696522-1-liushixin2@huawei.com
+Signed-off-by: Liu Shixin <liushixin2@huawei.com>
+Cc: "Paul E . McKenney" <paulmck@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmstat.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+--- a/mm/vmstat.c~mm-vmstat-annotate-data-race-for-zone-free_areanr_free-fix
++++ a/mm/vmstat.c
+@@ -1070,7 +1070,12 @@ static void fill_contig_page_info(struct
+ 	for (order = 0; order < MAX_ORDER; order++) {
+ 		unsigned long blocks;
+ 
+-		/* Count number of free blocks */
++		/*
++		 * Count number of free blocks.
++		 *
++		 * Access to nr_free is lockless as nr_free is used only for
++		 * diagnostic purposes. Use data_race to avoid KCSAN warning.
++		 */
+ 		blocks = data_race(zone->free_area[order].nr_free);
+ 		info->free_blocks_total += blocks;
+ 
+@@ -1445,6 +1450,10 @@ static void frag_show_print(struct seq_f
+ 
+ 	seq_printf(m, "Node %d, zone %8s ", pgdat->node_id, zone->name);
+ 	for (order = 0; order < MAX_ORDER; ++order)
++		/*
++		 * Access to nr_free is lockless as nr_free is used only for
++		 * printing purposes. Use data_race to avoid KCSAN warning.
++		 */
+ 		seq_printf(m, "%6lu ", data_race(zone->free_area[order].nr_free));
+ 	seq_putc(m, '\n');
+ }
+_

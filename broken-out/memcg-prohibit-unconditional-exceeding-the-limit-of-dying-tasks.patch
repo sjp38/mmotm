@@ -1,24 +1,41 @@
 From: Vasily Averin <vvs@virtuozzo.com>
 Subject: memcg: prohibit unconditional exceeding the limit of dying tasks
 
-The kernel currently allows dying tasks to exceed the memcg limits.  The
-allocation is expected to be the last one and the occupied memory will be
-freed soon.
+Memory cgroup charging allows killed or exiting tasks to exceed the
+hard limit.  It is assumed that the amount of the memory charged by
+those tasks is bound and most of the memory will get released while the
+task is exiting.  This is resembling a heuristic for the global OOM
+situation when tasks get access to memory reserves.  There is no global
+memory shortage at the memcg level so the memcg heuristic is more
+relieved.
 
-This is not always true because it can be part of the huge vmalloc
-allocation.  Allowed once, they will repeat over and over again.  Moreover
-lifetime of the allocated object can differ from the lifetime of the dying
-task.
+The above assumption is overly optimistic though.  E.g.  vmalloc can
+scale to really large requests and the heuristic would allow that.  We
+used to have an early break in the vmalloc allocator for killed tasks
+but this has been reverted by b8c8a338f75e (Revert "vmalloc: back off
+when the current task is killed").  There are likely other similar code
+paths which do not check for fatal signals in an allocation&charge
+loop.  Also there are some kernel objects charged to a memcg which are
+not bound to a process life time.  
 
-Multiple such allocations running concurrently can not only overuse the
-memcg limit, but can lead to a global out of memory and, in the worst
-case, cause the host to panic.
+It has been observed that it is not really hard to trigger these
+bypasses and cause global OOM situation.
 
-This patch removes checks for exceeding of the memcg limit for dying
-tasks.  Also it breaks endless loop for tasks bypassed by the oom killer. 
-In addition, it renames should_force_charge() helper to task_is_dying()
-because now its use do not lead to the forced charge.
+One potential way to address these runaways would be to limit the
+amount of excess (similar to the global OOM with limited oom reserves).
+This is certainly possible but it is not really clear how much of an
+excess is desirable and still protects from global OOMs as that would
+have to consider the overall memcg configuration.
 
+This patch is addressing the problem by removing the heuristic
+altogether.  Bypass is only allowed for requests which either cannot
+fail or where the failure is not desirable while excess should be still
+limited (e.g.  atomic requests).  Implementation wise a killed or dying
+task fails to charge if it has passed the OOM killer stage.  That
+should give all forms of reclaim chance to restore the limit before the
+failure (ENOMEM) and tell the caller to back off.
+
+{mhocko@suse.com: new changelog]
 Link: https://lkml.kernel.org/r/817a6ce2-4da9-72ac-c5b9-edd398d28a15@virtuozzo.com
 Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
 Suggested-by: Michal Hocko <mhocko@suse.com>

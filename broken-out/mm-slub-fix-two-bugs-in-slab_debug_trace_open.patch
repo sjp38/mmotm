@@ -28,7 +28,6 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Faiyaz Mohammed <faiyazm@codeaurora.org>
 Cc: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Cc: Thomas Garnier <thgarnie@google.com>
 Cc: Kees Cook <keescook@chromium.org>
 Cc: Bharata B Rao <bharata@linux.ibm.com>
 Cc: Roman Gushchin <guro@fb.com>

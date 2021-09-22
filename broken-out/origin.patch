@@ -1,1296 +1,2021 @@
-GIT ff1ffd71d5f0612cf194f5705c671d6b64bf5f91
+GIT d5f6545934c47e97c0b48a645418e877b452a992
 
-diff --git a/Documentation/admin-guide/README.rst b/Documentation/admin-guide/README.rst
-index 35314b63008c..caa3c09a5c3f 100644
---- a/Documentation/admin-guide/README.rst
-+++ b/Documentation/admin-guide/README.rst
-@@ -259,7 +259,7 @@ Configuring the kernel
- Compiling the kernel
- --------------------
+diff --git a/arch/sparc/lib/iomap.c b/arch/sparc/lib/iomap.c
+index c9da9f139694..f3a8cd491ce0 100644
+--- a/arch/sparc/lib/iomap.c
++++ b/arch/sparc/lib/iomap.c
+@@ -19,8 +19,10 @@ void ioport_unmap(void __iomem *addr)
+ EXPORT_SYMBOL(ioport_map);
+ EXPORT_SYMBOL(ioport_unmap);
  
-- - Make sure you have at least gcc 4.9 available.
-+ - Make sure you have at least gcc 5.1 available.
-    For more information, refer to :ref:`Documentation/process/changes.rst <changes>`.
- 
-    Please note that you can still run a.out user programs with this kernel.
-diff --git a/Documentation/process/changes.rst b/Documentation/process/changes.rst
-index d3a8557b66a1..e35ab74a0f80 100644
---- a/Documentation/process/changes.rst
-+++ b/Documentation/process/changes.rst
-@@ -29,7 +29,7 @@ you probably needn't concern yourself with pcmciautils.
- ====================== ===============  ========================================
-         Program        Minimal version       Command to check the version
- ====================== ===============  ========================================
--GNU C                  4.9              gcc --version
-+GNU C                  5.1              gcc --version
- Clang/LLVM (optional)  10.0.1           clang --version
- GNU make               3.81             make --version
- binutils               2.23             ld -v
-diff --git a/Documentation/translations/zh_CN/admin-guide/README.rst b/Documentation/translations/zh_CN/admin-guide/README.rst
-index 669a022f6817..980eb20521cf 100644
---- a/Documentation/translations/zh_CN/admin-guide/README.rst
-+++ b/Documentation/translations/zh_CN/admin-guide/README.rst
-@@ -223,7 +223,7 @@ Linux内核5.x版本 <http://kernel.org/>
- 编译内核
- ---------
- 
-- - 确保您至少有gcc 4.9可用。
-+ - 确保您至少有gcc 5.1可用。
-    有关更多信息，请参阅 :ref:`Documentation/process/changes.rst <changes>` 。
- 
-    请注意，您仍然可以使用此内核运行a.out用户程序。
-diff --git a/Documentation/translations/zh_TW/admin-guide/README.rst b/Documentation/translations/zh_TW/admin-guide/README.rst
-index b752e50359e6..6ce97edbab37 100644
---- a/Documentation/translations/zh_TW/admin-guide/README.rst
-+++ b/Documentation/translations/zh_TW/admin-guide/README.rst
-@@ -226,7 +226,7 @@ Linux內核5.x版本 <http://kernel.org/>
- 編譯內核
- ---------
- 
-- - 確保您至少有gcc 4.9可用。
-+ - 確保您至少有gcc 5.1可用。
-    有關更多信息，請參閱 :ref:`Documentation/process/changes.rst <changes>` 。
- 
-    請注意，您仍然可以使用此內核運行a.out用戶程序。
-diff --git a/Makefile b/Makefile
-index 7cfe4ff36f44..34a0afc3a8eb 100644
---- a/Makefile
-+++ b/Makefile
-@@ -849,12 +849,6 @@ endif
- 
- DEBUG_CFLAGS	:=
- 
--# Workaround for GCC versions < 5.0
--# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61801
--ifdef CONFIG_CC_IS_GCC
--DEBUG_CFLAGS	+= $(call cc-ifversion, -lt, 0500, $(call cc-option, -fno-var-tracking-assignments))
--endif
--
- ifdef CONFIG_DEBUG_INFO
- 
- ifdef CONFIG_DEBUG_INFO_SPLIT
-diff --git a/arch/alpha/include/asm/setup.h b/arch/alpha/include/asm/setup.h
-new file mode 100644
-index 000000000000..262aab99e391
---- /dev/null
-+++ b/arch/alpha/include/asm/setup.h
-@@ -0,0 +1,43 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __ALPHA_SETUP_H
-+#define __ALPHA_SETUP_H
-+
-+#include <uapi/asm/setup.h>
-+
-+/*
-+ * We leave one page for the initial stack page, and one page for
-+ * the initial process structure. Also, the console eats 3 MB for
-+ * the initial bootloader (one of which we can reclaim later).
-+ */
-+#define BOOT_PCB	0x20000000
-+#define BOOT_ADDR	0x20000000
-+/* Remove when official MILO sources have ELF support: */
-+#define BOOT_SIZE	(16*1024)
-+
-+#ifdef CONFIG_ALPHA_LEGACY_START_ADDRESS
-+#define KERNEL_START_PHYS	0x300000 /* Old bootloaders hardcoded this.  */
-+#else
-+#define KERNEL_START_PHYS	0x1000000 /* required: Wildfire/Titan/Marvel */
++#ifdef CONFIG_PCI
+ void pci_iounmap(struct pci_dev *dev, void __iomem * addr)
+ {
+ 	/* nothing to do */
+ }
+ EXPORT_SYMBOL(pci_iounmap);
 +#endif
+diff --git a/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c b/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c
+index b0ece71aefde..ce774579c89d 100644
+--- a/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c
++++ b/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c
+@@ -57,7 +57,7 @@ nvkm_control_mthd_pstate_info(struct nvkm_control *ctrl, void *data, u32 size)
+ 		args->v0.count = 0;
+ 		args->v0.ustate_ac = NVIF_CONTROL_PSTATE_INFO_V0_USTATE_DISABLE;
+ 		args->v0.ustate_dc = NVIF_CONTROL_PSTATE_INFO_V0_USTATE_DISABLE;
+-		args->v0.pwrsrc = -ENOSYS;
++		args->v0.pwrsrc = -ENODEV;
+ 		args->v0.pstate = NVIF_CONTROL_PSTATE_INFO_V0_PSTATE_UNKNOWN;
+ 	}
+ 
+diff --git a/drivers/regulator/max14577-regulator.c b/drivers/regulator/max14577-regulator.c
+index 1d78b455cc48..e34face736f4 100644
+--- a/drivers/regulator/max14577-regulator.c
++++ b/drivers/regulator/max14577-regulator.c
+@@ -269,5 +269,3 @@ module_exit(max14577_regulator_exit);
+ MODULE_AUTHOR("Krzysztof Kozlowski <krzk@kernel.org>");
+ MODULE_DESCRIPTION("Maxim 14577/77836 regulator driver");
+ MODULE_LICENSE("GPL");
+-MODULE_ALIAS("platform:max14577-regulator");
+-MODULE_ALIAS("platform:max77836-regulator");
+diff --git a/drivers/regulator/qcom-rpmh-regulator.c b/drivers/regulator/qcom-rpmh-regulator.c
+index 6cca910a76de..7f458d510483 100644
+--- a/drivers/regulator/qcom-rpmh-regulator.c
++++ b/drivers/regulator/qcom-rpmh-regulator.c
+@@ -991,7 +991,7 @@ static const struct rpmh_vreg_init_data pm8009_1_vreg_data[] = {
+ 	RPMH_VREG("ldo4",   "ldo%s4",  &pmic5_nldo,      "vdd-l4"),
+ 	RPMH_VREG("ldo5",   "ldo%s5",  &pmic5_pldo,      "vdd-l5-l6"),
+ 	RPMH_VREG("ldo6",   "ldo%s6",  &pmic5_pldo,      "vdd-l5-l6"),
+-	RPMH_VREG("ldo7",   "ldo%s6",  &pmic5_pldo_lv,   "vdd-l7"),
++	RPMH_VREG("ldo7",   "ldo%s7",  &pmic5_pldo_lv,   "vdd-l7"),
+ 	{}
+ };
+ 
+diff --git a/drivers/spi/spi-rockchip.c b/drivers/spi/spi-rockchip.c
+index 540861ca2ba3..553b6b9d0222 100644
+--- a/drivers/spi/spi-rockchip.c
++++ b/drivers/spi/spi-rockchip.c
+@@ -600,6 +600,12 @@ static int rockchip_spi_transfer_one(
+ 	int ret;
+ 	bool use_dma;
+ 
++	/* Zero length transfers won't trigger an interrupt on completion */
++	if (!xfer->len) {
++		spi_finalize_current_transfer(ctlr);
++		return 1;
++	}
 +
-+#define KERNEL_START	(PAGE_OFFSET+KERNEL_START_PHYS)
-+#define SWAPPER_PGD	KERNEL_START
-+#define INIT_STACK	(PAGE_OFFSET+KERNEL_START_PHYS+0x02000)
-+#define EMPTY_PGT	(PAGE_OFFSET+KERNEL_START_PHYS+0x04000)
-+#define EMPTY_PGE	(PAGE_OFFSET+KERNEL_START_PHYS+0x08000)
-+#define ZERO_PGE	(PAGE_OFFSET+KERNEL_START_PHYS+0x0A000)
-+
-+#define START_ADDR	(PAGE_OFFSET+KERNEL_START_PHYS+0x10000)
-+
-+/*
-+ * This is setup by the secondary bootstrap loader.  Because
-+ * the zero page is zeroed out as soon as the vm system is
-+ * initialized, we need to copy things out into a more permanent
-+ * place.
-+ */
-+#define PARAM			ZERO_PGE
-+#define COMMAND_LINE		((char *)(absolute_pointer(PARAM + 0x0000)))
-+#define INITRD_START		(*(unsigned long *) (PARAM+0x100))
-+#define INITRD_SIZE		(*(unsigned long *) (PARAM+0x108))
-+
-+#endif
-diff --git a/arch/alpha/include/uapi/asm/setup.h b/arch/alpha/include/uapi/asm/setup.h
-index 13b7ee465b0e..f881ea5947cb 100644
---- a/arch/alpha/include/uapi/asm/setup.h
-+++ b/arch/alpha/include/uapi/asm/setup.h
-@@ -1,43 +1,7 @@
- /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef __ALPHA_SETUP_H
--#define __ALPHA_SETUP_H
-+#ifndef _UAPI__ALPHA_SETUP_H
-+#define _UAPI__ALPHA_SETUP_H
+ 	WARN_ON(readl_relaxed(rs->regs + ROCKCHIP_SPI_SSIENR) &&
+ 		(readl_relaxed(rs->regs + ROCKCHIP_SPI_SR) & SR_BUSY));
  
- #define COMMAND_LINE_SIZE	256
+diff --git a/drivers/spi/spi-tegra20-slink.c b/drivers/spi/spi-tegra20-slink.c
+index 56c6feb2ba3e..8ce840c7ecc8 100644
+--- a/drivers/spi/spi-tegra20-slink.c
++++ b/drivers/spi/spi-tegra20-slink.c
+@@ -204,9 +204,6 @@ struct tegra_slink_data {
+ 	struct dma_async_tx_descriptor		*tx_dma_desc;
+ };
  
--/*
-- * We leave one page for the initial stack page, and one page for
-- * the initial process structure. Also, the console eats 3 MB for
-- * the initial bootloader (one of which we can reclaim later).
-- */
--#define BOOT_PCB	0x20000000
--#define BOOT_ADDR	0x20000000
--/* Remove when official MILO sources have ELF support: */
--#define BOOT_SIZE	(16*1024)
+-static int tegra_slink_runtime_suspend(struct device *dev);
+-static int tegra_slink_runtime_resume(struct device *dev);
 -
--#ifdef CONFIG_ALPHA_LEGACY_START_ADDRESS
--#define KERNEL_START_PHYS	0x300000 /* Old bootloaders hardcoded this.  */
--#else
--#define KERNEL_START_PHYS	0x1000000 /* required: Wildfire/Titan/Marvel */
--#endif
--
--#define KERNEL_START	(PAGE_OFFSET+KERNEL_START_PHYS)
--#define SWAPPER_PGD	KERNEL_START
--#define INIT_STACK	(PAGE_OFFSET+KERNEL_START_PHYS+0x02000)
--#define EMPTY_PGT	(PAGE_OFFSET+KERNEL_START_PHYS+0x04000)
--#define EMPTY_PGE	(PAGE_OFFSET+KERNEL_START_PHYS+0x08000)
--#define ZERO_PGE	(PAGE_OFFSET+KERNEL_START_PHYS+0x0A000)
--
--#define START_ADDR	(PAGE_OFFSET+KERNEL_START_PHYS+0x10000)
--
--/*
-- * This is setup by the secondary bootstrap loader.  Because
-- * the zero page is zeroed out as soon as the vm system is
-- * initialized, we need to copy things out into a more permanent
-- * place.
-- */
--#define PARAM			ZERO_PGE
--#define COMMAND_LINE		((char*)(PARAM + 0x0000))
--#define INITRD_START		(*(unsigned long *) (PARAM+0x100))
--#define INITRD_SIZE		(*(unsigned long *) (PARAM+0x108))
--
--#endif
-+#endif /* _UAPI__ALPHA_SETUP_H */
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 077f2ec4eeb2..5c7ae4c3954b 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -86,7 +86,7 @@ config ARM64
- 	select ARCH_SUPPORTS_LTO_CLANG_THIN
- 	select ARCH_SUPPORTS_CFI_CLANG
- 	select ARCH_SUPPORTS_ATOMIC_RMW
--	select ARCH_SUPPORTS_INT128 if CC_HAS_INT128 && (GCC_VERSION >= 50000 || CC_IS_CLANG)
-+	select ARCH_SUPPORTS_INT128 if CC_HAS_INT128
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION if COMPAT
- 	select ARCH_WANT_DEFAULT_BPF_JIT
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 6900d0ac2421..089ee3ea55c8 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -35,7 +35,6 @@ endif
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -O2 -msoft-float -mno-altivec -mno-vsx \
- 		 -pipe -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
--		 -include $(srctree)/include/linux/compiler_attributes.h \
- 		 $(LINUXINCLUDE)
- 
- ifdef CONFIG_PPC64_BOOT_WRAPPER
-@@ -70,6 +69,7 @@ ifeq ($(call cc-option-yn, -fstack-protector),y)
- BOOTCFLAGS	+= -fno-stack-protector
- endif
- 
-+BOOTCFLAGS	+= -include $(srctree)/include/linux/compiler_attributes.h
- BOOTCFLAGS	+= -I$(objtree)/$(obj) -I$(srctree)/$(obj)
- 
- DTC_FLAGS	?= -p 1024
-diff --git a/arch/powerpc/include/asm/asm-const.h b/arch/powerpc/include/asm/asm-const.h
-index 0ce2368bd20f..dbfa5e1e3198 100644
---- a/arch/powerpc/include/asm/asm-const.h
-+++ b/arch/powerpc/include/asm/asm-const.h
-@@ -12,16 +12,6 @@
- #  define ASM_CONST(x)		__ASM_CONST(x)
+ static inline u32 tegra_slink_readl(struct tegra_slink_data *tspi,
+ 		unsigned long reg)
+ {
+@@ -1185,7 +1182,8 @@ static int tegra_slink_resume(struct device *dev)
+ }
  #endif
  
--/*
-- * Inline assembly memory constraint
-- *
-- * GCC 4.9 doesn't properly handle pre update memory constraint "m<>"
-- *
-- */
--#if defined(GCC_VERSION) && GCC_VERSION < 50000
--#define UPD_CONSTR ""
--#else
- #define UPD_CONSTR "<>"
--#endif
- 
- #endif /* _ASM_POWERPC_ASM_CONST_H */
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index c3f3fd583e04..301a54233c7e 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -236,7 +236,7 @@ config ARCH_RV32I
- config ARCH_RV64I
- 	bool "RV64I"
- 	select 64BIT
--	select ARCH_SUPPORTS_INT128 if CC_HAS_INT128 && GCC_VERSION >= 50000
-+	select ARCH_SUPPORTS_INT128 if CC_HAS_INT128
- 	select HAVE_DYNAMIC_FTRACE if !XIP_KERNEL && MMU && $(cc-option,-fpatchable-function-entry=8)
- 	select HAVE_DYNAMIC_FTRACE_WITH_REGS if HAVE_DYNAMIC_FTRACE
- 	select HAVE_FTRACE_MCOUNT_RECORD if !XIP_KERNEL
-diff --git a/arch/sparc/kernel/mdesc.c b/arch/sparc/kernel/mdesc.c
-index 8e645ddac58e..30f171b7b00c 100644
---- a/arch/sparc/kernel/mdesc.c
-+++ b/arch/sparc/kernel/mdesc.c
-@@ -39,6 +39,7 @@ struct mdesc_hdr {
- 	u32	node_sz; /* node block size */
- 	u32	name_sz; /* name block size */
- 	u32	data_sz; /* data block size */
-+	char	data[];
- } __attribute__((aligned(16)));
- 
- struct mdesc_elem {
-@@ -612,7 +613,7 @@ EXPORT_SYMBOL(mdesc_get_node_info);
- 
- static struct mdesc_elem *node_block(struct mdesc_hdr *mdesc)
+-static int __maybe_unused tegra_slink_runtime_suspend(struct device *dev)
++#ifdef CONFIG_PM
++static int tegra_slink_runtime_suspend(struct device *dev)
  {
--	return (struct mdesc_elem *) (mdesc + 1);
-+	return (struct mdesc_elem *) mdesc->data;
+ 	struct spi_master *master = dev_get_drvdata(dev);
+ 	struct tegra_slink_data *tspi = spi_master_get_devdata(master);
+@@ -1197,7 +1195,7 @@ static int __maybe_unused tegra_slink_runtime_suspend(struct device *dev)
+ 	return 0;
  }
  
- static void *name_block(struct mdesc_hdr *mdesc)
-diff --git a/arch/x86/hyperv/hv_apic.c b/arch/x86/hyperv/hv_apic.c
-index 90e682a92820..32a1ad356c18 100644
---- a/arch/x86/hyperv/hv_apic.c
-+++ b/arch/x86/hyperv/hv_apic.c
-@@ -99,7 +99,8 @@ static void hv_apic_eoi_write(u32 reg, u32 val)
- /*
-  * IPI implementation on Hyper-V.
-  */
--static bool __send_ipi_mask_ex(const struct cpumask *mask, int vector)
-+static bool __send_ipi_mask_ex(const struct cpumask *mask, int vector,
-+		bool exclude_self)
+-static int __maybe_unused tegra_slink_runtime_resume(struct device *dev)
++static int tegra_slink_runtime_resume(struct device *dev)
  {
- 	struct hv_send_ipi_ex **arg;
- 	struct hv_send_ipi_ex *ipi_arg;
-@@ -123,7 +124,10 @@ static bool __send_ipi_mask_ex(const struct cpumask *mask, int vector)
- 
- 	if (!cpumask_equal(mask, cpu_present_mask)) {
- 		ipi_arg->vp_set.format = HV_GENERIC_SET_SPARSE_4K;
--		nr_bank = cpumask_to_vpset(&(ipi_arg->vp_set), mask);
-+		if (exclude_self)
-+			nr_bank = cpumask_to_vpset_noself(&(ipi_arg->vp_set), mask);
-+		else
-+			nr_bank = cpumask_to_vpset(&(ipi_arg->vp_set), mask);
+ 	struct spi_master *master = dev_get_drvdata(dev);
+ 	struct tegra_slink_data *tspi = spi_master_get_devdata(master);
+@@ -1210,6 +1208,7 @@ static int __maybe_unused tegra_slink_runtime_resume(struct device *dev)
  	}
- 	if (nr_bank < 0)
- 		goto ipi_mask_ex_done;
-@@ -138,15 +142,25 @@ static bool __send_ipi_mask_ex(const struct cpumask *mask, int vector)
- 	return hv_result_success(status);
+ 	return 0;
  }
++#endif /* CONFIG_PM */
  
--static bool __send_ipi_mask(const struct cpumask *mask, int vector)
-+static bool __send_ipi_mask(const struct cpumask *mask, int vector,
-+		bool exclude_self)
- {
--	int cur_cpu, vcpu;
-+	int cur_cpu, vcpu, this_cpu = smp_processor_id();
- 	struct hv_send_ipi ipi_arg;
- 	u64 status;
-+	unsigned int weight;
- 
- 	trace_hyperv_send_ipi_mask(mask, vector);
- 
--	if (cpumask_empty(mask))
-+	weight = cpumask_weight(mask);
-+
-+	/*
-+	 * Do nothing if
-+	 *   1. the mask is empty
-+	 *   2. the mask only contains self when exclude_self is true
-+	 */
-+	if (weight == 0 ||
-+	    (exclude_self && weight == 1 && cpumask_test_cpu(this_cpu, mask)))
- 		return true;
- 
- 	if (!hv_hypercall_pg)
-@@ -172,6 +186,8 @@ static bool __send_ipi_mask(const struct cpumask *mask, int vector)
- 	ipi_arg.cpu_mask = 0;
- 
- 	for_each_cpu(cur_cpu, mask) {
-+		if (exclude_self && cur_cpu == this_cpu)
-+			continue;
- 		vcpu = hv_cpu_number_to_vp_number(cur_cpu);
- 		if (vcpu == VP_INVAL)
- 			return false;
-@@ -191,7 +207,7 @@ static bool __send_ipi_mask(const struct cpumask *mask, int vector)
- 	return hv_result_success(status);
- 
- do_ex_hypercall:
--	return __send_ipi_mask_ex(mask, vector);
-+	return __send_ipi_mask_ex(mask, vector, exclude_self);
- }
- 
- static bool __send_ipi_one(int cpu, int vector)
-@@ -208,7 +224,7 @@ static bool __send_ipi_one(int cpu, int vector)
- 		return false;
- 
- 	if (vp >= 64)
--		return __send_ipi_mask_ex(cpumask_of(cpu), vector);
-+		return __send_ipi_mask_ex(cpumask_of(cpu), vector, false);
- 
- 	status = hv_do_fast_hypercall16(HVCALL_SEND_IPI, vector, BIT_ULL(vp));
- 	return hv_result_success(status);
-@@ -222,20 +238,13 @@ static void hv_send_ipi(int cpu, int vector)
- 
- static void hv_send_ipi_mask(const struct cpumask *mask, int vector)
- {
--	if (!__send_ipi_mask(mask, vector))
-+	if (!__send_ipi_mask(mask, vector, false))
- 		orig_apic.send_IPI_mask(mask, vector);
- }
- 
- static void hv_send_ipi_mask_allbutself(const struct cpumask *mask, int vector)
- {
--	unsigned int this_cpu = smp_processor_id();
--	struct cpumask new_mask;
--	const struct cpumask *local_mask;
--
--	cpumask_copy(&new_mask, mask);
--	cpumask_clear_cpu(this_cpu, &new_mask);
--	local_mask = &new_mask;
--	if (!__send_ipi_mask(local_mask, vector))
-+	if (!__send_ipi_mask(mask, vector, true))
- 		orig_apic.send_IPI_mask_allbutself(mask, vector);
- }
- 
-@@ -246,7 +255,7 @@ static void hv_send_ipi_allbutself(int vector)
- 
- static void hv_send_ipi_all(int vector)
- {
--	if (!__send_ipi_mask(cpu_online_mask, vector))
-+	if (!__send_ipi_mask(cpu_online_mask, vector, false))
- 		orig_apic.send_IPI_all(vector);
- }
- 
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index c9fa7be3df82..5c95d242f38d 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -301,8 +301,8 @@ do {									\
- 	unsigned int __gu_low, __gu_high;				\
- 	const unsigned int __user *__gu_ptr;				\
- 	__gu_ptr = (const void __user *)(ptr);				\
--	__get_user_asm(__gu_low, ptr, "l", "=r", label);		\
--	__get_user_asm(__gu_high, ptr+1, "l", "=r", label);		\
-+	__get_user_asm(__gu_low, __gu_ptr, "l", "=r", label);		\
-+	__get_user_asm(__gu_high, __gu_ptr+1, "l", "=r", label);	\
- 	(x) = ((unsigned long long)__gu_high << 32) | __gu_low;		\
- } while (0)
- #else
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 78a32b956e81..5afd98559193 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -135,7 +135,7 @@ static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align)
- 
- static void __init pcpu_fc_free(void *ptr, size_t size)
- {
--	memblock_free(__pa(ptr), size);
-+	memblock_free_ptr(ptr, size);
- }
- 
- static int __init pcpu_cpu_distance(unsigned int from, unsigned int to)
-diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
-index 1a50434c8a4d..ef885370719a 100644
---- a/arch/x86/mm/kasan_init_64.c
-+++ b/arch/x86/mm/kasan_init_64.c
-@@ -49,8 +49,7 @@ static void __init kasan_populate_pmd(pmd_t *pmd, unsigned long addr,
- 			p = early_alloc(PMD_SIZE, nid, false);
- 			if (p && pmd_set_huge(pmd, __pa(p), PAGE_KERNEL))
- 				return;
--			else if (p)
--				memblock_free(__pa(p), PMD_SIZE);
-+			memblock_free_ptr(p, PMD_SIZE);
- 		}
- 
- 		p = early_alloc(PAGE_SIZE, nid, true);
-@@ -86,8 +85,7 @@ static void __init kasan_populate_pud(pud_t *pud, unsigned long addr,
- 			p = early_alloc(PUD_SIZE, nid, false);
- 			if (p && pud_set_huge(pud, __pa(p), PAGE_KERNEL))
- 				return;
--			else if (p)
--				memblock_free(__pa(p), PUD_SIZE);
-+			memblock_free_ptr(p, PUD_SIZE);
- 		}
- 
- 		p = early_alloc(PAGE_SIZE, nid, true);
-diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
-index a1b5c71099e6..1e9b93b088db 100644
---- a/arch/x86/mm/numa.c
-+++ b/arch/x86/mm/numa.c
-@@ -355,7 +355,7 @@ void __init numa_reset_distance(void)
- 
- 	/* numa_distance could be 1LU marking allocation failure, test cnt */
- 	if (numa_distance_cnt)
--		memblock_free(__pa(numa_distance), size);
-+		memblock_free_ptr(numa_distance, size);
- 	numa_distance_cnt = 0;
- 	numa_distance = NULL;	/* enable table creation */
- }
-diff --git a/arch/x86/mm/numa_emulation.c b/arch/x86/mm/numa_emulation.c
-index 737491b13728..e801e30089c4 100644
---- a/arch/x86/mm/numa_emulation.c
-+++ b/arch/x86/mm/numa_emulation.c
-@@ -517,8 +517,7 @@ void __init numa_emulation(struct numa_meminfo *numa_meminfo, int numa_dist_cnt)
- 	}
- 
- 	/* free the copied physical distance table */
--	if (phys_dist)
--		memblock_free(__pa(phys_dist), phys_size);
-+	memblock_free_ptr(phys_dist, phys_size);
- 	return;
- 
- no_emu:
-diff --git a/drivers/base/arch_numa.c b/drivers/base/arch_numa.c
-index 46c503486e96..00fb4120a5b3 100644
---- a/drivers/base/arch_numa.c
-+++ b/drivers/base/arch_numa.c
-@@ -264,7 +264,7 @@ void __init numa_free_distance(void)
- 	size = numa_distance_cnt * numa_distance_cnt *
- 		sizeof(numa_distance[0]);
- 
--	memblock_free(__pa(numa_distance), size);
-+	memblock_free_ptr(numa_distance, size);
- 	numa_distance_cnt = 0;
- 	numa_distance = NULL;
- }
-diff --git a/drivers/gpu/drm/ttm/ttm_pool.c b/drivers/gpu/drm/ttm/ttm_pool.c
-index cb38b1a17b09..82cbb29a05aa 100644
---- a/drivers/gpu/drm/ttm/ttm_pool.c
-+++ b/drivers/gpu/drm/ttm/ttm_pool.c
-@@ -383,7 +383,8 @@ int ttm_pool_alloc(struct ttm_pool *pool, struct ttm_tt *tt,
- 	else
- 		gfp_flags |= GFP_HIGHUSER;
- 
--	for (order = min(MAX_ORDER - 1UL, __fls(num_pages)); num_pages;
-+	for (order = min_t(unsigned int, MAX_ORDER - 1, __fls(num_pages));
-+	     num_pages;
- 	     order = min_t(unsigned int, order, __fls(num_pages))) {
- 		bool apply_caching = false;
- 		struct ttm_pool_type *pt;
-diff --git a/drivers/hv/ring_buffer.c b/drivers/hv/ring_buffer.c
-index 2aee356840a2..314015d9e912 100644
---- a/drivers/hv/ring_buffer.c
-+++ b/drivers/hv/ring_buffer.c
-@@ -245,6 +245,7 @@ void hv_ringbuffer_cleanup(struct hv_ring_buffer_info *ring_info)
- 	mutex_unlock(&ring_info->ring_buffer_mutex);
- 
- 	kfree(ring_info->pkt_buffer);
-+	ring_info->pkt_buffer = NULL;
- 	ring_info->pkt_buffer_size = 0;
- }
- 
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index 94fb63a7b357..fe63d5ee201b 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -570,7 +570,7 @@ int __init smu_init (void)
- fail_db_node:
- 	of_node_put(smu->db_node);
- fail_bootmem:
--	memblock_free(__pa(smu), sizeof(struct smu_device));
-+	memblock_free_ptr(smu, sizeof(struct smu_device));
- 	smu = NULL;
- fail_np:
- 	of_node_put(np);
-diff --git a/drivers/net/ethernet/i825xx/82596.c b/drivers/net/ethernet/i825xx/82596.c
-index b8a40146b895..b482f6f633bd 100644
---- a/drivers/net/ethernet/i825xx/82596.c
-+++ b/drivers/net/ethernet/i825xx/82596.c
-@@ -1144,7 +1144,7 @@ static struct net_device * __init i82596_probe(void)
- 			err = -ENODEV;
- 			goto out;
- 		}
--		memcpy(eth_addr, (void *) 0xfffc1f2c, ETH_ALEN);	/* YUCK! Get addr from NOVRAM */
-+		memcpy(eth_addr, absolute_pointer(0xfffc1f2c), ETH_ALEN); /* YUCK! Get addr from NOVRAM */
- 		dev->base_addr = MVME_I596_BASE;
- 		dev->irq = (unsigned) MVME16x_IRQ_I596;
- 		goto found;
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index eb15067a605e..4eb53412b808 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -1047,7 +1047,9 @@ static void cmos_check_wkalrm(struct device *dev)
- 	 * ACK the rtc irq here
- 	 */
- 	if (t_now >= cmos->alarm_expires && cmos_use_acpi_alarm()) {
-+		local_irq_disable();
- 		cmos_interrupt(0, (void *)cmos->rtc);
-+		local_irq_enable();
- 		return;
- 	}
- 
-diff --git a/fs/qnx4/dir.c b/fs/qnx4/dir.c
-index a6ee23aadd28..2a66844b7ff8 100644
---- a/fs/qnx4/dir.c
-+++ b/fs/qnx4/dir.c
-@@ -15,13 +15,27 @@
- #include <linux/buffer_head.h>
- #include "qnx4.h"
+ static const struct dev_pm_ops slink_pm_ops = {
+ 	SET_RUNTIME_PM_OPS(tegra_slink_runtime_suspend,
+diff --git a/fs/afs/callback.c b/fs/afs/callback.c
+index 7d9b23d981bf..1b4d5809808d 100644
+--- a/fs/afs/callback.c
++++ b/fs/afs/callback.c
+@@ -20,6 +20,37 @@
+ #include <linux/sched.h>
+ #include "internal.h"
  
 +/*
-+ * A qnx4 directory entry is an inode entry or link info
-+ * depending on the status field in the last byte. The
-+ * first byte is where the name start either way, and a
-+ * zero means it's empty.
++ * Handle invalidation of an mmap'd file.  We invalidate all the PTEs referring
++ * to the pages in this file's pagecache, forcing the kernel to go through
++ * ->fault() or ->page_mkwrite() - at which point we can handle invalidation
++ * more fully.
 + */
-+union qnx4_directory_entry {
-+	struct {
-+		char de_name;
-+		char de_pad[62];
-+		char de_status;
-+	};
-+	struct qnx4_inode_entry inode;
-+	struct qnx4_link_info link;
-+};
++void afs_invalidate_mmap_work(struct work_struct *work)
++{
++	struct afs_vnode *vnode = container_of(work, struct afs_vnode, cb_work);
 +
- static int qnx4_readdir(struct file *file, struct dir_context *ctx)
++	unmap_mapping_pages(vnode->vfs_inode.i_mapping, 0, 0, false);
++}
++
++void afs_server_init_callback_work(struct work_struct *work)
++{
++	struct afs_server *server = container_of(work, struct afs_server, initcb_work);
++	struct afs_vnode *vnode;
++	struct afs_cell *cell = server->cell;
++
++	down_read(&cell->fs_open_mmaps_lock);
++
++	list_for_each_entry(vnode, &cell->fs_open_mmaps, cb_mmap_link) {
++		if (vnode->cb_server == server) {
++			clear_bit(AFS_VNODE_CB_PROMISED, &vnode->flags);
++			queue_work(system_unbound_wq, &vnode->cb_work);
++		}
++	}
++
++	up_read(&cell->fs_open_mmaps_lock);
++}
++
+ /*
+  * Allow the fileserver to request callback state (re-)initialisation.
+  * Unfortunately, UUIDs are not guaranteed unique.
+@@ -29,8 +60,11 @@ void afs_init_callback_state(struct afs_server *server)
+ 	rcu_read_lock();
+ 	do {
+ 		server->cb_s_break++;
+-		server = rcu_dereference(server->uuid_next);
+-	} while (0);
++		atomic_inc(&server->cell->fs_s_break);
++		if (!list_empty(&server->cell->fs_open_mmaps))
++			queue_work(system_unbound_wq, &server->initcb_work);
++
++	} while ((server = rcu_dereference(server->uuid_next)));
+ 	rcu_read_unlock();
+ }
+ 
+@@ -44,11 +78,17 @@ void __afs_break_callback(struct afs_vnode *vnode, enum afs_cb_break_reason reas
+ 	clear_bit(AFS_VNODE_NEW_CONTENT, &vnode->flags);
+ 	if (test_and_clear_bit(AFS_VNODE_CB_PROMISED, &vnode->flags)) {
+ 		vnode->cb_break++;
++		vnode->cb_v_break = vnode->volume->cb_v_break;
+ 		afs_clear_permits(vnode);
+ 
+ 		if (vnode->lock_state == AFS_VNODE_LOCK_WAITING_FOR_CB)
+ 			afs_lock_may_be_available(vnode);
+ 
++		if (reason != afs_cb_break_for_deleted &&
++		    vnode->status.type == AFS_FTYPE_FILE &&
++		    atomic_read(&vnode->cb_nr_mmap))
++			queue_work(system_unbound_wq, &vnode->cb_work);
++
+ 		trace_afs_cb_break(&vnode->fid, vnode->cb_break, reason, true);
+ 	} else {
+ 		trace_afs_cb_break(&vnode->fid, vnode->cb_break, reason, false);
+diff --git a/fs/afs/cell.c b/fs/afs/cell.c
+index 887b673f6223..d88407fb9bc0 100644
+--- a/fs/afs/cell.c
++++ b/fs/afs/cell.c
+@@ -166,6 +166,8 @@ static struct afs_cell *afs_alloc_cell(struct afs_net *net,
+ 	seqlock_init(&cell->volume_lock);
+ 	cell->fs_servers = RB_ROOT;
+ 	seqlock_init(&cell->fs_lock);
++	INIT_LIST_HEAD(&cell->fs_open_mmaps);
++	init_rwsem(&cell->fs_open_mmaps_lock);
+ 	rwlock_init(&cell->vl_servers_lock);
+ 	cell->flags = (1 << AFS_CELL_FL_CHECK_ALIAS);
+ 
+diff --git a/fs/afs/dir.c b/fs/afs/dir.c
+index ac829e63c570..4579bbda4634 100644
+--- a/fs/afs/dir.c
++++ b/fs/afs/dir.c
+@@ -1077,9 +1077,9 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
+  */
+ static int afs_d_revalidate_rcu(struct dentry *dentry)
  {
- 	struct inode *inode = file_inode(file);
- 	unsigned int offset;
- 	struct buffer_head *bh;
--	struct qnx4_inode_entry *de;
--	struct qnx4_link_info *le;
- 	unsigned long blknum;
- 	int ix, ino;
- 	int size;
-@@ -38,27 +52,30 @@ static int qnx4_readdir(struct file *file, struct dir_context *ctx)
+-	struct afs_vnode *dvnode, *vnode;
++	struct afs_vnode *dvnode;
+ 	struct dentry *parent;
+-	struct inode *dir, *inode;
++	struct inode *dir;
+ 	long dir_version, de_version;
+ 
+ 	_enter("%p", dentry);
+@@ -1109,18 +1109,6 @@ static int afs_d_revalidate_rcu(struct dentry *dentry)
+ 			return -ECHILD;
+ 	}
+ 
+-	/* Check to see if the vnode referred to by the dentry still
+-	 * has a callback.
+-	 */
+-	if (d_really_is_positive(dentry)) {
+-		inode = d_inode_rcu(dentry);
+-		if (inode) {
+-			vnode = AFS_FS_I(inode);
+-			if (!afs_check_validity(vnode))
+-				return -ECHILD;
+-		}
+-	}
+-
+ 	return 1; /* Still valid */
+ }
+ 
+@@ -1156,17 +1144,7 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
+ 	if (IS_ERR(key))
+ 		key = NULL;
+ 
+-	if (d_really_is_positive(dentry)) {
+-		inode = d_inode(dentry);
+-		if (inode) {
+-			vnode = AFS_FS_I(inode);
+-			afs_validate(vnode, key);
+-			if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
+-				goto out_bad;
+-		}
+-	}
+-
+-	/* lock down the parent dentry so we can peer at it */
++	/* Hold the parent dentry so we can peer at it */
+ 	parent = dget_parent(dentry);
+ 	dir = AFS_FS_I(d_inode(parent));
+ 
+@@ -1175,7 +1153,7 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
+ 
+ 	if (test_bit(AFS_VNODE_DELETED, &dir->flags)) {
+ 		_debug("%pd: parent dir deleted", dentry);
+-		goto out_bad_parent;
++		goto not_found;
+ 	}
+ 
+ 	/* We only need to invalidate a dentry if the server's copy changed
+@@ -1201,12 +1179,12 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
+ 	case 0:
+ 		/* the filename maps to something */
+ 		if (d_really_is_negative(dentry))
+-			goto out_bad_parent;
++			goto not_found;
+ 		inode = d_inode(dentry);
+ 		if (is_bad_inode(inode)) {
+ 			printk("kAFS: afs_d_revalidate: %pd2 has bad inode\n",
+ 			       dentry);
+-			goto out_bad_parent;
++			goto not_found;
  		}
+ 
+ 		vnode = AFS_FS_I(inode);
+@@ -1228,9 +1206,6 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
+ 			       dentry, fid.unique,
+ 			       vnode->fid.unique,
+ 			       vnode->vfs_inode.i_generation);
+-			write_seqlock(&vnode->cb_lock);
+-			set_bit(AFS_VNODE_DELETED, &vnode->flags);
+-			write_sequnlock(&vnode->cb_lock);
+ 			goto not_found;
+ 		}
+ 		goto out_valid;
+@@ -1245,7 +1220,7 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
+ 	default:
+ 		_debug("failed to iterate dir %pd: %d",
+ 		       parent, ret);
+-		goto out_bad_parent;
++		goto not_found;
+ 	}
+ 
+ out_valid:
+@@ -1256,16 +1231,9 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
+ 	_leave(" = 1 [valid]");
+ 	return 1;
+ 
+-	/* the dirent, if it exists, now points to a different vnode */
+ not_found:
+-	spin_lock(&dentry->d_lock);
+-	dentry->d_flags |= DCACHE_NFSFS_RENAMED;
+-	spin_unlock(&dentry->d_lock);
+-
+-out_bad_parent:
+ 	_debug("dropping dentry %pd2", dentry);
+ 	dput(parent);
+-out_bad:
+ 	key_put(key);
+ 
+ 	_leave(" = 0 [bad]");
+@@ -1792,6 +1760,10 @@ static int afs_link(struct dentry *from, struct inode *dir,
+ 		goto error;
+ 	}
+ 
++	ret = afs_validate(vnode, op->key);
++	if (ret < 0)
++		goto error_op;
++
+ 	afs_op_set_vnode(op, 0, dvnode);
+ 	afs_op_set_vnode(op, 1, vnode);
+ 	op->file[0].dv_delta = 1;
+@@ -1805,6 +1777,8 @@ static int afs_link(struct dentry *from, struct inode *dir,
+ 	op->create.reason	= afs_edit_dir_for_link;
+ 	return afs_do_sync_operation(op);
+ 
++error_op:
++	afs_put_operation(op);
+ error:
+ 	d_drop(dentry);
+ 	_leave(" = %d", ret);
+@@ -1989,6 +1963,11 @@ static int afs_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
+ 	if (IS_ERR(op))
+ 		return PTR_ERR(op);
+ 
++	ret = afs_validate(vnode, op->key);
++	op->error = ret;
++	if (ret < 0)
++		goto error;
++
+ 	afs_op_set_vnode(op, 0, orig_dvnode);
+ 	afs_op_set_vnode(op, 1, new_dvnode); /* May be same as orig_dvnode */
+ 	op->file[0].dv_delta = 1;
+diff --git a/fs/afs/dir_edit.c b/fs/afs/dir_edit.c
+index f4600c1353ad..540b9fc96824 100644
+--- a/fs/afs/dir_edit.c
++++ b/fs/afs/dir_edit.c
+@@ -263,7 +263,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 		if (b == nr_blocks) {
+ 			_debug("init %u", b);
+ 			afs_edit_init_block(meta, block, b);
+-			i_size_write(&vnode->vfs_inode, (b + 1) * AFS_DIR_BLOCK_SIZE);
++			afs_set_i_size(vnode, (b + 1) * AFS_DIR_BLOCK_SIZE);
+ 		}
+ 
+ 		/* Only lower dir pages have a counter in the header. */
+@@ -296,7 +296,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ new_directory:
+ 	afs_edit_init_block(meta, meta, 0);
+ 	i_size = AFS_DIR_BLOCK_SIZE;
+-	i_size_write(&vnode->vfs_inode, i_size);
++	afs_set_i_size(vnode, i_size);
+ 	slot = AFS_DIR_RESV_BLOCKS0;
+ 	page = page0;
+ 	block = meta;
+diff --git a/fs/afs/file.c b/fs/afs/file.c
+index db035ae2a134..e6c447ae91f3 100644
+--- a/fs/afs/file.c
++++ b/fs/afs/file.c
+@@ -24,12 +24,16 @@ static void afs_invalidatepage(struct page *page, unsigned int offset,
+ static int afs_releasepage(struct page *page, gfp_t gfp_flags);
+ 
+ static void afs_readahead(struct readahead_control *ractl);
++static ssize_t afs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter);
++static void afs_vm_open(struct vm_area_struct *area);
++static void afs_vm_close(struct vm_area_struct *area);
++static vm_fault_t afs_vm_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff, pgoff_t end_pgoff);
+ 
+ const struct file_operations afs_file_operations = {
+ 	.open		= afs_open,
+ 	.release	= afs_release,
+ 	.llseek		= generic_file_llseek,
+-	.read_iter	= generic_file_read_iter,
++	.read_iter	= afs_file_read_iter,
+ 	.write_iter	= afs_file_write,
+ 	.mmap		= afs_file_mmap,
+ 	.splice_read	= generic_file_splice_read,
+@@ -59,8 +63,10 @@ const struct address_space_operations afs_fs_aops = {
+ };
+ 
+ static const struct vm_operations_struct afs_vm_ops = {
++	.open		= afs_vm_open,
++	.close		= afs_vm_close,
+ 	.fault		= filemap_fault,
+-	.map_pages	= filemap_map_pages,
++	.map_pages	= afs_vm_map_pages,
+ 	.page_mkwrite	= afs_page_mkwrite,
+ };
+ 
+@@ -295,7 +301,7 @@ static void afs_req_issue_op(struct netfs_read_subrequest *subreq)
+ 	fsreq->subreq	= subreq;
+ 	fsreq->pos	= subreq->start + subreq->transferred;
+ 	fsreq->len	= subreq->len   - subreq->transferred;
+-	fsreq->key	= subreq->rreq->netfs_priv;
++	fsreq->key	= key_get(subreq->rreq->netfs_priv);
+ 	fsreq->vnode	= vnode;
+ 	fsreq->iter	= &fsreq->def_iter;
+ 
+@@ -304,6 +310,7 @@ static void afs_req_issue_op(struct netfs_read_subrequest *subreq)
+ 			fsreq->pos, fsreq->len);
+ 
+ 	afs_fetch_data(fsreq->vnode, fsreq);
++	afs_put_read(fsreq);
+ }
+ 
+ static int afs_symlink_readpage(struct page *page)
+@@ -490,15 +497,88 @@ static int afs_releasepage(struct page *page, gfp_t gfp_flags)
+ 	return 1;
+ }
+ 
++static void afs_add_open_mmap(struct afs_vnode *vnode)
++{
++	if (atomic_inc_return(&vnode->cb_nr_mmap) == 1) {
++		down_write(&vnode->volume->cell->fs_open_mmaps_lock);
++
++		list_add_tail(&vnode->cb_mmap_link,
++			      &vnode->volume->cell->fs_open_mmaps);
++
++		up_write(&vnode->volume->cell->fs_open_mmaps_lock);
++	}
++}
++
++static void afs_drop_open_mmap(struct afs_vnode *vnode)
++{
++	if (!atomic_dec_and_test(&vnode->cb_nr_mmap))
++		return;
++
++	down_write(&vnode->volume->cell->fs_open_mmaps_lock);
++
++	if (atomic_read(&vnode->cb_nr_mmap) == 0)
++		list_del_init(&vnode->cb_mmap_link);
++
++	up_write(&vnode->volume->cell->fs_open_mmaps_lock);
++	flush_work(&vnode->cb_work);
++}
++
+ /*
+  * Handle setting up a memory mapping on an AFS file.
+  */
+ static int afs_file_mmap(struct file *file, struct vm_area_struct *vma)
+ {
++	struct afs_vnode *vnode = AFS_FS_I(file_inode(file));
+ 	int ret;
+ 
++	afs_add_open_mmap(vnode);
++
+ 	ret = generic_file_mmap(file, vma);
+ 	if (ret == 0)
+ 		vma->vm_ops = &afs_vm_ops;
++	else
++		afs_drop_open_mmap(vnode);
+ 	return ret;
+ }
++
++static void afs_vm_open(struct vm_area_struct *vma)
++{
++	afs_add_open_mmap(AFS_FS_I(file_inode(vma->vm_file)));
++}
++
++static void afs_vm_close(struct vm_area_struct *vma)
++{
++	afs_drop_open_mmap(AFS_FS_I(file_inode(vma->vm_file)));
++}
++
++static vm_fault_t afs_vm_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff, pgoff_t end_pgoff)
++{
++	struct afs_vnode *vnode = AFS_FS_I(file_inode(vmf->vma->vm_file));
++	struct afs_file *af = vmf->vma->vm_file->private_data;
++
++	switch (afs_validate(vnode, af->key)) {
++	case 0:
++		return filemap_map_pages(vmf, start_pgoff, end_pgoff);
++	case -ENOMEM:
++		return VM_FAULT_OOM;
++	case -EINTR:
++	case -ERESTARTSYS:
++		return VM_FAULT_RETRY;
++	case -ESTALE:
++	default:
++		return VM_FAULT_SIGBUS;
++	}
++}
++
++static ssize_t afs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
++{
++	struct afs_vnode *vnode = AFS_FS_I(file_inode(iocb->ki_filp));
++	struct afs_file *af = iocb->ki_filp->private_data;
++	int ret;
++
++	ret = afs_validate(vnode, af->key);
++	if (ret < 0)
++		return ret;
++
++	return generic_file_read_iter(iocb, iter);
++}
+diff --git a/fs/afs/fs_probe.c b/fs/afs/fs_probe.c
+index e7e98ad63a91..c0031a3ab42f 100644
+--- a/fs/afs/fs_probe.c
++++ b/fs/afs/fs_probe.c
+@@ -9,6 +9,7 @@
+ #include <linux/slab.h>
+ #include "afs_fs.h"
+ #include "internal.h"
++#include "protocol_afs.h"
+ #include "protocol_yfs.h"
+ 
+ static unsigned int afs_fs_probe_fast_poll_interval = 30 * HZ;
+@@ -102,7 +103,7 @@ void afs_fileserver_probe_result(struct afs_call *call)
+ 	struct afs_addr_list *alist = call->alist;
+ 	struct afs_server *server = call->server;
+ 	unsigned int index = call->addr_ix;
+-	unsigned int rtt_us = 0;
++	unsigned int rtt_us = 0, cap0;
+ 	int ret = call->error;
+ 
+ 	_enter("%pU,%u", &server->uuid, index);
+@@ -159,6 +160,11 @@ void afs_fileserver_probe_result(struct afs_call *call)
+ 			clear_bit(AFS_SERVER_FL_IS_YFS, &server->flags);
+ 			alist->addrs[index].srx_service = call->service_id;
+ 		}
++		cap0 = ntohl(call->tmp);
++		if (cap0 & AFS3_VICED_CAPABILITY_64BITFILES)
++			set_bit(AFS_SERVER_FL_HAS_FS64, &server->flags);
++		else
++			clear_bit(AFS_SERVER_FL_HAS_FS64, &server->flags);
+ 	}
+ 
+ 	if (rxrpc_kernel_get_srtt(call->net->socket, call->rxcall, &rtt_us) &&
+diff --git a/fs/afs/fsclient.c b/fs/afs/fsclient.c
+index dd3f45d906d2..4943413d9c5f 100644
+--- a/fs/afs/fsclient.c
++++ b/fs/afs/fsclient.c
+@@ -456,9 +456,7 @@ void afs_fs_fetch_data(struct afs_operation *op)
+ 	struct afs_read *req = op->fetch.req;
+ 	__be32 *bp;
+ 
+-	if (upper_32_bits(req->pos) ||
+-	    upper_32_bits(req->len) ||
+-	    upper_32_bits(req->pos + req->len))
++	if (test_bit(AFS_SERVER_FL_HAS_FS64, &op->server->flags))
+ 		return afs_fs_fetch_data64(op);
+ 
+ 	_enter("");
+@@ -1113,9 +1111,7 @@ void afs_fs_store_data(struct afs_operation *op)
+ 	       (unsigned long long)op->store.pos,
+ 	       (unsigned long long)op->store.i_size);
+ 
+-	if (upper_32_bits(op->store.pos) ||
+-	    upper_32_bits(op->store.size) ||
+-	    upper_32_bits(op->store.i_size))
++	if (test_bit(AFS_SERVER_FL_HAS_FS64, &op->server->flags))
+ 		return afs_fs_store_data64(op);
+ 
+ 	call = afs_alloc_flat_call(op->net, &afs_RXFSStoreData,
+@@ -1229,7 +1225,7 @@ static void afs_fs_setattr_size(struct afs_operation *op)
+ 	       key_serial(op->key), vp->fid.vid, vp->fid.vnode);
+ 
+ 	ASSERT(attr->ia_valid & ATTR_SIZE);
+-	if (upper_32_bits(attr->ia_size))
++	if (test_bit(AFS_SERVER_FL_HAS_FS64, &op->server->flags))
+ 		return afs_fs_setattr_size64(op);
+ 
+ 	call = afs_alloc_flat_call(op->net, &afs_RXFSStoreData_as_Status,
+@@ -1657,20 +1653,33 @@ static int afs_deliver_fs_get_capabilities(struct afs_call *call)
+ 			return ret;
+ 
+ 		count = ntohl(call->tmp);
+-
+ 		call->count = count;
+ 		call->count2 = count;
+-		afs_extract_discard(call, count * sizeof(__be32));
++		if (count == 0) {
++			call->unmarshall = 4;
++			call->tmp = 0;
++			break;
++		}
++
++		/* Extract the first word of the capabilities to call->tmp */
++		afs_extract_to_tmp(call);
+ 		call->unmarshall++;
+ 		fallthrough;
+ 
+-		/* Extract capabilities words */
+ 	case 2:
+ 		ret = afs_extract_data(call, false);
+ 		if (ret < 0)
+ 			return ret;
+ 
+-		/* TODO: Examine capabilities */
++		afs_extract_discard(call, (count - 1) * sizeof(__be32));
++		call->unmarshall++;
++		fallthrough;
++
++		/* Extract remaining capabilities words */
++	case 3:
++		ret = afs_extract_data(call, false);
++		if (ret < 0)
++			return ret;
+ 
+ 		call->unmarshall++;
+ 		break;
+diff --git a/fs/afs/inode.c b/fs/afs/inode.c
+index 80b6c8d967d5..8fcffea2daf5 100644
+--- a/fs/afs/inode.c
++++ b/fs/afs/inode.c
+@@ -53,16 +53,6 @@ static noinline void dump_vnode(struct afs_vnode *vnode, struct afs_vnode *paren
+ 		dump_stack();
+ }
+ 
+-/*
+- * Set the file size and block count.  Estimate the number of 512 bytes blocks
+- * used, rounded up to nearest 1K for consistency with other AFS clients.
+- */
+-static void afs_set_i_size(struct afs_vnode *vnode, u64 size)
+-{
+-	i_size_write(&vnode->vfs_inode, size);
+-	vnode->vfs_inode.i_blocks = ((size + 1023) >> 10) << 1;
+-}
+-
+ /*
+  * Initialise an inode from the vnode status.
+  */
+@@ -587,22 +577,32 @@ static void afs_zap_data(struct afs_vnode *vnode)
+ }
+ 
+ /*
+- * Get the server reinit counter for a vnode's current server.
++ * Check to see if we have a server currently serving this volume and that it
++ * hasn't been reinitialised or dropped from the list.
+  */
+-static bool afs_get_s_break_rcu(struct afs_vnode *vnode, unsigned int *_s_break)
++static bool afs_check_server_good(struct afs_vnode *vnode)
+ {
+-	struct afs_server_list *slist = rcu_dereference(vnode->volume->servers);
++	struct afs_server_list *slist;
+ 	struct afs_server *server;
++	bool good;
+ 	int i;
+ 
++	if (vnode->cb_fs_s_break == atomic_read(&vnode->volume->cell->fs_s_break))
++		return true;
++
++	rcu_read_lock();
++
++	slist = rcu_dereference(vnode->volume->servers);
+ 	for (i = 0; i < slist->nr_servers; i++) {
+ 		server = slist->servers[i].server;
+ 		if (server == vnode->cb_server) {
+-			*_s_break = READ_ONCE(server->cb_s_break);
+-			return true;
++			good = (vnode->cb_s_break == server->cb_s_break);
++			rcu_read_unlock();
++			return good;
+ 		}
+ 	}
+ 
++	rcu_read_unlock();
+ 	return false;
+ }
+ 
+@@ -611,57 +611,46 @@ static bool afs_get_s_break_rcu(struct afs_vnode *vnode, unsigned int *_s_break)
+  */
+ bool afs_check_validity(struct afs_vnode *vnode)
+ {
+-	struct afs_volume *volume = vnode->volume;
+ 	enum afs_cb_break_reason need_clear = afs_cb_break_no_break;
+ 	time64_t now = ktime_get_real_seconds();
+-	bool valid;
+-	unsigned int cb_break, cb_s_break, cb_v_break;
++	unsigned int cb_break;
+ 	int seq = 0;
+ 
+ 	do {
+ 		read_seqbegin_or_lock(&vnode->cb_lock, &seq);
+-		cb_v_break = READ_ONCE(volume->cb_v_break);
+ 		cb_break = vnode->cb_break;
+ 
+-		if (test_bit(AFS_VNODE_CB_PROMISED, &vnode->flags) &&
+-		    afs_get_s_break_rcu(vnode, &cb_s_break)) {
+-			if (vnode->cb_s_break != cb_s_break ||
+-			    vnode->cb_v_break != cb_v_break) {
+-				vnode->cb_s_break = cb_s_break;
+-				vnode->cb_v_break = cb_v_break;
+-				need_clear = afs_cb_break_for_vsbreak;
+-				valid = false;
+-			} else if (test_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
++		if (test_bit(AFS_VNODE_CB_PROMISED, &vnode->flags)) {
++			if (vnode->cb_v_break != vnode->volume->cb_v_break)
++				need_clear = afs_cb_break_for_v_break;
++			else if (!afs_check_server_good(vnode))
++				need_clear = afs_cb_break_for_s_reinit;
++			else if (test_bit(AFS_VNODE_ZAP_DATA, &vnode->flags))
+ 				need_clear = afs_cb_break_for_zap;
+-				valid = false;
+-			} else if (vnode->cb_expires_at - 10 <= now) {
++			else if (vnode->cb_expires_at - 10 <= now)
+ 				need_clear = afs_cb_break_for_lapsed;
+-				valid = false;
+-			} else {
+-				valid = true;
+-			}
+ 		} else if (test_bit(AFS_VNODE_DELETED, &vnode->flags)) {
+-			valid = true;
++			;
+ 		} else {
+-			vnode->cb_v_break = cb_v_break;
+-			valid = false;
++			need_clear = afs_cb_break_no_promise;
+ 		}
+ 
+ 	} while (need_seqretry(&vnode->cb_lock, seq));
+ 
+ 	done_seqretry(&vnode->cb_lock, seq);
+ 
+-	if (need_clear != afs_cb_break_no_break) {
+-		write_seqlock(&vnode->cb_lock);
+-		if (cb_break == vnode->cb_break)
+-			__afs_break_callback(vnode, need_clear);
+-		else
+-			trace_afs_cb_miss(&vnode->fid, need_clear);
+-		write_sequnlock(&vnode->cb_lock);
+-		valid = false;
+-	}
++	if (need_clear == afs_cb_break_no_break)
++		return true;
+ 
+-	return valid;
++	write_seqlock(&vnode->cb_lock);
++	if (need_clear == afs_cb_break_no_promise)
++		vnode->cb_v_break = vnode->volume->cb_v_break;
++	else if (cb_break == vnode->cb_break)
++		__afs_break_callback(vnode, need_clear);
++	else
++		trace_afs_cb_miss(&vnode->fid, need_clear);
++	write_sequnlock(&vnode->cb_lock);
++	return false;
+ }
+ 
+ /*
+@@ -675,21 +664,20 @@ bool afs_check_validity(struct afs_vnode *vnode)
+  */
+ int afs_validate(struct afs_vnode *vnode, struct key *key)
+ {
+-	bool valid;
+ 	int ret;
+ 
+ 	_enter("{v={%llx:%llu} fl=%lx},%x",
+ 	       vnode->fid.vid, vnode->fid.vnode, vnode->flags,
+ 	       key_serial(key));
+ 
+-	rcu_read_lock();
+-	valid = afs_check_validity(vnode);
+-	rcu_read_unlock();
+-
+-	if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
+-		clear_nlink(&vnode->vfs_inode);
++	if (unlikely(test_bit(AFS_VNODE_DELETED, &vnode->flags))) {
++		if (vnode->vfs_inode.i_nlink)
++			clear_nlink(&vnode->vfs_inode);
++		goto valid;
++	}
+ 
+-	if (valid)
++	if (test_bit(AFS_VNODE_CB_PROMISED, &vnode->flags) &&
++	    afs_check_validity(vnode))
+ 		goto valid;
+ 
+ 	down_write(&vnode->validate_lock);
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index 5ed416f4ff33..0ad97a8fc0d4 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -390,6 +390,9 @@ struct afs_cell {
+ 	/* Active fileserver interaction state. */
+ 	struct rb_root		fs_servers;	/* afs_server (by server UUID) */
+ 	seqlock_t		fs_lock;	/* For fs_servers  */
++	struct rw_semaphore	fs_open_mmaps_lock;
++	struct list_head	fs_open_mmaps;	/* List of vnodes that are mmapped */
++	atomic_t		fs_s_break;	/* Counter of CB.InitCallBackState messages */
+ 
+ 	/* VL server list. */
+ 	rwlock_t		vl_servers_lock; /* Lock on vl_servers */
+@@ -503,6 +506,7 @@ struct afs_server {
+ 	struct hlist_node	addr4_link;	/* Link in net->fs_addresses4 */
+ 	struct hlist_node	addr6_link;	/* Link in net->fs_addresses6 */
+ 	struct hlist_node	proc_link;	/* Link in net->fs_proc */
++	struct work_struct	initcb_work;	/* Work for CB.InitCallBackState* */
+ 	struct afs_server	*gc_next;	/* Next server in manager's list */
+ 	time64_t		unuse_time;	/* Time at which last unused */
+ 	unsigned long		flags;
+@@ -516,6 +520,7 @@ struct afs_server {
+ #define AFS_SERVER_FL_IS_YFS	16		/* Server is YFS not AFS */
+ #define AFS_SERVER_FL_NO_IBULK	17		/* Fileserver doesn't support FS.InlineBulkStatus */
+ #define AFS_SERVER_FL_NO_RM2	18		/* Fileserver doesn't support YFS.RemoveFile2 */
++#define AFS_SERVER_FL_HAS_FS64	19		/* Fileserver supports FS.{Fetch,Store}Data64 */
+ 	atomic_t		ref;		/* Object refcount */
+ 	atomic_t		active;		/* Active user count */
+ 	u32			addr_version;	/* Address list version */
+@@ -657,7 +662,11 @@ struct afs_vnode {
+ 	afs_lock_type_t		lock_type : 8;
+ 
+ 	/* outstanding callback notification on this file */
++	struct work_struct	cb_work;	/* Work for mmap'd files */
++	struct list_head	cb_mmap_link;	/* Link in cell->fs_open_mmaps */
+ 	void			*cb_server;	/* Server with callback/filelock */
++	atomic_t		cb_nr_mmap;	/* Number of mmaps */
++	unsigned int		cb_fs_s_break;	/* Mass server break counter (cell->fs_s_break) */
+ 	unsigned int		cb_s_break;	/* Mass break counter on ->server */
+ 	unsigned int		cb_v_break;	/* Mass break counter on ->volume */
+ 	unsigned int		cb_break;	/* Break counter on vnode */
+@@ -965,6 +974,8 @@ extern struct fscache_cookie_def afs_vnode_cache_index_def;
+ /*
+  * callback.c
+  */
++extern void afs_invalidate_mmap_work(struct work_struct *);
++extern void afs_server_init_callback_work(struct work_struct *work);
+ extern void afs_init_callback_state(struct afs_server *);
+ extern void __afs_break_callback(struct afs_vnode *, enum afs_cb_break_reason);
+ extern void afs_break_callback(struct afs_vnode *, enum afs_cb_break_reason);
+@@ -1585,6 +1596,16 @@ static inline void afs_update_dentry_version(struct afs_operation *op,
+ 			(void *)(unsigned long)dir_vp->scb.status.data_version;
+ }
+ 
++/*
++ * Set the file size and block count.  Estimate the number of 512 bytes blocks
++ * used, rounded up to nearest 1K for consistency with other AFS clients.
++ */
++static inline void afs_set_i_size(struct afs_vnode *vnode, u64 size)
++{
++	i_size_write(&vnode->vfs_inode, size);
++	vnode->vfs_inode.i_blocks = ((size + 1023) >> 10) << 1;
++}
++
+ /*
+  * Check for a conflicting operation on a directory that we just unlinked from.
+  * If someone managed to sneak a link or an unlink in on the file we just
+diff --git a/fs/afs/protocol_afs.h b/fs/afs/protocol_afs.h
+new file mode 100644
+index 000000000000..0c39358c8b70
+--- /dev/null
++++ b/fs/afs/protocol_afs.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/* AFS protocol bits
++ *
++ * Copyright (C) 2021 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ */
++
++
++#define AFSCAPABILITIESMAX 196 /* Maximum number of words in a capability set */
++
++/* AFS3 Fileserver capabilities word 0 */
++#define AFS3_VICED_CAPABILITY_ERRORTRANS	0x0001 /* Uses UAE errors */
++#define AFS3_VICED_CAPABILITY_64BITFILES	0x0002 /* FetchData64 & StoreData64 supported */
++#define AFS3_VICED_CAPABILITY_WRITELOCKACL	0x0004 /* Can lock a file even without lock perm */
++#define AFS3_VICED_CAPABILITY_SANEACLS		0x0008 /* ACLs reviewed for sanity - don't use */
+diff --git a/fs/afs/protocol_yfs.h b/fs/afs/protocol_yfs.h
+index b5bd03b1d3c7..e4cd89c44c46 100644
+--- a/fs/afs/protocol_yfs.h
++++ b/fs/afs/protocol_yfs.h
+@@ -168,3 +168,9 @@ enum yfs_lock_type {
+ 	yfs_LockMandatoryWrite	= 0x101,
+ 	yfs_LockMandatoryExtend	= 0x102,
+ };
++
++/* RXYFS Viced Capability Flags */
++#define YFS_VICED_CAPABILITY_ERRORTRANS		0x0001 /* Deprecated v0.195 */
++#define YFS_VICED_CAPABILITY_64BITFILES		0x0002 /* Deprecated v0.195 */
++#define YFS_VICED_CAPABILITY_WRITELOCKACL	0x0004 /* Can lock a file even without lock perm */
++#define YFS_VICED_CAPABILITY_SANEACLS		0x0008 /* Deprecated v0.195 */
+diff --git a/fs/afs/rotate.c b/fs/afs/rotate.c
+index d83f13c44b92..79e1a5f6701b 100644
+--- a/fs/afs/rotate.c
++++ b/fs/afs/rotate.c
+@@ -374,6 +374,7 @@ bool afs_select_fileserver(struct afs_operation *op)
+ 	if (vnode->cb_server != server) {
+ 		vnode->cb_server = server;
+ 		vnode->cb_s_break = server->cb_s_break;
++		vnode->cb_fs_s_break = atomic_read(&server->cell->fs_s_break);
+ 		vnode->cb_v_break = vnode->volume->cb_v_break;
+ 		clear_bit(AFS_VNODE_CB_PROMISED, &vnode->flags);
+ 	}
+diff --git a/fs/afs/server.c b/fs/afs/server.c
+index 684a2b02b9ff..6e5b9a19b234 100644
+--- a/fs/afs/server.c
++++ b/fs/afs/server.c
+@@ -235,6 +235,7 @@ static struct afs_server *afs_alloc_server(struct afs_cell *cell,
+ 	server->addr_version = alist->version;
+ 	server->uuid = *uuid;
+ 	rwlock_init(&server->fs_lock);
++	INIT_WORK(&server->initcb_work, afs_server_init_callback_work);
+ 	init_waitqueue_head(&server->probe_wq);
+ 	INIT_LIST_HEAD(&server->probe_link);
+ 	spin_lock_init(&server->probe_lock);
+@@ -467,6 +468,7 @@ static void afs_destroy_server(struct afs_net *net, struct afs_server *server)
+ 	if (test_bit(AFS_SERVER_FL_MAY_HAVE_CB, &server->flags))
+ 		afs_give_up_callbacks(net, server);
+ 
++	flush_work(&server->initcb_work);
+ 	afs_put_server(net, server, afs_server_trace_destroy);
+ }
+ 
+diff --git a/fs/afs/super.c b/fs/afs/super.c
+index e38bb1e7a4d2..d110def8aa8e 100644
+--- a/fs/afs/super.c
++++ b/fs/afs/super.c
+@@ -698,6 +698,7 @@ static struct inode *afs_alloc_inode(struct super_block *sb)
+ 	vnode->lock_state	= AFS_VNODE_LOCK_NONE;
+ 
+ 	init_rwsem(&vnode->rmdir_lock);
++	INIT_WORK(&vnode->cb_work, afs_invalidate_mmap_work);
+ 
+ 	_leave(" = %p", &vnode->vfs_inode);
+ 	return &vnode->vfs_inode;
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index c0534697268e..2dfe3b3a53d6 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -137,7 +137,7 @@ int afs_write_end(struct file *file, struct address_space *mapping,
+ 		write_seqlock(&vnode->cb_lock);
+ 		i_size = i_size_read(&vnode->vfs_inode);
+ 		if (maybe_i_size > i_size)
+-			i_size_write(&vnode->vfs_inode, maybe_i_size);
++			afs_set_i_size(vnode, maybe_i_size);
+ 		write_sequnlock(&vnode->cb_lock);
+ 	}
+ 
+@@ -471,13 +471,18 @@ static void afs_extend_writeback(struct address_space *mapping,
+ 			}
+ 
+ 			/* Has the page moved or been split? */
+-			if (unlikely(page != xas_reload(&xas)))
++			if (unlikely(page != xas_reload(&xas))) {
++				put_page(page);
+ 				break;
++			}
+ 
+-			if (!trylock_page(page))
++			if (!trylock_page(page)) {
++				put_page(page);
+ 				break;
++			}
+ 			if (!PageDirty(page) || PageWriteback(page)) {
+ 				unlock_page(page);
++				put_page(page);
+ 				break;
+ 			}
+ 
+@@ -487,6 +492,7 @@ static void afs_extend_writeback(struct address_space *mapping,
+ 			t = afs_page_dirty_to(page, priv);
+ 			if (f != 0 && !new_content) {
+ 				unlock_page(page);
++				put_page(page);
+ 				break;
+ 			}
+ 
+@@ -801,6 +807,7 @@ int afs_writepages(struct address_space *mapping,
+ ssize_t afs_file_write(struct kiocb *iocb, struct iov_iter *from)
+ {
+ 	struct afs_vnode *vnode = AFS_FS_I(file_inode(iocb->ki_filp));
++	struct afs_file *af = iocb->ki_filp->private_data;
+ 	ssize_t result;
+ 	size_t count = iov_iter_count(from);
+ 
+@@ -816,6 +823,10 @@ ssize_t afs_file_write(struct kiocb *iocb, struct iov_iter *from)
+ 	if (!count)
+ 		return 0;
+ 
++	result = afs_validate(vnode, af->key);
++	if (result < 0)
++		return result;
++
+ 	result = generic_file_write_iter(iocb, from);
+ 
+ 	_leave(" = %zd", result);
+@@ -829,13 +840,18 @@ ssize_t afs_file_write(struct kiocb *iocb, struct iov_iter *from)
+  */
+ int afs_fsync(struct file *file, loff_t start, loff_t end, int datasync)
+ {
+-	struct inode *inode = file_inode(file);
+-	struct afs_vnode *vnode = AFS_FS_I(inode);
++	struct afs_vnode *vnode = AFS_FS_I(file_inode(file));
++	struct afs_file *af = file->private_data;
++	int ret;
+ 
+ 	_enter("{%llx:%llu},{n=%pD},%d",
+ 	       vnode->fid.vid, vnode->fid.vnode, file,
+ 	       datasync);
+ 
++	ret = afs_validate(vnode, af->key);
++	if (ret < 0)
++		return ret;
++
+ 	return file_write_and_wait_range(file, start, end);
+ }
+ 
+@@ -849,11 +865,14 @@ vm_fault_t afs_page_mkwrite(struct vm_fault *vmf)
+ 	struct file *file = vmf->vma->vm_file;
+ 	struct inode *inode = file_inode(file);
+ 	struct afs_vnode *vnode = AFS_FS_I(inode);
++	struct afs_file *af = file->private_data;
+ 	unsigned long priv;
+ 	vm_fault_t ret = VM_FAULT_RETRY;
+ 
+ 	_enter("{{%llx:%llu}},{%lx}", vnode->fid.vid, vnode->fid.vnode, page->index);
+ 
++	afs_validate(vnode, af->key);
++
+ 	sb_start_pagefault(inode->i_sb);
+ 
+ 	/* Wait for the page to be written to the cache before we allow it to
+diff --git a/fs/cifs/cache.c b/fs/cifs/cache.c
+index 8a3b30ec860c..8be57aaedab6 100644
+--- a/fs/cifs/cache.c
++++ b/fs/cifs/cache.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/cache.c - CIFS filesystem cache index structure definitions
++ *   CIFS filesystem cache index structure definitions
+  *
+  *   Copyright (c) 2010 Novell, Inc.
+  *   Authors(s): Suresh Jayaraman (sjayaraman@suse.de>
+diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
+index 51a824fc926a..de2c12bcfa4b 100644
+--- a/fs/cifs/cifs_debug.c
++++ b/fs/cifs/cifs_debug.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- *   fs/cifs_debug.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2000,2005
+  *
+diff --git a/fs/cifs/cifs_fs_sb.h b/fs/cifs/cifs_fs_sb.h
+index 4fd788586399..f97407520ea1 100644
+--- a/fs/cifs/cifs_fs_sb.h
++++ b/fs/cifs/cifs_fs_sb.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifs_fs_sb.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002,2004
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifs_ioctl.h b/fs/cifs/cifs_ioctl.h
+index ef723be358af..b87cbbe6d2d4 100644
+--- a/fs/cifs/cifs_ioctl.h
++++ b/fs/cifs/cifs_ioctl.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifs_ioctl.h
+  *
+  *   Structure definitions for io control for cifs/smb3
+  *
+diff --git a/fs/cifs/cifs_spnego.c b/fs/cifs/cifs_spnego.c
+index 8fa26a8530f8..353bd0dd7026 100644
+--- a/fs/cifs/cifs_spnego.c
++++ b/fs/cifs/cifs_spnego.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/cifs_spnego.c -- SPNEGO upcall management for CIFS
++ *   SPNEGO upcall management for CIFS
+  *
+  *   Copyright (c) 2007 Red Hat, Inc.
+  *   Author(s): Jeff Layton (jlayton@redhat.com)
+diff --git a/fs/cifs/cifs_spnego.h b/fs/cifs/cifs_spnego.h
+index 31387d0ea32e..e6a0451877d4 100644
+--- a/fs/cifs/cifs_spnego.h
++++ b/fs/cifs/cifs_spnego.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifs_spnego.h -- SPNEGO upcall management for CIFS
++ *   SPNEGO upcall management for CIFS
+  *
+  *   Copyright (c) 2007 Red Hat, Inc.
+  *   Author(s): Jeff Layton (jlayton@redhat.com)
+diff --git a/fs/cifs/cifs_unicode.c b/fs/cifs/cifs_unicode.c
+index 171ad8b42107..e7582dd79179 100644
+--- a/fs/cifs/cifs_unicode.c
++++ b/fs/cifs/cifs_unicode.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- *   fs/cifs/cifs_unicode.c
+  *
+  *   Copyright (c) International Business Machines  Corp., 2000,2009
+  *   Modified by Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
+index 388eb536cff1..ee3aab3dd4ac 100644
+--- a/fs/cifs/cifsacl.c
++++ b/fs/cifs/cifsacl.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/cifsacl.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2007,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifsacl.h b/fs/cifs/cifsacl.h
+index f8292bcf8594..ccbfc754bd3c 100644
+--- a/fs/cifs/cifsacl.h
++++ b/fs/cifs/cifsacl.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifsacl.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2007
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifsencrypt.c b/fs/cifs/cifsencrypt.c
+index 2e6f40344037..d118282071b3 100644
+--- a/fs/cifs/cifsencrypt.c
++++ b/fs/cifs/cifsencrypt.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/cifsencrypt.c
+  *
+  *   Encryption and hashing operations relating to NTLM, NTLMv2.  See MS-NLMP
+  *   for more detailed information
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index 8c20bfa187ac..9fa930dfd78d 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/cifsfs.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
+index d25a4099b32e..b50da1901ebd 100644
+--- a/fs/cifs/cifsfs.h
++++ b/fs/cifs/cifsfs.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifsfs.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002, 2007
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
+index c068f7d8d879..e916470468ea 100644
+--- a/fs/cifs/cifsglob.h
++++ b/fs/cifs/cifsglob.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifsglob.h
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+@@ -1400,6 +1399,7 @@ struct cifsInodeInfo {
+ #define CIFS_INO_INVALID_MAPPING	  (4) /* pagecache is invalid */
+ #define CIFS_INO_LOCK			  (5) /* lock bit for synchronization */
+ #define CIFS_INO_MODIFIED_ATTR            (6) /* Indicate change in mtime/ctime */
++#define CIFS_INO_CLOSE_ON_LOCK            (7) /* Not to defer the close when lock is set */
+ 	unsigned long flags;
+ 	spinlock_t writers_lock;
+ 	unsigned int writers;		/* Number of writers on this inode */
+diff --git a/fs/cifs/cifspdu.h b/fs/cifs/cifspdu.h
+index 98e8e5aa0613..d2ff438fd31f 100644
+--- a/fs/cifs/cifspdu.h
++++ b/fs/cifs/cifspdu.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifspdu.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002,2009
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
+index f9740c21ca3d..d0f85b666662 100644
+--- a/fs/cifs/cifsproto.h
++++ b/fs/cifs/cifsproto.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/cifsproto.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+@@ -268,6 +267,9 @@ extern void cifs_close_deferred_file(struct cifsInodeInfo *cifs_inode);
+ 
+ extern void cifs_close_all_deferred_files(struct cifs_tcon *cifs_tcon);
+ 
++extern void cifs_close_deferred_file_under_dentry(struct cifs_tcon *cifs_tcon,
++				const char *path);
++
+ extern struct TCP_Server_Info *cifs_get_tcp_session(struct smb3_fs_context *ctx);
+ extern void cifs_put_tcp_session(struct TCP_Server_Info *server,
+ 				 int from_reconnect);
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index a8e41c1e80ca..243d17696f06 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/cifssmb.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2010
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 0db344807ef1..7881115cfbee 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/connect.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2011
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+@@ -1090,7 +1089,7 @@ cifs_demultiplex_thread(void *p)
+ 	module_put_and_exit(0);
+ }
+ 
+-/**
++/*
+  * Returns true if srcaddr isn't specified and rhs isn't specified, or
+  * if srcaddr is specified and matches the IP address of the rhs argument
+  */
+@@ -1550,6 +1549,9 @@ static int match_session(struct cifs_ses *ses, struct smb3_fs_context *ctx)
+ 
+ /**
+  * cifs_setup_ipc - helper to setup the IPC tcon for the session
++ * @ses: smb session to issue the request on
++ * @ctx: the superblock configuration context to use for building the
++ *       new tree connection for the IPC (interprocess communication RPC)
+  *
+  * A new IPC connection is made and stored in the session
+  * tcon_ipc. The IPC tcon has the same lifetime as the session.
+@@ -1605,6 +1607,7 @@ cifs_setup_ipc(struct cifs_ses *ses, struct smb3_fs_context *ctx)
+ 
+ /**
+  * cifs_free_ipc - helper to release the session IPC tcon
++ * @ses: smb session to unmount the IPC from
+  *
+  * Needs to be called everytime a session is destroyed.
+  *
+@@ -1855,6 +1858,8 @@ cifs_set_cifscreds(struct smb3_fs_context *ctx __attribute__((unused)),
+ 
+ /**
+  * cifs_get_smb_ses - get a session matching @ctx data from @server
++ * @server: server to setup the session to
++ * @ctx: superblock configuration context to use to setup the session
+  *
+  * This function assumes it is being called from cifs_mount() where we
+  * already got a server reference (server refcount +1). See
+@@ -2065,6 +2070,8 @@ cifs_put_tcon(struct cifs_tcon *tcon)
+ 
+ /**
+  * cifs_get_tcon - get a tcon matching @ctx data from @ses
++ * @ses: smb session to issue the request on
++ * @ctx: the superblock configuration context to use for building the
+  *
+  * - tcon refcount is the number of mount points using the tcon.
+  * - ses refcount is the number of tcon using the session.
+@@ -3030,7 +3037,7 @@ build_unc_path_to_root(const struct smb3_fs_context *ctx,
+ 	return full_path;
+ }
+ 
+-/**
++/*
+  * expand_dfs_referral - Perform a dfs referral query and update the cifs_sb
+  *
+  * If a referral is found, cifs_sb->ctx->mount_options will be (re-)allocated
+diff --git a/fs/cifs/dir.c b/fs/cifs/dir.c
+index 5f8a302ffcb2..6e8e7cc26ae2 100644
+--- a/fs/cifs/dir.c
++++ b/fs/cifs/dir.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/dir.c
+  *
+  *   vfs operations that deal with dentries
+  *
+diff --git a/fs/cifs/dns_resolve.c b/fs/cifs/dns_resolve.c
+index 8c616aaeb7c4..0458d28d71aa 100644
+--- a/fs/cifs/dns_resolve.c
++++ b/fs/cifs/dns_resolve.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *  fs/cifs/dns_resolve.c
+  *
+  *   Copyright (c) 2007 Igor Mammedov
+  *   Author(s): Igor Mammedov (niallain@gmail.com)
+diff --git a/fs/cifs/dns_resolve.h b/fs/cifs/dns_resolve.h
+index 9fa2807ef79e..afc0df381246 100644
+--- a/fs/cifs/dns_resolve.h
++++ b/fs/cifs/dns_resolve.h
+@@ -1,7 +1,7 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/dns_resolve.h -- DNS Resolver upcall management for CIFS DFS
+- *                            Handles host name to IP address resolution
++ *   DNS Resolver upcall management for CIFS DFS
++ *   Handles host name to IP address resolution
+  *
+  *   Copyright (c) International Business Machines  Corp., 2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/export.c b/fs/cifs/export.c
+index 747a540db954..37c28415df1e 100644
+--- a/fs/cifs/export.c
++++ b/fs/cifs/export.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/export.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2007
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index d0216472f1c6..6796fc73b304 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/file.c
+  *
+  *   vfs operations that deal with files
+  *
+@@ -883,6 +882,7 @@ int cifs_close(struct inode *inode, struct file *file)
+ 		dclose = kmalloc(sizeof(struct cifs_deferred_close), GFP_KERNEL);
+ 		if ((cinode->oplock == CIFS_CACHE_RHW_FLG) &&
+ 		    cinode->lease_granted &&
++		    !test_bit(CIFS_INO_CLOSE_ON_LOCK, &cinode->flags) &&
+ 		    dclose) {
+ 			if (test_bit(CIFS_INO_MODIFIED_ATTR, &cinode->flags)) {
+ 				inode->i_ctime = inode->i_mtime = current_time(inode);
+@@ -1865,6 +1865,7 @@ int cifs_lock(struct file *file, int cmd, struct file_lock *flock)
+ 	cifs_read_flock(flock, &type, &lock, &unlock, &wait_flag,
+ 			tcon->ses->server);
+ 	cifs_sb = CIFS_FILE_SB(file);
++	set_bit(CIFS_INO_CLOSE_ON_LOCK, &CIFS_I(d_inode(cfile->dentry))->flags);
+ 
+ 	if (cap_unix(tcon->ses) &&
+ 	    (CIFS_UNIX_FCNTL_CAP & le64_to_cpu(tcon->fsUnixInfo.Capability)) &&
+diff --git a/fs/cifs/fscache.c b/fs/cifs/fscache.c
+index fab47fa7df74..8eedd20c44ab 100644
+--- a/fs/cifs/fscache.c
++++ b/fs/cifs/fscache.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/fscache.c - CIFS filesystem cache interface
++ *   CIFS filesystem cache interface
+  *
+  *   Copyright (c) 2010 Novell, Inc.
+  *   Author(s): Suresh Jayaraman <sjayaraman@suse.de>
+diff --git a/fs/cifs/fscache.h b/fs/cifs/fscache.h
+index 82e856b9cf89..9baa1d0f22bd 100644
+--- a/fs/cifs/fscache.h
++++ b/fs/cifs/fscache.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/fscache.h - CIFS filesystem cache interface definitions
++ *   CIFS filesystem cache interface definitions
+  *
+  *   Copyright (c) 2010 Novell, Inc.
+  *   Authors(s): Suresh Jayaraman (sjayaraman@suse.de>
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index 50c01cff4c84..82848412ad85 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/inode.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2010
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+@@ -1625,7 +1624,7 @@ int cifs_unlink(struct inode *dir, struct dentry *dentry)
+ 		goto unlink_out;
+ 	}
+ 
+-	cifs_close_deferred_file(CIFS_I(inode));
++	cifs_close_deferred_file_under_dentry(tcon, full_path);
+ 	if (cap_unix(tcon->ses) && (CIFS_UNIX_POSIX_PATH_OPS_CAP &
+ 				le64_to_cpu(tcon->fsUnixInfo.Capability))) {
+ 		rc = CIFSPOSIXDelFile(xid, tcon, full_path,
+@@ -2114,9 +2113,9 @@ cifs_rename2(struct user_namespace *mnt_userns, struct inode *source_dir,
+ 		goto cifs_rename_exit;
+ 	}
+ 
+-	cifs_close_deferred_file(CIFS_I(d_inode(source_dentry)));
++	cifs_close_deferred_file_under_dentry(tcon, from_name);
+ 	if (d_inode(target_dentry) != NULL)
+-		cifs_close_deferred_file(CIFS_I(d_inode(target_dentry)));
++		cifs_close_deferred_file_under_dentry(tcon, to_name);
+ 
+ 	rc = cifs_do_rename(xid, source_dentry, from_name, target_dentry,
+ 			    to_name);
+diff --git a/fs/cifs/ioctl.c b/fs/cifs/ioctl.c
+index 42c6a0bac6c8..0359b604bdbc 100644
+--- a/fs/cifs/ioctl.c
++++ b/fs/cifs/ioctl.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/ioctl.c
+  *
+  *   vfs operations that deal with io control
+  *
+@@ -359,7 +358,7 @@ long cifs_ioctl(struct file *filep, unsigned int command, unsigned long arg)
+ 			if (pSMBFile == NULL)
+ 				break;
+ 			tcon = tlink_tcon(pSMBFile->tlink);
+-			caps = le64_to_cpu(tcon->fsUnixInfo.Capability);
++			/* caps = le64_to_cpu(tcon->fsUnixInfo.Capability); */
+ 
+ 			if (get_user(ExtAttrBits, (int __user *)arg)) {
+ 				rc = -EFAULT;
+diff --git a/fs/cifs/link.c b/fs/cifs/link.c
+index f0a6d63bc08c..852e54ee82c2 100644
+--- a/fs/cifs/link.c
++++ b/fs/cifs/link.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/link.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/misc.c b/fs/cifs/misc.c
+index 9469f1cf0b46..03da00eb7c04 100644
+--- a/fs/cifs/misc.c
++++ b/fs/cifs/misc.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/misc.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+@@ -736,7 +735,7 @@ cifs_close_deferred_file(struct cifsInodeInfo *cifs_inode)
+ 			if (cancel_delayed_work(&cfile->deferred)) {
+ 				tmp_list = kmalloc(sizeof(struct file_list), GFP_ATOMIC);
+ 				if (tmp_list == NULL)
+-					continue;
++					break;
+ 				tmp_list->cfile = cfile;
+ 				list_add_tail(&tmp_list->list, &file_head);
+ 			}
+@@ -767,7 +766,7 @@ cifs_close_all_deferred_files(struct cifs_tcon *tcon)
+ 			if (cancel_delayed_work(&cfile->deferred)) {
+ 				tmp_list = kmalloc(sizeof(struct file_list), GFP_ATOMIC);
+ 				if (tmp_list == NULL)
+-					continue;
++					break;
+ 				tmp_list->cfile = cfile;
+ 				list_add_tail(&tmp_list->list, &file_head);
+ 			}
+@@ -781,6 +780,43 @@ cifs_close_all_deferred_files(struct cifs_tcon *tcon)
+ 		kfree(tmp_list);
+ 	}
+ }
++void
++cifs_close_deferred_file_under_dentry(struct cifs_tcon *tcon, const char *path)
++{
++	struct cifsFileInfo *cfile;
++	struct list_head *tmp;
++	struct file_list *tmp_list, *tmp_next_list;
++	struct list_head file_head;
++	void *page;
++	const char *full_path;
++
++	INIT_LIST_HEAD(&file_head);
++	page = alloc_dentry_path();
++	spin_lock(&tcon->open_file_lock);
++	list_for_each(tmp, &tcon->openFileList) {
++		cfile = list_entry(tmp, struct cifsFileInfo, tlist);
++		full_path = build_path_from_dentry(cfile->dentry, page);
++		if (strstr(full_path, path)) {
++			if (delayed_work_pending(&cfile->deferred)) {
++				if (cancel_delayed_work(&cfile->deferred)) {
++					tmp_list = kmalloc(sizeof(struct file_list), GFP_ATOMIC);
++					if (tmp_list == NULL)
++						break;
++					tmp_list->cfile = cfile;
++					list_add_tail(&tmp_list->list, &file_head);
++				}
++			}
++		}
++	}
++	spin_unlock(&tcon->open_file_lock);
++
++	list_for_each_entry_safe(tmp_list, tmp_next_list, &file_head, list) {
++		_cifsFileInfo_put(tmp_list->cfile, true, false);
++		list_del(&tmp_list->list);
++		kfree(tmp_list);
++	}
++	free_dentry_path(page);
++}
+ 
+ /* parses DFS refferal V3 structure
+  * caller is responsible for freeing target_nodes
+diff --git a/fs/cifs/netmisc.c b/fs/cifs/netmisc.c
+index 0e728aac67e9..fa9fbd6a819c 100644
+--- a/fs/cifs/netmisc.c
++++ b/fs/cifs/netmisc.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- *   fs/cifs/netmisc.c
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/ntlmssp.h b/fs/cifs/ntlmssp.h
+index 378133ce8869..25a2b8ef88b9 100644
+--- a/fs/cifs/ntlmssp.h
++++ b/fs/cifs/ntlmssp.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/ntlmssp.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002,2007
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/readdir.c b/fs/cifs/readdir.c
+index 54d77c99e21c..1929e80c09ee 100644
+--- a/fs/cifs/readdir.c
++++ b/fs/cifs/readdir.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/readdir.c
+  *
+  *   Directory search handling
+  *
+diff --git a/fs/cifs/rfc1002pdu.h b/fs/cifs/rfc1002pdu.h
+index 137f7c95afd6..ae1d025da294 100644
+--- a/fs/cifs/rfc1002pdu.h
++++ b/fs/cifs/rfc1002pdu.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/rfc1002pdu.h
+  *
+  *   Protocol Data Unit definitions for RFC 1001/1002 support
+  *
+diff --git a/fs/cifs/sess.c b/fs/cifs/sess.c
+index 118403fbeda2..23e02db7923f 100644
+--- a/fs/cifs/sess.c
++++ b/fs/cifs/sess.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/sess.c
+  *
+  *   SMB/CIFS session setup handling routines
+  *
+diff --git a/fs/cifs/smb2file.c b/fs/cifs/smb2file.c
+index c9d8a50062b8..f5dcc4940b6d 100644
+--- a/fs/cifs/smb2file.c
++++ b/fs/cifs/smb2file.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/smb2file.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002, 2011
+  *   Author(s): Steve French (sfrench@us.ibm.com),
+diff --git a/fs/cifs/smb2glob.h b/fs/cifs/smb2glob.h
+index d0e9f3782bd9..ca692b2283cd 100644
+--- a/fs/cifs/smb2glob.h
++++ b/fs/cifs/smb2glob.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/smb2glob.h
+  *
+  *   Definitions for various global variables and structures
+  *
+diff --git a/fs/cifs/smb2inode.c b/fs/cifs/smb2inode.c
+index 957b2594f02e..8297703492ee 100644
+--- a/fs/cifs/smb2inode.c
++++ b/fs/cifs/smb2inode.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/smb2inode.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002, 2011
+  *                 Etersoft, 2012
+diff --git a/fs/cifs/smb2misc.c b/fs/cifs/smb2misc.c
+index 668f77108831..29b5554f6263 100644
+--- a/fs/cifs/smb2misc.c
++++ b/fs/cifs/smb2misc.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/smb2misc.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2011
+  *                 Etersoft, 2012
+diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
+index b6d2e3591927..672ae78e866a 100644
+--- a/fs/cifs/smb2pdu.c
++++ b/fs/cifs/smb2pdu.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/smb2pdu.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2009, 2013
+  *                 Etersoft, 2012
+diff --git a/fs/cifs/smb2pdu.h b/fs/cifs/smb2pdu.h
+index e9cac7970b66..f32c99c9ba13 100644
+--- a/fs/cifs/smb2pdu.h
++++ b/fs/cifs/smb2pdu.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/smb2pdu.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2009, 2013
+  *                 Etersoft, 2012
+diff --git a/fs/cifs/smb2proto.h b/fs/cifs/smb2proto.h
+index 263767f644f8..547945443fa7 100644
+--- a/fs/cifs/smb2proto.h
++++ b/fs/cifs/smb2proto.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/smb2proto.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002, 2011
+  *                 Etersoft, 2012
+diff --git a/fs/cifs/smb2status.h b/fs/cifs/smb2status.h
+index 0215ef36e240..a9e958166fc5 100644
+--- a/fs/cifs/smb2status.h
++++ b/fs/cifs/smb2status.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/smb2status.h
+  *
+  *   SMB2 Status code (network error) definitions
+  *   Definitions are from MS-ERREF
+diff --git a/fs/cifs/smb2transport.c b/fs/cifs/smb2transport.c
+index 6f7952ea4941..f59b956f9d25 100644
+--- a/fs/cifs/smb2transport.c
++++ b/fs/cifs/smb2transport.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/smb2transport.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002, 2011
+  *                 Etersoft, 2012
+diff --git a/fs/cifs/smberr.h b/fs/cifs/smberr.h
+index 60189efb3236..aeffdad829e2 100644
+--- a/fs/cifs/smberr.h
++++ b/fs/cifs/smberr.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1 */
+ /*
+- *   fs/cifs/smberr.h
+  *
+  *   Copyright (c) International Business Machines  Corp., 2002,2004
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 75a95de320cf..b7379329b741 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/transport.c
+  *
+  *   Copyright (C) International Business Machines  Corp., 2002,2008
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/cifs/winucase.c b/fs/cifs/winucase.c
+index 59b6c577aa0a..2f075b5b50df 100644
+--- a/fs/cifs/winucase.c
++++ b/fs/cifs/winucase.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * fs/cifs/winucase.c
+  *
+  * Copyright (c) Jeffrey Layton <jlayton@redhat.com>, 2013
+  *
+diff --git a/fs/cifs/xattr.c b/fs/cifs/xattr.c
+index 9ed481e79ce0..7d8b72d67c80 100644
+--- a/fs/cifs/xattr.c
++++ b/fs/cifs/xattr.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: LGPL-2.1
+ /*
+- *   fs/cifs/xattr.c
+  *
+  *   Copyright (c) International Business Machines  Corp., 2003, 2007
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/fs/ksmbd/misc.c b/fs/ksmbd/misc.c
+index 0b307ca28a19..3eac3c01749f 100644
+--- a/fs/ksmbd/misc.c
++++ b/fs/ksmbd/misc.c
+@@ -191,19 +191,77 @@ int get_nlink(struct kstat *st)
+ 	return nlink;
+ }
+ 
+-void ksmbd_conv_path_to_unix(char *path)
++char *ksmbd_conv_path_to_unix(char *path)
+ {
++	size_t path_len, remain_path_len, out_path_len;
++	char *out_path, *out_next;
++	int i, pre_dotdot_cnt = 0, slash_cnt = 0;
++	bool is_last;
++
+ 	strreplace(path, '\\', '/');
+-}
++	path_len = strlen(path);
++	remain_path_len = path_len;
++	if (path_len == 0)
++		return ERR_PTR(-EINVAL);
+ 
+-void ksmbd_strip_last_slash(char *path)
+-{
+-	int len = strlen(path);
++	out_path = kzalloc(path_len + 2, GFP_KERNEL);
++	if (!out_path)
++		return ERR_PTR(-ENOMEM);
++	out_path_len = 0;
++	out_next = out_path;
++
++	do {
++		char *name = path + path_len - remain_path_len;
++		char *next = strchrnul(name, '/');
++		size_t name_len = next - name;
++
++		is_last = !next[0];
++		if (name_len == 2 && name[0] == '.' && name[1] == '.') {
++			pre_dotdot_cnt++;
++			/* handle the case that path ends with "/.." */
++			if (is_last)
++				goto follow_dotdot;
++		} else {
++			if (pre_dotdot_cnt) {
++follow_dotdot:
++				slash_cnt = 0;
++				for (i = out_path_len - 1; i >= 0; i--) {
++					if (out_path[i] == '/' &&
++					    ++slash_cnt == pre_dotdot_cnt + 1)
++						break;
++				}
++
++				if (i < 0 &&
++				    slash_cnt != pre_dotdot_cnt) {
++					kfree(out_path);
++					return ERR_PTR(-EINVAL);
++				}
++
++				out_next = &out_path[i+1];
++				*out_next = '\0';
++				out_path_len = i + 1;
+ 
+-	while (len && path[len - 1] == '/') {
+-		path[len - 1] = '\0';
+-		len--;
+-	}
++			}
++
++			if (name_len != 0 &&
++			    !(name_len == 1 && name[0] == '.') &&
++			    !(name_len == 2 && name[0] == '.' && name[1] == '.')) {
++				next[0] = '\0';
++				sprintf(out_next, "%s/", name);
++				out_next += name_len + 1;
++				out_path_len += name_len + 1;
++				next[0] = '/';
++			}
++			pre_dotdot_cnt = 0;
++		}
++
++		remain_path_len -= name_len + 1;
++	} while (!is_last);
++
++	if (out_path_len > 0)
++		out_path[out_path_len-1] = '\0';
++	path[path_len] = '\0';
++	return out_path;
+ }
+ 
+ void ksmbd_conv_path_to_windows(char *path)
+diff --git a/fs/ksmbd/misc.h b/fs/ksmbd/misc.h
+index af8717d4d85b..b7b10139ada2 100644
+--- a/fs/ksmbd/misc.h
++++ b/fs/ksmbd/misc.h
+@@ -16,8 +16,7 @@ int ksmbd_validate_filename(char *filename);
+ int parse_stream_name(char *filename, char **stream_name, int *s_type);
+ char *convert_to_nt_pathname(char *filename, char *sharepath);
+ int get_nlink(struct kstat *st);
+-void ksmbd_conv_path_to_unix(char *path);
+-void ksmbd_strip_last_slash(char *path);
++char *ksmbd_conv_path_to_unix(char *path);
+ void ksmbd_conv_path_to_windows(char *path);
+ char *ksmbd_extract_sharename(char *treename);
+ char *convert_to_unix_name(struct ksmbd_share_config *share, char *name);
+diff --git a/fs/ksmbd/smb2pdu.c b/fs/ksmbd/smb2pdu.c
+index c86164dc70bb..6304c9bda479 100644
+--- a/fs/ksmbd/smb2pdu.c
++++ b/fs/ksmbd/smb2pdu.c
+@@ -634,7 +634,7 @@ static char *
+ smb2_get_name(struct ksmbd_share_config *share, const char *src,
+ 	      const int maxlen, struct nls_table *local_nls)
+ {
+-	char *name, *unixname;
++	char *name, *norm_name, *unixname;
+ 
+ 	name = smb_strndup_from_utf16(src, maxlen, 1, local_nls);
+ 	if (IS_ERR(name)) {
+@@ -643,11 +643,15 @@ smb2_get_name(struct ksmbd_share_config *share, const char *src,
+ 	}
+ 
+ 	/* change it to absolute unix name */
+-	ksmbd_conv_path_to_unix(name);
+-	ksmbd_strip_last_slash(name);
+-
+-	unixname = convert_to_unix_name(share, name);
++	norm_name = ksmbd_conv_path_to_unix(name);
++	if (IS_ERR(norm_name)) {
++		kfree(name);
++		return norm_name;
++	}
+ 	kfree(name);
++
++	unixname = convert_to_unix_name(share, norm_name);
++	kfree(norm_name);
+ 	if (!unixname) {
+ 		pr_err("can not convert absolute name\n");
+ 		return ERR_PTR(-ENOMEM);
+@@ -4041,6 +4045,10 @@ static int smb2_get_ea(struct ksmbd_work *work, struct ksmbd_file *fp,
+ 	path = &fp->filp->f_path;
+ 	/* single EA entry is requested with given user.* name */
+ 	if (req->InputBufferLength) {
++		if (le32_to_cpu(req->InputBufferLength) <
++		    sizeof(struct smb2_ea_info_req))
++			return -EINVAL;
++
+ 		ea_req = (struct smb2_ea_info_req *)req->Buffer;
+ 	} else {
+ 		/* need to send all EAs, if no specific EA is requested*/
+diff --git a/fs/ksmbd/transport_rdma.c b/fs/ksmbd/transport_rdma.c
+index 52b2556e76b1..3a7fa23ba850 100644
+--- a/fs/ksmbd/transport_rdma.c
++++ b/fs/ksmbd/transport_rdma.c
+@@ -20,7 +20,6 @@
+ #define SUBMOD_NAME	"smb_direct"
+ 
+ #include <linux/kthread.h>
+-#include <linux/rwlock.h>
+ #include <linux/list.h>
+ #include <linux/mempool.h>
+ #include <linux/highmem.h>
+diff --git a/fs/qnx4/dir.c b/fs/qnx4/dir.c
+index 2a66844b7ff8..66645a5a35f3 100644
+--- a/fs/qnx4/dir.c
++++ b/fs/qnx4/dir.c
+@@ -20,12 +20,33 @@
+  * depending on the status field in the last byte. The
+  * first byte is where the name start either way, and a
+  * zero means it's empty.
++ *
++ * Also, due to a bug in gcc, we don't want to use the
++ * real (differently sized) name arrays in the inode and
++ * link entries, but always the 'de_name[]' one in the
++ * fake struct entry.
++ *
++ * See
++ *
++ *   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578#c6
++ *
++ * for details, but basically gcc will take the size of the
++ * 'name' array from one of the used union entries randomly.
++ *
++ * This use of 'de_name[]' (48 bytes) avoids the false positive
++ * warnings that would happen if gcc decides to use 'inode.di_name'
++ * (16 bytes) even when the pointer and size were to come from
++ * 'link.dl_name' (48 bytes).
++ *
++ * In all cases the actual name pointer itself is the same, it's
++ * only the gcc internal 'what is the size of this field' logic
++ * that can get confused.
+  */
+ union qnx4_directory_entry {
+ 	struct {
+-		char de_name;
+-		char de_pad[62];
+-		char de_status;
++		const char de_name[48];
++		u8 de_pad[15];
++		u8 de_status;
+ 	};
+ 	struct qnx4_inode_entry inode;
+ 	struct qnx4_link_info link;
+@@ -53,29 +74,26 @@ static int qnx4_readdir(struct file *file, struct dir_context *ctx)
  		ix = (ctx->pos >> QNX4_DIR_ENTRY_SIZE_BITS) % QNX4_INODES_PER_BLOCK;
  		for (; ix < QNX4_INODES_PER_BLOCK; ix++, ctx->pos += QNX4_DIR_ENTRY_SIZE) {
-+			union qnx4_directory_entry *de;
-+			const char *name;
-+
+ 			union qnx4_directory_entry *de;
+-			const char *name;
+ 
  			offset = ix * QNX4_DIR_ENTRY_SIZE;
--			de = (struct qnx4_inode_entry *) (bh->b_data + offset);
--			if (!de->di_fname[0])
-+			de = (union qnx4_directory_entry *) (bh->b_data + offset);
-+
-+			if (!de->de_name)
+ 			de = (union qnx4_directory_entry *) (bh->b_data + offset);
+ 
+-			if (!de->de_name)
++			if (!de->de_name[0])
  				continue;
--			if (!(de->di_status & (QNX4_FILE_USED|QNX4_FILE_LINK)))
-+			if (!(de->de_status & (QNX4_FILE_USED|QNX4_FILE_LINK)))
+ 			if (!(de->de_status & (QNX4_FILE_USED|QNX4_FILE_LINK)))
  				continue;
--			if (!(de->di_status & QNX4_FILE_LINK))
--				size = QNX4_SHORT_NAME_MAX;
--			else
--				size = QNX4_NAME_MAX;
--			size = strnlen(de->di_fname, size);
--			QNX4DEBUG((KERN_INFO "qnx4_readdir:%.*s\n", size, de->di_fname));
--			if (!(de->di_status & QNX4_FILE_LINK))
-+			if (!(de->de_status & QNX4_FILE_LINK)) {
-+				size = sizeof(de->inode.di_fname);
-+				name = de->inode.di_fname;
+ 			if (!(de->de_status & QNX4_FILE_LINK)) {
+ 				size = sizeof(de->inode.di_fname);
+-				name = de->inode.di_fname;
  				ino = blknum * QNX4_INODES_PER_BLOCK + ix - 1;
--			else {
--				le  = (struct qnx4_link_info*)de;
--				ino = ( le32_to_cpu(le->dl_inode_blk) - 1 ) *
-+			} else {
-+				size = sizeof(de->link.dl_fname);
-+				name = de->link.dl_fname;
-+				ino = ( le32_to_cpu(de->link.dl_inode_blk) - 1 ) *
+ 			} else {
+ 				size = sizeof(de->link.dl_fname);
+-				name = de->link.dl_fname;
+ 				ino = ( le32_to_cpu(de->link.dl_inode_blk) - 1 ) *
  					QNX4_INODES_PER_BLOCK +
--					le->dl_inode_ndx;
-+					de->link.dl_inode_ndx;
+ 					de->link.dl_inode_ndx;
  			}
--			if (!dir_emit(ctx, de->di_fname, size, ino, DT_UNKNOWN)) {
-+			size = strnlen(name, size);
-+			QNX4DEBUG((KERN_INFO "qnx4_readdir:%.*s\n", size, name));
-+			if (!dir_emit(ctx, name, size, ino, DT_UNKNOWN)) {
+-			size = strnlen(name, size);
++			size = strnlen(de->de_name, size);
+ 			QNX4DEBUG((KERN_INFO "qnx4_readdir:%.*s\n", size, name));
+-			if (!dir_emit(ctx, name, size, ino, DT_UNKNOWN)) {
++			if (!dir_emit(ctx, de->de_name, size, ino, DT_UNKNOWN)) {
  				brelse(bh);
  				return 0;
  			}
-diff --git a/include/asm-generic/mshyperv.h b/include/asm-generic/mshyperv.h
-index c1ab6a6e72b5..d3eae6cdbacb 100644
---- a/include/asm-generic/mshyperv.h
-+++ b/include/asm-generic/mshyperv.h
-@@ -197,10 +197,12 @@ static inline int hv_cpu_number_to_vp_number(int cpu_number)
- 	return hv_vp_index[cpu_number];
- }
- 
--static inline int cpumask_to_vpset(struct hv_vpset *vpset,
--				    const struct cpumask *cpus)
-+static inline int __cpumask_to_vpset(struct hv_vpset *vpset,
-+				    const struct cpumask *cpus,
-+				    bool exclude_self)
- {
- 	int cpu, vcpu, vcpu_bank, vcpu_offset, nr_bank = 1;
-+	int this_cpu = smp_processor_id();
- 
- 	/* valid_bank_mask can represent up to 64 banks */
- 	if (hv_max_vp_index / 64 >= 64)
-@@ -218,6 +220,8 @@ static inline int cpumask_to_vpset(struct hv_vpset *vpset,
- 	 * Some banks may end up being empty but this is acceptable.
- 	 */
- 	for_each_cpu(cpu, cpus) {
-+		if (exclude_self && cpu == this_cpu)
-+			continue;
- 		vcpu = hv_cpu_number_to_vp_number(cpu);
- 		if (vcpu == VP_INVAL)
- 			return -1;
-@@ -232,6 +236,19 @@ static inline int cpumask_to_vpset(struct hv_vpset *vpset,
- 	return nr_bank;
- }
- 
-+static inline int cpumask_to_vpset(struct hv_vpset *vpset,
-+				    const struct cpumask *cpus)
-+{
-+	return __cpumask_to_vpset(vpset, cpus, false);
-+}
-+
-+static inline int cpumask_to_vpset_noself(struct hv_vpset *vpset,
-+				    const struct cpumask *cpus)
-+{
-+	WARN_ON_ONCE(preemptible());
-+	return __cpumask_to_vpset(vpset, cpus, true);
-+}
-+
- void hyperv_report_panic(struct pt_regs *regs, long err, bool in_die);
- bool hv_is_hyperv_initialized(void);
- bool hv_is_hibernation_supported(void);
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index aa50bf2959fe..f2984af2b85b 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -116,11 +116,7 @@
-  * GCC 4.5 and later have a 32 bytes section alignment for structures.
-  * Except GCC 4.9, that feels the need to align on 64 bytes.
-  */
--#if __GNUC__ == 4 && __GNUC_MINOR__ == 9
--#define STRUCT_ALIGNMENT 64
--#else
- #define STRUCT_ALIGNMENT 32
--#endif
- #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
- 
+diff --git a/fs/smbfs_common/smbfsctl.h b/fs/smbfs_common/smbfsctl.h
+index d01e8c9d7a31..926f87cd6af0 100644
+--- a/fs/smbfs_common/smbfsctl.h
++++ b/fs/smbfs_common/smbfsctl.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: LGPL-2.1+ */
  /*
-diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
-index 49b0ac8b6fd3..3c4de9b6c6e3 100644
---- a/include/linux/compiler-clang.h
-+++ b/include/linux/compiler-clang.h
-@@ -62,19 +62,6 @@
- #define __no_sanitize_coverage
- #endif
- 
--/*
-- * Not all versions of clang implement the type-generic versions
-- * of the builtin overflow checkers. Fortunately, clang implements
-- * __has_builtin allowing us to avoid awkward version
-- * checks. Unfortunately, we don't know which version of gcc clang
-- * pretends to be, so the macro may or may not be defined.
-- */
--#if __has_builtin(__builtin_mul_overflow) && \
--    __has_builtin(__builtin_add_overflow) && \
--    __has_builtin(__builtin_sub_overflow)
--#define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
--#endif
--
- #if __has_feature(shadow_call_stack)
- # define __noscs	__attribute__((__no_sanitize__("shadow-call-stack")))
- #endif
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 21c36b69eb06..bd2b881c6b63 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -95,10 +95,8 @@
- 
- #if GCC_VERSION >= 70000
- #define KASAN_ABI_VERSION 5
--#elif GCC_VERSION >= 50000
-+#else
- #define KASAN_ABI_VERSION 4
--#elif GCC_VERSION >= 40902
--#define KASAN_ABI_VERSION 3
- #endif
- 
- #if __has_attribute(__no_sanitize_address__)
-@@ -125,10 +123,6 @@
- #define __no_sanitize_coverage
- #endif
- 
--#if GCC_VERSION >= 50100
--#define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
--#endif
--
- /*
-  * Turn individual warnings and errors on and off locally, depending
-  * on version.
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index b67261a1e3e9..3d5af56337bd 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -188,6 +188,8 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
-     (typeof(ptr)) (__ptr + (off)); })
- #endif
- 
-+#define absolute_pointer(val)	RELOC_HIDE((void *)(val), 0)
-+
- #ifndef OPTIMIZER_HIDE_VAR
- /* Make the optimizer believe the variable can be manipulated arbitrarily. */
- #define OPTIMIZER_HIDE_VAR(var)						\
-diff --git a/include/linux/compiler_attributes.h b/include/linux/compiler_attributes.h
-index 8f2106e9e5c1..e6ec63403965 100644
---- a/include/linux/compiler_attributes.h
-+++ b/include/linux/compiler_attributes.h
-@@ -20,29 +20,6 @@
-  * Provide links to the documentation of each supported compiler, if it exists.
-  */
- 
--/*
-- * __has_attribute is supported on gcc >= 5, clang >= 2.9 and icc >= 17.
-- * In the meantime, to support gcc < 5, we implement __has_attribute
-- * by hand.
-- */
--#ifndef __has_attribute
--# define __has_attribute(x) __GCC4_has_attribute_##x
--# define __GCC4_has_attribute___assume_aligned__      1
--# define __GCC4_has_attribute___copy__                0
--# define __GCC4_has_attribute___designated_init__     0
--# define __GCC4_has_attribute___error__               1
--# define __GCC4_has_attribute___externally_visible__  1
--# define __GCC4_has_attribute___no_caller_saved_registers__ 0
--# define __GCC4_has_attribute___noclone__             1
--# define __GCC4_has_attribute___no_profile_instrument_function__ 0
--# define __GCC4_has_attribute___nonstring__           0
--# define __GCC4_has_attribute___no_sanitize_address__ 1
--# define __GCC4_has_attribute___no_sanitize_undefined__ 1
--# define __GCC4_has_attribute___no_sanitize_coverage__ 0
--# define __GCC4_has_attribute___fallthrough__         0
--# define __GCC4_has_attribute___warning__             1
--#endif
--
- /*
-  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-alias-function-attribute
-  */
-@@ -77,7 +54,6 @@
-  * compiler should see some alignment anyway, when the return value is
-  * massaged by 'flags = ptr & 3; ptr &= ~3;').
+- *   fs/cifs/smbfsctl.h: SMB, CIFS, SMB2 FSCTL definitions
++ *   SMB, CIFS, SMB2 FSCTL definitions
   *
-- * Optional: only supported since gcc >= 4.9
-  * Optional: not supported by icc
-  *
-  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-assume_005faligned-function-attribute
-diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-index b066024c62e3..34de69b3b8ba 100644
---- a/include/linux/memblock.h
-+++ b/include/linux/memblock.h
-@@ -118,6 +118,7 @@ int memblock_mark_nomap(phys_addr_t base, phys_addr_t size);
- int memblock_clear_nomap(phys_addr_t base, phys_addr_t size);
+  *   Copyright (c) International Business Machines  Corp., 2002,2013
+  *   Author(s): Steve French (sfrench@us.ibm.com)
+diff --git a/include/trace/events/afs.h b/include/trace/events/afs.h
+index 9f73ed2cf061..bca73e8c8cde 100644
+--- a/include/trace/events/afs.h
++++ b/include/trace/events/afs.h
+@@ -306,11 +306,13 @@ enum afs_flock_operation {
  
- void memblock_free_all(void);
-+void memblock_free_ptr(void *ptr, size_t size);
- void reset_node_managed_pages(pg_data_t *pgdat);
- void reset_all_zones_managed_pages(void);
+ enum afs_cb_break_reason {
+ 	afs_cb_break_no_break,
++	afs_cb_break_no_promise,
+ 	afs_cb_break_for_callback,
+ 	afs_cb_break_for_deleted,
+ 	afs_cb_break_for_lapsed,
++	afs_cb_break_for_s_reinit,
+ 	afs_cb_break_for_unlink,
+-	afs_cb_break_for_vsbreak,
++	afs_cb_break_for_v_break,
+ 	afs_cb_break_for_volume_callback,
+ 	afs_cb_break_for_zap,
+ };
+@@ -602,11 +604,13 @@ enum afs_cb_break_reason {
  
-diff --git a/include/linux/overflow.h b/include/linux/overflow.h
-index 0f12345c21fb..4669632bd72b 100644
---- a/include/linux/overflow.h
-+++ b/include/linux/overflow.h
-@@ -6,12 +6,9 @@
- #include <linux/limits.h>
+ #define afs_cb_break_reasons						\
+ 	EM(afs_cb_break_no_break,		"no-break")		\
++	EM(afs_cb_break_no_promise,		"no-promise")		\
+ 	EM(afs_cb_break_for_callback,		"break-cb")		\
+ 	EM(afs_cb_break_for_deleted,		"break-del")		\
+ 	EM(afs_cb_break_for_lapsed,		"break-lapsed")		\
++	EM(afs_cb_break_for_s_reinit,		"s-reinit")		\
+ 	EM(afs_cb_break_for_unlink,		"break-unlink")		\
+-	EM(afs_cb_break_for_vsbreak,		"break-vs")		\
++	EM(afs_cb_break_for_v_break,		"break-v")		\
+ 	EM(afs_cb_break_for_volume_callback,	"break-v-cb")		\
+ 	E_(afs_cb_break_for_zap,		"break-zap")
  
+diff --git a/include/uapi/linux/cifs/cifs_mount.h b/include/uapi/linux/cifs/cifs_mount.h
+index 69829205fdb5..8e87d27b0951 100644
+--- a/include/uapi/linux/cifs/cifs_mount.h
++++ b/include/uapi/linux/cifs/cifs_mount.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: LGPL-2.1+ WITH Linux-syscall-note */
  /*
-- * In the fallback code below, we need to compute the minimum and
-- * maximum values representable in a given type. These macros may also
-- * be useful elsewhere, so we provide them outside the
-- * COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW block.
-- *
-- * It would seem more obvious to do something like
-+ * We need to compute the minimum and maximum values representable in a given
-+ * type. These macros may also be useful elsewhere. It would seem more obvious
-+ * to do something like:
+- *   include/uapi/linux/cifs/cifs_mount.h
   *
-  * #define type_min(T) (T)(is_signed_type(T) ? (T)1 << (8*sizeof(T)-1) : 0)
-  * #define type_max(T) (T)(is_signed_type(T) ? ((T)1 << (8*sizeof(T)-1)) - 1 : ~(T)0)
-@@ -54,7 +51,6 @@ static inline bool __must_check __must_check_overflow(bool overflow)
- 	return unlikely(overflow);
- }
- 
--#ifdef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
- /*
-  * For simplicity and code hygiene, the fallback code below insists on
-  * a, b and *d having the same type (similar to the min() and max()
-@@ -90,134 +86,6 @@ static inline bool __must_check __must_check_overflow(bool overflow)
- 	__builtin_mul_overflow(__a, __b, __d);	\
- }))
- 
--#else
--
--
--/* Checking for unsigned overflow is relatively easy without causing UB. */
--#define __unsigned_add_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = __a + __b;			\
--	*__d < __a;				\
--})
--#define __unsigned_sub_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = __a - __b;			\
--	__a < __b;				\
--})
--/*
-- * If one of a or b is a compile-time constant, this avoids a division.
-- */
--#define __unsigned_mul_overflow(a, b, d) ({		\
--	typeof(a) __a = (a);				\
--	typeof(b) __b = (b);				\
--	typeof(d) __d = (d);				\
--	(void) (&__a == &__b);				\
--	(void) (&__a == __d);				\
--	*__d = __a * __b;				\
--	__builtin_constant_p(__b) ?			\
--	  __b > 0 && __a > type_max(typeof(__a)) / __b : \
--	  __a > 0 && __b > type_max(typeof(__b)) / __a;	 \
--})
--
--/*
-- * For signed types, detecting overflow is much harder, especially if
-- * we want to avoid UB. But the interface of these macros is such that
-- * we must provide a result in *d, and in fact we must produce the
-- * result promised by gcc's builtins, which is simply the possibly
-- * wrapped-around value. Fortunately, we can just formally do the
-- * operations in the widest relevant unsigned type (u64) and then
-- * truncate the result - gcc is smart enough to generate the same code
-- * with and without the (u64) casts.
-- */
--
--/*
-- * Adding two signed integers can overflow only if they have the same
-- * sign, and overflow has happened iff the result has the opposite
-- * sign.
-- */
--#define __signed_add_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = (u64)__a + (u64)__b;		\
--	(((~(__a ^ __b)) & (*__d ^ __a))	\
--		& type_min(typeof(__a))) != 0;	\
--})
--
--/*
-- * Subtraction is similar, except that overflow can now happen only
-- * when the signs are opposite. In this case, overflow has happened if
-- * the result has the opposite sign of a.
-- */
--#define __signed_sub_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = (u64)__a - (u64)__b;		\
--	((((__a ^ __b)) & (*__d ^ __a))		\
--		& type_min(typeof(__a))) != 0;	\
--})
--
--/*
-- * Signed multiplication is rather hard. gcc always follows C99, so
-- * division is truncated towards 0. This means that we can write the
-- * overflow check like this:
-- *
-- * (a > 0 && (b > MAX/a || b < MIN/a)) ||
-- * (a < -1 && (b > MIN/a || b < MAX/a) ||
-- * (a == -1 && b == MIN)
-- *
-- * The redundant casts of -1 are to silence an annoying -Wtype-limits
-- * (included in -Wextra) warning: When the type is u8 or u16, the
-- * __b_c_e in check_mul_overflow obviously selects
-- * __unsigned_mul_overflow, but unfortunately gcc still parses this
-- * code and warns about the limited range of __b.
-- */
--
--#define __signed_mul_overflow(a, b, d) ({				\
--	typeof(a) __a = (a);						\
--	typeof(b) __b = (b);						\
--	typeof(d) __d = (d);						\
--	typeof(a) __tmax = type_max(typeof(a));				\
--	typeof(a) __tmin = type_min(typeof(a));				\
--	(void) (&__a == &__b);						\
--	(void) (&__a == __d);						\
--	*__d = (u64)__a * (u64)__b;					\
--	(__b > 0   && (__a > __tmax/__b || __a < __tmin/__b)) ||	\
--	(__b < (typeof(__b))-1  && (__a > __tmin/__b || __a < __tmax/__b)) || \
--	(__b == (typeof(__b))-1 && __a == __tmin);			\
--})
--
--
--#define check_add_overflow(a, b, d)	__must_check_overflow(		\
--	__builtin_choose_expr(is_signed_type(typeof(a)),		\
--			__signed_add_overflow(a, b, d),			\
--			__unsigned_add_overflow(a, b, d)))
--
--#define check_sub_overflow(a, b, d)	__must_check_overflow(		\
--	__builtin_choose_expr(is_signed_type(typeof(a)),		\
--			__signed_sub_overflow(a, b, d),			\
--			__unsigned_sub_overflow(a, b, d)))
--
--#define check_mul_overflow(a, b, d)	__must_check_overflow(		\
--	__builtin_choose_expr(is_signed_type(typeof(a)),		\
--			__signed_mul_overflow(a, b, d),			\
--			__unsigned_mul_overflow(a, b, d)))
--
--#endif /* COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW */
--
- /** check_shl_overflow() - Calculate a left-shifted value and check overflow
+  *   Author(s): Scott Lovenberg (scott.lovenberg@gmail.com)
   *
-  * @a: Value to be shifted
-diff --git a/init/main.c b/init/main.c
-index 5c9a48df90e1..3f7216934441 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -924,7 +924,7 @@ static void __init print_unknown_bootoptions(void)
- 		end += sprintf(end, " %s", *p);
- 
- 	pr_notice("Unknown command line parameters:%s\n", unknown_options);
--	memblock_free(__pa(unknown_options), len);
-+	memblock_free_ptr(unknown_options, len);
+diff --git a/mm/memory.c b/mm/memory.c
+index 25fc46e87214..adf9b9ef8277 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3403,6 +3403,7 @@ void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
+ 		unmap_mapping_range_tree(&mapping->i_mmap, &details);
+ 	i_mmap_unlock_write(mapping);
  }
++EXPORT_SYMBOL_GPL(unmap_mapping_pages);
  
- asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
-diff --git a/ipc/sem.c b/ipc/sem.c
-index f833238df1ce..6693daf4fe11 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -2238,7 +2238,7 @@ static long do_semtimedop(int semid, struct sembuf __user *tsops,
- 		return -EINVAL;
- 
- 	if (nsops > SEMOPM_FAST) {
--		sops = kvmalloc_array(nsops, sizeof(*sops), GFP_KERNEL_ACCOUNT);
-+		sops = kvmalloc_array(nsops, sizeof(*sops), GFP_KERNEL);
- 		if (sops == NULL)
- 			return -ENOMEM;
- 	}
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 825277e1e742..a8d0a58deebc 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -1166,9 +1166,9 @@ void __init setup_log_buf(int early)
- 	return;
- 
- err_free_descs:
--	memblock_free(__pa(new_descs), new_descs_size);
-+	memblock_free_ptr(new_descs, new_descs_size);
- err_free_log_buf:
--	memblock_free(__pa(new_log_buf), new_log_buf_len);
-+	memblock_free_ptr(new_log_buf, new_log_buf_len);
- }
- 
- static bool __read_mostly ignore_loglevel;
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index ed4a31e34098..d566f601780f 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -295,7 +295,7 @@ config DEBUG_INFO_DWARF4
- 
- config DEBUG_INFO_DWARF5
- 	bool "Generate DWARF Version 5 debuginfo"
--	depends on GCC_VERSION >= 50000 || (CC_IS_CLANG && (AS_IS_LLVM || (AS_IS_GNU && AS_VERSION >= 23502)))
-+	depends on !CC_IS_CLANG || (CC_IS_CLANG && (AS_IS_LLVM || (AS_IS_GNU && AS_VERSION >= 23502)))
- 	depends on !DEBUG_INFO_BTF
- 	help
- 	  Generate DWARF v5 debug info. Requires binutils 2.35.2, gcc 5.0+ (gcc
-diff --git a/lib/bootconfig.c b/lib/bootconfig.c
-index f8419cff1147..5ae248b29373 100644
---- a/lib/bootconfig.c
-+++ b/lib/bootconfig.c
-@@ -792,7 +792,7 @@ void __init xbc_destroy_all(void)
- 	xbc_data = NULL;
- 	xbc_data_size = 0;
- 	xbc_node_num = 0;
--	memblock_free(__pa(xbc_nodes), sizeof(struct xbc_node) * XBC_NODE_MAX);
-+	memblock_free_ptr(xbc_nodes, sizeof(struct xbc_node) * XBC_NODE_MAX);
- 	xbc_nodes = NULL;
- 	brace_index = 0;
- }
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 025338128cd9..a5716fdec1aa 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -651,10 +651,8 @@ static void remove_node_from_stable_tree(struct stable_node *stable_node)
- 	 * from &migrate_nodes. This will verify that future list.h changes
- 	 * don't break STABLE_NODE_DUP_HEAD. Only recent gcc can handle it.
- 	 */
--#if defined(GCC_VERSION) && GCC_VERSION >= 40903
- 	BUILD_BUG_ON(STABLE_NODE_DUP_HEAD <= &migrate_nodes);
- 	BUILD_BUG_ON(STABLE_NODE_DUP_HEAD >= &migrate_nodes + 1);
--#endif
- 
- 	if (stable_node->head == &migrate_nodes)
- 		list_del(&stable_node->list);
-diff --git a/mm/memblock.c b/mm/memblock.c
-index 0ab5a749bfa6..184dcd2e5d99 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -472,7 +472,7 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
- 		kfree(old_array);
- 	else if (old_array != memblock_memory_init_regions &&
- 		 old_array != memblock_reserved_init_regions)
--		memblock_free(__pa(old_array), old_alloc_size);
-+		memblock_free_ptr(old_array, old_alloc_size);
- 
- 	/*
- 	 * Reserve the new array if that comes from the memblock.  Otherwise, we
-@@ -795,6 +795,20 @@ int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
- 	return memblock_remove_range(&memblock.memory, base, size);
- }
- 
-+/**
-+ * memblock_free_ptr - free boot memory allocation
-+ * @ptr: starting address of the  boot memory allocation
-+ * @size: size of the boot memory block in bytes
-+ *
-+ * Free boot memory block previously allocated by memblock_alloc_xx() API.
-+ * The freeing memory will not be released to the buddy allocator.
-+ */
-+void __init_memblock memblock_free_ptr(void *ptr, size_t size)
-+{
-+	if (ptr)
-+		memblock_free(__pa(ptr), size);
-+}
-+
  /**
-  * memblock_free - free boot memory block
-  * @base: phys starting address of the  boot memory block
-diff --git a/scripts/min-tool-version.sh b/scripts/min-tool-version.sh
-index 319f92104f56..4edc708baa63 100755
---- a/scripts/min-tool-version.sh
-+++ b/scripts/min-tool-version.sh
-@@ -17,13 +17,7 @@ binutils)
- 	echo 2.23.0
- 	;;
- gcc)
--	# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63293
--	# https://lore.kernel.org/r/20210107111841.GN1551@shell.armlinux.org.uk
--	if [ "$SRCARCH" = arm64 ]; then
--		echo 5.1.0
--	else
--		echo 4.9.0
--	fi
-+	echo 5.1.0
- 	;;
- icc)
- 	# temporary
-diff --git a/tools/bootconfig/include/linux/memblock.h b/tools/bootconfig/include/linux/memblock.h
-index 7862f217d85d..f2e506f7d57f 100644
---- a/tools/bootconfig/include/linux/memblock.h
-+++ b/tools/bootconfig/include/linux/memblock.h
-@@ -4,9 +4,8 @@
- 
- #include <stdlib.h>
- 
--#define __pa(addr)	(addr)
- #define SMP_CACHE_BYTES	0
- #define memblock_alloc(size, align)	malloc(size)
--#define memblock_free(paddr, size)	free(paddr)
-+#define memblock_free_ptr(paddr, size)	free(paddr)
- 
- #endif
-diff --git a/tools/include/linux/compiler-gcc.h b/tools/include/linux/compiler-gcc.h
-index 95c072b70d0e..8816f06fc6c7 100644
---- a/tools/include/linux/compiler-gcc.h
-+++ b/tools/include/linux/compiler-gcc.h
-@@ -16,9 +16,9 @@
- # define __fallthrough __attribute__ ((fallthrough))
- #endif
- 
--#if GCC_VERSION >= 40300
-+#if __has_attribute(__error__)
- # define __compiletime_error(message) __attribute__((error(message)))
--#endif /* GCC_VERSION >= 40300 */
-+#endif
- 
- /* &a[0] degrades to a pointer: a different type from an array */
- #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
-@@ -38,7 +38,3 @@
- #endif
- #define __printf(a, b)	__attribute__((format(printf, a, b)))
- #define __scanf(a, b)	__attribute__((format(scanf, a, b)))
--
--#if GCC_VERSION >= 50100
--#define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
--#endif
-diff --git a/tools/include/linux/overflow.h b/tools/include/linux/overflow.h
-index 8712ff70995f..dcb0c1bf6866 100644
---- a/tools/include/linux/overflow.h
-+++ b/tools/include/linux/overflow.h
-@@ -5,12 +5,9 @@
- #include <linux/compiler.h>
- 
- /*
-- * In the fallback code below, we need to compute the minimum and
-- * maximum values representable in a given type. These macros may also
-- * be useful elsewhere, so we provide them outside the
-- * COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW block.
-- *
-- * It would seem more obvious to do something like
-+ * We need to compute the minimum and maximum values representable in a given
-+ * type. These macros may also be useful elsewhere. It would seem more obvious
-+ * to do something like:
-  *
-  * #define type_min(T) (T)(is_signed_type(T) ? (T)1 << (8*sizeof(T)-1) : 0)
-  * #define type_max(T) (T)(is_signed_type(T) ? ((T)1 << (8*sizeof(T)-1)) - 1 : ~(T)0)
-@@ -36,8 +33,6 @@
- #define type_max(T) ((T)((__type_half_max(T) - 1) + __type_half_max(T)))
- #define type_min(T) ((T)((T)-type_max(T)-(T)1))
- 
--
--#ifdef COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW
- /*
-  * For simplicity and code hygiene, the fallback code below insists on
-  * a, b and *d having the same type (similar to the min() and max()
-@@ -73,135 +68,6 @@
- 	__builtin_mul_overflow(__a, __b, __d);	\
- })
- 
--#else
--
--
--/* Checking for unsigned overflow is relatively easy without causing UB. */
--#define __unsigned_add_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = __a + __b;			\
--	*__d < __a;				\
--})
--#define __unsigned_sub_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = __a - __b;			\
--	__a < __b;				\
--})
--/*
-- * If one of a or b is a compile-time constant, this avoids a division.
-- */
--#define __unsigned_mul_overflow(a, b, d) ({		\
--	typeof(a) __a = (a);				\
--	typeof(b) __b = (b);				\
--	typeof(d) __d = (d);				\
--	(void) (&__a == &__b);				\
--	(void) (&__a == __d);				\
--	*__d = __a * __b;				\
--	__builtin_constant_p(__b) ?			\
--	  __b > 0 && __a > type_max(typeof(__a)) / __b : \
--	  __a > 0 && __b > type_max(typeof(__b)) / __a;	 \
--})
--
--/*
-- * For signed types, detecting overflow is much harder, especially if
-- * we want to avoid UB. But the interface of these macros is such that
-- * we must provide a result in *d, and in fact we must produce the
-- * result promised by gcc's builtins, which is simply the possibly
-- * wrapped-around value. Fortunately, we can just formally do the
-- * operations in the widest relevant unsigned type (u64) and then
-- * truncate the result - gcc is smart enough to generate the same code
-- * with and without the (u64) casts.
-- */
--
--/*
-- * Adding two signed integers can overflow only if they have the same
-- * sign, and overflow has happened iff the result has the opposite
-- * sign.
-- */
--#define __signed_add_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = (u64)__a + (u64)__b;		\
--	(((~(__a ^ __b)) & (*__d ^ __a))	\
--		& type_min(typeof(__a))) != 0;	\
--})
--
--/*
-- * Subtraction is similar, except that overflow can now happen only
-- * when the signs are opposite. In this case, overflow has happened if
-- * the result has the opposite sign of a.
-- */
--#define __signed_sub_overflow(a, b, d) ({	\
--	typeof(a) __a = (a);			\
--	typeof(b) __b = (b);			\
--	typeof(d) __d = (d);			\
--	(void) (&__a == &__b);			\
--	(void) (&__a == __d);			\
--	*__d = (u64)__a - (u64)__b;		\
--	((((__a ^ __b)) & (*__d ^ __a))		\
--		& type_min(typeof(__a))) != 0;	\
--})
--
--/*
-- * Signed multiplication is rather hard. gcc always follows C99, so
-- * division is truncated towards 0. This means that we can write the
-- * overflow check like this:
-- *
-- * (a > 0 && (b > MAX/a || b < MIN/a)) ||
-- * (a < -1 && (b > MIN/a || b < MAX/a) ||
-- * (a == -1 && b == MIN)
-- *
-- * The redundant casts of -1 are to silence an annoying -Wtype-limits
-- * (included in -Wextra) warning: When the type is u8 or u16, the
-- * __b_c_e in check_mul_overflow obviously selects
-- * __unsigned_mul_overflow, but unfortunately gcc still parses this
-- * code and warns about the limited range of __b.
-- */
--
--#define __signed_mul_overflow(a, b, d) ({				\
--	typeof(a) __a = (a);						\
--	typeof(b) __b = (b);						\
--	typeof(d) __d = (d);						\
--	typeof(a) __tmax = type_max(typeof(a));				\
--	typeof(a) __tmin = type_min(typeof(a));				\
--	(void) (&__a == &__b);						\
--	(void) (&__a == __d);						\
--	*__d = (u64)__a * (u64)__b;					\
--	(__b > 0   && (__a > __tmax/__b || __a < __tmin/__b)) ||	\
--	(__b < (typeof(__b))-1  && (__a > __tmin/__b || __a < __tmax/__b)) || \
--	(__b == (typeof(__b))-1 && __a == __tmin);			\
--})
--
--
--#define check_add_overflow(a, b, d)					\
--	__builtin_choose_expr(is_signed_type(typeof(a)),		\
--			__signed_add_overflow(a, b, d),			\
--			__unsigned_add_overflow(a, b, d))
--
--#define check_sub_overflow(a, b, d)					\
--	__builtin_choose_expr(is_signed_type(typeof(a)),		\
--			__signed_sub_overflow(a, b, d),			\
--			__unsigned_sub_overflow(a, b, d))
--
--#define check_mul_overflow(a, b, d)					\
--	__builtin_choose_expr(is_signed_type(typeof(a)),		\
--			__signed_mul_overflow(a, b, d),			\
--			__unsigned_mul_overflow(a, b, d))
--
--
--#endif /* COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW */
--
- /**
-  * array_size() - Calculate size of 2-dimensional array.
-  *
+  * unmap_mapping_range - unmap the portion of all mmaps in the specified

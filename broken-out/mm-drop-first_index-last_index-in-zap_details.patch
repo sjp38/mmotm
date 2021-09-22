@@ -116,5 +116,5 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +					 last_index, &details);
  	i_mmap_unlock_write(mapping);
  }
- 
+ EXPORT_SYMBOL_GPL(unmap_mapping_pages);
 _

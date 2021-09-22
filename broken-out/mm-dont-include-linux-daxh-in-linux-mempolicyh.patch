@@ -1,0 +1,37 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: mm: don't include <linux/dax.h> in <linux/mempolicy.h>
+
+Not required at all, and having this causes a huge kernel rebuild as soon
+as something in dax.h changes.
+
+Link: https://lkml.kernel.org/r/20210921082253.1859794-1-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mempolicy.h |    1 -
+ mm/memory-failure.c       |    1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/mempolicy.h~mm-dont-include-linux-daxh-in-linux-mempolicyh
++++ a/include/linux/mempolicy.h
+@@ -8,7 +8,6 @@
+ 
+ #include <linux/sched.h>
+ #include <linux/mmzone.h>
+-#include <linux/dax.h>
+ #include <linux/slab.h>
+ #include <linux/rbtree.h>
+ #include <linux/spinlock.h>
+--- a/mm/memory-failure.c~mm-dont-include-linux-daxh-in-linux-mempolicyh
++++ a/mm/memory-failure.c
+@@ -39,6 +39,7 @@
+ #include <linux/kernel-page-flags.h>
+ #include <linux/sched/signal.h>
+ #include <linux/sched/task.h>
++#include <linux/dax.h>
+ #include <linux/ksm.h>
+ #include <linux/rmap.h>
+ #include <linux/export.h>
+_

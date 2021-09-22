@@ -10,6 +10,7 @@ Link: https://lkml.kernel.org/r/f4f3187b-9684-e426-565d-827c2a9bbb0e@virtuozzo.c
 Fixes: f255935b9767 ("mm: cleanup the gfp_mask handling in __vmalloc_area_node")
 Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
 Cc: Uladzislau Rezki (Sony) <urezki@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

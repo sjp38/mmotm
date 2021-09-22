@@ -1,0 +1,77 @@
+From: Axel Rasmussen <axelrasmussen@google.com>
+Subject: userfaultfd/selftests: don't rely on GNU extensions for random numbers
+
+Two arguments for doing this:
+
+First, and maybe most importantly, the resulting code is significantly
+shorter / simpler.
+
+Then, we avoid using GNU libc extensions.  Why does this matter?  It makes
+testing userfaultfd with the selftest easier e.g.  on distros which use
+something other than glibc (e.g., Alpine, which uses musl); basically, it
+makes the test more portable.
+
+Link: https://lkml.kernel.org/r/20210921163323.944352-3-axelrasmussen@google.com
+Signed-off-by: Axel Rasmussen <axelrasmussen@google.com>
+Cc: Peter Xu <peterx@redhat.com>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/vm/userfaultfd.c |   26 +++------------------
+ 1 file changed, 4 insertions(+), 22 deletions(-)
+
+--- a/tools/testing/selftests/vm/userfaultfd.c~userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers
++++ a/tools/testing/selftests/vm/userfaultfd.c
+@@ -57,6 +57,7 @@
+ #include <assert.h>
+ #include <inttypes.h>
+ #include <stdint.h>
++#include <sys/random.h>
+ 
+ #include "../kselftest.h"
+ 
+@@ -528,22 +529,10 @@ static void continue_range(int ufd, __u6
+ static void *locking_thread(void *arg)
+ {
+ 	unsigned long cpu = (unsigned long) arg;
+-	struct random_data rand;
+ 	unsigned long page_nr = *(&(page_nr)); /* uninitialized warning */
+-	int32_t rand_nr;
+ 	unsigned long long count;
+-	char randstate[64];
+-	unsigned int seed;
+ 
+-	if (bounces & BOUNCE_RANDOM) {
+-		seed = (unsigned int) time(NULL) - bounces;
+-		if (!(bounces & BOUNCE_RACINGFAULTS))
+-			seed += cpu;
+-		bzero(&rand, sizeof(rand));
+-		bzero(&randstate, sizeof(randstate));
+-		if (initstate_r(seed, randstate, sizeof(randstate), &rand))
+-			err("initstate_r failed");
+-	} else {
++	if (!(bounces & BOUNCE_RANDOM)) {
+ 		page_nr = -bounces;
+ 		if (!(bounces & BOUNCE_RACINGFAULTS))
+ 			page_nr += cpu * nr_pages_per_cpu;
+@@ -551,15 +540,8 @@ static void *locking_thread(void *arg)
+ 
+ 	while (!finished) {
+ 		if (bounces & BOUNCE_RANDOM) {
+-			if (random_r(&rand, &rand_nr))
+-				err("random_r failed");
+-			page_nr = rand_nr;
+-			if (sizeof(page_nr) > sizeof(rand_nr)) {
+-				if (random_r(&rand, &rand_nr))
+-					err("random_r failed");
+-				page_nr |= (((unsigned long) rand_nr) << 16) <<
+-					   16;
+-			}
++			if (getrandom(&page_nr, sizeof(page_nr), 0) != sizeof(page_nr))
++				err("getrandom failed");
+ 		} else
+ 			page_nr += 1;
+ 		page_nr %= nr_pages;
+_
