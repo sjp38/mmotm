@@ -1,0 +1,76 @@
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: mm: make generic arch_is_kernel_initmem_freed() do what it says
+
+Commit 7a5da02de8d6 ("locking/lockdep: check for freed initmem in
+static_obj()") added arch_is_kernel_initmem_freed() which is supposed to
+report whether an object is part of already freed init memory.
+
+For the time being, the generic version of arch_is_kernel_initmem_freed()
+always reports 'false', allthough free_initmem() is generically called
+on all architectures.
+
+Therefore, change the generic version of arch_is_kernel_initmem_freed()
+to check whether free_initmem() has been called. If so, then check
+if a given address falls into init memory.
+
+In order to use function init_section_contains(), the fonction is
+moved at the end of asm-generic/section.h
+
+Link: https://lkml.kernel.org/r/ec69cc95a98548c862c22b742936244fdb0c7984.1632813331.git.christophe.leroy@csgroup.eu
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/asm-generic/sections.h |   31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
+
+--- a/include/asm-generic/sections.h~mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says
++++ a/include/asm-generic/sections.h
+@@ -80,20 +80,6 @@ static inline int arch_is_kernel_data(un
+ }
+ #endif
+ 
+-/*
+- * Check if an address is part of freed initmem. This is needed on architectures
+- * with virt == phys kernel mapping, for code that wants to check if an address
+- * is part of a static object within [_stext, _end]. After initmem is freed,
+- * memory can be allocated from it, and such allocations would then have
+- * addresses within the range [_stext, _end].
+- */
+-#ifndef arch_is_kernel_initmem_freed
+-static inline int arch_is_kernel_initmem_freed(unsigned long addr)
+-{
+-	return 0;
+-}
+-#endif
+-
+ /**
+  * memory_contains - checks if an object is contained within a memory region
+  * @begin: virtual address of the beginning of the memory region
+@@ -172,4 +158,21 @@ static inline bool is_kernel_rodata(unsi
+ 	       addr < (unsigned long)__end_rodata;
+ }
+ 
++/*
++ * Check if an address is part of freed initmem. This is needed on architectures
++ * with virt == phys kernel mapping, for code that wants to check if an address
++ * is part of a static object within [_stext, _end]. After initmem is freed,
++ * memory can be allocated from it, and such allocations would then have
++ * addresses within the range [_stext, _end].
++ */
++#ifndef arch_is_kernel_initmem_freed
++static inline int arch_is_kernel_initmem_freed(unsigned long addr)
++{
++	if (system_state < SYSTEM_FREEING_INITMEM)
++		return 0;
++
++	return init_section_contains((void *)addr, 1);
++}
++#endif
++
+ #endif /* _ASM_GENERIC_SECTIONS_H_ */
+_

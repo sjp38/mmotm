@@ -15,6 +15,8 @@ Link: https://github.com/KSPP/linux/issues/153
 Link: https://lkml.kernel.org/r/20210921061149.1091163-1-steve@sk2.org
 Signed-off-by: Stephen Kitt <steve@sk2.org>
 Suggested-by: Kees Cook <keescook@chromium.org>
+Acked-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Joel Stanley <joel@jms.id.au>	[defconfig change]
 Cc: Christoph Lameter <cl@linux.com>
 Cc: Pekka Enberg <penberg@kernel.org>
 Cc: David Rientjes <rientjes@google.com>

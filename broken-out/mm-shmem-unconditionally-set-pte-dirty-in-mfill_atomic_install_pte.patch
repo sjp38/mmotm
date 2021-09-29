@@ -62,7 +62,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/shmem.c~mm-shmem-unconditionally-set-pte-dirty-in-mfill_atomic_install_pte
 +++ a/mm/shmem.c
-@@ -2424,7 +2424,6 @@ int shmem_mfill_atomic_pte(struct mm_str
+@@ -2423,7 +2423,6 @@ int shmem_mfill_atomic_pte(struct mm_str
  	shmem_recalc_inode(inode);
  	spin_unlock_irq(&info->lock);
  

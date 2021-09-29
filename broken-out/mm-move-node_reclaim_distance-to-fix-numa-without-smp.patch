@@ -25,7 +25,7 @@ Link: https://lkml.kernel.org/r/6432666a648dde85635341e6c918cee97c97d264.1631781
 Fixes: a55c7454a8c887b2 ("sched/topology: Improve load balancing on AMD EPYC systems")
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Suggested-by: Matt Fleming <matt@codeblueprint.co.uk>
-Cc: Mel Gorman <mgorman@suse.de>
+Acked-by: Mel Gorman <mgorman@suse.de>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Juri Lelli <juri.lelli@redhat.com>

@@ -19,7 +19,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/kernel/resource.c~releasing-resources-with-children
 +++ a/kernel/resource.c
-@@ -221,6 +221,8 @@ static int __release_resource(struct res
+@@ -233,6 +233,8 @@ static int __release_resource(struct res
  		}
  	}
  

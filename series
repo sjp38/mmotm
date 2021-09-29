@@ -1,46 +1,25 @@
 origin.patch
 #NEXT_PATCHES_START linus
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mainline-later (next week, approximately)
-#mm/memory-failure
-mm-hwpoison-add-is_free_buddy_page-in-hwpoisonhandlable.patch
 #
-#ipc
-#ipc-remove-memcg-accounting-for-sops-objects-in-do_semtimedop.patch: https://lkml.kernel.org/r/YT8NrsaztWNDpKXk@dhcp22.suse.cz
 #
-#mm/kasan
-kasan-fix-kconfig-check-of-cc_has_working_nosanitize_address.patch
+#mm/userfaultfd
+#mm-userfaultfd-selftests-fix-memory-corruption-with-thp-enabled.patch: https://lkml.kernel.org/r/CAJHvVci8ig4WCY2aK-GvmHP=Uw3s8DrGahk-Yh37GX2kR35kww@mail.gmail.com
+mm-userfaultfd-selftests-fix-memory-corruption-with-thp-enabled.patch
 #
-#mm/damon
-mm-damon-dont-use-strnlen-with-known-bogus-source-length.patch
+#userfaultfd-fix-a-race-between-writeprotect-and-exit_mmap.patch: https://lkml.kernel.org/r/YU0Y045lHEpdIu3X@t490s
+userfaultfd-fix-a-race-between-writeprotect-and-exit_mmap.patch
 #
-#xtensa
-xtensa-increase-size-of-gcc-stack-frame-check.patch
+#mm/migration
+mm-migrate-optimize-hotplug-time-demotion-order-updates.patch
+mm-migrate-add-cpu-hotplug-to-demotion-ifdef.patch
 #
-#mm/shmem
-fix-judgment-error-in-shmem_is_huge.patch
-#
-#ocfs2
-ocfs2-drop-acl-cache-for-directories-too.patch
-#
-#scripts
-scripts-sorttable-riscv-fix-undelcred-identifier-em_riscv-error.patch
-#
-#mm/tools
-tools-vm-page-types-remove-dependency-on-opt_file-for-idle-page-tracking.patch
-#
-#lib
-lib-zlib_inflate-inffast-check-config-in-c-to-avoid-unused-function-warning.patch
-#
-#mm/pagecache
-mm-fs-invalidate-bh_lrus-for-only-cold-path.patch
-#
-#mm/debug
-mm-debug-sync-up-mr_contig_range-and-mr_longterm_pin.patch
-mm-debug-sync-up-latest-migrate_reason-to-migrate_reason_names.patch
+#mm/pagealloc
+#mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch: -stable?  numbers?
+mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -169,8 +148,9 @@ procfs-prevent-unpriveleged-processes-accessing-fdinfo-dir.patch
 #NEXT_PATCHES_START kbuild
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START scripts
-#scripts-spellingtxt-add-more-spellings-to-spellingtxt.patch: https://lkml.kernel.org/r/1930750.yhyOXdeGKK@sven-l14
+#
 scripts-spellingtxt-add-more-spellings-to-spellingtxt.patch
+scripts-spellingtxt-fix-mistake-version-of-synchronization.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kernfs
@@ -328,6 +308,8 @@ ocfs2-fix-ocfs2-corrupt-when-iputting-an-inode.patch
 #NEXT_PATCHES_START vfs-viro
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START vfs-akpm
+posix-acl-avoid-wempty-body-warning.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kernel/watchdog
 #
@@ -358,6 +340,9 @@ mm-slub-fix-potential-memoryleak-in-kmem_cache_open.patch
 mm-slub-fix-potential-use-after-free-in-slab_debugfs_fops.patch
 mm-slub-fix-incorrect-memcg-slab-count-for-bulk-free.patch
 #
+#slub-add-back-check-for-free-nonslab-objects.patch: acks? https://lkml.kernel.org/r/CALvZod568vL3Eg54srOKVg+TMtuPpLJhxbqGi7HS2oaMLUXvAQ@mail.gmail.com
+slub-add-back-check-for-free-nonslab-objects.patch
+#
 #mm/kconfig
 #mm/kcsan
 #mm/kmemleak
@@ -378,6 +363,8 @@ rapidio-avoid-bogus-__alloc_size-warning.patch
 mm-smaps-fix-shmem-pte-hole-swap-calculation.patch
 mm-smaps-use-vma-vm_pgoff-directly-when-counting-partial-swap.patch
 mm-smaps-simplify-shmem-handling-of-pte-holes.patch
+#
+mm-debug_vm_pgtable-dont-use-__p000-directly.patch
 #
 #mm/pagecache
 #mm-remove-bogus-vm_bug_on.patch: https://lkml.kernel.org/r/813d476-b6d4-456e-b5c3-5fe0455edeb3@google.com
@@ -412,14 +399,17 @@ mm-use-__pfn_to_section-instead-of-open-coding-it.patch
 #
 mm-memory-avoid-unnecessary-kernel-user-pointer-conversion.patch
 #
+#mm-shmem-unconditionally-set-pte-dirty-in-mfill_atomic_install_pte.patch: https://lkml.kernel.org/r/49fddb9a-4a52-1df-8b7c-dde2a89330bf@google.com
 mm-shmem-unconditionally-set-pte-dirty-in-mfill_atomic_install_pte.patch
 mm-clear-vmf-pte-after-pte_unmap_same-returns.patch
 mm-drop-first_index-last_index-in-zap_details.patch
+#mm-add-zap_skip_check_mapping-helper.patch: https://lkml.kernel.org/r/12fa0797-05ea-aede-eeae-826133f03499@redhat.com
 mm-add-zap_skip_check_mapping-helper.patch
 #
 mm-introduce-pmd_install-helper.patch
 mm-remove-redundant-smp_wmb.patch
 #
+documentation-update-pagemap-with-shmem-exceptions.patch
 #
 #
 lazy-tlb-introduce-lazy-mm-refcount-helper-functions.patch
@@ -474,11 +464,30 @@ mm-page_alloc-use-accumulated-load-when-building-node-fallback-list.patch
 mm-move-node_reclaim_distance-to-fix-numa-without-smp.patch
 mm-move-fold_vm_numa_events-to-fix-numa-without-smp.patch
 #
+mm-do-not-acquire-zone-lock-in-is_free_buddy_page.patch
+#
+mm-page_alloc-detect-allocation-forbidden-by-cpuset-and-bail-out-early.patch
+#
+mm-show-watermark_boost-of-zone-in-zoneinfo.patch
+#
+mm-create-a-new-system-state-and-fix-core_kernel_text.patch
+mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch
+powerpc-use-generic-version-of-arch_is_kernel_initmem_freed.patch
+s390-use-generic-version-of-arch_is_kernel_initmem_freed.patch
+#
 #mm/memory-failure
 mm-fix-data-race-in-pagepoisoned.patch
 #
 #mm/hugetlb
 mm-hugetlb-drop-__unmap_hugepage_range-definition-from-hugetlbh.patch
+#
+#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch: https://lkml.kernel.org/r/4fcf5b61-8c01-0fa9-7541-afa755a81039@redhat.com https://lkml.kernel.org/r/878rzma1se.fsf@linux.ibm.com
+hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
+#hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch: https://lkml.kernel.org/r/7ab7690d-aa21-0fd9-75f1-f3a23b892853@redhat.com
+hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch
+hugetlb-add-demote-bool-to-gigantic-page-routines.patch
+#hugetlb-add-hugetlb-demote-page-support.patch: https://lkml.kernel.org/r/9f469308-3c1c-dd9e-2c47-fcbd26b197df@redhat.com
+hugetlb-add-hugetlb-demote-page-support.patch
 #
 #mm/userfaultfd
 userfaultfd-selftests-fix-feature-support-detection.patch
@@ -489,6 +498,8 @@ userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers.patch
 mm-page_isolation-fix-potential-missing-call-to-unset_migratetype_isolate.patch
 #
 mm-page_isolation-guard-against-possible-putback-unisolated-page.patch
+#
+mm-vmscanc-fix-wunused-but-set-variable-warning.patch
 #
 #mm/tools
 tools-vm-page_owner_sortc-count-and-sort-by-mem.patch
@@ -516,7 +527,12 @@ oom_kill-oom_score_adj-broken-for-processes-with-small-memory-usage.patch
 #mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch: too soon?
 mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
 #
+#hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch: acks? https://lkml.kernel.org/r/YVNHIzpmxSotbbBX@kernel.org
+hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
+#
 #mm/migration
+mm-migrate-de-duplicate-migrate_reason-strings.patch
+#
 #mm/kmap
 #mm/thp
 #mm/cma
@@ -553,6 +569,9 @@ mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch
 #
 #mm/zswap
 #mm/zsmalloc
+#mm-disable-zsmalloc-on-preempt_rt.patch: https://lkml.kernel.org/r/YU0IkoeWYLdll6/+@google.com
+mm-disable-zsmalloc-on-preempt_rt.patch
+#
 #mm-zsmallocc-close-race-window-between-zs_pool_dec_isolated-and-zs_unregister_migration.patch: acks?
 mm-zsmallocc-close-race-window-between-zs_pool_dec_isolated-and-zs_unregister_migration.patch
 #
@@ -562,7 +581,6 @@ mm-zsmallocc-combine-two-atomic-ops-in-zs_pool_dec_isolated.patch
 #mm/uaccess
 #mm/ioremap
 #mm/highmem
-#mm-highmem-remove-deprecated-kmap_atomic.patch: https://lkml.kernel.org/r/20210214145357.GF6321@xsang-OptiPlex-9020
 mm-highmem-remove-deprecated-kmap_atomic.patch
 #
 #mm/support
@@ -570,6 +588,9 @@ mm-highmem-remove-deprecated-kmap_atomic.patch
 zram_drv-allow-reclaim-on-bio_alloc.patch
 #
 zram-off-by-one-in-read_block_state.patch
+#
+zram-introduce-an-aged-idle-interface.patch
+zram-introduce-an-aged-idle-interface-v5.patch
 #
 #mm/cleanups
 mm-remove-hardened_usercopy_fallback.patch
@@ -579,6 +600,15 @@ include-linux-mmh-move-nr_free_buffer_pages-from-swaph-to-mmh.patch
 #
 #mm/secretmem
 #mm/kfence
+stacktrace-move-filter_irq_stacks-to-kernel-stacktracec.patch
+kfence-count-unexpectedly-skipped-allocations.patch
+kfence-move-saving-stack-trace-of-allocations-into-__kfence_alloc.patch
+kfence-limit-currently-covered-allocations-when-pool-nearly-full.patch
+kfence-limit-currently-covered-allocations-when-pool-nearly-full-fix.patch
+kfence-add-note-to-documentation-about-skipping-covered-allocations.patch
+#
+kfence-test-use-kunit_skip-to-skip-tests.patch
+#
 #mm/hmm
 #mm/damon
 mm-damon-grammar-s-works-work.patch
@@ -589,6 +619,11 @@ maintainers-update-seongjaes-email-address.patch
 docs-vm-damon-remove-broken-reference.patch
 include-linux-damonh-fix-kernel-doc-comments-for-damon_callback.patch
 mm-damon-core-print-kdamond-start-log-in-debug-mode-only.patch
+#
+mm-damon-remove-unnecessary-do_exit-from-kdamond.patch
+mm-damon-neednt-hold-kdamond_lock-to-print-pid-of-kdamond.patch
+#
+mm-damon-core-nullify-pointer-ctx-kdamond-with-a-null.patch
 #
 # mmend
 #
@@ -713,6 +748,7 @@ lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v3.patch
 #NEXT_PATCHES_START mmc
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START checkpatch
+const_structscheckpatch-add-a-few-sound-ops-structs.patch
 #
 #
 #
@@ -743,7 +779,6 @@ binfmt_elf-reintroduce-using-map_fixed_noreplace.patch
 #NEXT_PATCHES_START kallsyms
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START ramfs
-#ramfs-fix-mount-source-show-for-ramfs.patch: acks?
 ramfs-fix-mount-source-show-for-ramfs.patch
 #
 #NEXT_PATCHES_END
@@ -819,6 +854,7 @@ coda-bump-module-version-to-72.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START hfs
+hfs-hfsplus-use-warn_on-for-sanity-check.patch
 #
 #
 #hfsplus-fix-out-of-bounds-warnings-in-__hfsplus_setxattr.patch: legit or workaround?
@@ -1006,6 +1042,8 @@ unshare-use-swap-to-make-code-cleaner.patch
 #NEXT_PATCHES_START mutex
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sysvfs
+sysv-use-build_bug_on-instead-of-runtime-check.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START cachefiles
 #NEXT_PATCHES_END
@@ -1024,6 +1062,11 @@ unshare-use-swap-to-make-code-cleaner.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kcov
+documentation-kcov-include-typesh-in-the-example.patch
+documentation-kcov-define-ip-in-the-example.patch
+kcov-allocate-per-cpu-memory-on-the-relevant-node.patch
+kcov-avoid-enabledisable-interrupts-if-in_task.patch
+kcov-replace-local_irq_save-with-a-local_lock_t.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START gdb
@@ -1121,7 +1164,6 @@ ipc-ipc_sysctlc-remove-fallback-for-config_proc_sysctl.patch
 linux-next.patch
 #NEXT_PATCHES_START linux-next-post
 #lib
-assoc_array-avoid-open-coded-arithmetic-in-allocator-arguments.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-urgent
@@ -1152,3 +1194,13 @@ workaround-for-a-pci-restoring-bug.patch
 #[merged]ipc-remove-memcg-accounting-for-sops-objects-in-do_semtimedop.patch
 #[to-be-updated]watchdog-softlockup-fix-softlockup_stop_all-hungtask-bug.patch
 #[obsolete]linux-next-git-rejects.patch
+#[merged]assoc_array-avoid-open-coded-arithmetic-in-allocator-arguments.patch
+#[to-be-updated]proc-disable-proc-pid-wchan.patch
+#[withdrawn]zram-introduce-an-aged-idle-interface-v5-fix.patch
+#[to-be-updated]ramfs-fix-mount-source-show-for-ramfs.patch
+#[to-be-updated]mm-debug_vm_pgtable-dont-use-__p000-directly.patch
+#[folded-merged]mm-memory_failure-fix-the-missing-pte_unmap-call-fix.patch
+#[to-be-updated]powerpc-use-generic-version-of-arch_is_kernel_initmem_freed.patch
+#[to-be-updated]s390-use-generic-version-of-arch_is_kernel_initmem_freed.patch
+#[obsolete]linux-next-git-rejects.patch
+#[to-be-updated]mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch

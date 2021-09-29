@@ -13,7 +13,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/stackdepot.c~lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v3
 +++ a/lib/stackdepot.c
-@@ -237,6 +237,7 @@ int stack_depot_snprint(depot_stack_hand
+@@ -236,6 +236,7 @@ int stack_depot_snprint(depot_stack_hand
  	return nr_entries ? stack_trace_snprint(buf, size, entries, nr_entries,
  						spaces) : 0;
  }

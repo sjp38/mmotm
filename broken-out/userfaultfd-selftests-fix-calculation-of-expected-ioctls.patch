@@ -122,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline void munmap_area(void **area)
  {
  	if (*area)
-@@ -1012,11 +1040,9 @@ static int __uffdio_zeropage(int ufd, un
+@@ -1029,11 +1057,9 @@ static int __uffdio_zeropage(int ufd, un
  {
  	struct uffdio_zeropage uffdio_zeropage;
  	int ret;
@@ -135,7 +135,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (offset >= nr_pages * page_size)
  		err("unexpected offset %lu", offset);
  	uffdio_zeropage.range.start = (unsigned long) area_dst + offset;
-@@ -1056,7 +1082,6 @@ static int uffdio_zeropage(int ufd, unsi
+@@ -1073,7 +1099,6 @@ static int uffdio_zeropage(int ufd, unsi
  static int userfaultfd_zeropage_test(void)
  {
  	struct uffdio_register uffdio_register;
@@ -143,7 +143,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	printf("testing UFFDIO_ZEROPAGE: ");
  	fflush(stdout);
-@@ -1071,9 +1096,8 @@ static int userfaultfd_zeropage_test(voi
+@@ -1088,9 +1113,8 @@ static int userfaultfd_zeropage_test(voi
  	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register))
  		err("register failure");
  
@@ -155,7 +155,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (uffdio_zeropage(uffd, 0))
  		if (my_bcmp(area_dst, zeropage, page_size))
-@@ -1086,7 +1110,6 @@ static int userfaultfd_zeropage_test(voi
+@@ -1103,7 +1127,6 @@ static int userfaultfd_zeropage_test(voi
  static int userfaultfd_events_test(void)
  {
  	struct uffdio_register uffdio_register;
@@ -163,7 +163,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	pthread_t uffd_mon;
  	int err;
  	pid_t pid;
-@@ -1109,9 +1132,8 @@ static int userfaultfd_events_test(void)
+@@ -1126,9 +1149,8 @@ static int userfaultfd_events_test(void)
  	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register))
  		err("register failure");
  
@@ -175,7 +175,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (pthread_create(&uffd_mon, &attr, uffd_poll_thread, &stats))
  		err("uffd_poll_thread create");
-@@ -1139,7 +1161,6 @@ static int userfaultfd_events_test(void)
+@@ -1156,7 +1178,6 @@ static int userfaultfd_events_test(void)
  static int userfaultfd_sig_test(void)
  {
  	struct uffdio_register uffdio_register;
@@ -183,7 +183,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long userfaults;
  	pthread_t uffd_mon;
  	int err;
-@@ -1163,9 +1184,8 @@ static int userfaultfd_sig_test(void)
+@@ -1180,9 +1201,8 @@ static int userfaultfd_sig_test(void)
  	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register))
  		err("register failure");
  
@@ -195,7 +195,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (faulting_process(1))
  		err("faulting process failed");
-@@ -1200,30 +1220,25 @@ static int userfaultfd_sig_test(void)
+@@ -1217,30 +1237,25 @@ static int userfaultfd_sig_test(void)
  static int userfaultfd_minor_test(void)
  {
  	struct uffdio_register uffdio_register;
@@ -230,7 +230,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		printf("skipping test due to lack of feature support\n");
  		fflush(stdout);
  		return 0;
-@@ -1235,10 +1250,8 @@ static int userfaultfd_minor_test(void)
+@@ -1252,10 +1267,8 @@ static int userfaultfd_minor_test(void)
  	if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register))
  		err("register failure");
  
@@ -243,7 +243,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * After registering with UFFD, populate the non-UFFD-registered side of
-@@ -1436,8 +1449,6 @@ static int userfaultfd_stress(void)
+@@ -1453,8 +1466,6 @@ static int userfaultfd_stress(void)
  	pthread_attr_setstacksize(&attr, 16*1024*1024);
  
  	while (bounces--) {
@@ -252,7 +252,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		printf("bounces: %d, mode:", bounces);
  		if (bounces & BOUNCE_RANDOM)
  			printf(" rnd");
-@@ -1465,10 +1476,8 @@ static int userfaultfd_stress(void)
+@@ -1482,10 +1493,8 @@ static int userfaultfd_stress(void)
  			uffdio_register.mode |= UFFDIO_REGISTER_MODE_WP;
  		if (ioctl(uffd, UFFDIO_REGISTER, &uffdio_register))
  			err("register failure");

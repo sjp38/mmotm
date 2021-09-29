@@ -10,6 +10,7 @@ Suggested-by: Mike Kravetz <mike.kravetz@oracle.com>
 Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 Reviewed-by: John Hubbard <jhubbard@nvidia.com>
 Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

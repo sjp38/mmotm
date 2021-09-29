@@ -1,0 +1,57 @@
+From: Marco Elver <elver@google.com>
+Subject: kfence: test: use kunit_skip() to skip tests
+
+Use the new kunit_skip() to skip tests if requirements were not met.  It
+makes it easier to see in KUnit's summary if there were skipped tests.
+
+Link: https://lkml.kernel.org/r/20210922182541.1372400-1-elver@google.com
+Signed-off-by: Marco Elver <elver@google.com>
+Reviewed-by: David Gow <davidgow@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Aleksandr Nogikh <nogikh@google.com>
+Cc: Taras Madan <tarasmadan@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kfence/kfence_test.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+--- a/mm/kfence/kfence_test.c~kfence-test-use-kunit_skip-to-skip-tests
++++ a/mm/kfence/kfence_test.c
+@@ -32,6 +32,11 @@
+ #define arch_kfence_test_address(addr) (addr)
+ #endif
+ 
++#define KFENCE_TEST_REQUIRES(test, cond) do {			\
++	if (!(cond))						\
++		kunit_skip((test), "Test requires: " #cond);	\
++} while (0)
++
+ /* Report as observed from console. */
+ static struct {
+ 	spinlock_t lock;
+@@ -555,8 +560,7 @@ static void test_init_on_free(struct kun
+ 	};
+ 	int i;
+ 
+-	if (!IS_ENABLED(CONFIG_INIT_ON_FREE_DEFAULT_ON))
+-		return;
++	KFENCE_TEST_REQUIRES(test, IS_ENABLED(CONFIG_INIT_ON_FREE_DEFAULT_ON));
+ 	/* Assume it hasn't been disabled on command line. */
+ 
+ 	setup_test_cache(test, size, 0, NULL);
+@@ -603,10 +607,8 @@ static void test_gfpzero(struct kunit *t
+ 	char *buf1, *buf2;
+ 	int i;
+ 
+-	if (CONFIG_KFENCE_SAMPLE_INTERVAL > 100) {
+-		kunit_warn(test, "skipping ... would take too long\n");
+-		return;
+-	}
++	/* Skip if we think it'd take too long. */
++	KFENCE_TEST_REQUIRES(test, CONFIG_KFENCE_SAMPLE_INTERVAL <= 100);
+ 
+ 	setup_test_cache(test, size, 0, NULL);
+ 	buf1 = test_alloc(test, size, GFP_KERNEL, ALLOCATE_ANY);
+_

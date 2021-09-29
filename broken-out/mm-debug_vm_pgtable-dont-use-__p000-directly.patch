@@ -1,0 +1,45 @@
+From: Guo Ren <guoren@linux.alibaba.com>
+Subject: mm: debug_vm_pgtable: don't use __P000 directly
+
+The __Pxxx/__Sxxx macros are only for protection_map[] init.  All usage of
+them in linux should come from protection_map array.
+
+Because a lot of architectures would re-initilize protection_map[] array,
+eg: x86-mem_encrypt, m68k-motorola, mips, arm, sparc.
+
+Using __P000 is not rigorous.
+
+Link: https://lkml.kernel.org/r/20210924060821.1138281-1-guoren@kernel.org
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gavin Shan <gshan@redhat.com>
+Cc: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/debug_vm_pgtable.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/mm/debug_vm_pgtable.c~mm-debug_vm_pgtable-dont-use-__p000-directly
++++ a/mm/debug_vm_pgtable.c
+@@ -1104,13 +1104,14 @@ static int __init init_args(struct pgtab
+ 	/*
+ 	 * Initialize the debugging data.
+ 	 *
+-	 * __P000 (or even __S000) will help create page table entries with
+-	 * PROT_NONE permission as required for pxx_protnone_tests().
++	 * protection_map[0] (or even protection_map[8]) will help create
++	 * page table entries with PROT_NONE permission as required for
++	 * pxx_protnone_tests().
+ 	 */
+ 	memset(args, 0, sizeof(*args));
+ 	args->vaddr              = get_random_vaddr();
+ 	args->page_prot          = vm_get_page_prot(VMFLAGS);
+-	args->page_prot_none     = __P000;
++	args->page_prot_none     = protection_map[0];
+ 	args->is_contiguous_page = false;
+ 	args->pud_pfn            = ULONG_MAX;
+ 	args->pmd_pfn            = ULONG_MAX;
+_

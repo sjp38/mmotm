@@ -1,2021 +1,2703 @@
-GIT d5f6545934c47e97c0b48a645418e877b452a992
+GIT 6fd3ec5c7af58d5d6b598fba22ac387645af33f4
 
-diff --git a/arch/sparc/lib/iomap.c b/arch/sparc/lib/iomap.c
-index c9da9f139694..f3a8cd491ce0 100644
---- a/arch/sparc/lib/iomap.c
-+++ b/arch/sparc/lib/iomap.c
-@@ -19,8 +19,10 @@ void ioport_unmap(void __iomem *addr)
- EXPORT_SYMBOL(ioport_map);
- EXPORT_SYMBOL(ioport_unmap);
+diff --git a/arch/arm64/kvm/hyp/nvhe/Makefile b/arch/arm64/kvm/hyp/nvhe/Makefile
+index 5df6193fc430..8d741f71377f 100644
+--- a/arch/arm64/kvm/hyp/nvhe/Makefile
++++ b/arch/arm64/kvm/hyp/nvhe/Makefile
+@@ -54,7 +54,7 @@ $(obj)/kvm_nvhe.tmp.o: $(obj)/hyp.lds $(addprefix $(obj)/,$(hyp-obj)) FORCE
+ #    runtime. Because the hypervisor is part of the kernel binary, relocations
+ #    produce a kernel VA. We enumerate relocations targeting hyp at build time
+ #    and convert the kernel VAs at those positions to hyp VAs.
+-$(obj)/hyp-reloc.S: $(obj)/kvm_nvhe.tmp.o $(obj)/gen-hyprel
++$(obj)/hyp-reloc.S: $(obj)/kvm_nvhe.tmp.o $(obj)/gen-hyprel FORCE
+ 	$(call if_changed,hyprel)
  
-+#ifdef CONFIG_PCI
- void pci_iounmap(struct pci_dev *dev, void __iomem * addr)
+ # 5) Compile hyp-reloc.S and link it into the existing partially linked object.
+diff --git a/arch/arm64/kvm/perf.c b/arch/arm64/kvm/perf.c
+index f9bb3b14130e..c84fe24b2ea1 100644
+--- a/arch/arm64/kvm/perf.c
++++ b/arch/arm64/kvm/perf.c
+@@ -50,9 +50,6 @@ static struct perf_guest_info_callbacks kvm_guest_cbs = {
+ 
+ int kvm_perf_init(void)
  {
- 	/* nothing to do */
+-	if (kvm_pmu_probe_pmuver() != ID_AA64DFR0_PMUVER_IMP_DEF && !is_protected_kvm_enabled())
+-		static_branch_enable(&kvm_arm_pmu_available);
+-
+ 	return perf_register_guest_info_callbacks(&kvm_guest_cbs);
  }
- EXPORT_SYMBOL(pci_iounmap);
-+#endif
-diff --git a/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c b/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c
-index b0ece71aefde..ce774579c89d 100644
---- a/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c
-+++ b/drivers/gpu/drm/nouveau/nvkm/engine/device/ctrl.c
-@@ -57,7 +57,7 @@ nvkm_control_mthd_pstate_info(struct nvkm_control *ctrl, void *data, u32 size)
- 		args->v0.count = 0;
- 		args->v0.ustate_ac = NVIF_CONTROL_PSTATE_INFO_V0_USTATE_DISABLE;
- 		args->v0.ustate_dc = NVIF_CONTROL_PSTATE_INFO_V0_USTATE_DISABLE;
--		args->v0.pwrsrc = -ENOSYS;
-+		args->v0.pwrsrc = -ENODEV;
- 		args->v0.pstate = NVIF_CONTROL_PSTATE_INFO_V0_PSTATE_UNKNOWN;
+ 
+diff --git a/arch/arm64/kvm/pmu-emul.c b/arch/arm64/kvm/pmu-emul.c
+index f5065f23b413..2af3c37445e0 100644
+--- a/arch/arm64/kvm/pmu-emul.c
++++ b/arch/arm64/kvm/pmu-emul.c
+@@ -740,7 +740,14 @@ void kvm_pmu_set_counter_event_type(struct kvm_vcpu *vcpu, u64 data,
+ 	kvm_pmu_create_perf_event(vcpu, select_idx);
+ }
+ 
+-int kvm_pmu_probe_pmuver(void)
++void kvm_host_pmu_init(struct arm_pmu *pmu)
++{
++	if (pmu->pmuver != 0 && pmu->pmuver != ID_AA64DFR0_PMUVER_IMP_DEF &&
++	    !kvm_arm_support_pmu_v3() && !is_protected_kvm_enabled())
++		static_branch_enable(&kvm_arm_pmu_available);
++}
++
++static int kvm_pmu_probe_pmuver(void)
+ {
+ 	struct perf_event_attr attr = { };
+ 	struct perf_event *event;
+diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
+index 16256e17a544..10722455fd02 100644
+--- a/arch/s390/kvm/interrupt.c
++++ b/arch/s390/kvm/interrupt.c
+@@ -419,13 +419,13 @@ static unsigned long deliverable_irqs(struct kvm_vcpu *vcpu)
+ static void __set_cpu_idle(struct kvm_vcpu *vcpu)
+ {
+ 	kvm_s390_set_cpuflags(vcpu, CPUSTAT_WAIT);
+-	set_bit(kvm_vcpu_get_idx(vcpu), vcpu->kvm->arch.idle_mask);
++	set_bit(vcpu->vcpu_idx, vcpu->kvm->arch.idle_mask);
+ }
+ 
+ static void __unset_cpu_idle(struct kvm_vcpu *vcpu)
+ {
+ 	kvm_s390_clear_cpuflags(vcpu, CPUSTAT_WAIT);
+-	clear_bit(kvm_vcpu_get_idx(vcpu), vcpu->kvm->arch.idle_mask);
++	clear_bit(vcpu->vcpu_idx, vcpu->kvm->arch.idle_mask);
+ }
+ 
+ static void __reset_intercept_indicators(struct kvm_vcpu *vcpu)
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 752a0ffab9bf..6a6dd5e1daf6 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -4066,7 +4066,7 @@ static int vcpu_pre_run(struct kvm_vcpu *vcpu)
+ 		kvm_s390_patch_guest_per_regs(vcpu);
  	}
  
-diff --git a/drivers/regulator/max14577-regulator.c b/drivers/regulator/max14577-regulator.c
-index 1d78b455cc48..e34face736f4 100644
---- a/drivers/regulator/max14577-regulator.c
-+++ b/drivers/regulator/max14577-regulator.c
-@@ -269,5 +269,3 @@ module_exit(max14577_regulator_exit);
- MODULE_AUTHOR("Krzysztof Kozlowski <krzk@kernel.org>");
- MODULE_DESCRIPTION("Maxim 14577/77836 regulator driver");
- MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:max14577-regulator");
--MODULE_ALIAS("platform:max77836-regulator");
-diff --git a/drivers/regulator/qcom-rpmh-regulator.c b/drivers/regulator/qcom-rpmh-regulator.c
-index 6cca910a76de..7f458d510483 100644
---- a/drivers/regulator/qcom-rpmh-regulator.c
-+++ b/drivers/regulator/qcom-rpmh-regulator.c
-@@ -991,7 +991,7 @@ static const struct rpmh_vreg_init_data pm8009_1_vreg_data[] = {
- 	RPMH_VREG("ldo4",   "ldo%s4",  &pmic5_nldo,      "vdd-l4"),
- 	RPMH_VREG("ldo5",   "ldo%s5",  &pmic5_pldo,      "vdd-l5-l6"),
- 	RPMH_VREG("ldo6",   "ldo%s6",  &pmic5_pldo,      "vdd-l5-l6"),
--	RPMH_VREG("ldo7",   "ldo%s6",  &pmic5_pldo_lv,   "vdd-l7"),
-+	RPMH_VREG("ldo7",   "ldo%s7",  &pmic5_pldo_lv,   "vdd-l7"),
- 	{}
- };
+-	clear_bit(kvm_vcpu_get_idx(vcpu), vcpu->kvm->arch.gisa_int.kicked_mask);
++	clear_bit(vcpu->vcpu_idx, vcpu->kvm->arch.gisa_int.kicked_mask);
  
-diff --git a/drivers/spi/spi-rockchip.c b/drivers/spi/spi-rockchip.c
-index 540861ca2ba3..553b6b9d0222 100644
---- a/drivers/spi/spi-rockchip.c
-+++ b/drivers/spi/spi-rockchip.c
-@@ -600,6 +600,12 @@ static int rockchip_spi_transfer_one(
- 	int ret;
- 	bool use_dma;
+ 	vcpu->arch.sie_block->icptcode = 0;
+ 	cpuflags = atomic_read(&vcpu->arch.sie_block->cpuflags);
+diff --git a/arch/s390/kvm/kvm-s390.h b/arch/s390/kvm/kvm-s390.h
+index ecd741ee3276..52bc8fbaa60a 100644
+--- a/arch/s390/kvm/kvm-s390.h
++++ b/arch/s390/kvm/kvm-s390.h
+@@ -79,7 +79,7 @@ static inline int is_vcpu_stopped(struct kvm_vcpu *vcpu)
  
-+	/* Zero length transfers won't trigger an interrupt on completion */
-+	if (!xfer->len) {
-+		spi_finalize_current_transfer(ctlr);
-+		return 1;
-+	}
-+
- 	WARN_ON(readl_relaxed(rs->regs + ROCKCHIP_SPI_SSIENR) &&
- 		(readl_relaxed(rs->regs + ROCKCHIP_SPI_SR) & SR_BUSY));
- 
-diff --git a/drivers/spi/spi-tegra20-slink.c b/drivers/spi/spi-tegra20-slink.c
-index 56c6feb2ba3e..8ce840c7ecc8 100644
---- a/drivers/spi/spi-tegra20-slink.c
-+++ b/drivers/spi/spi-tegra20-slink.c
-@@ -204,9 +204,6 @@ struct tegra_slink_data {
- 	struct dma_async_tx_descriptor		*tx_dma_desc;
- };
- 
--static int tegra_slink_runtime_suspend(struct device *dev);
--static int tegra_slink_runtime_resume(struct device *dev);
--
- static inline u32 tegra_slink_readl(struct tegra_slink_data *tspi,
- 		unsigned long reg)
+ static inline int is_vcpu_idle(struct kvm_vcpu *vcpu)
  {
-@@ -1185,7 +1182,8 @@ static int tegra_slink_resume(struct device *dev)
+-	return test_bit(kvm_vcpu_get_idx(vcpu), vcpu->kvm->arch.idle_mask);
++	return test_bit(vcpu->vcpu_idx, vcpu->kvm->arch.idle_mask);
  }
- #endif
  
--static int __maybe_unused tegra_slink_runtime_suspend(struct device *dev)
-+#ifdef CONFIG_PM
-+static int tegra_slink_runtime_suspend(struct device *dev)
+ static inline int kvm_is_ucontrol(struct kvm *kvm)
+diff --git a/arch/x86/include/asm/kvm_page_track.h b/arch/x86/include/asm/kvm_page_track.h
+index 87bd6025d91d..6a5f3acf2b33 100644
+--- a/arch/x86/include/asm/kvm_page_track.h
++++ b/arch/x86/include/asm/kvm_page_track.h
+@@ -46,7 +46,7 @@ struct kvm_page_track_notifier_node {
+ 			    struct kvm_page_track_notifier_node *node);
+ };
+ 
+-void kvm_page_track_init(struct kvm *kvm);
++int kvm_page_track_init(struct kvm *kvm);
+ void kvm_page_track_cleanup(struct kvm *kvm);
+ 
+ void kvm_page_track_free_memslot(struct kvm_memory_slot *slot);
+diff --git a/arch/x86/kvm/emulate.c b/arch/x86/kvm/emulate.c
+index 2837110e66ed..c589ac832265 100644
+--- a/arch/x86/kvm/emulate.c
++++ b/arch/x86/kvm/emulate.c
+@@ -4206,7 +4206,7 @@ static int check_rdtsc(struct x86_emulate_ctxt *ctxt)
+ 	u64 cr4 = ctxt->ops->get_cr(ctxt, 4);
+ 
+ 	if (cr4 & X86_CR4_TSD && ctxt->ops->cpl(ctxt))
+-		return emulate_ud(ctxt);
++		return emulate_gp(ctxt, 0);
+ 
+ 	return X86EMUL_CONTINUE;
+ }
+diff --git a/arch/x86/kvm/hyperv.c b/arch/x86/kvm/hyperv.c
+index 232a86a6faaf..d5124b520f76 100644
+--- a/arch/x86/kvm/hyperv.c
++++ b/arch/x86/kvm/hyperv.c
+@@ -939,7 +939,7 @@ static int kvm_hv_vcpu_init(struct kvm_vcpu *vcpu)
+ 	for (i = 0; i < ARRAY_SIZE(hv_vcpu->stimer); i++)
+ 		stimer_init(&hv_vcpu->stimer[i], i);
+ 
+-	hv_vcpu->vp_index = kvm_vcpu_get_idx(vcpu);
++	hv_vcpu->vp_index = vcpu->vcpu_idx;
+ 
+ 	return 0;
+ }
+@@ -1444,7 +1444,6 @@ static int kvm_hv_set_msr(struct kvm_vcpu *vcpu, u32 msr, u64 data, bool host)
+ 	switch (msr) {
+ 	case HV_X64_MSR_VP_INDEX: {
+ 		struct kvm_hv *hv = to_kvm_hv(vcpu->kvm);
+-		int vcpu_idx = kvm_vcpu_get_idx(vcpu);
+ 		u32 new_vp_index = (u32)data;
+ 
+ 		if (!host || new_vp_index >= KVM_MAX_VCPUS)
+@@ -1459,9 +1458,9 @@ static int kvm_hv_set_msr(struct kvm_vcpu *vcpu, u32 msr, u64 data, bool host)
+ 		 * VP index is changing, adjust num_mismatched_vp_indexes if
+ 		 * it now matches or no longer matches vcpu_idx.
+ 		 */
+-		if (hv_vcpu->vp_index == vcpu_idx)
++		if (hv_vcpu->vp_index == vcpu->vcpu_idx)
+ 			atomic_inc(&hv->num_mismatched_vp_indexes);
+-		else if (new_vp_index == vcpu_idx)
++		else if (new_vp_index == vcpu->vcpu_idx)
+ 			atomic_dec(&hv->num_mismatched_vp_indexes);
+ 
+ 		hv_vcpu->vp_index = new_vp_index;
+diff --git a/arch/x86/kvm/hyperv.h b/arch/x86/kvm/hyperv.h
+index 730da8537d05..ed1c4e546d04 100644
+--- a/arch/x86/kvm/hyperv.h
++++ b/arch/x86/kvm/hyperv.h
+@@ -83,7 +83,7 @@ static inline u32 kvm_hv_get_vpindex(struct kvm_vcpu *vcpu)
  {
- 	struct spi_master *master = dev_get_drvdata(dev);
- 	struct tegra_slink_data *tspi = spi_master_get_devdata(master);
-@@ -1197,7 +1195,7 @@ static int __maybe_unused tegra_slink_runtime_suspend(struct device *dev)
+ 	struct kvm_vcpu_hv *hv_vcpu = to_hv_vcpu(vcpu);
+ 
+-	return hv_vcpu ? hv_vcpu->vp_index : kvm_vcpu_get_idx(vcpu);
++	return hv_vcpu ? hv_vcpu->vp_index : vcpu->vcpu_idx;
+ }
+ 
+ int kvm_hv_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data, bool host);
+diff --git a/arch/x86/kvm/ioapic.c b/arch/x86/kvm/ioapic.c
+index ff005fe738a4..8c065da73f8e 100644
+--- a/arch/x86/kvm/ioapic.c
++++ b/arch/x86/kvm/ioapic.c
+@@ -319,8 +319,8 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
+ 	unsigned index;
+ 	bool mask_before, mask_after;
+ 	union kvm_ioapic_redirect_entry *e;
+-	unsigned long vcpu_bitmap;
+ 	int old_remote_irr, old_delivery_status, old_dest_id, old_dest_mode;
++	DECLARE_BITMAP(vcpu_bitmap, KVM_MAX_VCPUS);
+ 
+ 	switch (ioapic->ioregsel) {
+ 	case IOAPIC_REG_VERSION:
+@@ -384,9 +384,9 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
+ 			irq.shorthand = APIC_DEST_NOSHORT;
+ 			irq.dest_id = e->fields.dest_id;
+ 			irq.msi_redir_hint = false;
+-			bitmap_zero(&vcpu_bitmap, 16);
++			bitmap_zero(vcpu_bitmap, KVM_MAX_VCPUS);
+ 			kvm_bitmap_or_dest_vcpus(ioapic->kvm, &irq,
+-						 &vcpu_bitmap);
++						 vcpu_bitmap);
+ 			if (old_dest_mode != e->fields.dest_mode ||
+ 			    old_dest_id != e->fields.dest_id) {
+ 				/*
+@@ -399,10 +399,10 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
+ 				    kvm_lapic_irq_dest_mode(
+ 					!!e->fields.dest_mode);
+ 				kvm_bitmap_or_dest_vcpus(ioapic->kvm, &irq,
+-							 &vcpu_bitmap);
++							 vcpu_bitmap);
+ 			}
+ 			kvm_make_scan_ioapic_request_mask(ioapic->kvm,
+-							  &vcpu_bitmap);
++							  vcpu_bitmap);
+ 		} else {
+ 			kvm_make_scan_ioapic_request(ioapic->kvm);
+ 		}
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 2d7e61122af8..1a64ba5b9437 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -2027,8 +2027,8 @@ static void mmu_pages_clear_parents(struct mmu_page_path *parents)
+ 	} while (!sp->unsync_children);
+ }
+ 
+-static void mmu_sync_children(struct kvm_vcpu *vcpu,
+-			      struct kvm_mmu_page *parent)
++static int mmu_sync_children(struct kvm_vcpu *vcpu,
++			     struct kvm_mmu_page *parent, bool can_yield)
+ {
+ 	int i;
+ 	struct kvm_mmu_page *sp;
+@@ -2055,12 +2055,18 @@ static void mmu_sync_children(struct kvm_vcpu *vcpu,
+ 		}
+ 		if (need_resched() || rwlock_needbreak(&vcpu->kvm->mmu_lock)) {
+ 			kvm_mmu_flush_or_zap(vcpu, &invalid_list, false, flush);
++			if (!can_yield) {
++				kvm_make_request(KVM_REQ_MMU_SYNC, vcpu);
++				return -EINTR;
++			}
++
+ 			cond_resched_rwlock_write(&vcpu->kvm->mmu_lock);
+ 			flush = false;
+ 		}
+ 	}
+ 
+ 	kvm_mmu_flush_or_zap(vcpu, &invalid_list, false, flush);
++	return 0;
+ }
+ 
+ static void __clear_sp_write_flooding_count(struct kvm_mmu_page *sp)
+@@ -2146,9 +2152,6 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+ 			kvm_make_request(KVM_REQ_TLB_FLUSH_CURRENT, vcpu);
+ 		}
+ 
+-		if (sp->unsync_children)
+-			kvm_make_request(KVM_REQ_MMU_SYNC, vcpu);
+-
+ 		__clear_sp_write_flooding_count(sp);
+ 
+ trace_get_page:
+@@ -3684,7 +3687,7 @@ void kvm_mmu_sync_roots(struct kvm_vcpu *vcpu)
+ 		write_lock(&vcpu->kvm->mmu_lock);
+ 		kvm_mmu_audit(vcpu, AUDIT_PRE_SYNC);
+ 
+-		mmu_sync_children(vcpu, sp);
++		mmu_sync_children(vcpu, sp, true);
+ 
+ 		kvm_mmu_audit(vcpu, AUDIT_POST_SYNC);
+ 		write_unlock(&vcpu->kvm->mmu_lock);
+@@ -3700,7 +3703,7 @@ void kvm_mmu_sync_roots(struct kvm_vcpu *vcpu)
+ 		if (IS_VALID_PAE_ROOT(root)) {
+ 			root &= PT64_BASE_ADDR_MASK;
+ 			sp = to_shadow_page(root);
+-			mmu_sync_children(vcpu, sp);
++			mmu_sync_children(vcpu, sp, true);
+ 		}
+ 	}
+ 
+diff --git a/arch/x86/kvm/mmu/page_track.c b/arch/x86/kvm/mmu/page_track.c
+index 269f11f92fd0..21427e84a82e 100644
+--- a/arch/x86/kvm/mmu/page_track.c
++++ b/arch/x86/kvm/mmu/page_track.c
+@@ -164,13 +164,13 @@ void kvm_page_track_cleanup(struct kvm *kvm)
+ 	cleanup_srcu_struct(&head->track_srcu);
+ }
+ 
+-void kvm_page_track_init(struct kvm *kvm)
++int kvm_page_track_init(struct kvm *kvm)
+ {
+ 	struct kvm_page_track_notifier_head *head;
+ 
+ 	head = &kvm->arch.track_notifier_head;
+-	init_srcu_struct(&head->track_srcu);
+ 	INIT_HLIST_HEAD(&head->track_notifier_list);
++	return init_srcu_struct(&head->track_srcu);
+ }
+ 
+ /*
+diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
+index 7d03e9b7ccfa..913d52a7923e 100644
+--- a/arch/x86/kvm/mmu/paging_tmpl.h
++++ b/arch/x86/kvm/mmu/paging_tmpl.h
+@@ -707,8 +707,27 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, gpa_t addr,
+ 		if (!is_shadow_present_pte(*it.sptep)) {
+ 			table_gfn = gw->table_gfn[it.level - 2];
+ 			access = gw->pt_access[it.level - 2];
+-			sp = kvm_mmu_get_page(vcpu, table_gfn, addr, it.level-1,
+-					      false, access);
++			sp = kvm_mmu_get_page(vcpu, table_gfn, addr,
++					      it.level-1, false, access);
++			/*
++			 * We must synchronize the pagetable before linking it
++			 * because the guest doesn't need to flush tlb when
++			 * the gpte is changed from non-present to present.
++			 * Otherwise, the guest may use the wrong mapping.
++			 *
++			 * For PG_LEVEL_4K, kvm_mmu_get_page() has already
++			 * synchronized it transiently via kvm_sync_page().
++			 *
++			 * For higher level pagetable, we synchronize it via
++			 * the slower mmu_sync_children().  If it needs to
++			 * break, some progress has been made; return
++			 * RET_PF_RETRY and retry on the next #PF.
++			 * KVM_REQ_MMU_SYNC is not necessary but it
++			 * expedites the process.
++			 */
++			if (sp->unsync_children &&
++			    mmu_sync_children(vcpu, sp, false))
++				return RET_PF_RETRY;
+ 		}
+ 
+ 		/*
+@@ -1047,14 +1066,6 @@ static gpa_t FNAME(gva_to_gpa_nested)(struct kvm_vcpu *vcpu, gpa_t vaddr,
+  * Using the cached information from sp->gfns is safe because:
+  * - The spte has a reference to the struct page, so the pfn for a given gfn
+  *   can't change unless all sptes pointing to it are nuked first.
+- *
+- * Note:
+- *   We should flush all tlbs if spte is dropped even though guest is
+- *   responsible for it. Since if we don't, kvm_mmu_notifier_invalidate_page
+- *   and kvm_mmu_notifier_invalidate_range_start detect the mapping page isn't
+- *   used by guest then tlbs are not flushed, so guest is allowed to access the
+- *   freed pages.
+- *   And we increase kvm->tlbs_dirty to delay tlbs flush in this case.
+  */
+ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ {
+@@ -1107,13 +1118,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 			return 0;
+ 
+ 		if (FNAME(prefetch_invalid_gpte)(vcpu, sp, &sp->spt[i], gpte)) {
+-			/*
+-			 * Update spte before increasing tlbs_dirty to make
+-			 * sure no tlb flush is lost after spte is zapped; see
+-			 * the comments in kvm_flush_remote_tlbs().
+-			 */
+-			smp_wmb();
+-			vcpu->kvm->tlbs_dirty++;
++			set_spte_ret |= SET_SPTE_NEED_REMOTE_TLB_FLUSH;
+ 			continue;
+ 		}
+ 
+@@ -1128,12 +1133,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 
+ 		if (gfn != sp->gfns[i]) {
+ 			drop_spte(vcpu->kvm, &sp->spt[i]);
+-			/*
+-			 * The same as above where we are doing
+-			 * prefetch_invalid_gpte().
+-			 */
+-			smp_wmb();
+-			vcpu->kvm->tlbs_dirty++;
++			set_spte_ret |= SET_SPTE_NEED_REMOTE_TLB_FLUSH;
+ 			continue;
+ 		}
+ 
+diff --git a/arch/x86/kvm/svm/nested.c b/arch/x86/kvm/svm/nested.c
+index 2545d0c61985..510b833cbd39 100644
+--- a/arch/x86/kvm/svm/nested.c
++++ b/arch/x86/kvm/svm/nested.c
+@@ -545,7 +545,6 @@ static void nested_vmcb02_prepare_control(struct vcpu_svm *svm)
+ 		(svm->nested.ctl.int_ctl & int_ctl_vmcb12_bits) |
+ 		(svm->vmcb01.ptr->control.int_ctl & int_ctl_vmcb01_bits);
+ 
+-	svm->vmcb->control.virt_ext            = svm->nested.ctl.virt_ext;
+ 	svm->vmcb->control.int_vector          = svm->nested.ctl.int_vector;
+ 	svm->vmcb->control.int_state           = svm->nested.ctl.int_state;
+ 	svm->vmcb->control.event_inj           = svm->nested.ctl.event_inj;
+@@ -579,7 +578,7 @@ static void nested_svm_copy_common_state(struct vmcb *from_vmcb, struct vmcb *to
+ }
+ 
+ int enter_svm_guest_mode(struct kvm_vcpu *vcpu, u64 vmcb12_gpa,
+-			 struct vmcb *vmcb12)
++			 struct vmcb *vmcb12, bool from_vmrun)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 	int ret;
+@@ -609,13 +608,16 @@ int enter_svm_guest_mode(struct kvm_vcpu *vcpu, u64 vmcb12_gpa,
+ 	nested_vmcb02_prepare_save(svm, vmcb12);
+ 
+ 	ret = nested_svm_load_cr3(&svm->vcpu, vmcb12->save.cr3,
+-				  nested_npt_enabled(svm), true);
++				  nested_npt_enabled(svm), from_vmrun);
+ 	if (ret)
+ 		return ret;
+ 
+ 	if (!npt_enabled)
+ 		vcpu->arch.mmu->inject_page_fault = svm_inject_page_fault_nested;
+ 
++	if (!from_vmrun)
++		kvm_make_request(KVM_REQ_GET_NESTED_STATE_PAGES, vcpu);
++
+ 	svm_set_gif(svm, true);
+ 
+ 	return 0;
+@@ -681,7 +683,7 @@ int nested_svm_vmrun(struct kvm_vcpu *vcpu)
+ 
+ 	svm->nested.nested_run_pending = 1;
+ 
+-	if (enter_svm_guest_mode(vcpu, vmcb12_gpa, vmcb12))
++	if (enter_svm_guest_mode(vcpu, vmcb12_gpa, vmcb12, true))
+ 		goto out_exit_err;
+ 
+ 	if (nested_svm_vmrun_msrpm(svm))
+diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+index 75e0b21ad07c..c36b5fe4c27c 100644
+--- a/arch/x86/kvm/svm/sev.c
++++ b/arch/x86/kvm/svm/sev.c
+@@ -595,43 +595,50 @@ static int sev_es_sync_vmsa(struct vcpu_svm *svm)
  	return 0;
  }
  
--static int __maybe_unused tegra_slink_runtime_resume(struct device *dev)
-+static int tegra_slink_runtime_resume(struct device *dev)
+-static int sev_launch_update_vmsa(struct kvm *kvm, struct kvm_sev_cmd *argp)
++static int __sev_launch_update_vmsa(struct kvm *kvm, struct kvm_vcpu *vcpu,
++				    int *error)
  {
- 	struct spi_master *master = dev_get_drvdata(dev);
- 	struct tegra_slink_data *tspi = spi_master_get_devdata(master);
-@@ -1210,6 +1208,7 @@ static int __maybe_unused tegra_slink_runtime_resume(struct device *dev)
- 	}
- 	return 0;
- }
-+#endif /* CONFIG_PM */
- 
- static const struct dev_pm_ops slink_pm_ops = {
- 	SET_RUNTIME_PM_OPS(tegra_slink_runtime_suspend,
-diff --git a/fs/afs/callback.c b/fs/afs/callback.c
-index 7d9b23d981bf..1b4d5809808d 100644
---- a/fs/afs/callback.c
-+++ b/fs/afs/callback.c
-@@ -20,6 +20,37 @@
- #include <linux/sched.h>
- #include "internal.h"
- 
-+/*
-+ * Handle invalidation of an mmap'd file.  We invalidate all the PTEs referring
-+ * to the pages in this file's pagecache, forcing the kernel to go through
-+ * ->fault() or ->page_mkwrite() - at which point we can handle invalidation
-+ * more fully.
-+ */
-+void afs_invalidate_mmap_work(struct work_struct *work)
-+{
-+	struct afs_vnode *vnode = container_of(work, struct afs_vnode, cb_work);
-+
-+	unmap_mapping_pages(vnode->vfs_inode.i_mapping, 0, 0, false);
-+}
-+
-+void afs_server_init_callback_work(struct work_struct *work)
-+{
-+	struct afs_server *server = container_of(work, struct afs_server, initcb_work);
-+	struct afs_vnode *vnode;
-+	struct afs_cell *cell = server->cell;
-+
-+	down_read(&cell->fs_open_mmaps_lock);
-+
-+	list_for_each_entry(vnode, &cell->fs_open_mmaps, cb_mmap_link) {
-+		if (vnode->cb_server == server) {
-+			clear_bit(AFS_VNODE_CB_PROMISED, &vnode->flags);
-+			queue_work(system_unbound_wq, &vnode->cb_work);
-+		}
-+	}
-+
-+	up_read(&cell->fs_open_mmaps_lock);
-+}
-+
- /*
-  * Allow the fileserver to request callback state (re-)initialisation.
-  * Unfortunately, UUIDs are not guaranteed unique.
-@@ -29,8 +60,11 @@ void afs_init_callback_state(struct afs_server *server)
- 	rcu_read_lock();
- 	do {
- 		server->cb_s_break++;
--		server = rcu_dereference(server->uuid_next);
--	} while (0);
-+		atomic_inc(&server->cell->fs_s_break);
-+		if (!list_empty(&server->cell->fs_open_mmaps))
-+			queue_work(system_unbound_wq, &server->initcb_work);
-+
-+	} while ((server = rcu_dereference(server->uuid_next)));
- 	rcu_read_unlock();
- }
- 
-@@ -44,11 +78,17 @@ void __afs_break_callback(struct afs_vnode *vnode, enum afs_cb_break_reason reas
- 	clear_bit(AFS_VNODE_NEW_CONTENT, &vnode->flags);
- 	if (test_and_clear_bit(AFS_VNODE_CB_PROMISED, &vnode->flags)) {
- 		vnode->cb_break++;
-+		vnode->cb_v_break = vnode->volume->cb_v_break;
- 		afs_clear_permits(vnode);
- 
- 		if (vnode->lock_state == AFS_VNODE_LOCK_WAITING_FOR_CB)
- 			afs_lock_may_be_available(vnode);
- 
-+		if (reason != afs_cb_break_for_deleted &&
-+		    vnode->status.type == AFS_FTYPE_FILE &&
-+		    atomic_read(&vnode->cb_nr_mmap))
-+			queue_work(system_unbound_wq, &vnode->cb_work);
-+
- 		trace_afs_cb_break(&vnode->fid, vnode->cb_break, reason, true);
- 	} else {
- 		trace_afs_cb_break(&vnode->fid, vnode->cb_break, reason, false);
-diff --git a/fs/afs/cell.c b/fs/afs/cell.c
-index 887b673f6223..d88407fb9bc0 100644
---- a/fs/afs/cell.c
-+++ b/fs/afs/cell.c
-@@ -166,6 +166,8 @@ static struct afs_cell *afs_alloc_cell(struct afs_net *net,
- 	seqlock_init(&cell->volume_lock);
- 	cell->fs_servers = RB_ROOT;
- 	seqlock_init(&cell->fs_lock);
-+	INIT_LIST_HEAD(&cell->fs_open_mmaps);
-+	init_rwsem(&cell->fs_open_mmaps_lock);
- 	rwlock_init(&cell->vl_servers_lock);
- 	cell->flags = (1 << AFS_CELL_FL_CHECK_ALIAS);
- 
-diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index ac829e63c570..4579bbda4634 100644
---- a/fs/afs/dir.c
-+++ b/fs/afs/dir.c
-@@ -1077,9 +1077,9 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
-  */
- static int afs_d_revalidate_rcu(struct dentry *dentry)
- {
--	struct afs_vnode *dvnode, *vnode;
-+	struct afs_vnode *dvnode;
- 	struct dentry *parent;
--	struct inode *dir, *inode;
-+	struct inode *dir;
- 	long dir_version, de_version;
- 
- 	_enter("%p", dentry);
-@@ -1109,18 +1109,6 @@ static int afs_d_revalidate_rcu(struct dentry *dentry)
- 			return -ECHILD;
- 	}
- 
--	/* Check to see if the vnode referred to by the dentry still
--	 * has a callback.
--	 */
--	if (d_really_is_positive(dentry)) {
--		inode = d_inode_rcu(dentry);
--		if (inode) {
--			vnode = AFS_FS_I(inode);
--			if (!afs_check_validity(vnode))
--				return -ECHILD;
--		}
--	}
--
- 	return 1; /* Still valid */
- }
- 
-@@ -1156,17 +1144,7 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
- 	if (IS_ERR(key))
- 		key = NULL;
- 
--	if (d_really_is_positive(dentry)) {
--		inode = d_inode(dentry);
--		if (inode) {
--			vnode = AFS_FS_I(inode);
--			afs_validate(vnode, key);
--			if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
--				goto out_bad;
--		}
--	}
--
--	/* lock down the parent dentry so we can peer at it */
-+	/* Hold the parent dentry so we can peer at it */
- 	parent = dget_parent(dentry);
- 	dir = AFS_FS_I(d_inode(parent));
- 
-@@ -1175,7 +1153,7 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
- 
- 	if (test_bit(AFS_VNODE_DELETED, &dir->flags)) {
- 		_debug("%pd: parent dir deleted", dentry);
--		goto out_bad_parent;
-+		goto not_found;
- 	}
- 
- 	/* We only need to invalidate a dentry if the server's copy changed
-@@ -1201,12 +1179,12 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
- 	case 0:
- 		/* the filename maps to something */
- 		if (d_really_is_negative(dentry))
--			goto out_bad_parent;
-+			goto not_found;
- 		inode = d_inode(dentry);
- 		if (is_bad_inode(inode)) {
- 			printk("kAFS: afs_d_revalidate: %pd2 has bad inode\n",
- 			       dentry);
--			goto out_bad_parent;
-+			goto not_found;
- 		}
- 
- 		vnode = AFS_FS_I(inode);
-@@ -1228,9 +1206,6 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
- 			       dentry, fid.unique,
- 			       vnode->fid.unique,
- 			       vnode->vfs_inode.i_generation);
--			write_seqlock(&vnode->cb_lock);
--			set_bit(AFS_VNODE_DELETED, &vnode->flags);
--			write_sequnlock(&vnode->cb_lock);
- 			goto not_found;
- 		}
- 		goto out_valid;
-@@ -1245,7 +1220,7 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
- 	default:
- 		_debug("failed to iterate dir %pd: %d",
- 		       parent, ret);
--		goto out_bad_parent;
-+		goto not_found;
- 	}
- 
- out_valid:
-@@ -1256,16 +1231,9 @@ static int afs_d_revalidate(struct dentry *dentry, unsigned int flags)
- 	_leave(" = 1 [valid]");
- 	return 1;
- 
--	/* the dirent, if it exists, now points to a different vnode */
- not_found:
--	spin_lock(&dentry->d_lock);
--	dentry->d_flags |= DCACHE_NFSFS_RENAMED;
--	spin_unlock(&dentry->d_lock);
--
--out_bad_parent:
- 	_debug("dropping dentry %pd2", dentry);
- 	dput(parent);
--out_bad:
- 	key_put(key);
- 
- 	_leave(" = 0 [bad]");
-@@ -1792,6 +1760,10 @@ static int afs_link(struct dentry *from, struct inode *dir,
- 		goto error;
- 	}
- 
-+	ret = afs_validate(vnode, op->key);
-+	if (ret < 0)
-+		goto error_op;
-+
- 	afs_op_set_vnode(op, 0, dvnode);
- 	afs_op_set_vnode(op, 1, vnode);
- 	op->file[0].dv_delta = 1;
-@@ -1805,6 +1777,8 @@ static int afs_link(struct dentry *from, struct inode *dir,
- 	op->create.reason	= afs_edit_dir_for_link;
- 	return afs_do_sync_operation(op);
- 
-+error_op:
-+	afs_put_operation(op);
- error:
- 	d_drop(dentry);
- 	_leave(" = %d", ret);
-@@ -1989,6 +1963,11 @@ static int afs_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
- 	if (IS_ERR(op))
- 		return PTR_ERR(op);
- 
-+	ret = afs_validate(vnode, op->key);
-+	op->error = ret;
-+	if (ret < 0)
-+		goto error;
-+
- 	afs_op_set_vnode(op, 0, orig_dvnode);
- 	afs_op_set_vnode(op, 1, new_dvnode); /* May be same as orig_dvnode */
- 	op->file[0].dv_delta = 1;
-diff --git a/fs/afs/dir_edit.c b/fs/afs/dir_edit.c
-index f4600c1353ad..540b9fc96824 100644
---- a/fs/afs/dir_edit.c
-+++ b/fs/afs/dir_edit.c
-@@ -263,7 +263,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
- 		if (b == nr_blocks) {
- 			_debug("init %u", b);
- 			afs_edit_init_block(meta, block, b);
--			i_size_write(&vnode->vfs_inode, (b + 1) * AFS_DIR_BLOCK_SIZE);
-+			afs_set_i_size(vnode, (b + 1) * AFS_DIR_BLOCK_SIZE);
- 		}
- 
- 		/* Only lower dir pages have a counter in the header. */
-@@ -296,7 +296,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
- new_directory:
- 	afs_edit_init_block(meta, meta, 0);
- 	i_size = AFS_DIR_BLOCK_SIZE;
--	i_size_write(&vnode->vfs_inode, i_size);
-+	afs_set_i_size(vnode, i_size);
- 	slot = AFS_DIR_RESV_BLOCKS0;
- 	page = page0;
- 	block = meta;
-diff --git a/fs/afs/file.c b/fs/afs/file.c
-index db035ae2a134..e6c447ae91f3 100644
---- a/fs/afs/file.c
-+++ b/fs/afs/file.c
-@@ -24,12 +24,16 @@ static void afs_invalidatepage(struct page *page, unsigned int offset,
- static int afs_releasepage(struct page *page, gfp_t gfp_flags);
- 
- static void afs_readahead(struct readahead_control *ractl);
-+static ssize_t afs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter);
-+static void afs_vm_open(struct vm_area_struct *area);
-+static void afs_vm_close(struct vm_area_struct *area);
-+static vm_fault_t afs_vm_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff, pgoff_t end_pgoff);
- 
- const struct file_operations afs_file_operations = {
- 	.open		= afs_open,
- 	.release	= afs_release,
- 	.llseek		= generic_file_llseek,
--	.read_iter	= generic_file_read_iter,
-+	.read_iter	= afs_file_read_iter,
- 	.write_iter	= afs_file_write,
- 	.mmap		= afs_file_mmap,
- 	.splice_read	= generic_file_splice_read,
-@@ -59,8 +63,10 @@ const struct address_space_operations afs_fs_aops = {
- };
- 
- static const struct vm_operations_struct afs_vm_ops = {
-+	.open		= afs_vm_open,
-+	.close		= afs_vm_close,
- 	.fault		= filemap_fault,
--	.map_pages	= filemap_map_pages,
-+	.map_pages	= afs_vm_map_pages,
- 	.page_mkwrite	= afs_page_mkwrite,
- };
- 
-@@ -295,7 +301,7 @@ static void afs_req_issue_op(struct netfs_read_subrequest *subreq)
- 	fsreq->subreq	= subreq;
- 	fsreq->pos	= subreq->start + subreq->transferred;
- 	fsreq->len	= subreq->len   - subreq->transferred;
--	fsreq->key	= subreq->rreq->netfs_priv;
-+	fsreq->key	= key_get(subreq->rreq->netfs_priv);
- 	fsreq->vnode	= vnode;
- 	fsreq->iter	= &fsreq->def_iter;
- 
-@@ -304,6 +310,7 @@ static void afs_req_issue_op(struct netfs_read_subrequest *subreq)
- 			fsreq->pos, fsreq->len);
- 
- 	afs_fetch_data(fsreq->vnode, fsreq);
-+	afs_put_read(fsreq);
- }
- 
- static int afs_symlink_readpage(struct page *page)
-@@ -490,15 +497,88 @@ static int afs_releasepage(struct page *page, gfp_t gfp_flags)
- 	return 1;
- }
- 
-+static void afs_add_open_mmap(struct afs_vnode *vnode)
-+{
-+	if (atomic_inc_return(&vnode->cb_nr_mmap) == 1) {
-+		down_write(&vnode->volume->cell->fs_open_mmaps_lock);
-+
-+		list_add_tail(&vnode->cb_mmap_link,
-+			      &vnode->volume->cell->fs_open_mmaps);
-+
-+		up_write(&vnode->volume->cell->fs_open_mmaps_lock);
-+	}
-+}
-+
-+static void afs_drop_open_mmap(struct afs_vnode *vnode)
-+{
-+	if (!atomic_dec_and_test(&vnode->cb_nr_mmap))
-+		return;
-+
-+	down_write(&vnode->volume->cell->fs_open_mmaps_lock);
-+
-+	if (atomic_read(&vnode->cb_nr_mmap) == 0)
-+		list_del_init(&vnode->cb_mmap_link);
-+
-+	up_write(&vnode->volume->cell->fs_open_mmaps_lock);
-+	flush_work(&vnode->cb_work);
-+}
-+
- /*
-  * Handle setting up a memory mapping on an AFS file.
-  */
- static int afs_file_mmap(struct file *file, struct vm_area_struct *vma)
- {
-+	struct afs_vnode *vnode = AFS_FS_I(file_inode(file));
- 	int ret;
- 
-+	afs_add_open_mmap(vnode);
-+
- 	ret = generic_file_mmap(file, vma);
- 	if (ret == 0)
- 		vma->vm_ops = &afs_vm_ops;
-+	else
-+		afs_drop_open_mmap(vnode);
- 	return ret;
- }
-+
-+static void afs_vm_open(struct vm_area_struct *vma)
-+{
-+	afs_add_open_mmap(AFS_FS_I(file_inode(vma->vm_file)));
-+}
-+
-+static void afs_vm_close(struct vm_area_struct *vma)
-+{
-+	afs_drop_open_mmap(AFS_FS_I(file_inode(vma->vm_file)));
-+}
-+
-+static vm_fault_t afs_vm_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff, pgoff_t end_pgoff)
-+{
-+	struct afs_vnode *vnode = AFS_FS_I(file_inode(vmf->vma->vm_file));
-+	struct afs_file *af = vmf->vma->vm_file->private_data;
-+
-+	switch (afs_validate(vnode, af->key)) {
-+	case 0:
-+		return filemap_map_pages(vmf, start_pgoff, end_pgoff);
-+	case -ENOMEM:
-+		return VM_FAULT_OOM;
-+	case -EINTR:
-+	case -ERESTARTSYS:
-+		return VM_FAULT_RETRY;
-+	case -ESTALE:
-+	default:
-+		return VM_FAULT_SIGBUS;
-+	}
-+}
-+
-+static ssize_t afs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
-+{
-+	struct afs_vnode *vnode = AFS_FS_I(file_inode(iocb->ki_filp));
-+	struct afs_file *af = iocb->ki_filp->private_data;
+-	struct kvm_sev_info *sev = &to_kvm_svm(kvm)->sev_info;
+ 	struct sev_data_launch_update_vmsa vmsa;
++	struct vcpu_svm *svm = to_svm(vcpu);
 +	int ret;
 +
-+	ret = afs_validate(vnode, af->key);
-+	if (ret < 0)
++	/* Perform some pre-encryption checks against the VMSA */
++	ret = sev_es_sync_vmsa(svm);
++	if (ret)
 +		return ret;
 +
-+	return generic_file_read_iter(iocb, iter);
++	/*
++	 * The LAUNCH_UPDATE_VMSA command will perform in-place encryption of
++	 * the VMSA memory content (i.e it will write the same memory region
++	 * with the guest's key), so invalidate it first.
++	 */
++	clflush_cache_range(svm->vmsa, PAGE_SIZE);
++
++	vmsa.reserved = 0;
++	vmsa.handle = to_kvm_svm(kvm)->sev_info.handle;
++	vmsa.address = __sme_pa(svm->vmsa);
++	vmsa.len = PAGE_SIZE;
++	return sev_issue_cmd(kvm, SEV_CMD_LAUNCH_UPDATE_VMSA, &vmsa, error);
 +}
-diff --git a/fs/afs/fs_probe.c b/fs/afs/fs_probe.c
-index e7e98ad63a91..c0031a3ab42f 100644
---- a/fs/afs/fs_probe.c
-+++ b/fs/afs/fs_probe.c
-@@ -9,6 +9,7 @@
- #include <linux/slab.h>
- #include "afs_fs.h"
- #include "internal.h"
-+#include "protocol_afs.h"
- #include "protocol_yfs.h"
++
++static int sev_launch_update_vmsa(struct kvm *kvm, struct kvm_sev_cmd *argp)
++{
+ 	struct kvm_vcpu *vcpu;
+ 	int i, ret;
  
- static unsigned int afs_fs_probe_fast_poll_interval = 30 * HZ;
-@@ -102,7 +103,7 @@ void afs_fileserver_probe_result(struct afs_call *call)
- 	struct afs_addr_list *alist = call->alist;
- 	struct afs_server *server = call->server;
- 	unsigned int index = call->addr_ix;
--	unsigned int rtt_us = 0;
-+	unsigned int rtt_us = 0, cap0;
- 	int ret = call->error;
+ 	if (!sev_es_guest(kvm))
+ 		return -ENOTTY;
  
- 	_enter("%pU,%u", &server->uuid, index);
-@@ -159,6 +160,11 @@ void afs_fileserver_probe_result(struct afs_call *call)
- 			clear_bit(AFS_SERVER_FL_IS_YFS, &server->flags);
- 			alist->addrs[index].srx_service = call->service_id;
- 		}
-+		cap0 = ntohl(call->tmp);
-+		if (cap0 & AFS3_VICED_CAPABILITY_64BITFILES)
-+			set_bit(AFS_SERVER_FL_HAS_FS64, &server->flags);
-+		else
-+			clear_bit(AFS_SERVER_FL_HAS_FS64, &server->flags);
+-	vmsa.reserved = 0;
+-
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		struct vcpu_svm *svm = to_svm(vcpu);
+-
+-		/* Perform some pre-encryption checks against the VMSA */
+-		ret = sev_es_sync_vmsa(svm);
++		ret = mutex_lock_killable(&vcpu->mutex);
+ 		if (ret)
+ 			return ret;
+ 
+-		/*
+-		 * The LAUNCH_UPDATE_VMSA command will perform in-place
+-		 * encryption of the VMSA memory content (i.e it will write
+-		 * the same memory region with the guest's key), so invalidate
+-		 * it first.
+-		 */
+-		clflush_cache_range(svm->vmsa, PAGE_SIZE);
++		ret = __sev_launch_update_vmsa(kvm, vcpu, &argp->error);
+ 
+-		vmsa.handle = sev->handle;
+-		vmsa.address = __sme_pa(svm->vmsa);
+-		vmsa.len = PAGE_SIZE;
+-		ret = sev_issue_cmd(kvm, SEV_CMD_LAUNCH_UPDATE_VMSA, &vmsa,
+-				    &argp->error);
++		mutex_unlock(&vcpu->mutex);
+ 		if (ret)
+ 			return ret;
+-
+-		svm->vcpu.arch.guest_state_protected = true;
  	}
  
- 	if (rxrpc_kernel_get_srtt(call->net->socket, call->rxcall, &rtt_us) &&
-diff --git a/fs/afs/fsclient.c b/fs/afs/fsclient.c
-index dd3f45d906d2..4943413d9c5f 100644
---- a/fs/afs/fsclient.c
-+++ b/fs/afs/fsclient.c
-@@ -456,9 +456,7 @@ void afs_fs_fetch_data(struct afs_operation *op)
- 	struct afs_read *req = op->fetch.req;
- 	__be32 *bp;
+ 	return 0;
+@@ -1397,8 +1404,10 @@ static int sev_receive_start(struct kvm *kvm, struct kvm_sev_cmd *argp)
  
--	if (upper_32_bits(req->pos) ||
--	    upper_32_bits(req->len) ||
--	    upper_32_bits(req->pos + req->len))
-+	if (test_bit(AFS_SERVER_FL_HAS_FS64, &op->server->flags))
- 		return afs_fs_fetch_data64(op);
+ 	/* Bind ASID to this guest */
+ 	ret = sev_bind_asid(kvm, start.handle, error);
+-	if (ret)
++	if (ret) {
++		sev_decommission(start.handle);
+ 		goto e_free_session;
++	}
  
- 	_enter("");
-@@ -1113,9 +1111,7 @@ void afs_fs_store_data(struct afs_operation *op)
- 	       (unsigned long long)op->store.pos,
- 	       (unsigned long long)op->store.i_size);
+ 	params.handle = start.handle;
+ 	if (copy_to_user((void __user *)(uintptr_t)argp->data,
+@@ -1464,7 +1473,7 @@ static int sev_receive_update_data(struct kvm *kvm, struct kvm_sev_cmd *argp)
  
--	if (upper_32_bits(op->store.pos) ||
--	    upper_32_bits(op->store.size) ||
--	    upper_32_bits(op->store.i_size))
-+	if (test_bit(AFS_SERVER_FL_HAS_FS64, &op->server->flags))
- 		return afs_fs_store_data64(op);
+ 	/* Pin guest memory */
+ 	guest_page = sev_pin_memory(kvm, params.guest_uaddr & PAGE_MASK,
+-				    PAGE_SIZE, &n, 0);
++				    PAGE_SIZE, &n, 1);
+ 	if (IS_ERR(guest_page)) {
+ 		ret = PTR_ERR(guest_page);
+ 		goto e_free_trans;
+@@ -1501,6 +1510,20 @@ static int sev_receive_finish(struct kvm *kvm, struct kvm_sev_cmd *argp)
+ 	return sev_issue_cmd(kvm, SEV_CMD_RECEIVE_FINISH, &data, &argp->error);
+ }
  
- 	call = afs_alloc_flat_call(op->net, &afs_RXFSStoreData,
-@@ -1229,7 +1225,7 @@ static void afs_fs_setattr_size(struct afs_operation *op)
- 	       key_serial(op->key), vp->fid.vid, vp->fid.vnode);
- 
- 	ASSERT(attr->ia_valid & ATTR_SIZE);
--	if (upper_32_bits(attr->ia_size))
-+	if (test_bit(AFS_SERVER_FL_HAS_FS64, &op->server->flags))
- 		return afs_fs_setattr_size64(op);
- 
- 	call = afs_alloc_flat_call(op->net, &afs_RXFSStoreData_as_Status,
-@@ -1657,20 +1653,33 @@ static int afs_deliver_fs_get_capabilities(struct afs_call *call)
- 			return ret;
- 
- 		count = ntohl(call->tmp);
--
- 		call->count = count;
- 		call->count2 = count;
--		afs_extract_discard(call, count * sizeof(__be32));
-+		if (count == 0) {
-+			call->unmarshall = 4;
-+			call->tmp = 0;
-+			break;
-+		}
++static bool cmd_allowed_from_miror(u32 cmd_id)
++{
++	/*
++	 * Allow mirrors VM to call KVM_SEV_LAUNCH_UPDATE_VMSA to enable SEV-ES
++	 * active mirror VMs. Also allow the debugging and status commands.
++	 */
++	if (cmd_id == KVM_SEV_LAUNCH_UPDATE_VMSA ||
++	    cmd_id == KVM_SEV_GUEST_STATUS || cmd_id == KVM_SEV_DBG_DECRYPT ||
++	    cmd_id == KVM_SEV_DBG_ENCRYPT)
++		return true;
 +
-+		/* Extract the first word of the capabilities to call->tmp */
-+		afs_extract_to_tmp(call);
- 		call->unmarshall++;
- 		fallthrough;
- 
--		/* Extract capabilities words */
- 	case 2:
- 		ret = afs_extract_data(call, false);
- 		if (ret < 0)
- 			return ret;
- 
--		/* TODO: Examine capabilities */
-+		afs_extract_discard(call, (count - 1) * sizeof(__be32));
-+		call->unmarshall++;
-+		fallthrough;
++	return false;
++}
 +
-+		/* Extract remaining capabilities words */
-+	case 3:
-+		ret = afs_extract_data(call, false);
-+		if (ret < 0)
-+			return ret;
+ int svm_mem_enc_op(struct kvm *kvm, void __user *argp)
+ {
+ 	struct kvm_sev_cmd sev_cmd;
+@@ -1517,8 +1540,9 @@ int svm_mem_enc_op(struct kvm *kvm, void __user *argp)
  
- 		call->unmarshall++;
+ 	mutex_lock(&kvm->lock);
+ 
+-	/* enc_context_owner handles all memory enc operations */
+-	if (is_mirroring_enc_context(kvm)) {
++	/* Only the enc_context_owner handles some memory enc operations. */
++	if (is_mirroring_enc_context(kvm) &&
++	    !cmd_allowed_from_miror(sev_cmd.id)) {
+ 		r = -EINVAL;
+ 		goto out;
+ 	}
+@@ -1715,8 +1739,7 @@ int svm_vm_copy_asid_from(struct kvm *kvm, unsigned int source_fd)
+ {
+ 	struct file *source_kvm_file;
+ 	struct kvm *source_kvm;
+-	struct kvm_sev_info *mirror_sev;
+-	unsigned int asid;
++	struct kvm_sev_info source_sev, *mirror_sev;
+ 	int ret;
+ 
+ 	source_kvm_file = fget(source_fd);
+@@ -1739,7 +1762,8 @@ int svm_vm_copy_asid_from(struct kvm *kvm, unsigned int source_fd)
+ 		goto e_source_unlock;
+ 	}
+ 
+-	asid = to_kvm_svm(source_kvm)->sev_info.asid;
++	memcpy(&source_sev, &to_kvm_svm(source_kvm)->sev_info,
++	       sizeof(source_sev));
+ 
+ 	/*
+ 	 * The mirror kvm holds an enc_context_owner ref so its asid can't
+@@ -1759,8 +1783,16 @@ int svm_vm_copy_asid_from(struct kvm *kvm, unsigned int source_fd)
+ 	/* Set enc_context_owner and copy its encryption context over */
+ 	mirror_sev = &to_kvm_svm(kvm)->sev_info;
+ 	mirror_sev->enc_context_owner = source_kvm;
+-	mirror_sev->asid = asid;
+ 	mirror_sev->active = true;
++	mirror_sev->asid = source_sev.asid;
++	mirror_sev->fd = source_sev.fd;
++	mirror_sev->es_active = source_sev.es_active;
++	mirror_sev->handle = source_sev.handle;
++	/*
++	 * Do not copy ap_jump_table. Since the mirror does not share the same
++	 * KVM contexts as the original, and they may have different
++	 * memory-views.
++	 */
+ 
+ 	mutex_unlock(&kvm->lock);
+ 	return 0;
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 05e8d4d27969..989685098b3e 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -1566,6 +1566,8 @@ static void svm_clear_vintr(struct vcpu_svm *svm)
+ 
+ 		svm->vmcb->control.int_ctl |= svm->nested.ctl.int_ctl &
+ 			V_IRQ_INJECTION_BITS_MASK;
++
++		svm->vmcb->control.int_vector = svm->nested.ctl.int_vector;
+ 	}
+ 
+ 	vmcb_mark_dirty(svm->vmcb, VMCB_INTR);
+@@ -2222,6 +2224,10 @@ static int gp_interception(struct kvm_vcpu *vcpu)
+ 	if (error_code)
+ 		goto reinject;
+ 
++	/* All SVM instructions expect page aligned RAX */
++	if (svm->vmcb->save.rax & ~PAGE_MASK)
++		goto reinject;
++
+ 	/* Decode the instruction for usage later */
+ 	if (x86_decode_emulated_instruction(vcpu, 0, NULL, 0) != EMULATION_OK)
+ 		goto reinject;
+@@ -4285,43 +4291,44 @@ static int svm_enter_smm(struct kvm_vcpu *vcpu, char *smstate)
+ 	struct kvm_host_map map_save;
+ 	int ret;
+ 
+-	if (is_guest_mode(vcpu)) {
+-		/* FED8h - SVM Guest */
+-		put_smstate(u64, smstate, 0x7ed8, 1);
+-		/* FEE0h - SVM Guest VMCB Physical Address */
+-		put_smstate(u64, smstate, 0x7ee0, svm->nested.vmcb12_gpa);
++	if (!is_guest_mode(vcpu))
++		return 0;
+ 
+-		svm->vmcb->save.rax = vcpu->arch.regs[VCPU_REGS_RAX];
+-		svm->vmcb->save.rsp = vcpu->arch.regs[VCPU_REGS_RSP];
+-		svm->vmcb->save.rip = vcpu->arch.regs[VCPU_REGS_RIP];
++	/* FED8h - SVM Guest */
++	put_smstate(u64, smstate, 0x7ed8, 1);
++	/* FEE0h - SVM Guest VMCB Physical Address */
++	put_smstate(u64, smstate, 0x7ee0, svm->nested.vmcb12_gpa);
+ 
+-		ret = nested_svm_vmexit(svm);
+-		if (ret)
+-			return ret;
++	svm->vmcb->save.rax = vcpu->arch.regs[VCPU_REGS_RAX];
++	svm->vmcb->save.rsp = vcpu->arch.regs[VCPU_REGS_RSP];
++	svm->vmcb->save.rip = vcpu->arch.regs[VCPU_REGS_RIP];
+ 
+-		/*
+-		 * KVM uses VMCB01 to store L1 host state while L2 runs but
+-		 * VMCB01 is going to be used during SMM and thus the state will
+-		 * be lost. Temporary save non-VMLOAD/VMSAVE state to the host save
+-		 * area pointed to by MSR_VM_HSAVE_PA. APM guarantees that the
+-		 * format of the area is identical to guest save area offsetted
+-		 * by 0x400 (matches the offset of 'struct vmcb_save_area'
+-		 * within 'struct vmcb'). Note: HSAVE area may also be used by
+-		 * L1 hypervisor to save additional host context (e.g. KVM does
+-		 * that, see svm_prepare_guest_switch()) which must be
+-		 * preserved.
+-		 */
+-		if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->nested.hsave_msr),
+-				 &map_save) == -EINVAL)
+-			return 1;
++	ret = nested_svm_vmexit(svm);
++	if (ret)
++		return ret;
+ 
+-		BUILD_BUG_ON(offsetof(struct vmcb, save) != 0x400);
++	/*
++	 * KVM uses VMCB01 to store L1 host state while L2 runs but
++	 * VMCB01 is going to be used during SMM and thus the state will
++	 * be lost. Temporary save non-VMLOAD/VMSAVE state to the host save
++	 * area pointed to by MSR_VM_HSAVE_PA. APM guarantees that the
++	 * format of the area is identical to guest save area offsetted
++	 * by 0x400 (matches the offset of 'struct vmcb_save_area'
++	 * within 'struct vmcb'). Note: HSAVE area may also be used by
++	 * L1 hypervisor to save additional host context (e.g. KVM does
++	 * that, see svm_prepare_guest_switch()) which must be
++	 * preserved.
++	 */
++	if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->nested.hsave_msr),
++			 &map_save) == -EINVAL)
++		return 1;
+ 
+-		svm_copy_vmrun_state(map_save.hva + 0x400,
+-				     &svm->vmcb01.ptr->save);
++	BUILD_BUG_ON(offsetof(struct vmcb, save) != 0x400);
+ 
+-		kvm_vcpu_unmap(vcpu, &map_save, true);
+-	}
++	svm_copy_vmrun_state(map_save.hva + 0x400,
++			     &svm->vmcb01.ptr->save);
++
++	kvm_vcpu_unmap(vcpu, &map_save, true);
+ 	return 0;
+ }
+ 
+@@ -4329,50 +4336,54 @@ static int svm_leave_smm(struct kvm_vcpu *vcpu, const char *smstate)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 	struct kvm_host_map map, map_save;
+-	int ret = 0;
++	u64 saved_efer, vmcb12_gpa;
++	struct vmcb *vmcb12;
++	int ret;
+ 
+-	if (guest_cpuid_has(vcpu, X86_FEATURE_LM)) {
+-		u64 saved_efer = GET_SMSTATE(u64, smstate, 0x7ed0);
+-		u64 guest = GET_SMSTATE(u64, smstate, 0x7ed8);
+-		u64 vmcb12_gpa = GET_SMSTATE(u64, smstate, 0x7ee0);
+-		struct vmcb *vmcb12;
++	if (!guest_cpuid_has(vcpu, X86_FEATURE_LM))
++		return 0;
+ 
+-		if (guest) {
+-			if (!guest_cpuid_has(vcpu, X86_FEATURE_SVM))
+-				return 1;
++	/* Non-zero if SMI arrived while vCPU was in guest mode. */
++	if (!GET_SMSTATE(u64, smstate, 0x7ed8))
++		return 0;
+ 
+-			if (!(saved_efer & EFER_SVME))
+-				return 1;
++	if (!guest_cpuid_has(vcpu, X86_FEATURE_SVM))
++		return 1;
+ 
+-			if (kvm_vcpu_map(vcpu,
+-					 gpa_to_gfn(vmcb12_gpa), &map) == -EINVAL)
+-				return 1;
++	saved_efer = GET_SMSTATE(u64, smstate, 0x7ed0);
++	if (!(saved_efer & EFER_SVME))
++		return 1;
+ 
+-			if (svm_allocate_nested(svm))
+-				return 1;
++	vmcb12_gpa = GET_SMSTATE(u64, smstate, 0x7ee0);
++	if (kvm_vcpu_map(vcpu, gpa_to_gfn(vmcb12_gpa), &map) == -EINVAL)
++		return 1;
+ 
+-			vmcb12 = map.hva;
++	ret = 1;
++	if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->nested.hsave_msr), &map_save) == -EINVAL)
++		goto unmap_map;
+ 
+-			nested_load_control_from_vmcb12(svm, &vmcb12->control);
++	if (svm_allocate_nested(svm))
++		goto unmap_save;
+ 
+-			ret = enter_svm_guest_mode(vcpu, vmcb12_gpa, vmcb12);
+-			kvm_vcpu_unmap(vcpu, &map, true);
++	/*
++	 * Restore L1 host state from L1 HSAVE area as VMCB01 was
++	 * used during SMM (see svm_enter_smm())
++	 */
+ 
+-			/*
+-			 * Restore L1 host state from L1 HSAVE area as VMCB01 was
+-			 * used during SMM (see svm_enter_smm())
+-			 */
+-			if (kvm_vcpu_map(vcpu, gpa_to_gfn(svm->nested.hsave_msr),
+-					 &map_save) == -EINVAL)
+-				return 1;
++	svm_copy_vmrun_state(&svm->vmcb01.ptr->save, map_save.hva + 0x400);
+ 
+-			svm_copy_vmrun_state(&svm->vmcb01.ptr->save,
+-					     map_save.hva + 0x400);
++	/*
++	 * Enter the nested guest now
++	 */
+ 
+-			kvm_vcpu_unmap(vcpu, &map_save, true);
+-		}
+-	}
++	vmcb12 = map.hva;
++	nested_load_control_from_vmcb12(svm, &vmcb12->control);
++	ret = enter_svm_guest_mode(vcpu, vmcb12_gpa, vmcb12, false);
+ 
++unmap_save:
++	kvm_vcpu_unmap(vcpu, &map_save, true);
++unmap_map:
++	kvm_vcpu_unmap(vcpu, &map, true);
+ 	return ret;
+ }
+ 
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index 524d943f3efc..128a54b1fbf1 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -459,7 +459,8 @@ static inline bool nested_exit_on_nmi(struct vcpu_svm *svm)
+ 	return vmcb_is_intercept(&svm->nested.ctl, INTERCEPT_NMI);
+ }
+ 
+-int enter_svm_guest_mode(struct kvm_vcpu *vcpu, u64 vmcb_gpa, struct vmcb *vmcb12);
++int enter_svm_guest_mode(struct kvm_vcpu *vcpu,
++			 u64 vmcb_gpa, struct vmcb *vmcb12, bool from_vmrun);
+ void svm_leave_nested(struct vcpu_svm *svm);
+ void svm_free_nested(struct vcpu_svm *svm);
+ int svm_allocate_nested(struct vcpu_svm *svm);
+diff --git a/arch/x86/kvm/vmx/evmcs.c b/arch/x86/kvm/vmx/evmcs.c
+index 0dab1b7b529f..ba6f99f584ac 100644
+--- a/arch/x86/kvm/vmx/evmcs.c
++++ b/arch/x86/kvm/vmx/evmcs.c
+@@ -353,14 +353,20 @@ void nested_evmcs_filter_control_msr(u32 msr_index, u64 *pdata)
+ 	switch (msr_index) {
+ 	case MSR_IA32_VMX_EXIT_CTLS:
+ 	case MSR_IA32_VMX_TRUE_EXIT_CTLS:
+-		ctl_high &= ~VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL;
++		ctl_high &= ~EVMCS1_UNSUPPORTED_VMEXIT_CTRL;
  		break;
-diff --git a/fs/afs/inode.c b/fs/afs/inode.c
-index 80b6c8d967d5..8fcffea2daf5 100644
---- a/fs/afs/inode.c
-+++ b/fs/afs/inode.c
-@@ -53,16 +53,6 @@ static noinline void dump_vnode(struct afs_vnode *vnode, struct afs_vnode *paren
- 		dump_stack();
+ 	case MSR_IA32_VMX_ENTRY_CTLS:
+ 	case MSR_IA32_VMX_TRUE_ENTRY_CTLS:
+-		ctl_high &= ~VM_ENTRY_LOAD_IA32_PERF_GLOBAL_CTRL;
++		ctl_high &= ~EVMCS1_UNSUPPORTED_VMENTRY_CTRL;
+ 		break;
+ 	case MSR_IA32_VMX_PROCBASED_CTLS2:
+-		ctl_high &= ~SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES;
++		ctl_high &= ~EVMCS1_UNSUPPORTED_2NDEXEC;
++		break;
++	case MSR_IA32_VMX_PINBASED_CTLS:
++		ctl_high &= ~EVMCS1_UNSUPPORTED_PINCTRL;
++		break;
++	case MSR_IA32_VMX_VMFUNC:
++		ctl_low &= ~EVMCS1_UNSUPPORTED_VMFUNC;
+ 		break;
+ 	}
+ 
+diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
+index ccb03d69546c..eedcebf58004 100644
+--- a/arch/x86/kvm/vmx/nested.c
++++ b/arch/x86/kvm/vmx/nested.c
+@@ -2583,8 +2583,13 @@ static int prepare_vmcs02(struct kvm_vcpu *vcpu, struct vmcs12 *vmcs12,
+ 	 * Guest state is invalid and unrestricted guest is disabled,
+ 	 * which means L1 attempted VMEntry to L2 with invalid state.
+ 	 * Fail the VMEntry.
++	 *
++	 * However when force loading the guest state (SMM exit or
++	 * loading nested state after migration, it is possible to
++	 * have invalid guest state now, which will be later fixed by
++	 * restoring L2 register state
+ 	 */
+-	if (CC(!vmx_guest_state_valid(vcpu))) {
++	if (CC(from_vmentry && !vmx_guest_state_valid(vcpu))) {
+ 		*entry_failure_code = ENTRY_FAIL_DEFAULT;
+ 		return -EINVAL;
+ 	}
+@@ -4351,6 +4356,8 @@ static void load_vmcs12_host_state(struct kvm_vcpu *vcpu,
+ 	if (nested_vmx_load_msr(vcpu, vmcs12->vm_exit_msr_load_addr,
+ 				vmcs12->vm_exit_msr_load_count))
+ 		nested_vmx_abort(vcpu, VMX_ABORT_LOAD_HOST_MSR_FAIL);
++
++	to_vmx(vcpu)->emulation_required = vmx_emulation_required(vcpu);
+ }
+ 
+ static inline u64 nested_vmx_get_vmcs01_guest_efer(struct vcpu_vmx *vmx)
+@@ -4899,14 +4906,7 @@ static int enter_vmx_operation(struct kvm_vcpu *vcpu)
+ 	return -ENOMEM;
  }
  
 -/*
-- * Set the file size and block count.  Estimate the number of 512 bytes blocks
-- * used, rounded up to nearest 1K for consistency with other AFS clients.
+- * Emulate the VMXON instruction.
+- * Currently, we just remember that VMX is active, and do not save or even
+- * inspect the argument to VMXON (the so-called "VMXON pointer") because we
+- * do not currently need to store anything in that guest-allocated memory
+- * region. Consequently, VMCLEAR and VMPTRLD also do not verify that the their
+- * argument is different from the VMXON pointer (which the spec says they do).
 - */
--static void afs_set_i_size(struct afs_vnode *vnode, u64 size)
--{
--	i_size_write(&vnode->vfs_inode, size);
--	vnode->vfs_inode.i_blocks = ((size + 1023) >> 10) << 1;
--}
--
- /*
-  * Initialise an inode from the vnode status.
-  */
-@@ -587,22 +577,32 @@ static void afs_zap_data(struct afs_vnode *vnode)
++/* Emulate the VMXON instruction. */
+ static int handle_vmon(struct kvm_vcpu *vcpu)
+ {
+ 	int ret;
+@@ -5903,6 +5903,12 @@ static bool nested_vmx_l0_wants_exit(struct kvm_vcpu *vcpu,
+ 	case EXIT_REASON_VMFUNC:
+ 		/* VM functions are emulated through L2->L0 vmexits. */
+ 		return true;
++	case EXIT_REASON_BUS_LOCK:
++		/*
++		 * At present, bus lock VM exit is never exposed to L1.
++		 * Handle L2's bus locks in L0 directly.
++		 */
++		return true;
+ 	default:
+ 		break;
+ 	}
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index 0c2c0d5ae873..9ecfcf13a046 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -1323,7 +1323,7 @@ static void vmx_vcpu_put(struct kvm_vcpu *vcpu)
+ 	vmx_prepare_switch_to_host(to_vmx(vcpu));
  }
  
- /*
-- * Get the server reinit counter for a vnode's current server.
-+ * Check to see if we have a server currently serving this volume and that it
-+ * hasn't been reinitialised or dropped from the list.
-  */
--static bool afs_get_s_break_rcu(struct afs_vnode *vnode, unsigned int *_s_break)
-+static bool afs_check_server_good(struct afs_vnode *vnode)
+-static bool emulation_required(struct kvm_vcpu *vcpu)
++bool vmx_emulation_required(struct kvm_vcpu *vcpu)
  {
--	struct afs_server_list *slist = rcu_dereference(vnode->volume->servers);
-+	struct afs_server_list *slist;
- 	struct afs_server *server;
-+	bool good;
- 	int i;
+ 	return emulate_invalid_guest_state && !vmx_guest_state_valid(vcpu);
+ }
+@@ -1367,7 +1367,7 @@ void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
+ 	vmcs_writel(GUEST_RFLAGS, rflags);
  
-+	if (vnode->cb_fs_s_break == atomic_read(&vnode->volume->cell->fs_s_break))
-+		return true;
-+
-+	rcu_read_lock();
-+
-+	slist = rcu_dereference(vnode->volume->servers);
- 	for (i = 0; i < slist->nr_servers; i++) {
- 		server = slist->servers[i].server;
- 		if (server == vnode->cb_server) {
--			*_s_break = READ_ONCE(server->cb_s_break);
--			return true;
-+			good = (vnode->cb_s_break == server->cb_s_break);
-+			rcu_read_unlock();
-+			return good;
- 		}
+ 	if ((old_rflags ^ vmx->rflags) & X86_EFLAGS_VM)
+-		vmx->emulation_required = emulation_required(vcpu);
++		vmx->emulation_required = vmx_emulation_required(vcpu);
+ }
+ 
+ u32 vmx_get_interrupt_shadow(struct kvm_vcpu *vcpu)
+@@ -1837,10 +1837,11 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+ 				    &msr_info->data))
+ 			return 1;
+ 		/*
+-		 * Enlightened VMCS v1 doesn't have certain fields, but buggy
+-		 * Hyper-V versions are still trying to use corresponding
+-		 * features when they are exposed. Filter out the essential
+-		 * minimum.
++		 * Enlightened VMCS v1 doesn't have certain VMCS fields but
++		 * instead of just ignoring the features, different Hyper-V
++		 * versions are either trying to use them and fail or do some
++		 * sanity checking and refuse to boot. Filter all unsupported
++		 * features out.
+ 		 */
+ 		if (!msr_info->host_initiated &&
+ 		    vmx->nested.enlightened_vmcs_enabled)
+@@ -3077,7 +3078,7 @@ void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
  	}
  
-+	rcu_read_unlock();
- 	return false;
+ 	/* depends on vcpu->arch.cr0 to be set to a new value */
+-	vmx->emulation_required = emulation_required(vcpu);
++	vmx->emulation_required = vmx_emulation_required(vcpu);
  }
  
-@@ -611,57 +611,46 @@ static bool afs_get_s_break_rcu(struct afs_vnode *vnode, unsigned int *_s_break)
-  */
- bool afs_check_validity(struct afs_vnode *vnode)
+ static int vmx_get_max_tdp_level(void)
+@@ -3330,7 +3331,7 @@ static void vmx_set_segment(struct kvm_vcpu *vcpu, struct kvm_segment *var, int
  {
--	struct afs_volume *volume = vnode->volume;
- 	enum afs_cb_break_reason need_clear = afs_cb_break_no_break;
- 	time64_t now = ktime_get_real_seconds();
--	bool valid;
--	unsigned int cb_break, cb_s_break, cb_v_break;
-+	unsigned int cb_break;
- 	int seq = 0;
+ 	__vmx_set_segment(vcpu, var, seg);
  
- 	do {
- 		read_seqbegin_or_lock(&vnode->cb_lock, &seq);
--		cb_v_break = READ_ONCE(volume->cb_v_break);
- 		cb_break = vnode->cb_break;
- 
--		if (test_bit(AFS_VNODE_CB_PROMISED, &vnode->flags) &&
--		    afs_get_s_break_rcu(vnode, &cb_s_break)) {
--			if (vnode->cb_s_break != cb_s_break ||
--			    vnode->cb_v_break != cb_v_break) {
--				vnode->cb_s_break = cb_s_break;
--				vnode->cb_v_break = cb_v_break;
--				need_clear = afs_cb_break_for_vsbreak;
--				valid = false;
--			} else if (test_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
-+		if (test_bit(AFS_VNODE_CB_PROMISED, &vnode->flags)) {
-+			if (vnode->cb_v_break != vnode->volume->cb_v_break)
-+				need_clear = afs_cb_break_for_v_break;
-+			else if (!afs_check_server_good(vnode))
-+				need_clear = afs_cb_break_for_s_reinit;
-+			else if (test_bit(AFS_VNODE_ZAP_DATA, &vnode->flags))
- 				need_clear = afs_cb_break_for_zap;
--				valid = false;
--			} else if (vnode->cb_expires_at - 10 <= now) {
-+			else if (vnode->cb_expires_at - 10 <= now)
- 				need_clear = afs_cb_break_for_lapsed;
--				valid = false;
--			} else {
--				valid = true;
--			}
- 		} else if (test_bit(AFS_VNODE_DELETED, &vnode->flags)) {
--			valid = true;
-+			;
- 		} else {
--			vnode->cb_v_break = cb_v_break;
--			valid = false;
-+			need_clear = afs_cb_break_no_promise;
- 		}
- 
- 	} while (need_seqretry(&vnode->cb_lock, seq));
- 
- 	done_seqretry(&vnode->cb_lock, seq);
- 
--	if (need_clear != afs_cb_break_no_break) {
--		write_seqlock(&vnode->cb_lock);
--		if (cb_break == vnode->cb_break)
--			__afs_break_callback(vnode, need_clear);
--		else
--			trace_afs_cb_miss(&vnode->fid, need_clear);
--		write_sequnlock(&vnode->cb_lock);
--		valid = false;
--	}
-+	if (need_clear == afs_cb_break_no_break)
-+		return true;
- 
--	return valid;
-+	write_seqlock(&vnode->cb_lock);
-+	if (need_clear == afs_cb_break_no_promise)
-+		vnode->cb_v_break = vnode->volume->cb_v_break;
-+	else if (cb_break == vnode->cb_break)
-+		__afs_break_callback(vnode, need_clear);
-+	else
-+		trace_afs_cb_miss(&vnode->fid, need_clear);
-+	write_sequnlock(&vnode->cb_lock);
-+	return false;
+-	to_vmx(vcpu)->emulation_required = emulation_required(vcpu);
++	to_vmx(vcpu)->emulation_required = vmx_emulation_required(vcpu);
  }
  
- /*
-@@ -675,21 +664,20 @@ bool afs_check_validity(struct afs_vnode *vnode)
-  */
- int afs_validate(struct afs_vnode *vnode, struct key *key)
- {
--	bool valid;
- 	int ret;
+ static void vmx_get_cs_db_l_bits(struct kvm_vcpu *vcpu, int *db, int *l)
+@@ -6621,10 +6622,24 @@ static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
+ 		     vmx->loaded_vmcs->soft_vnmi_blocked))
+ 		vmx->loaded_vmcs->entry_time = ktime_get();
  
- 	_enter("{v={%llx:%llu} fl=%lx},%x",
- 	       vnode->fid.vid, vnode->fid.vnode, vnode->flags,
- 	       key_serial(key));
- 
--	rcu_read_lock();
--	valid = afs_check_validity(vnode);
--	rcu_read_unlock();
--
--	if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
--		clear_nlink(&vnode->vfs_inode);
-+	if (unlikely(test_bit(AFS_VNODE_DELETED, &vnode->flags))) {
-+		if (vnode->vfs_inode.i_nlink)
-+			clear_nlink(&vnode->vfs_inode);
-+		goto valid;
+-	/* Don't enter VMX if guest state is invalid, let the exit handler
+-	   start emulation until we arrive back to a valid state */
+-	if (vmx->emulation_required)
++	/*
++	 * Don't enter VMX if guest state is invalid, let the exit handler
++	 * start emulation until we arrive back to a valid state.  Synthesize a
++	 * consistency check VM-Exit due to invalid guest state and bail.
++	 */
++	if (unlikely(vmx->emulation_required)) {
++
++		/* We don't emulate invalid state of a nested guest */
++		vmx->fail = is_guest_mode(vcpu);
++
++		vmx->exit_reason.full = EXIT_REASON_INVALID_STATE;
++		vmx->exit_reason.failed_vmentry = 1;
++		kvm_register_mark_available(vcpu, VCPU_EXREG_EXIT_INFO_1);
++		vmx->exit_qualification = ENTRY_FAIL_DEFAULT;
++		kvm_register_mark_available(vcpu, VCPU_EXREG_EXIT_INFO_2);
++		vmx->exit_intr_info = 0;
+ 		return EXIT_FASTPATH_NONE;
 +	}
  
--	if (valid)
-+	if (test_bit(AFS_VNODE_CB_PROMISED, &vnode->flags) &&
-+	    afs_check_validity(vnode))
- 		goto valid;
+ 	trace_kvm_entry(vcpu);
  
- 	down_write(&vnode->validate_lock);
-diff --git a/fs/afs/internal.h b/fs/afs/internal.h
-index 5ed416f4ff33..0ad97a8fc0d4 100644
---- a/fs/afs/internal.h
-+++ b/fs/afs/internal.h
-@@ -390,6 +390,9 @@ struct afs_cell {
- 	/* Active fileserver interaction state. */
- 	struct rb_root		fs_servers;	/* afs_server (by server UUID) */
- 	seqlock_t		fs_lock;	/* For fs_servers  */
-+	struct rw_semaphore	fs_open_mmaps_lock;
-+	struct list_head	fs_open_mmaps;	/* List of vnodes that are mmapped */
-+	atomic_t		fs_s_break;	/* Counter of CB.InitCallBackState messages */
- 
- 	/* VL server list. */
- 	rwlock_t		vl_servers_lock; /* Lock on vl_servers */
-@@ -503,6 +506,7 @@ struct afs_server {
- 	struct hlist_node	addr4_link;	/* Link in net->fs_addresses4 */
- 	struct hlist_node	addr6_link;	/* Link in net->fs_addresses6 */
- 	struct hlist_node	proc_link;	/* Link in net->fs_proc */
-+	struct work_struct	initcb_work;	/* Work for CB.InitCallBackState* */
- 	struct afs_server	*gc_next;	/* Next server in manager's list */
- 	time64_t		unuse_time;	/* Time at which last unused */
- 	unsigned long		flags;
-@@ -516,6 +520,7 @@ struct afs_server {
- #define AFS_SERVER_FL_IS_YFS	16		/* Server is YFS not AFS */
- #define AFS_SERVER_FL_NO_IBULK	17		/* Fileserver doesn't support FS.InlineBulkStatus */
- #define AFS_SERVER_FL_NO_RM2	18		/* Fileserver doesn't support YFS.RemoveFile2 */
-+#define AFS_SERVER_FL_HAS_FS64	19		/* Fileserver supports FS.{Fetch,Store}Data64 */
- 	atomic_t		ref;		/* Object refcount */
- 	atomic_t		active;		/* Active user count */
- 	u32			addr_version;	/* Address list version */
-@@ -657,7 +662,11 @@ struct afs_vnode {
- 	afs_lock_type_t		lock_type : 8;
- 
- 	/* outstanding callback notification on this file */
-+	struct work_struct	cb_work;	/* Work for mmap'd files */
-+	struct list_head	cb_mmap_link;	/* Link in cell->fs_open_mmaps */
- 	void			*cb_server;	/* Server with callback/filelock */
-+	atomic_t		cb_nr_mmap;	/* Number of mmaps */
-+	unsigned int		cb_fs_s_break;	/* Mass server break counter (cell->fs_s_break) */
- 	unsigned int		cb_s_break;	/* Mass break counter on ->server */
- 	unsigned int		cb_v_break;	/* Mass break counter on ->volume */
- 	unsigned int		cb_break;	/* Break counter on vnode */
-@@ -965,6 +974,8 @@ extern struct fscache_cookie_def afs_vnode_cache_index_def;
- /*
-  * callback.c
-  */
-+extern void afs_invalidate_mmap_work(struct work_struct *);
-+extern void afs_server_init_callback_work(struct work_struct *work);
- extern void afs_init_callback_state(struct afs_server *);
- extern void __afs_break_callback(struct afs_vnode *, enum afs_cb_break_reason);
- extern void afs_break_callback(struct afs_vnode *, enum afs_cb_break_reason);
-@@ -1585,6 +1596,16 @@ static inline void afs_update_dentry_version(struct afs_operation *op,
- 			(void *)(unsigned long)dir_vp->scb.status.data_version;
- }
- 
-+/*
-+ * Set the file size and block count.  Estimate the number of 512 bytes blocks
-+ * used, rounded up to nearest 1K for consistency with other AFS clients.
-+ */
-+static inline void afs_set_i_size(struct afs_vnode *vnode, u64 size)
-+{
-+	i_size_write(&vnode->vfs_inode, size);
-+	vnode->vfs_inode.i_blocks = ((size + 1023) >> 10) << 1;
-+}
+diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
+index 4858c5fd95f2..592217fd7d92 100644
+--- a/arch/x86/kvm/vmx/vmx.h
++++ b/arch/x86/kvm/vmx/vmx.h
+@@ -248,12 +248,8 @@ struct vcpu_vmx {
+ 	 * only loaded into hardware when necessary, e.g. SYSCALL #UDs outside
+ 	 * of 64-bit mode or if EFER.SCE=1, thus the SYSCALL MSRs don't need to
+ 	 * be loaded into hardware if those conditions aren't met.
+-	 * nr_active_uret_msrs tracks the number of MSRs that need to be loaded
+-	 * into hardware when running the guest.  guest_uret_msrs[] is resorted
+-	 * whenever the number of "active" uret MSRs is modified.
+ 	 */
+ 	struct vmx_uret_msr   guest_uret_msrs[MAX_NR_USER_RETURN_MSRS];
+-	int                   nr_active_uret_msrs;
+ 	bool                  guest_uret_msrs_loaded;
+ #ifdef CONFIG_X86_64
+ 	u64		      msr_host_kernel_gs_base;
+@@ -359,6 +355,7 @@ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu);
+ void vmx_set_host_fs_gs(struct vmcs_host_state *host, u16 fs_sel, u16 gs_sel,
+ 			unsigned long fs_base, unsigned long gs_base);
+ int vmx_get_cpl(struct kvm_vcpu *vcpu);
++bool vmx_emulation_required(struct kvm_vcpu *vcpu);
+ unsigned long vmx_get_rflags(struct kvm_vcpu *vcpu);
+ void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags);
+ u32 vmx_get_interrupt_shadow(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 28ef14155726..aabd3a2ec1bc 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1332,6 +1332,13 @@ static const u32 msrs_to_save_all[] = {
+ 	MSR_ARCH_PERFMON_EVENTSEL0 + 12, MSR_ARCH_PERFMON_EVENTSEL0 + 13,
+ 	MSR_ARCH_PERFMON_EVENTSEL0 + 14, MSR_ARCH_PERFMON_EVENTSEL0 + 15,
+ 	MSR_ARCH_PERFMON_EVENTSEL0 + 16, MSR_ARCH_PERFMON_EVENTSEL0 + 17,
 +
- /*
-  * Check for a conflicting operation on a directory that we just unlinked from.
-  * If someone managed to sneak a link or an unlink in on the file we just
-diff --git a/fs/afs/protocol_afs.h b/fs/afs/protocol_afs.h
-new file mode 100644
-index 000000000000..0c39358c8b70
---- /dev/null
-+++ b/fs/afs/protocol_afs.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/* AFS protocol bits
-+ *
-+ * Copyright (C) 2021 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ */
-+
-+
-+#define AFSCAPABILITIESMAX 196 /* Maximum number of words in a capability set */
-+
-+/* AFS3 Fileserver capabilities word 0 */
-+#define AFS3_VICED_CAPABILITY_ERRORTRANS	0x0001 /* Uses UAE errors */
-+#define AFS3_VICED_CAPABILITY_64BITFILES	0x0002 /* FetchData64 & StoreData64 supported */
-+#define AFS3_VICED_CAPABILITY_WRITELOCKACL	0x0004 /* Can lock a file even without lock perm */
-+#define AFS3_VICED_CAPABILITY_SANEACLS		0x0008 /* ACLs reviewed for sanity - don't use */
-diff --git a/fs/afs/protocol_yfs.h b/fs/afs/protocol_yfs.h
-index b5bd03b1d3c7..e4cd89c44c46 100644
---- a/fs/afs/protocol_yfs.h
-+++ b/fs/afs/protocol_yfs.h
-@@ -168,3 +168,9 @@ enum yfs_lock_type {
- 	yfs_LockMandatoryWrite	= 0x101,
- 	yfs_LockMandatoryExtend	= 0x102,
++	MSR_K7_EVNTSEL0, MSR_K7_EVNTSEL1, MSR_K7_EVNTSEL2, MSR_K7_EVNTSEL3,
++	MSR_K7_PERFCTR0, MSR_K7_PERFCTR1, MSR_K7_PERFCTR2, MSR_K7_PERFCTR3,
++	MSR_F15H_PERF_CTL0, MSR_F15H_PERF_CTL1, MSR_F15H_PERF_CTL2,
++	MSR_F15H_PERF_CTL3, MSR_F15H_PERF_CTL4, MSR_F15H_PERF_CTL5,
++	MSR_F15H_PERF_CTR0, MSR_F15H_PERF_CTR1, MSR_F15H_PERF_CTR2,
++	MSR_F15H_PERF_CTR3, MSR_F15H_PERF_CTR4, MSR_F15H_PERF_CTR5,
  };
-+
-+/* RXYFS Viced Capability Flags */
-+#define YFS_VICED_CAPABILITY_ERRORTRANS		0x0001 /* Deprecated v0.195 */
-+#define YFS_VICED_CAPABILITY_64BITFILES		0x0002 /* Deprecated v0.195 */
-+#define YFS_VICED_CAPABILITY_WRITELOCKACL	0x0004 /* Can lock a file even without lock perm */
-+#define YFS_VICED_CAPABILITY_SANEACLS		0x0008 /* Deprecated v0.195 */
-diff --git a/fs/afs/rotate.c b/fs/afs/rotate.c
-index d83f13c44b92..79e1a5f6701b 100644
---- a/fs/afs/rotate.c
-+++ b/fs/afs/rotate.c
-@@ -374,6 +374,7 @@ bool afs_select_fileserver(struct afs_operation *op)
- 	if (vnode->cb_server != server) {
- 		vnode->cb_server = server;
- 		vnode->cb_s_break = server->cb_s_break;
-+		vnode->cb_fs_s_break = atomic_read(&server->cell->fs_s_break);
- 		vnode->cb_v_break = vnode->volume->cb_v_break;
- 		clear_bit(AFS_VNODE_CB_PROMISED, &vnode->flags);
- 	}
-diff --git a/fs/afs/server.c b/fs/afs/server.c
-index 684a2b02b9ff..6e5b9a19b234 100644
---- a/fs/afs/server.c
-+++ b/fs/afs/server.c
-@@ -235,6 +235,7 @@ static struct afs_server *afs_alloc_server(struct afs_cell *cell,
- 	server->addr_version = alist->version;
- 	server->uuid = *uuid;
- 	rwlock_init(&server->fs_lock);
-+	INIT_WORK(&server->initcb_work, afs_server_init_callback_work);
- 	init_waitqueue_head(&server->probe_wq);
- 	INIT_LIST_HEAD(&server->probe_link);
- 	spin_lock_init(&server->probe_lock);
-@@ -467,6 +468,7 @@ static void afs_destroy_server(struct afs_net *net, struct afs_server *server)
- 	if (test_bit(AFS_SERVER_FL_MAY_HAVE_CB, &server->flags))
- 		afs_give_up_callbacks(net, server);
  
-+	flush_work(&server->initcb_work);
- 	afs_put_server(net, server, afs_server_trace_destroy);
+ static u32 msrs_to_save[ARRAY_SIZE(msrs_to_save_all)];
+@@ -2969,7 +2976,7 @@ static int kvm_guest_time_update(struct kvm_vcpu *v)
+ 				       offsetof(struct compat_vcpu_info, time));
+ 	if (vcpu->xen.vcpu_time_info_set)
+ 		kvm_setup_pvclock_page(v, &vcpu->xen.vcpu_time_info_cache, 0);
+-	if (v == kvm_get_vcpu(v->kvm, 0))
++	if (!v->vcpu_idx)
+ 		kvm_hv_setup_tsc_page(v->kvm, &vcpu->hv_clock);
+ 	return 0;
  }
+@@ -7658,6 +7665,13 @@ static void kvm_smm_changed(struct kvm_vcpu *vcpu, bool entering_smm)
  
-diff --git a/fs/afs/super.c b/fs/afs/super.c
-index e38bb1e7a4d2..d110def8aa8e 100644
---- a/fs/afs/super.c
-+++ b/fs/afs/super.c
-@@ -698,6 +698,7 @@ static struct inode *afs_alloc_inode(struct super_block *sb)
- 	vnode->lock_state	= AFS_VNODE_LOCK_NONE;
- 
- 	init_rwsem(&vnode->rmdir_lock);
-+	INIT_WORK(&vnode->cb_work, afs_invalidate_mmap_work);
- 
- 	_leave(" = %p", &vnode->vfs_inode);
- 	return &vnode->vfs_inode;
-diff --git a/fs/afs/write.c b/fs/afs/write.c
-index c0534697268e..2dfe3b3a53d6 100644
---- a/fs/afs/write.c
-+++ b/fs/afs/write.c
-@@ -137,7 +137,7 @@ int afs_write_end(struct file *file, struct address_space *mapping,
- 		write_seqlock(&vnode->cb_lock);
- 		i_size = i_size_read(&vnode->vfs_inode);
- 		if (maybe_i_size > i_size)
--			i_size_write(&vnode->vfs_inode, maybe_i_size);
-+			afs_set_i_size(vnode, maybe_i_size);
- 		write_sequnlock(&vnode->cb_lock);
+ 		/* Process a latched INIT or SMI, if any.  */
+ 		kvm_make_request(KVM_REQ_EVENT, vcpu);
++
++		/*
++		 * Even if KVM_SET_SREGS2 loaded PDPTRs out of band,
++		 * on SMM exit we still need to reload them from
++		 * guest memory
++		 */
++		vcpu->arch.pdptrs_from_userspace = false;
  	}
  
-@@ -471,13 +471,18 @@ static void afs_extend_writeback(struct address_space *mapping,
- 			}
+ 	kvm_mmu_reset_context(vcpu);
+@@ -10652,6 +10666,8 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	int r;
  
- 			/* Has the page moved or been split? */
--			if (unlikely(page != xas_reload(&xas)))
-+			if (unlikely(page != xas_reload(&xas))) {
-+				put_page(page);
- 				break;
-+			}
+ 	vcpu->arch.last_vmentry_cpu = -1;
++	vcpu->arch.regs_avail = ~0;
++	vcpu->arch.regs_dirty = ~0;
  
--			if (!trylock_page(page))
-+			if (!trylock_page(page)) {
-+				put_page(page);
- 				break;
-+			}
- 			if (!PageDirty(page) || PageWriteback(page)) {
- 				unlock_page(page);
-+				put_page(page);
- 				break;
- 			}
+ 	if (!irqchip_in_kernel(vcpu->kvm) || kvm_vcpu_is_reset_bsp(vcpu))
+ 		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
+@@ -10893,6 +10909,9 @@ void kvm_vcpu_reset(struct kvm_vcpu *vcpu, bool init_event)
+ 	kvm_set_rflags(vcpu, X86_EFLAGS_FIXED);
+ 	kvm_rip_write(vcpu, 0xfff0);
  
-@@ -487,6 +492,7 @@ static void afs_extend_writeback(struct address_space *mapping,
- 			t = afs_page_dirty_to(page, priv);
- 			if (f != 0 && !new_content) {
- 				unlock_page(page);
-+				put_page(page);
- 				break;
- 			}
- 
-@@ -801,6 +807,7 @@ int afs_writepages(struct address_space *mapping,
- ssize_t afs_file_write(struct kiocb *iocb, struct iov_iter *from)
- {
- 	struct afs_vnode *vnode = AFS_FS_I(file_inode(iocb->ki_filp));
-+	struct afs_file *af = iocb->ki_filp->private_data;
- 	ssize_t result;
- 	size_t count = iov_iter_count(from);
- 
-@@ -816,6 +823,10 @@ ssize_t afs_file_write(struct kiocb *iocb, struct iov_iter *from)
- 	if (!count)
- 		return 0;
- 
-+	result = afs_validate(vnode, af->key);
-+	if (result < 0)
-+		return result;
++	vcpu->arch.cr3 = 0;
++	kvm_register_mark_dirty(vcpu, VCPU_EXREG_CR3);
 +
- 	result = generic_file_write_iter(iocb, from);
+ 	/*
+ 	 * CR0.CD/NW are set on RESET, preserved on INIT.  Note, some versions
+ 	 * of Intel's SDM list CD/NW as being set on INIT, but they contradict
+@@ -11139,9 +11158,15 @@ void kvm_arch_free_vm(struct kvm *kvm)
  
- 	_leave(" = %zd", result);
-@@ -829,13 +840,18 @@ ssize_t afs_file_write(struct kiocb *iocb, struct iov_iter *from)
-  */
- int afs_fsync(struct file *file, loff_t start, loff_t end, int datasync)
+ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
  {
--	struct inode *inode = file_inode(file);
--	struct afs_vnode *vnode = AFS_FS_I(inode);
-+	struct afs_vnode *vnode = AFS_FS_I(file_inode(file));
-+	struct afs_file *af = file->private_data;
 +	int ret;
++
+ 	if (type)
+ 		return -EINVAL;
  
- 	_enter("{%llx:%llu},{n=%pD},%d",
- 	       vnode->fid.vid, vnode->fid.vnode, file,
- 	       datasync);
- 
-+	ret = afs_validate(vnode, af->key);
-+	if (ret < 0)
++	ret = kvm_page_track_init(kvm);
++	if (ret)
 +		return ret;
 +
- 	return file_write_and_wait_range(file, start, end);
- }
+ 	INIT_HLIST_HEAD(&kvm->arch.mask_notifier_list);
+ 	INIT_LIST_HEAD(&kvm->arch.active_mmu_pages);
+ 	INIT_LIST_HEAD(&kvm->arch.zapped_obsolete_pages);
+@@ -11174,7 +11199,6 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
  
-@@ -849,11 +865,14 @@ vm_fault_t afs_page_mkwrite(struct vm_fault *vmf)
- 	struct file *file = vmf->vma->vm_file;
- 	struct inode *inode = file_inode(file);
- 	struct afs_vnode *vnode = AFS_FS_I(inode);
-+	struct afs_file *af = file->private_data;
- 	unsigned long priv;
- 	vm_fault_t ret = VM_FAULT_RETRY;
+ 	kvm_apicv_init(kvm);
+ 	kvm_hv_init_vm(kvm);
+-	kvm_page_track_init(kvm);
+ 	kvm_mmu_init_vm(kvm);
+ 	kvm_xen_init_vm(kvm);
  
- 	_enter("{{%llx:%llu}},{%lx}", vnode->fid.vid, vnode->fid.vnode, page->index);
+diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
+index 79b138fd4261..05c007b213f2 100644
+--- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
++++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
+@@ -255,13 +255,13 @@ static int amd_mp2_pci_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 	if (!privdata->cl_data)
+ 		return -ENOMEM;
  
-+	afs_validate(vnode, af->key);
+-	rc = devm_add_action_or_reset(&pdev->dev, amd_mp2_pci_remove, privdata);
++	mp2_select_ops(privdata);
 +
- 	sb_start_pagefault(inode->i_sb);
++	rc = amd_sfh_hid_client_init(privdata);
+ 	if (rc)
+ 		return rc;
  
- 	/* Wait for the page to be written to the cache before we allow it to
-diff --git a/fs/cifs/cache.c b/fs/cifs/cache.c
-index 8a3b30ec860c..8be57aaedab6 100644
---- a/fs/cifs/cache.c
-+++ b/fs/cifs/cache.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/cache.c - CIFS filesystem cache index structure definitions
-+ *   CIFS filesystem cache index structure definitions
-  *
-  *   Copyright (c) 2010 Novell, Inc.
-  *   Authors(s): Suresh Jayaraman (sjayaraman@suse.de>
-diff --git a/fs/cifs/cifs_debug.c b/fs/cifs/cifs_debug.c
-index 51a824fc926a..de2c12bcfa4b 100644
---- a/fs/cifs/cifs_debug.c
-+++ b/fs/cifs/cifs_debug.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- *   fs/cifs_debug.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2000,2005
-  *
-diff --git a/fs/cifs/cifs_fs_sb.h b/fs/cifs/cifs_fs_sb.h
-index 4fd788586399..f97407520ea1 100644
---- a/fs/cifs/cifs_fs_sb.h
-+++ b/fs/cifs/cifs_fs_sb.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifs_fs_sb.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2004
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifs_ioctl.h b/fs/cifs/cifs_ioctl.h
-index ef723be358af..b87cbbe6d2d4 100644
---- a/fs/cifs/cifs_ioctl.h
-+++ b/fs/cifs/cifs_ioctl.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifs_ioctl.h
-  *
-  *   Structure definitions for io control for cifs/smb3
-  *
-diff --git a/fs/cifs/cifs_spnego.c b/fs/cifs/cifs_spnego.c
-index 8fa26a8530f8..353bd0dd7026 100644
---- a/fs/cifs/cifs_spnego.c
-+++ b/fs/cifs/cifs_spnego.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/cifs_spnego.c -- SPNEGO upcall management for CIFS
-+ *   SPNEGO upcall management for CIFS
-  *
-  *   Copyright (c) 2007 Red Hat, Inc.
-  *   Author(s): Jeff Layton (jlayton@redhat.com)
-diff --git a/fs/cifs/cifs_spnego.h b/fs/cifs/cifs_spnego.h
-index 31387d0ea32e..e6a0451877d4 100644
---- a/fs/cifs/cifs_spnego.h
-+++ b/fs/cifs/cifs_spnego.h
-@@ -1,6 +1,6 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifs_spnego.h -- SPNEGO upcall management for CIFS
-+ *   SPNEGO upcall management for CIFS
-  *
-  *   Copyright (c) 2007 Red Hat, Inc.
-  *   Author(s): Jeff Layton (jlayton@redhat.com)
-diff --git a/fs/cifs/cifs_unicode.c b/fs/cifs/cifs_unicode.c
-index 171ad8b42107..e7582dd79179 100644
---- a/fs/cifs/cifs_unicode.c
-+++ b/fs/cifs/cifs_unicode.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- *   fs/cifs/cifs_unicode.c
-  *
-  *   Copyright (c) International Business Machines  Corp., 2000,2009
-  *   Modified by Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifsacl.c b/fs/cifs/cifsacl.c
-index 388eb536cff1..ee3aab3dd4ac 100644
---- a/fs/cifs/cifsacl.c
-+++ b/fs/cifs/cifsacl.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/cifsacl.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2007,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifsacl.h b/fs/cifs/cifsacl.h
-index f8292bcf8594..ccbfc754bd3c 100644
---- a/fs/cifs/cifsacl.h
-+++ b/fs/cifs/cifsacl.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifsacl.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2007
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifsencrypt.c b/fs/cifs/cifsencrypt.c
-index 2e6f40344037..d118282071b3 100644
---- a/fs/cifs/cifsencrypt.c
-+++ b/fs/cifs/cifsencrypt.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/cifsencrypt.c
-  *
-  *   Encryption and hashing operations relating to NTLM, NTLMv2.  See MS-NLMP
-  *   for more detailed information
-diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
-index 8c20bfa187ac..9fa930dfd78d 100644
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/cifsfs.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
-index d25a4099b32e..b50da1901ebd 100644
---- a/fs/cifs/cifsfs.h
-+++ b/fs/cifs/cifsfs.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifsfs.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002, 2007
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifsglob.h b/fs/cifs/cifsglob.h
-index c068f7d8d879..e916470468ea 100644
---- a/fs/cifs/cifsglob.h
-+++ b/fs/cifs/cifsglob.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifsglob.h
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-@@ -1400,6 +1399,7 @@ struct cifsInodeInfo {
- #define CIFS_INO_INVALID_MAPPING	  (4) /* pagecache is invalid */
- #define CIFS_INO_LOCK			  (5) /* lock bit for synchronization */
- #define CIFS_INO_MODIFIED_ATTR            (6) /* Indicate change in mtime/ctime */
-+#define CIFS_INO_CLOSE_ON_LOCK            (7) /* Not to defer the close when lock is set */
- 	unsigned long flags;
- 	spinlock_t writers_lock;
- 	unsigned int writers;		/* Number of writers on this inode */
-diff --git a/fs/cifs/cifspdu.h b/fs/cifs/cifspdu.h
-index 98e8e5aa0613..d2ff438fd31f 100644
---- a/fs/cifs/cifspdu.h
-+++ b/fs/cifs/cifspdu.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifspdu.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2009
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
-index f9740c21ca3d..d0f85b666662 100644
---- a/fs/cifs/cifsproto.h
-+++ b/fs/cifs/cifsproto.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/cifsproto.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-@@ -268,6 +267,9 @@ extern void cifs_close_deferred_file(struct cifsInodeInfo *cifs_inode);
- 
- extern void cifs_close_all_deferred_files(struct cifs_tcon *cifs_tcon);
- 
-+extern void cifs_close_deferred_file_under_dentry(struct cifs_tcon *cifs_tcon,
-+				const char *path);
-+
- extern struct TCP_Server_Info *cifs_get_tcp_session(struct smb3_fs_context *ctx);
- extern void cifs_put_tcp_session(struct TCP_Server_Info *server,
- 				 int from_reconnect);
-diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-index a8e41c1e80ca..243d17696f06 100644
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/cifssmb.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2010
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index 0db344807ef1..7881115cfbee 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/connect.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2011
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-@@ -1090,7 +1089,7 @@ cifs_demultiplex_thread(void *p)
- 	module_put_and_exit(0);
- }
- 
--/**
-+/*
-  * Returns true if srcaddr isn't specified and rhs isn't specified, or
-  * if srcaddr is specified and matches the IP address of the rhs argument
-  */
-@@ -1550,6 +1549,9 @@ static int match_session(struct cifs_ses *ses, struct smb3_fs_context *ctx)
- 
- /**
-  * cifs_setup_ipc - helper to setup the IPC tcon for the session
-+ * @ses: smb session to issue the request on
-+ * @ctx: the superblock configuration context to use for building the
-+ *       new tree connection for the IPC (interprocess communication RPC)
-  *
-  * A new IPC connection is made and stored in the session
-  * tcon_ipc. The IPC tcon has the same lifetime as the session.
-@@ -1605,6 +1607,7 @@ cifs_setup_ipc(struct cifs_ses *ses, struct smb3_fs_context *ctx)
- 
- /**
-  * cifs_free_ipc - helper to release the session IPC tcon
-+ * @ses: smb session to unmount the IPC from
-  *
-  * Needs to be called everytime a session is destroyed.
-  *
-@@ -1855,6 +1858,8 @@ cifs_set_cifscreds(struct smb3_fs_context *ctx __attribute__((unused)),
- 
- /**
-  * cifs_get_smb_ses - get a session matching @ctx data from @server
-+ * @server: server to setup the session to
-+ * @ctx: superblock configuration context to use to setup the session
-  *
-  * This function assumes it is being called from cifs_mount() where we
-  * already got a server reference (server refcount +1). See
-@@ -2065,6 +2070,8 @@ cifs_put_tcon(struct cifs_tcon *tcon)
- 
- /**
-  * cifs_get_tcon - get a tcon matching @ctx data from @ses
-+ * @ses: smb session to issue the request on
-+ * @ctx: the superblock configuration context to use for building the
-  *
-  * - tcon refcount is the number of mount points using the tcon.
-  * - ses refcount is the number of tcon using the session.
-@@ -3030,7 +3037,7 @@ build_unc_path_to_root(const struct smb3_fs_context *ctx,
- 	return full_path;
- }
- 
--/**
-+/*
-  * expand_dfs_referral - Perform a dfs referral query and update the cifs_sb
-  *
-  * If a referral is found, cifs_sb->ctx->mount_options will be (re-)allocated
-diff --git a/fs/cifs/dir.c b/fs/cifs/dir.c
-index 5f8a302ffcb2..6e8e7cc26ae2 100644
---- a/fs/cifs/dir.c
-+++ b/fs/cifs/dir.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/dir.c
-  *
-  *   vfs operations that deal with dentries
-  *
-diff --git a/fs/cifs/dns_resolve.c b/fs/cifs/dns_resolve.c
-index 8c616aaeb7c4..0458d28d71aa 100644
---- a/fs/cifs/dns_resolve.c
-+++ b/fs/cifs/dns_resolve.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *  fs/cifs/dns_resolve.c
-  *
-  *   Copyright (c) 2007 Igor Mammedov
-  *   Author(s): Igor Mammedov (niallain@gmail.com)
-diff --git a/fs/cifs/dns_resolve.h b/fs/cifs/dns_resolve.h
-index 9fa2807ef79e..afc0df381246 100644
---- a/fs/cifs/dns_resolve.h
-+++ b/fs/cifs/dns_resolve.h
-@@ -1,7 +1,7 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/dns_resolve.h -- DNS Resolver upcall management for CIFS DFS
-- *                            Handles host name to IP address resolution
-+ *   DNS Resolver upcall management for CIFS DFS
-+ *   Handles host name to IP address resolution
-  *
-  *   Copyright (c) International Business Machines  Corp., 2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/export.c b/fs/cifs/export.c
-index 747a540db954..37c28415df1e 100644
---- a/fs/cifs/export.c
-+++ b/fs/cifs/export.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/export.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2007
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/file.c b/fs/cifs/file.c
-index d0216472f1c6..6796fc73b304 100644
---- a/fs/cifs/file.c
-+++ b/fs/cifs/file.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/file.c
-  *
-  *   vfs operations that deal with files
-  *
-@@ -883,6 +882,7 @@ int cifs_close(struct inode *inode, struct file *file)
- 		dclose = kmalloc(sizeof(struct cifs_deferred_close), GFP_KERNEL);
- 		if ((cinode->oplock == CIFS_CACHE_RHW_FLG) &&
- 		    cinode->lease_granted &&
-+		    !test_bit(CIFS_INO_CLOSE_ON_LOCK, &cinode->flags) &&
- 		    dclose) {
- 			if (test_bit(CIFS_INO_MODIFIED_ATTR, &cinode->flags)) {
- 				inode->i_ctime = inode->i_mtime = current_time(inode);
-@@ -1865,6 +1865,7 @@ int cifs_lock(struct file *file, int cmd, struct file_lock *flock)
- 	cifs_read_flock(flock, &type, &lock, &unlock, &wait_flag,
- 			tcon->ses->server);
- 	cifs_sb = CIFS_FILE_SB(file);
-+	set_bit(CIFS_INO_CLOSE_ON_LOCK, &CIFS_I(d_inode(cfile->dentry))->flags);
- 
- 	if (cap_unix(tcon->ses) &&
- 	    (CIFS_UNIX_FCNTL_CAP & le64_to_cpu(tcon->fsUnixInfo.Capability)) &&
-diff --git a/fs/cifs/fscache.c b/fs/cifs/fscache.c
-index fab47fa7df74..8eedd20c44ab 100644
---- a/fs/cifs/fscache.c
-+++ b/fs/cifs/fscache.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/fscache.c - CIFS filesystem cache interface
-+ *   CIFS filesystem cache interface
-  *
-  *   Copyright (c) 2010 Novell, Inc.
-  *   Author(s): Suresh Jayaraman <sjayaraman@suse.de>
-diff --git a/fs/cifs/fscache.h b/fs/cifs/fscache.h
-index 82e856b9cf89..9baa1d0f22bd 100644
---- a/fs/cifs/fscache.h
-+++ b/fs/cifs/fscache.h
-@@ -1,6 +1,6 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/fscache.h - CIFS filesystem cache interface definitions
-+ *   CIFS filesystem cache interface definitions
-  *
-  *   Copyright (c) 2010 Novell, Inc.
-  *   Authors(s): Suresh Jayaraman (sjayaraman@suse.de>
-diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
-index 50c01cff4c84..82848412ad85 100644
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/inode.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2010
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-@@ -1625,7 +1624,7 @@ int cifs_unlink(struct inode *dir, struct dentry *dentry)
- 		goto unlink_out;
- 	}
- 
--	cifs_close_deferred_file(CIFS_I(inode));
-+	cifs_close_deferred_file_under_dentry(tcon, full_path);
- 	if (cap_unix(tcon->ses) && (CIFS_UNIX_POSIX_PATH_OPS_CAP &
- 				le64_to_cpu(tcon->fsUnixInfo.Capability))) {
- 		rc = CIFSPOSIXDelFile(xid, tcon, full_path,
-@@ -2114,9 +2113,9 @@ cifs_rename2(struct user_namespace *mnt_userns, struct inode *source_dir,
- 		goto cifs_rename_exit;
- 	}
- 
--	cifs_close_deferred_file(CIFS_I(d_inode(source_dentry)));
-+	cifs_close_deferred_file_under_dentry(tcon, from_name);
- 	if (d_inode(target_dentry) != NULL)
--		cifs_close_deferred_file(CIFS_I(d_inode(target_dentry)));
-+		cifs_close_deferred_file_under_dentry(tcon, to_name);
- 
- 	rc = cifs_do_rename(xid, source_dentry, from_name, target_dentry,
- 			    to_name);
-diff --git a/fs/cifs/ioctl.c b/fs/cifs/ioctl.c
-index 42c6a0bac6c8..0359b604bdbc 100644
---- a/fs/cifs/ioctl.c
-+++ b/fs/cifs/ioctl.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/ioctl.c
-  *
-  *   vfs operations that deal with io control
-  *
-@@ -359,7 +358,7 @@ long cifs_ioctl(struct file *filep, unsigned int command, unsigned long arg)
- 			if (pSMBFile == NULL)
- 				break;
- 			tcon = tlink_tcon(pSMBFile->tlink);
--			caps = le64_to_cpu(tcon->fsUnixInfo.Capability);
-+			/* caps = le64_to_cpu(tcon->fsUnixInfo.Capability); */
- 
- 			if (get_user(ExtAttrBits, (int __user *)arg)) {
- 				rc = -EFAULT;
-diff --git a/fs/cifs/link.c b/fs/cifs/link.c
-index f0a6d63bc08c..852e54ee82c2 100644
---- a/fs/cifs/link.c
-+++ b/fs/cifs/link.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/link.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/misc.c b/fs/cifs/misc.c
-index 9469f1cf0b46..03da00eb7c04 100644
---- a/fs/cifs/misc.c
-+++ b/fs/cifs/misc.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/misc.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-@@ -736,7 +735,7 @@ cifs_close_deferred_file(struct cifsInodeInfo *cifs_inode)
- 			if (cancel_delayed_work(&cfile->deferred)) {
- 				tmp_list = kmalloc(sizeof(struct file_list), GFP_ATOMIC);
- 				if (tmp_list == NULL)
--					continue;
-+					break;
- 				tmp_list->cfile = cfile;
- 				list_add_tail(&tmp_list->list, &file_head);
- 			}
-@@ -767,7 +766,7 @@ cifs_close_all_deferred_files(struct cifs_tcon *tcon)
- 			if (cancel_delayed_work(&cfile->deferred)) {
- 				tmp_list = kmalloc(sizeof(struct file_list), GFP_ATOMIC);
- 				if (tmp_list == NULL)
--					continue;
-+					break;
- 				tmp_list->cfile = cfile;
- 				list_add_tail(&tmp_list->list, &file_head);
- 			}
-@@ -781,6 +780,43 @@ cifs_close_all_deferred_files(struct cifs_tcon *tcon)
- 		kfree(tmp_list);
- 	}
- }
-+void
-+cifs_close_deferred_file_under_dentry(struct cifs_tcon *tcon, const char *path)
-+{
-+	struct cifsFileInfo *cfile;
-+	struct list_head *tmp;
-+	struct file_list *tmp_list, *tmp_next_list;
-+	struct list_head file_head;
-+	void *page;
-+	const char *full_path;
-+
-+	INIT_LIST_HEAD(&file_head);
-+	page = alloc_dentry_path();
-+	spin_lock(&tcon->open_file_lock);
-+	list_for_each(tmp, &tcon->openFileList) {
-+		cfile = list_entry(tmp, struct cifsFileInfo, tlist);
-+		full_path = build_path_from_dentry(cfile->dentry, page);
-+		if (strstr(full_path, path)) {
-+			if (delayed_work_pending(&cfile->deferred)) {
-+				if (cancel_delayed_work(&cfile->deferred)) {
-+					tmp_list = kmalloc(sizeof(struct file_list), GFP_ATOMIC);
-+					if (tmp_list == NULL)
-+						break;
-+					tmp_list->cfile = cfile;
-+					list_add_tail(&tmp_list->list, &file_head);
-+				}
-+			}
-+		}
-+	}
-+	spin_unlock(&tcon->open_file_lock);
-+
-+	list_for_each_entry_safe(tmp_list, tmp_next_list, &file_head, list) {
-+		_cifsFileInfo_put(tmp_list->cfile, true, false);
-+		list_del(&tmp_list->list);
-+		kfree(tmp_list);
-+	}
-+	free_dentry_path(page);
-+}
- 
- /* parses DFS refferal V3 structure
-  * caller is responsible for freeing target_nodes
-diff --git a/fs/cifs/netmisc.c b/fs/cifs/netmisc.c
-index 0e728aac67e9..fa9fbd6a819c 100644
---- a/fs/cifs/netmisc.c
-+++ b/fs/cifs/netmisc.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- *   fs/cifs/netmisc.c
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/ntlmssp.h b/fs/cifs/ntlmssp.h
-index 378133ce8869..25a2b8ef88b9 100644
---- a/fs/cifs/ntlmssp.h
-+++ b/fs/cifs/ntlmssp.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/ntlmssp.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2007
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/readdir.c b/fs/cifs/readdir.c
-index 54d77c99e21c..1929e80c09ee 100644
---- a/fs/cifs/readdir.c
-+++ b/fs/cifs/readdir.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/readdir.c
-  *
-  *   Directory search handling
-  *
-diff --git a/fs/cifs/rfc1002pdu.h b/fs/cifs/rfc1002pdu.h
-index 137f7c95afd6..ae1d025da294 100644
---- a/fs/cifs/rfc1002pdu.h
-+++ b/fs/cifs/rfc1002pdu.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/rfc1002pdu.h
-  *
-  *   Protocol Data Unit definitions for RFC 1001/1002 support
-  *
-diff --git a/fs/cifs/sess.c b/fs/cifs/sess.c
-index 118403fbeda2..23e02db7923f 100644
---- a/fs/cifs/sess.c
-+++ b/fs/cifs/sess.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/sess.c
-  *
-  *   SMB/CIFS session setup handling routines
-  *
-diff --git a/fs/cifs/smb2file.c b/fs/cifs/smb2file.c
-index c9d8a50062b8..f5dcc4940b6d 100644
---- a/fs/cifs/smb2file.c
-+++ b/fs/cifs/smb2file.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/smb2file.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002, 2011
-  *   Author(s): Steve French (sfrench@us.ibm.com),
-diff --git a/fs/cifs/smb2glob.h b/fs/cifs/smb2glob.h
-index d0e9f3782bd9..ca692b2283cd 100644
---- a/fs/cifs/smb2glob.h
-+++ b/fs/cifs/smb2glob.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/smb2glob.h
-  *
-  *   Definitions for various global variables and structures
-  *
-diff --git a/fs/cifs/smb2inode.c b/fs/cifs/smb2inode.c
-index 957b2594f02e..8297703492ee 100644
---- a/fs/cifs/smb2inode.c
-+++ b/fs/cifs/smb2inode.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/smb2inode.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002, 2011
-  *                 Etersoft, 2012
-diff --git a/fs/cifs/smb2misc.c b/fs/cifs/smb2misc.c
-index 668f77108831..29b5554f6263 100644
---- a/fs/cifs/smb2misc.c
-+++ b/fs/cifs/smb2misc.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/smb2misc.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2011
-  *                 Etersoft, 2012
-diff --git a/fs/cifs/smb2pdu.c b/fs/cifs/smb2pdu.c
-index b6d2e3591927..672ae78e866a 100644
---- a/fs/cifs/smb2pdu.c
-+++ b/fs/cifs/smb2pdu.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/smb2pdu.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2009, 2013
-  *                 Etersoft, 2012
-diff --git a/fs/cifs/smb2pdu.h b/fs/cifs/smb2pdu.h
-index e9cac7970b66..f32c99c9ba13 100644
---- a/fs/cifs/smb2pdu.h
-+++ b/fs/cifs/smb2pdu.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/smb2pdu.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2009, 2013
-  *                 Etersoft, 2012
-diff --git a/fs/cifs/smb2proto.h b/fs/cifs/smb2proto.h
-index 263767f644f8..547945443fa7 100644
---- a/fs/cifs/smb2proto.h
-+++ b/fs/cifs/smb2proto.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/smb2proto.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002, 2011
-  *                 Etersoft, 2012
-diff --git a/fs/cifs/smb2status.h b/fs/cifs/smb2status.h
-index 0215ef36e240..a9e958166fc5 100644
---- a/fs/cifs/smb2status.h
-+++ b/fs/cifs/smb2status.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/smb2status.h
-  *
-  *   SMB2 Status code (network error) definitions
-  *   Definitions are from MS-ERREF
-diff --git a/fs/cifs/smb2transport.c b/fs/cifs/smb2transport.c
-index 6f7952ea4941..f59b956f9d25 100644
---- a/fs/cifs/smb2transport.c
-+++ b/fs/cifs/smb2transport.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/smb2transport.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002, 2011
-  *                 Etersoft, 2012
-diff --git a/fs/cifs/smberr.h b/fs/cifs/smberr.h
-index 60189efb3236..aeffdad829e2 100644
---- a/fs/cifs/smberr.h
-+++ b/fs/cifs/smberr.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1 */
- /*
-- *   fs/cifs/smberr.h
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2004
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
-index 75a95de320cf..b7379329b741 100644
---- a/fs/cifs/transport.c
-+++ b/fs/cifs/transport.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/transport.c
-  *
-  *   Copyright (C) International Business Machines  Corp., 2002,2008
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/cifs/winucase.c b/fs/cifs/winucase.c
-index 59b6c577aa0a..2f075b5b50df 100644
---- a/fs/cifs/winucase.c
-+++ b/fs/cifs/winucase.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- * fs/cifs/winucase.c
-  *
-  * Copyright (c) Jeffrey Layton <jlayton@redhat.com>, 2013
-  *
-diff --git a/fs/cifs/xattr.c b/fs/cifs/xattr.c
-index 9ed481e79ce0..7d8b72d67c80 100644
---- a/fs/cifs/xattr.c
-+++ b/fs/cifs/xattr.c
-@@ -1,6 +1,5 @@
- // SPDX-License-Identifier: LGPL-2.1
- /*
-- *   fs/cifs/xattr.c
-  *
-  *   Copyright (c) International Business Machines  Corp., 2003, 2007
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/fs/ksmbd/misc.c b/fs/ksmbd/misc.c
-index 0b307ca28a19..3eac3c01749f 100644
---- a/fs/ksmbd/misc.c
-+++ b/fs/ksmbd/misc.c
-@@ -191,19 +191,77 @@ int get_nlink(struct kstat *st)
- 	return nlink;
- }
- 
--void ksmbd_conv_path_to_unix(char *path)
-+char *ksmbd_conv_path_to_unix(char *path)
- {
-+	size_t path_len, remain_path_len, out_path_len;
-+	char *out_path, *out_next;
-+	int i, pre_dotdot_cnt = 0, slash_cnt = 0;
-+	bool is_last;
-+
- 	strreplace(path, '\\', '/');
--}
-+	path_len = strlen(path);
-+	remain_path_len = path_len;
-+	if (path_len == 0)
-+		return ERR_PTR(-EINVAL);
- 
--void ksmbd_strip_last_slash(char *path)
--{
--	int len = strlen(path);
-+	out_path = kzalloc(path_len + 2, GFP_KERNEL);
-+	if (!out_path)
-+		return ERR_PTR(-ENOMEM);
-+	out_path_len = 0;
-+	out_next = out_path;
-+
-+	do {
-+		char *name = path + path_len - remain_path_len;
-+		char *next = strchrnul(name, '/');
-+		size_t name_len = next - name;
-+
-+		is_last = !next[0];
-+		if (name_len == 2 && name[0] == '.' && name[1] == '.') {
-+			pre_dotdot_cnt++;
-+			/* handle the case that path ends with "/.." */
-+			if (is_last)
-+				goto follow_dotdot;
-+		} else {
-+			if (pre_dotdot_cnt) {
-+follow_dotdot:
-+				slash_cnt = 0;
-+				for (i = out_path_len - 1; i >= 0; i--) {
-+					if (out_path[i] == '/' &&
-+					    ++slash_cnt == pre_dotdot_cnt + 1)
-+						break;
-+				}
-+
-+				if (i < 0 &&
-+				    slash_cnt != pre_dotdot_cnt) {
-+					kfree(out_path);
-+					return ERR_PTR(-EINVAL);
-+				}
-+
-+				out_next = &out_path[i+1];
-+				*out_next = '\0';
-+				out_path_len = i + 1;
- 
--	while (len && path[len - 1] == '/') {
--		path[len - 1] = '\0';
--		len--;
--	}
-+			}
-+
-+			if (name_len != 0 &&
-+			    !(name_len == 1 && name[0] == '.') &&
-+			    !(name_len == 2 && name[0] == '.' && name[1] == '.')) {
-+				next[0] = '\0';
-+				sprintf(out_next, "%s/", name);
-+				out_next += name_len + 1;
-+				out_path_len += name_len + 1;
-+				next[0] = '/';
-+			}
-+			pre_dotdot_cnt = 0;
-+		}
-+
-+		remain_path_len -= name_len + 1;
-+	} while (!is_last);
-+
-+	if (out_path_len > 0)
-+		out_path[out_path_len-1] = '\0';
-+	path[path_len] = '\0';
-+	return out_path;
- }
- 
- void ksmbd_conv_path_to_windows(char *path)
-diff --git a/fs/ksmbd/misc.h b/fs/ksmbd/misc.h
-index af8717d4d85b..b7b10139ada2 100644
---- a/fs/ksmbd/misc.h
-+++ b/fs/ksmbd/misc.h
-@@ -16,8 +16,7 @@ int ksmbd_validate_filename(char *filename);
- int parse_stream_name(char *filename, char **stream_name, int *s_type);
- char *convert_to_nt_pathname(char *filename, char *sharepath);
- int get_nlink(struct kstat *st);
--void ksmbd_conv_path_to_unix(char *path);
--void ksmbd_strip_last_slash(char *path);
-+char *ksmbd_conv_path_to_unix(char *path);
- void ksmbd_conv_path_to_windows(char *path);
- char *ksmbd_extract_sharename(char *treename);
- char *convert_to_unix_name(struct ksmbd_share_config *share, char *name);
-diff --git a/fs/ksmbd/smb2pdu.c b/fs/ksmbd/smb2pdu.c
-index c86164dc70bb..6304c9bda479 100644
---- a/fs/ksmbd/smb2pdu.c
-+++ b/fs/ksmbd/smb2pdu.c
-@@ -634,7 +634,7 @@ static char *
- smb2_get_name(struct ksmbd_share_config *share, const char *src,
- 	      const int maxlen, struct nls_table *local_nls)
- {
--	char *name, *unixname;
-+	char *name, *norm_name, *unixname;
- 
- 	name = smb_strndup_from_utf16(src, maxlen, 1, local_nls);
- 	if (IS_ERR(name)) {
-@@ -643,11 +643,15 @@ smb2_get_name(struct ksmbd_share_config *share, const char *src,
- 	}
- 
- 	/* change it to absolute unix name */
--	ksmbd_conv_path_to_unix(name);
--	ksmbd_strip_last_slash(name);
+-	mp2_select_ops(privdata);
 -
--	unixname = convert_to_unix_name(share, name);
-+	norm_name = ksmbd_conv_path_to_unix(name);
-+	if (IS_ERR(norm_name)) {
-+		kfree(name);
-+		return norm_name;
-+	}
- 	kfree(name);
-+
-+	unixname = convert_to_unix_name(share, norm_name);
-+	kfree(norm_name);
- 	if (!unixname) {
- 		pr_err("can not convert absolute name\n");
- 		return ERR_PTR(-ENOMEM);
-@@ -4041,6 +4045,10 @@ static int smb2_get_ea(struct ksmbd_work *work, struct ksmbd_file *fp,
- 	path = &fp->filp->f_path;
- 	/* single EA entry is requested with given user.* name */
- 	if (req->InputBufferLength) {
-+		if (le32_to_cpu(req->InputBufferLength) <
-+		    sizeof(struct smb2_ea_info_req))
-+			return -EINVAL;
-+
- 		ea_req = (struct smb2_ea_info_req *)req->Buffer;
- 	} else {
- 		/* need to send all EAs, if no specific EA is requested*/
-diff --git a/fs/ksmbd/transport_rdma.c b/fs/ksmbd/transport_rdma.c
-index 52b2556e76b1..3a7fa23ba850 100644
---- a/fs/ksmbd/transport_rdma.c
-+++ b/fs/ksmbd/transport_rdma.c
-@@ -20,7 +20,6 @@
- #define SUBMOD_NAME	"smb_direct"
- 
- #include <linux/kthread.h>
--#include <linux/rwlock.h>
- #include <linux/list.h>
- #include <linux/mempool.h>
- #include <linux/highmem.h>
-diff --git a/fs/qnx4/dir.c b/fs/qnx4/dir.c
-index 2a66844b7ff8..66645a5a35f3 100644
---- a/fs/qnx4/dir.c
-+++ b/fs/qnx4/dir.c
-@@ -20,12 +20,33 @@
-  * depending on the status field in the last byte. The
-  * first byte is where the name start either way, and a
-  * zero means it's empty.
-+ *
-+ * Also, due to a bug in gcc, we don't want to use the
-+ * real (differently sized) name arrays in the inode and
-+ * link entries, but always the 'de_name[]' one in the
-+ * fake struct entry.
-+ *
-+ * See
-+ *
-+ *   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578#c6
-+ *
-+ * for details, but basically gcc will take the size of the
-+ * 'name' array from one of the used union entries randomly.
-+ *
-+ * This use of 'de_name[]' (48 bytes) avoids the false positive
-+ * warnings that would happen if gcc decides to use 'inode.di_name'
-+ * (16 bytes) even when the pointer and size were to come from
-+ * 'link.dl_name' (48 bytes).
-+ *
-+ * In all cases the actual name pointer itself is the same, it's
-+ * only the gcc internal 'what is the size of this field' logic
-+ * that can get confused.
-  */
- union qnx4_directory_entry {
- 	struct {
--		char de_name;
--		char de_pad[62];
--		char de_status;
-+		const char de_name[48];
-+		u8 de_pad[15];
-+		u8 de_status;
- 	};
- 	struct qnx4_inode_entry inode;
- 	struct qnx4_link_info link;
-@@ -53,29 +74,26 @@ static int qnx4_readdir(struct file *file, struct dir_context *ctx)
- 		ix = (ctx->pos >> QNX4_DIR_ENTRY_SIZE_BITS) % QNX4_INODES_PER_BLOCK;
- 		for (; ix < QNX4_INODES_PER_BLOCK; ix++, ctx->pos += QNX4_DIR_ENTRY_SIZE) {
- 			union qnx4_directory_entry *de;
--			const char *name;
- 
- 			offset = ix * QNX4_DIR_ENTRY_SIZE;
- 			de = (union qnx4_directory_entry *) (bh->b_data + offset);
- 
--			if (!de->de_name)
-+			if (!de->de_name[0])
- 				continue;
- 			if (!(de->de_status & (QNX4_FILE_USED|QNX4_FILE_LINK)))
- 				continue;
- 			if (!(de->de_status & QNX4_FILE_LINK)) {
- 				size = sizeof(de->inode.di_fname);
--				name = de->inode.di_fname;
- 				ino = blknum * QNX4_INODES_PER_BLOCK + ix - 1;
- 			} else {
- 				size = sizeof(de->link.dl_fname);
--				name = de->link.dl_fname;
- 				ino = ( le32_to_cpu(de->link.dl_inode_blk) - 1 ) *
- 					QNX4_INODES_PER_BLOCK +
- 					de->link.dl_inode_ndx;
- 			}
--			size = strnlen(name, size);
-+			size = strnlen(de->de_name, size);
- 			QNX4DEBUG((KERN_INFO "qnx4_readdir:%.*s\n", size, name));
--			if (!dir_emit(ctx, name, size, ino, DT_UNKNOWN)) {
-+			if (!dir_emit(ctx, de->de_name, size, ino, DT_UNKNOWN)) {
- 				brelse(bh);
- 				return 0;
- 			}
-diff --git a/fs/smbfs_common/smbfsctl.h b/fs/smbfs_common/smbfsctl.h
-index d01e8c9d7a31..926f87cd6af0 100644
---- a/fs/smbfs_common/smbfsctl.h
-+++ b/fs/smbfs_common/smbfsctl.h
-@@ -1,6 +1,6 @@
- /* SPDX-License-Identifier: LGPL-2.1+ */
- /*
-- *   fs/cifs/smbfsctl.h: SMB, CIFS, SMB2 FSCTL definitions
-+ *   SMB, CIFS, SMB2 FSCTL definitions
-  *
-  *   Copyright (c) International Business Machines  Corp., 2002,2013
-  *   Author(s): Steve French (sfrench@us.ibm.com)
-diff --git a/include/trace/events/afs.h b/include/trace/events/afs.h
-index 9f73ed2cf061..bca73e8c8cde 100644
---- a/include/trace/events/afs.h
-+++ b/include/trace/events/afs.h
-@@ -306,11 +306,13 @@ enum afs_flock_operation {
- 
- enum afs_cb_break_reason {
- 	afs_cb_break_no_break,
-+	afs_cb_break_no_promise,
- 	afs_cb_break_for_callback,
- 	afs_cb_break_for_deleted,
- 	afs_cb_break_for_lapsed,
-+	afs_cb_break_for_s_reinit,
- 	afs_cb_break_for_unlink,
--	afs_cb_break_for_vsbreak,
-+	afs_cb_break_for_v_break,
- 	afs_cb_break_for_volume_callback,
- 	afs_cb_break_for_zap,
- };
-@@ -602,11 +604,13 @@ enum afs_cb_break_reason {
- 
- #define afs_cb_break_reasons						\
- 	EM(afs_cb_break_no_break,		"no-break")		\
-+	EM(afs_cb_break_no_promise,		"no-promise")		\
- 	EM(afs_cb_break_for_callback,		"break-cb")		\
- 	EM(afs_cb_break_for_deleted,		"break-del")		\
- 	EM(afs_cb_break_for_lapsed,		"break-lapsed")		\
-+	EM(afs_cb_break_for_s_reinit,		"s-reinit")		\
- 	EM(afs_cb_break_for_unlink,		"break-unlink")		\
--	EM(afs_cb_break_for_vsbreak,		"break-vs")		\
-+	EM(afs_cb_break_for_v_break,		"break-v")		\
- 	EM(afs_cb_break_for_volume_callback,	"break-v-cb")		\
- 	E_(afs_cb_break_for_zap,		"break-zap")
- 
-diff --git a/include/uapi/linux/cifs/cifs_mount.h b/include/uapi/linux/cifs/cifs_mount.h
-index 69829205fdb5..8e87d27b0951 100644
---- a/include/uapi/linux/cifs/cifs_mount.h
-+++ b/include/uapi/linux/cifs/cifs_mount.h
-@@ -1,6 +1,5 @@
- /* SPDX-License-Identifier: LGPL-2.1+ WITH Linux-syscall-note */
- /*
-- *   include/uapi/linux/cifs/cifs_mount.h
-  *
-  *   Author(s): Scott Lovenberg (scott.lovenberg@gmail.com)
-  *
-diff --git a/mm/memory.c b/mm/memory.c
-index 25fc46e87214..adf9b9ef8277 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3403,6 +3403,7 @@ void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
- 		unmap_mapping_range_tree(&mapping->i_mmap, &details);
- 	i_mmap_unlock_write(mapping);
+-	return amd_sfh_hid_client_init(privdata);
++	return devm_add_action_or_reset(&pdev->dev, amd_mp2_pci_remove, privdata);
  }
-+EXPORT_SYMBOL_GPL(unmap_mapping_pages);
  
- /**
-  * unmap_mapping_range - unmap the portion of all mmaps in the specified
+ static int __maybe_unused amd_mp2_pci_resume(struct device *dev)
+diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+index 833fcf07ff35..6ccfa0cb997a 100644
+--- a/drivers/hid/hid-apple.c
++++ b/drivers/hid/hid-apple.c
+@@ -336,12 +336,19 @@ static int apple_event(struct hid_device *hdev, struct hid_field *field,
+ 
+ /*
+  * MacBook JIS keyboard has wrong logical maximum
++ * Magic Keyboard JIS has wrong logical maximum
+  */
+ static __u8 *apple_report_fixup(struct hid_device *hdev, __u8 *rdesc,
+ 		unsigned int *rsize)
+ {
+ 	struct apple_sc *asc = hid_get_drvdata(hdev);
+ 
++	if(*rsize >=71 && rdesc[70] == 0x65 && rdesc[64] == 0x65) {
++		hid_info(hdev,
++			 "fixing up Magic Keyboard JIS report descriptor\n");
++		rdesc[64] = rdesc[70] = 0xe7;
++	}
++
+ 	if ((asc->quirks & APPLE_RDESC_JIS) && *rsize >= 60 &&
+ 			rdesc[53] == 0x65 && rdesc[59] == 0x65) {
+ 		hid_info(hdev,
+diff --git a/drivers/hid/hid-betopff.c b/drivers/hid/hid-betopff.c
+index 0790fbd3fc9a..467d789f9bc2 100644
+--- a/drivers/hid/hid-betopff.c
++++ b/drivers/hid/hid-betopff.c
+@@ -56,15 +56,22 @@ static int betopff_init(struct hid_device *hid)
+ {
+ 	struct betopff_device *betopff;
+ 	struct hid_report *report;
+-	struct hid_input *hidinput =
+-			list_first_entry(&hid->inputs, struct hid_input, list);
++	struct hid_input *hidinput;
+ 	struct list_head *report_list =
+ 			&hid->report_enum[HID_OUTPUT_REPORT].report_list;
+-	struct input_dev *dev = hidinput->input;
++	struct input_dev *dev;
+ 	int field_count = 0;
+ 	int error;
+ 	int i, j;
+ 
++	if (list_empty(&hid->inputs)) {
++		hid_err(hid, "no inputs found\n");
++		return -ENODEV;
++	}
++
++	hidinput = list_first_entry(&hid->inputs, struct hid_input, list);
++	dev = hidinput->input;
++
+ 	if (list_empty(report_list)) {
+ 		hid_err(hid, "no output reports found\n");
+ 		return -ENODEV;
+diff --git a/drivers/hid/hid-u2fzero.c b/drivers/hid/hid-u2fzero.c
+index 95e0807878c7..d70cd3d7f583 100644
+--- a/drivers/hid/hid-u2fzero.c
++++ b/drivers/hid/hid-u2fzero.c
+@@ -198,7 +198,9 @@ static int u2fzero_rng_read(struct hwrng *rng, void *data,
+ 	}
+ 
+ 	ret = u2fzero_recv(dev, &req, &resp);
+-	if (ret < 0)
++
++	/* ignore errors or packets without data */
++	if (ret < offsetof(struct u2f_hid_msg, init.data))
+ 		return 0;
+ 
+ 	/* only take the minimum amount of data it is safe to take */
+diff --git a/drivers/hid/wacom_wac.c b/drivers/hid/wacom_wac.c
+index fd51769d0994..33a6908995b1 100644
+--- a/drivers/hid/wacom_wac.c
++++ b/drivers/hid/wacom_wac.c
+@@ -4746,6 +4746,12 @@ static const struct wacom_features wacom_features_0x393 =
+ 	{ "Wacom Intuos Pro S", 31920, 19950, 8191, 63,
+ 	  INTUOSP2S_BT, WACOM_INTUOS3_RES, WACOM_INTUOS3_RES, 7,
+ 	  .touch_max = 10 };
++static const struct wacom_features wacom_features_0x3c6 =
++	{ "Wacom Intuos BT S", 15200, 9500, 4095, 63,
++	  INTUOSHT3_BT, WACOM_INTUOS_RES, WACOM_INTUOS_RES, 4 };
++static const struct wacom_features wacom_features_0x3c8 =
++	{ "Wacom Intuos BT M", 21600, 13500, 4095, 63,
++	  INTUOSHT3_BT, WACOM_INTUOS_RES, WACOM_INTUOS_RES, 4 };
+ 
+ static const struct wacom_features wacom_features_HID_ANY_ID =
+ 	{ "Wacom HID", .type = HID_GENERIC, .oVid = HID_ANY_ID, .oPid = HID_ANY_ID };
+@@ -4919,6 +4925,8 @@ const struct hid_device_id wacom_ids[] = {
+ 	{ USB_DEVICE_WACOM(0x37A) },
+ 	{ USB_DEVICE_WACOM(0x37B) },
+ 	{ BT_DEVICE_WACOM(0x393) },
++	{ BT_DEVICE_WACOM(0x3c6) },
++	{ BT_DEVICE_WACOM(0x3c8) },
+ 	{ USB_DEVICE_WACOM(0x4001) },
+ 	{ USB_DEVICE_WACOM(0x4004) },
+ 	{ USB_DEVICE_WACOM(0x5000) },
+diff --git a/drivers/media/platform/s5p-jpeg/jpeg-core.c b/drivers/media/platform/s5p-jpeg/jpeg-core.c
+index d402e456f27d..7d0ab19c38bb 100644
+--- a/drivers/media/platform/s5p-jpeg/jpeg-core.c
++++ b/drivers/media/platform/s5p-jpeg/jpeg-core.c
+@@ -1140,8 +1140,8 @@ static bool s5p_jpeg_parse_hdr(struct s5p_jpeg_q_data *result,
+ 			continue;
+ 		length = 0;
+ 		switch (c) {
+-		/* SOF0: baseline JPEG */
+-		case SOF0:
++		/* JPEG_MARKER_SOF0: baseline JPEG */
++		case JPEG_MARKER_SOF0:
+ 			if (get_word_be(&jpeg_buffer, &word))
+ 				break;
+ 			length = (long)word - 2;
+@@ -1172,7 +1172,7 @@ static bool s5p_jpeg_parse_hdr(struct s5p_jpeg_q_data *result,
+ 			notfound = 0;
+ 			break;
+ 
+-		case DQT:
++		case JPEG_MARKER_DQT:
+ 			if (get_word_be(&jpeg_buffer, &word))
+ 				break;
+ 			length = (long)word - 2;
+@@ -1185,7 +1185,7 @@ static bool s5p_jpeg_parse_hdr(struct s5p_jpeg_q_data *result,
+ 			skip(&jpeg_buffer, length);
+ 			break;
+ 
+-		case DHT:
++		case JPEG_MARKER_DHT:
+ 			if (get_word_be(&jpeg_buffer, &word))
+ 				break;
+ 			length = (long)word - 2;
+@@ -1198,15 +1198,15 @@ static bool s5p_jpeg_parse_hdr(struct s5p_jpeg_q_data *result,
+ 			skip(&jpeg_buffer, length);
+ 			break;
+ 
+-		case SOS:
++		case JPEG_MARKER_SOS:
+ 			sos = jpeg_buffer.curr - 2; /* 0xffda */
+ 			break;
+ 
+ 		/* skip payload-less markers */
+-		case RST ... RST + 7:
+-		case SOI:
+-		case EOI:
+-		case TEM:
++		case JPEG_MARKER_RST ... JPEG_MARKER_RST + 7:
++		case JPEG_MARKER_SOI:
++		case JPEG_MARKER_EOI:
++		case JPEG_MARKER_TEM:
+ 			break;
+ 
+ 		/* skip uninteresting payload markers */
+diff --git a/drivers/media/platform/s5p-jpeg/jpeg-core.h b/drivers/media/platform/s5p-jpeg/jpeg-core.h
+index a77d93c098ce..8473a019bb5f 100644
+--- a/drivers/media/platform/s5p-jpeg/jpeg-core.h
++++ b/drivers/media/platform/s5p-jpeg/jpeg-core.h
+@@ -37,15 +37,15 @@
+ #define EXYNOS3250_IRQ_TIMEOUT		0x10000000
+ 
+ /* a selection of JPEG markers */
+-#define TEM				0x01
+-#define SOF0				0xc0
+-#define DHT				0xc4
+-#define RST				0xd0
+-#define SOI				0xd8
+-#define EOI				0xd9
+-#define	SOS				0xda
+-#define DQT				0xdb
+-#define DHP				0xde
++#define JPEG_MARKER_TEM				0x01
++#define JPEG_MARKER_SOF0				0xc0
++#define JPEG_MARKER_DHT				0xc4
++#define JPEG_MARKER_RST				0xd0
++#define JPEG_MARKER_SOI				0xd8
++#define JPEG_MARKER_EOI				0xd9
++#define	JPEG_MARKER_SOS				0xda
++#define JPEG_MARKER_DQT				0xdb
++#define JPEG_MARKER_DHP				0xde
+ 
+ /* Flags that indicate a format can be used for capture/output */
+ #define SJPEG_FMT_FLAG_ENC_CAPTURE	(1 << 0)
+@@ -187,11 +187,11 @@ struct s5p_jpeg_marker {
+  * @fmt:	driver-specific format of this queue
+  * @w:		image width
+  * @h:		image height
+- * @sos:	SOS marker's position relative to the buffer beginning
+- * @dht:	DHT markers' positions relative to the buffer beginning
+- * @dqt:	DQT markers' positions relative to the buffer beginning
+- * @sof:	SOF0 marker's position relative to the buffer beginning
+- * @sof_len:	SOF0 marker's payload length (without length field itself)
++ * @sos:	JPEG_MARKER_SOS's position relative to the buffer beginning
++ * @dht:	JPEG_MARKER_DHT' positions relative to the buffer beginning
++ * @dqt:	JPEG_MARKER_DQT' positions relative to the buffer beginning
++ * @sof:	JPEG_MARKER_SOF0's position relative to the buffer beginning
++ * @sof_len:	JPEG_MARKER_SOF0's payload length (without length field itself)
+  * @size:	image buffer size in bytes
+  */
+ struct s5p_jpeg_q_data {
+diff --git a/drivers/media/rc/ir_toy.c b/drivers/media/rc/ir_toy.c
+index 3e729a17b35f..48d52baec1a1 100644
+--- a/drivers/media/rc/ir_toy.c
++++ b/drivers/media/rc/ir_toy.c
+@@ -24,6 +24,7 @@ static const u8 COMMAND_VERSION[] = { 'v' };
+ // End transmit and repeat reset command so we exit sump mode
+ static const u8 COMMAND_RESET[] = { 0xff, 0xff, 0, 0, 0, 0, 0 };
+ static const u8 COMMAND_SMODE_ENTER[] = { 's' };
++static const u8 COMMAND_SMODE_EXIT[] = { 0 };
+ static const u8 COMMAND_TXSTART[] = { 0x26, 0x24, 0x25, 0x03 };
+ 
+ #define REPLY_XMITCOUNT 't'
+@@ -309,12 +310,30 @@ static int irtoy_tx(struct rc_dev *rc, uint *txbuf, uint count)
+ 		buf[i] = cpu_to_be16(v);
+ 	}
+ 
+-	buf[count] = cpu_to_be16(0xffff);
++	buf[count] = 0xffff;
+ 
+ 	irtoy->tx_buf = buf;
+ 	irtoy->tx_len = size;
+ 	irtoy->emitted = 0;
+ 
++	// There is an issue where if the unit is receiving IR while the
++	// first TXSTART command is sent, the device might end up hanging
++	// with its led on. It does not respond to any command when this
++	// happens. To work around this, re-enter sample mode.
++	err = irtoy_command(irtoy, COMMAND_SMODE_EXIT,
++			    sizeof(COMMAND_SMODE_EXIT), STATE_RESET);
++	if (err) {
++		dev_err(irtoy->dev, "exit sample mode: %d\n", err);
++		return err;
++	}
++
++	err = irtoy_command(irtoy, COMMAND_SMODE_ENTER,
++			    sizeof(COMMAND_SMODE_ENTER), STATE_COMMAND);
++	if (err) {
++		dev_err(irtoy->dev, "enter sample mode: %d\n", err);
++		return err;
++	}
++
+ 	err = irtoy_command(irtoy, COMMAND_TXSTART, sizeof(COMMAND_TXSTART),
+ 			    STATE_TX);
+ 	kfree(buf);
+diff --git a/drivers/mmc/host/dw_mmc.c b/drivers/mmc/host/dw_mmc.c
+index 6578cc64ae9e..380f9aa56eb2 100644
+--- a/drivers/mmc/host/dw_mmc.c
++++ b/drivers/mmc/host/dw_mmc.c
+@@ -1802,10 +1802,15 @@ static enum hrtimer_restart dw_mci_fault_timer(struct hrtimer *t)
+ 
+ 	spin_lock_irqsave(&host->irq_lock, flags);
+ 
+-	if (!host->data_status)
++	/*
++	 * Only inject an error if we haven't already got an error or data over
++	 * interrupt.
++	 */
++	if (!host->data_status) {
+ 		host->data_status = SDMMC_INT_DCRC;
+-	set_bit(EVENT_DATA_ERROR, &host->pending_events);
+-	tasklet_schedule(&host->tasklet);
++		set_bit(EVENT_DATA_ERROR, &host->pending_events);
++		tasklet_schedule(&host->tasklet);
++	}
+ 
+ 	spin_unlock_irqrestore(&host->irq_lock, flags);
+ 
+@@ -2721,12 +2726,16 @@ static irqreturn_t dw_mci_interrupt(int irq, void *dev_id)
+ 		}
+ 
+ 		if (pending & DW_MCI_DATA_ERROR_FLAGS) {
++			spin_lock(&host->irq_lock);
++
+ 			/* if there is an error report DATA_ERROR */
+ 			mci_writel(host, RINTSTS, DW_MCI_DATA_ERROR_FLAGS);
+ 			host->data_status = pending;
+ 			smp_wmb(); /* drain writebuffer */
+ 			set_bit(EVENT_DATA_ERROR, &host->pending_events);
+ 			tasklet_schedule(&host->tasklet);
++
++			spin_unlock(&host->irq_lock);
+ 		}
+ 
+ 		if (pending & SDMMC_INT_DATA_OVER) {
+diff --git a/drivers/mmc/host/renesas_sdhi_core.c b/drivers/mmc/host/renesas_sdhi_core.c
+index 6fc4cf3c9dce..a4407f391f66 100644
+--- a/drivers/mmc/host/renesas_sdhi_core.c
++++ b/drivers/mmc/host/renesas_sdhi_core.c
+@@ -561,6 +561,8 @@ static void renesas_sdhi_reset(struct tmio_mmc_host *host)
+ 		/* Unknown why but without polling reset status, it will hang */
+ 		read_poll_timeout(reset_control_status, ret, ret == 0, 1, 100,
+ 				  false, priv->rstc);
++		/* At least SDHI_VER_GEN2_SDR50 needs manual release of reset */
++		sd_ctrl_write16(host, CTL_RESET_SD, 0x0001);
+ 		priv->needs_adjust_hs400 = false;
+ 		renesas_sdhi_set_clock(host, host->clk_cache);
+ 	} else if (priv->scc_ctl) {
+diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
+index 3cbc3baf087f..295cc7952d0e 100644
+--- a/drivers/perf/arm_pmu.c
++++ b/drivers/perf/arm_pmu.c
+@@ -952,6 +952,8 @@ int armpmu_register(struct arm_pmu *pmu)
+ 		pmu->name, pmu->num_events,
+ 		has_nmi ? ", using NMIs" : "");
+ 
++	kvm_host_pmu_init(pmu);
++
+ 	return 0;
+ 
+ out_destroy:
+diff --git a/drivers/staging/media/hantro/hantro_drv.c b/drivers/staging/media/hantro/hantro_drv.c
+index 8a2edd67f2c6..20e508158871 100644
+--- a/drivers/staging/media/hantro/hantro_drv.c
++++ b/drivers/staging/media/hantro/hantro_drv.c
+@@ -919,7 +919,7 @@ static int hantro_probe(struct platform_device *pdev)
+ 		if (!vpu->variant->irqs[i].handler)
+ 			continue;
+ 
+-		if (vpu->variant->num_clocks > 1) {
++		if (vpu->variant->num_irqs > 1) {
+ 			irq_name = vpu->variant->irqs[i].name;
+ 			irq = platform_get_irq_byname(vpu->pdev, irq_name);
+ 		} else {
+diff --git a/drivers/staging/media/sunxi/cedrus/cedrus_video.c b/drivers/staging/media/sunxi/cedrus/cedrus_video.c
+index c589fe9dae70..825af5fd35e0 100644
+--- a/drivers/staging/media/sunxi/cedrus/cedrus_video.c
++++ b/drivers/staging/media/sunxi/cedrus/cedrus_video.c
+@@ -135,7 +135,7 @@ void cedrus_prepare_format(struct v4l2_pix_format *pix_fmt)
+ 		sizeimage = bytesperline * height;
+ 
+ 		/* Chroma plane size. */
+-		sizeimage += bytesperline * height / 2;
++		sizeimage += bytesperline * ALIGN(height, 64) / 2;
+ 
+ 		break;
+ 
+diff --git a/drivers/vdpa/mlx5/net/mlx5_vnet.c b/drivers/vdpa/mlx5/net/mlx5_vnet.c
+index 294ba05e6fc9..bd56de7484dc 100644
+--- a/drivers/vdpa/mlx5/net/mlx5_vnet.c
++++ b/drivers/vdpa/mlx5/net/mlx5_vnet.c
+@@ -1714,6 +1714,9 @@ static void mlx5_vdpa_set_vq_ready(struct vdpa_device *vdev, u16 idx, bool ready
+ 	struct mlx5_vdpa_net *ndev = to_mlx5_vdpa_ndev(mvdev);
+ 	struct mlx5_vdpa_virtqueue *mvq;
+ 
++	if (!mvdev->actual_features)
++		return;
++
+ 	if (!is_index_valid(mvdev, idx))
+ 		return;
+ 
+@@ -2145,6 +2148,8 @@ static void clear_vqs_ready(struct mlx5_vdpa_net *ndev)
+ 
+ 	for (i = 0; i < ndev->mvdev.max_vqs; i++)
+ 		ndev->vqs[i].ready = false;
++
++	ndev->mvdev.cvq.ready = false;
+ }
+ 
+ static void mlx5_vdpa_set_status(struct vdpa_device *vdev, u8 status)
+diff --git a/drivers/vdpa/vdpa_user/vduse_dev.c b/drivers/vdpa/vdpa_user/vduse_dev.c
+index 29a38ecba19e..26e3d90d1e7c 100644
+--- a/drivers/vdpa/vdpa_user/vduse_dev.c
++++ b/drivers/vdpa/vdpa_user/vduse_dev.c
+@@ -665,13 +665,11 @@ static void vduse_vdpa_set_config(struct vdpa_device *vdpa, unsigned int offset,
+ static int vduse_vdpa_reset(struct vdpa_device *vdpa)
+ {
+ 	struct vduse_dev *dev = vdpa_to_vduse(vdpa);
+-
+-	if (vduse_dev_set_status(dev, 0))
+-		return -EIO;
++	int ret = vduse_dev_set_status(dev, 0);
+ 
+ 	vduse_dev_reset(dev);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static u32 vduse_vdpa_get_generation(struct vdpa_device *vdpa)
+@@ -1593,8 +1591,10 @@ static int vduse_init(void)
+ 
+ 	vduse_irq_wq = alloc_workqueue("vduse-irq",
+ 				WQ_HIGHPRI | WQ_SYSFS | WQ_UNBOUND, 0);
+-	if (!vduse_irq_wq)
++	if (!vduse_irq_wq) {
++		ret = -ENOMEM;
+ 		goto err_wq;
++	}
+ 
+ 	ret = vduse_domain_init();
+ 	if (ret)
+diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
+index f41d081777f5..35927ceb26ff 100644
+--- a/drivers/vhost/vdpa.c
++++ b/drivers/vhost/vdpa.c
+@@ -640,7 +640,7 @@ static int vhost_vdpa_va_map(struct vhost_vdpa *v,
+ 	u64 offset, map_size, map_iova = iova;
+ 	struct vdpa_map_file *map_file;
+ 	struct vm_area_struct *vma;
+-	int ret;
++	int ret = 0;
+ 
+ 	mmap_read_lock(dev->mm);
+ 
+diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
+index 588e02fb91d3..0a5b54034d4b 100644
+--- a/drivers/virtio/virtio.c
++++ b/drivers/virtio/virtio.c
+@@ -345,8 +345,13 @@ static int virtio_device_of_init(struct virtio_device *dev)
+ 	ret = snprintf(compat, sizeof(compat), "virtio,device%x", dev->id.device);
+ 	BUG_ON(ret >= sizeof(compat));
+ 
++	/*
++	 * On powerpc/pseries virtio devices are PCI devices so PCI
++	 * vendor/device ids play the role of the "compatible" property.
++	 * Simply don't init of_node in this case.
++	 */
+ 	if (!of_device_is_compatible(np, compat)) {
+-		ret = -EINVAL;
++		ret = 0;
+ 		goto out;
+ 	}
+ 
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index b81fe4f7d434..bf59faeb3de1 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -1666,7 +1666,7 @@ config WDT_MTX1
+ 
+ config SIBYTE_WDOG
+ 	tristate "Sibyte SoC hardware watchdog"
+-	depends on CPU_SB1 || (MIPS && COMPILE_TEST)
++	depends on CPU_SB1
+ 	help
+ 	  Watchdog driver for the built in watchdog hardware in Sibyte
+ 	  SoC processors.  There are apparently two watchdog timers
+diff --git a/fs/vboxsf/super.c b/fs/vboxsf/super.c
+index 4f5e59f06284..37dd3fe5b1e9 100644
+--- a/fs/vboxsf/super.c
++++ b/fs/vboxsf/super.c
+@@ -21,10 +21,7 @@
+ 
+ #define VBOXSF_SUPER_MAGIC 0x786f4256 /* 'VBox' little endian */
+ 
+-#define VBSF_MOUNT_SIGNATURE_BYTE_0 ('\000')
+-#define VBSF_MOUNT_SIGNATURE_BYTE_1 ('\377')
+-#define VBSF_MOUNT_SIGNATURE_BYTE_2 ('\376')
+-#define VBSF_MOUNT_SIGNATURE_BYTE_3 ('\375')
++static const unsigned char VBSF_MOUNT_SIGNATURE[4] = "\000\377\376\375";
+ 
+ static int follow_symlinks;
+ module_param(follow_symlinks, int, 0444);
+@@ -386,12 +383,7 @@ static int vboxsf_setup(void)
+ 
+ static int vboxsf_parse_monolithic(struct fs_context *fc, void *data)
+ {
+-	unsigned char *options = data;
+-
+-	if (options && options[0] == VBSF_MOUNT_SIGNATURE_BYTE_0 &&
+-		       options[1] == VBSF_MOUNT_SIGNATURE_BYTE_1 &&
+-		       options[2] == VBSF_MOUNT_SIGNATURE_BYTE_2 &&
+-		       options[3] == VBSF_MOUNT_SIGNATURE_BYTE_3) {
++	if (data && !memcmp(data, VBSF_MOUNT_SIGNATURE, 4)) {
+ 		vbg_err("vboxsf: Old binary mount data not supported, remove obsolete mount.vboxsf and/or update your VBoxService.\n");
+ 		return -EINVAL;
+ 	}
+diff --git a/fs/verity/enable.c b/fs/verity/enable.c
+index 77e159a0346b..60a4372aa4d7 100644
+--- a/fs/verity/enable.c
++++ b/fs/verity/enable.c
+@@ -177,7 +177,7 @@ static int build_merkle_tree(struct file *filp,
+ 	 * (level 0) and ascending to the root node (level 'num_levels - 1').
+ 	 * Then at the end (level 'num_levels'), calculate the root hash.
+ 	 */
+-	blocks = (inode->i_size + params->block_size - 1) >>
++	blocks = ((u64)inode->i_size + params->block_size - 1) >>
+ 		 params->log_blocksize;
+ 	for (level = 0; level <= params->num_levels; level++) {
+ 		err = build_merkle_tree_level(filp, level, blocks, params,
+diff --git a/fs/verity/open.c b/fs/verity/open.c
+index 60ff8af7219f..92df87f5fa38 100644
+--- a/fs/verity/open.c
++++ b/fs/verity/open.c
+@@ -89,7 +89,7 @@ int fsverity_init_merkle_tree_params(struct merkle_tree_params *params,
+ 	 */
+ 
+ 	/* Compute number of levels and the number of blocks in each level */
+-	blocks = (inode->i_size + params->block_size - 1) >> log_blocksize;
++	blocks = ((u64)inode->i_size + params->block_size - 1) >> log_blocksize;
+ 	pr_debug("Data is %lld bytes (%llu blocks)\n", inode->i_size, blocks);
+ 	while (blocks > 1) {
+ 		if (params->num_levels >= FS_VERITY_MAX_LEVELS) {
+diff --git a/include/kvm/arm_pmu.h b/include/kvm/arm_pmu.h
+index 864b9997efb2..90f21898aad8 100644
+--- a/include/kvm/arm_pmu.h
++++ b/include/kvm/arm_pmu.h
+@@ -61,7 +61,6 @@ int kvm_arm_pmu_v3_get_attr(struct kvm_vcpu *vcpu,
+ int kvm_arm_pmu_v3_has_attr(struct kvm_vcpu *vcpu,
+ 			    struct kvm_device_attr *attr);
+ int kvm_arm_pmu_v3_enable(struct kvm_vcpu *vcpu);
+-int kvm_pmu_probe_pmuver(void);
+ #else
+ struct kvm_pmu {
+ };
+@@ -118,8 +117,6 @@ static inline u64 kvm_pmu_get_pmceid(struct kvm_vcpu *vcpu, bool pmceid1)
+ 	return 0;
+ }
+ 
+-static inline int kvm_pmu_probe_pmuver(void) { return 0xf; }
+-
+ #endif
+ 
+ #endif
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 041ca7f15ea4..0f18df7fe874 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -608,7 +608,6 @@ struct kvm {
+ 	unsigned long mmu_notifier_range_start;
+ 	unsigned long mmu_notifier_range_end;
+ #endif
+-	long tlbs_dirty;
+ 	struct list_head devices;
+ 	u64 manual_dirty_log_protect;
+ 	struct dentry *debugfs_dentry;
+@@ -721,11 +720,6 @@ static inline struct kvm_vcpu *kvm_get_vcpu_by_id(struct kvm *kvm, int id)
+ 	return NULL;
+ }
+ 
+-static inline int kvm_vcpu_get_idx(struct kvm_vcpu *vcpu)
+-{
+-	return vcpu->vcpu_idx;
+-}
+-
+ #define kvm_for_each_memslot(memslot, slots)				\
+ 	for (memslot = &slots->memslots[0];				\
+ 	     memslot < slots->memslots + slots->used_slots; memslot++)	\
+diff --git a/include/linux/perf/arm_pmu.h b/include/linux/perf/arm_pmu.h
+index 505480217cf1..2512e2f9cd4e 100644
+--- a/include/linux/perf/arm_pmu.h
++++ b/include/linux/perf/arm_pmu.h
+@@ -163,6 +163,12 @@ int arm_pmu_acpi_probe(armpmu_init_fn init_fn);
+ static inline int arm_pmu_acpi_probe(armpmu_init_fn init_fn) { return 0; }
+ #endif
+ 
++#ifdef CONFIG_KVM
++void kvm_host_pmu_init(struct arm_pmu *pmu);
++#else
++#define kvm_host_pmu_init(x)	do { } while(0)
++#endif
++
+ /* Internal functions only for core arm_pmu code */
+ struct arm_pmu *armpmu_alloc(void);
+ struct arm_pmu *armpmu_alloc_atomic(void);
+diff --git a/tools/perf/Documentation/jitdump-specification.txt b/tools/perf/Documentation/jitdump-specification.txt
+index 52152d156ad9..79936355d819 100644
+--- a/tools/perf/Documentation/jitdump-specification.txt
++++ b/tools/perf/Documentation/jitdump-specification.txt
+@@ -164,7 +164,7 @@ const char unwinding_data[n]: an array of unwinding data, consisting of the EH F
+ The EH Frame header follows the Linux Standard Base (LSB) specification as described in the document at https://refspecs.linuxfoundation.org/LSB_1.3.0/gLSB/gLSB/ehframehdr.html
+ 
+ 
+-The EH Frame follows the LSB specicfication as described in the document at https://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/ehframechpt.html
++The EH Frame follows the LSB specification as described in the document at https://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/ehframechpt.html
+ 
+ 
+ NOTE: The mapped_size is generally either the same as unwind_data_size (if the unwinding data was mapped in memory by the running process) or zero (if the unwinding data is not mapped by the process). If the unwinding data was not mapped, then only the EH Frame Header will be read, which can be used to specify FP based unwinding for a function which does not have unwinding information.
+diff --git a/tools/perf/Documentation/perf-c2c.txt b/tools/perf/Documentation/perf-c2c.txt
+index de6beedb7283..3b6a2c84ea02 100644
+--- a/tools/perf/Documentation/perf-c2c.txt
++++ b/tools/perf/Documentation/perf-c2c.txt
+@@ -261,7 +261,7 @@ COALESCE
+ User can specify how to sort offsets for cacheline.
+ 
+ Following fields are available and governs the final
+-output fields set for caheline offsets output:
++output fields set for cacheline offsets output:
+ 
+   tid   - coalesced by process TIDs
+   pid   - coalesced by process PIDs
+diff --git a/tools/perf/Documentation/perf-intel-pt.txt b/tools/perf/Documentation/perf-intel-pt.txt
+index 184ba62420f0..db465fa7ee91 100644
+--- a/tools/perf/Documentation/perf-intel-pt.txt
++++ b/tools/perf/Documentation/perf-intel-pt.txt
+@@ -883,7 +883,7 @@ and "r" can be combined to get calls and returns.
+ 
+ "Transactions" events correspond to the start or end of transactions. The
+ 'flags' field can be used in perf script to determine whether the event is a
+-tranasaction start, commit or abort.
++transaction start, commit or abort.
+ 
+ Note that "instructions", "branches" and "transactions" events depend on code
+ flow packets which can be disabled by using the config term "branch=0".  Refer
+diff --git a/tools/perf/Documentation/perf-lock.txt b/tools/perf/Documentation/perf-lock.txt
+index 74d774592196..1b4d452923d7 100644
+--- a/tools/perf/Documentation/perf-lock.txt
++++ b/tools/perf/Documentation/perf-lock.txt
+@@ -44,7 +44,7 @@ COMMON OPTIONS
+ 
+ -f::
+ --force::
+-	Don't complan, do it.
++	Don't complain, do it.
+ 
+ REPORT OPTIONS
+ --------------
+diff --git a/tools/perf/Documentation/perf-script-perl.txt b/tools/perf/Documentation/perf-script-perl.txt
+index 5a1f68122f50..fa4f39d305a7 100644
+--- a/tools/perf/Documentation/perf-script-perl.txt
++++ b/tools/perf/Documentation/perf-script-perl.txt
+@@ -54,7 +54,7 @@ all sched_wakeup events in the system:
+ Traces meant to be processed using a script should be recorded with
+ the above option: -a to enable system-wide collection.
+ 
+-The format file for the sched_wakep event defines the following fields
++The format file for the sched_wakeup event defines the following fields
+ (see /sys/kernel/debug/tracing/events/sched/sched_wakeup/format):
+ 
+ ----
+diff --git a/tools/perf/Documentation/perf-script-python.txt b/tools/perf/Documentation/perf-script-python.txt
+index 0250dc61cf98..cf4b7f4b625a 100644
+--- a/tools/perf/Documentation/perf-script-python.txt
++++ b/tools/perf/Documentation/perf-script-python.txt
+@@ -448,7 +448,7 @@ all sched_wakeup events in the system:
+ Traces meant to be processed using a script should be recorded with
+ the above option: -a to enable system-wide collection.
+ 
+-The format file for the sched_wakep event defines the following fields
++The format file for the sched_wakeup event defines the following fields
+ (see /sys/kernel/debug/tracing/events/sched/sched_wakeup/format):
+ 
+ ----
+diff --git a/tools/perf/Documentation/perf-stat.txt b/tools/perf/Documentation/perf-stat.txt
+index 4c9310be6acc..7e6fb7cbc0f4 100644
+--- a/tools/perf/Documentation/perf-stat.txt
++++ b/tools/perf/Documentation/perf-stat.txt
+@@ -385,7 +385,7 @@ Aggregate counts per physical processor for system-wide mode measurements.
+ Print metrics or metricgroups specified in a comma separated list.
+ For a group all metrics from the group are added.
+ The events from the metrics are automatically measured.
+-See perf list output for the possble metrics and metricgroups.
++See perf list output for the possible metrics and metricgroups.
+ 
+ -A::
+ --no-aggr::
+diff --git a/tools/perf/Documentation/topdown.txt b/tools/perf/Documentation/topdown.txt
+index c6302df4cf29..a15b93fdcf50 100644
+--- a/tools/perf/Documentation/topdown.txt
++++ b/tools/perf/Documentation/topdown.txt
+@@ -2,7 +2,7 @@ Using TopDown metrics in user space
+ -----------------------------------
+ 
+ Intel CPUs (since Sandy Bridge and Silvermont) support a TopDown
+-methology to break down CPU pipeline execution into 4 bottlenecks:
++methodology to break down CPU pipeline execution into 4 bottlenecks:
+ frontend bound, backend bound, bad speculation, retiring.
+ 
+ For more details on Topdown see [1][5]
+diff --git a/tools/perf/arch/arm/util/auxtrace.c b/tools/perf/arch/arm/util/auxtrace.c
+index c7c7ec0812d5..5fc6a2a3dbc5 100644
+--- a/tools/perf/arch/arm/util/auxtrace.c
++++ b/tools/perf/arch/arm/util/auxtrace.c
+@@ -8,10 +8,10 @@
+ #include <linux/coresight-pmu.h>
+ #include <linux/zalloc.h>
+ 
+-#include "../../util/auxtrace.h"
+-#include "../../util/debug.h"
+-#include "../../util/evlist.h"
+-#include "../../util/pmu.h"
++#include "../../../util/auxtrace.h"
++#include "../../../util/debug.h"
++#include "../../../util/evlist.h"
++#include "../../../util/pmu.h"
+ #include "cs-etm.h"
+ #include "arm-spe.h"
+ 
+diff --git a/tools/perf/arch/arm/util/cs-etm.c b/tools/perf/arch/arm/util/cs-etm.c
+index 515aae470e23..293a23bf8be3 100644
+--- a/tools/perf/arch/arm/util/cs-etm.c
++++ b/tools/perf/arch/arm/util/cs-etm.c
+@@ -16,19 +16,19 @@
+ #include <linux/zalloc.h>
+ 
+ #include "cs-etm.h"
+-#include "../../util/debug.h"
+-#include "../../util/record.h"
+-#include "../../util/auxtrace.h"
+-#include "../../util/cpumap.h"
+-#include "../../util/event.h"
+-#include "../../util/evlist.h"
+-#include "../../util/evsel.h"
+-#include "../../util/perf_api_probe.h"
+-#include "../../util/evsel_config.h"
+-#include "../../util/pmu.h"
+-#include "../../util/cs-etm.h"
++#include "../../../util/debug.h"
++#include "../../../util/record.h"
++#include "../../../util/auxtrace.h"
++#include "../../../util/cpumap.h"
++#include "../../../util/event.h"
++#include "../../../util/evlist.h"
++#include "../../../util/evsel.h"
++#include "../../../util/perf_api_probe.h"
++#include "../../../util/evsel_config.h"
++#include "../../../util/pmu.h"
++#include "../../../util/cs-etm.h"
+ #include <internal/lib.h> // page_size
+-#include "../../util/session.h"
++#include "../../../util/session.h"
+ 
+ #include <errno.h>
+ #include <stdlib.h>
+diff --git a/tools/perf/arch/arm/util/perf_regs.c b/tools/perf/arch/arm/util/perf_regs.c
+index 2864e2e3776d..2833e101a7c6 100644
+--- a/tools/perf/arch/arm/util/perf_regs.c
++++ b/tools/perf/arch/arm/util/perf_regs.c
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
+-#include "../../util/perf_regs.h"
++#include "../../../util/perf_regs.h"
+ 
+ const struct sample_reg sample_reg_masks[] = {
+ 	SMPL_REG_END
+diff --git a/tools/perf/arch/arm/util/pmu.c b/tools/perf/arch/arm/util/pmu.c
+index bbc297a7e2e3..b8b23b9dc598 100644
+--- a/tools/perf/arch/arm/util/pmu.c
++++ b/tools/perf/arch/arm/util/pmu.c
+@@ -10,7 +10,7 @@
+ #include <linux/string.h>
+ 
+ #include "arm-spe.h"
+-#include "../../util/pmu.h"
++#include "../../../util/pmu.h"
+ 
+ struct perf_event_attr
+ *perf_pmu__get_default_config(struct perf_pmu *pmu __maybe_unused)
+diff --git a/tools/perf/arch/arm/util/unwind-libdw.c b/tools/perf/arch/arm/util/unwind-libdw.c
+index 36ba4c69c3c5..b7692cb0c733 100644
+--- a/tools/perf/arch/arm/util/unwind-libdw.c
++++ b/tools/perf/arch/arm/util/unwind-libdw.c
+@@ -1,8 +1,8 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <elfutils/libdwfl.h>
+-#include "../../util/unwind-libdw.h"
+-#include "../../util/perf_regs.h"
+-#include "../../util/event.h"
++#include "../../../util/unwind-libdw.h"
++#include "../../../util/perf_regs.h"
++#include "../../../util/event.h"
+ 
+ bool libdw__arch_set_initial_registers(Dwfl_Thread *thread, void *arg)
+ {
+diff --git a/tools/perf/arch/arm/util/unwind-libunwind.c b/tools/perf/arch/arm/util/unwind-libunwind.c
+index 3a550225dfaf..438906bf0014 100644
+--- a/tools/perf/arch/arm/util/unwind-libunwind.c
++++ b/tools/perf/arch/arm/util/unwind-libunwind.c
+@@ -3,8 +3,8 @@
+ #include <errno.h>
+ #include <libunwind.h>
+ #include "perf_regs.h"
+-#include "../../util/unwind.h"
+-#include "../../util/debug.h"
++#include "../../../util/unwind.h"
++#include "../../../util/debug.h"
+ 
+ int libunwind__arch_reg_id(int regnum)
+ {
+diff --git a/tools/perf/arch/x86/util/iostat.c b/tools/perf/arch/x86/util/iostat.c
+index eeafe97b8105..792cd75ade33 100644
+--- a/tools/perf/arch/x86/util/iostat.c
++++ b/tools/perf/arch/x86/util/iostat.c
+@@ -432,7 +432,7 @@ void iostat_print_metric(struct perf_stat_config *config, struct evsel *evsel,
+ 	u8 die = ((struct iio_root_port *)evsel->priv)->die;
+ 	struct perf_counts_values *count = perf_counts(evsel->counts, die, 0);
+ 
+-	if (count->run && count->ena) {
++	if (count && count->run && count->ena) {
+ 		if (evsel->prev_raw_counts && !out->force_header) {
+ 			struct perf_counts_values *prev_count =
+ 				perf_counts(evsel->prev_raw_counts, die, 0);
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index f6e87b7be5fa..f0ecfda34ece 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -2408,6 +2408,8 @@ int cmd_stat(int argc, const char **argv)
+ 			goto out;
+ 		} else if (verbose)
+ 			iostat_list(evsel_list, &stat_config);
++		if (iostat_mode == IOSTAT_RUN && !target__has_cpu(&target))
++			target.system_wide = true;
+ 	}
+ 
+ 	if (add_default_attributes())
+diff --git a/tools/perf/pmu-events/arch/powerpc/power8/other.json b/tools/perf/pmu-events/arch/powerpc/power8/other.json
+index 84a0cedf1fd9..f1f2965f6775 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power8/other.json
++++ b/tools/perf/pmu-events/arch/powerpc/power8/other.json
+@@ -1046,7 +1046,7 @@
+   {
+     "EventCode": "0x4e010",
+     "EventName": "PM_GCT_NOSLOT_IC_L3MISS",
+-    "BriefDescription": "Gct empty for this thread due to icach l3 miss",
++    "BriefDescription": "Gct empty for this thread due to icache l3 miss",
+     "PublicDescription": ""
+   },
+   {
+diff --git a/tools/perf/tests/code-reading.c b/tools/perf/tests/code-reading.c
+index 9866cddebf23..9b4a765e4b73 100644
+--- a/tools/perf/tests/code-reading.c
++++ b/tools/perf/tests/code-reading.c
+@@ -229,8 +229,8 @@ static int read_object_code(u64 addr, size_t len, u8 cpumode,
+ 			    struct thread *thread, struct state *state)
+ {
+ 	struct addr_location al;
+-	unsigned char buf1[BUFSZ];
+-	unsigned char buf2[BUFSZ];
++	unsigned char buf1[BUFSZ] = {0};
++	unsigned char buf2[BUFSZ] = {0};
+ 	size_t ret_len;
+ 	u64 objdump_addr;
+ 	const char *objdump_name;
+diff --git a/tools/perf/tests/dwarf-unwind.c b/tools/perf/tests/dwarf-unwind.c
+index a288035eb362..c756284b3b13 100644
+--- a/tools/perf/tests/dwarf-unwind.c
++++ b/tools/perf/tests/dwarf-unwind.c
+@@ -20,6 +20,23 @@
+ /* For bsearch. We try to unwind functions in shared object. */
+ #include <stdlib.h>
+ 
++/*
++ * The test will assert frames are on the stack but tail call optimizations lose
++ * the frame of the caller. Clang can disable this optimization on a called
++ * function but GCC currently (11/2020) lacks this attribute. The barrier is
++ * used to inhibit tail calls in these cases.
++ */
++#ifdef __has_attribute
++#if __has_attribute(disable_tail_calls)
++#define NO_TAIL_CALL_ATTRIBUTE __attribute__((disable_tail_calls))
++#define NO_TAIL_CALL_BARRIER
++#endif
++#endif
++#ifndef NO_TAIL_CALL_ATTRIBUTE
++#define NO_TAIL_CALL_ATTRIBUTE
++#define NO_TAIL_CALL_BARRIER __asm__ __volatile__("" : : : "memory");
++#endif
++
+ static int mmap_handler(struct perf_tool *tool __maybe_unused,
+ 			union perf_event *event,
+ 			struct perf_sample *sample,
+@@ -91,7 +108,7 @@ static int unwind_entry(struct unwind_entry *entry, void *arg)
+ 	return strcmp((const char *) symbol, funcs[idx]);
+ }
+ 
+-noinline int test_dwarf_unwind__thread(struct thread *thread)
++NO_TAIL_CALL_ATTRIBUTE noinline int test_dwarf_unwind__thread(struct thread *thread)
+ {
+ 	struct perf_sample sample;
+ 	unsigned long cnt = 0;
+@@ -122,7 +139,7 @@ noinline int test_dwarf_unwind__thread(struct thread *thread)
+ 
+ static int global_unwind_retval = -INT_MAX;
+ 
+-noinline int test_dwarf_unwind__compare(void *p1, void *p2)
++NO_TAIL_CALL_ATTRIBUTE noinline int test_dwarf_unwind__compare(void *p1, void *p2)
+ {
+ 	/* Any possible value should be 'thread' */
+ 	struct thread *thread = *(struct thread **)p1;
+@@ -141,7 +158,7 @@ noinline int test_dwarf_unwind__compare(void *p1, void *p2)
+ 	return p1 - p2;
+ }
+ 
+-noinline int test_dwarf_unwind__krava_3(struct thread *thread)
++NO_TAIL_CALL_ATTRIBUTE noinline int test_dwarf_unwind__krava_3(struct thread *thread)
+ {
+ 	struct thread *array[2] = {thread, thread};
+ 	void *fp = &bsearch;
+@@ -160,14 +177,22 @@ noinline int test_dwarf_unwind__krava_3(struct thread *thread)
+ 	return global_unwind_retval;
+ }
+ 
+-noinline int test_dwarf_unwind__krava_2(struct thread *thread)
++NO_TAIL_CALL_ATTRIBUTE noinline int test_dwarf_unwind__krava_2(struct thread *thread)
+ {
+-	return test_dwarf_unwind__krava_3(thread);
++	int ret;
++
++	ret =  test_dwarf_unwind__krava_3(thread);
++	NO_TAIL_CALL_BARRIER;
++	return ret;
+ }
+ 
+-noinline int test_dwarf_unwind__krava_1(struct thread *thread)
++NO_TAIL_CALL_ATTRIBUTE noinline int test_dwarf_unwind__krava_1(struct thread *thread)
+ {
+-	return test_dwarf_unwind__krava_2(thread);
++	int ret;
++
++	ret =  test_dwarf_unwind__krava_2(thread);
++	NO_TAIL_CALL_BARRIER;
++	return ret;
+ }
+ 
+ int test__dwarf_unwind(struct test *test __maybe_unused, int subtest __maybe_unused)
+diff --git a/tools/perf/util/config.c b/tools/perf/util/config.c
+index 4fb5e90d7a57..60ce5908c664 100644
+--- a/tools/perf/util/config.c
++++ b/tools/perf/util/config.c
+@@ -801,7 +801,7 @@ int perf_config_set(struct perf_config_set *set,
+ 				  section->name, item->name);
+ 			ret = fn(key, value, data);
+ 			if (ret < 0) {
+-				pr_err("Error: wrong config key-value pair %s=%s\n",
++				pr_err("Error in the given config file: wrong config key-value pair %s=%s\n",
+ 				       key, value);
+ 				/*
+ 				 * Can't be just a 'break', as perf_config_set__for_each_entry()
+diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
+index 618bf9bc7f3f..b8dbabe24ac2 100644
+--- a/tools/testing/selftests/kvm/.gitignore
++++ b/tools/testing/selftests/kvm/.gitignore
+@@ -24,6 +24,7 @@
+ /x86_64/smm_test
+ /x86_64/state_test
+ /x86_64/svm_vmcall_test
++/x86_64/svm_int_ctl_test
+ /x86_64/sync_regs_test
+ /x86_64/tsc_msrs_test
+ /x86_64/userspace_msr_exit_test
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 9ac325cfc94a..d1774f461393 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -56,6 +56,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/smm_test
+ TEST_GEN_PROGS_x86_64 += x86_64/state_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_preemption_timer_test
+ TEST_GEN_PROGS_x86_64 += x86_64/svm_vmcall_test
++TEST_GEN_PROGS_x86_64 += x86_64/svm_int_ctl_test
+ TEST_GEN_PROGS_x86_64 += x86_64/sync_regs_test
+ TEST_GEN_PROGS_x86_64 += x86_64/userspace_msr_exit_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_apic_access_test
+diff --git a/tools/testing/selftests/kvm/access_tracking_perf_test.c b/tools/testing/selftests/kvm/access_tracking_perf_test.c
+index 71e277c7c3f3..5d95113c7b7c 100644
+--- a/tools/testing/selftests/kvm/access_tracking_perf_test.c
++++ b/tools/testing/selftests/kvm/access_tracking_perf_test.c
+@@ -371,9 +371,7 @@ static void help(char *name)
+ 	printf(" -v: specify the number of vCPUs to run.\n");
+ 	printf(" -o: Overlap guest memory accesses instead of partitioning\n"
+ 	       "     them into a separate region of memory for each vCPU.\n");
+-	printf(" -s: specify the type of memory that should be used to\n"
+-	       "     back the guest data region.\n\n");
+-	backing_src_help();
++	backing_src_help("-s");
+ 	puts("");
+ 	exit(0);
+ }
+@@ -381,7 +379,7 @@ static void help(char *name)
+ int main(int argc, char *argv[])
+ {
+ 	struct test_params params = {
+-		.backing_src = VM_MEM_SRC_ANONYMOUS,
++		.backing_src = DEFAULT_VM_MEM_SRC,
+ 		.vcpu_memory_bytes = DEFAULT_PER_VCPU_MEM_SIZE,
+ 		.vcpus = 1,
+ 	};
+diff --git a/tools/testing/selftests/kvm/demand_paging_test.c b/tools/testing/selftests/kvm/demand_paging_test.c
+index e79c1b64977f..1510b21e6306 100644
+--- a/tools/testing/selftests/kvm/demand_paging_test.c
++++ b/tools/testing/selftests/kvm/demand_paging_test.c
+@@ -179,7 +179,7 @@ static void *uffd_handler_thread_fn(void *arg)
+ 			return NULL;
+ 		}
+ 
+-		if (!pollfd[0].revents & POLLIN)
++		if (!(pollfd[0].revents & POLLIN))
+ 			continue;
+ 
+ 		r = read(uffd, &msg, sizeof(msg));
+@@ -416,7 +416,7 @@ static void help(char *name)
+ {
+ 	puts("");
+ 	printf("usage: %s [-h] [-m vm_mode] [-u uffd_mode] [-d uffd_delay_usec]\n"
+-	       "          [-b memory] [-t type] [-v vcpus] [-o]\n", name);
++	       "          [-b memory] [-s type] [-v vcpus] [-o]\n", name);
+ 	guest_modes_help();
+ 	printf(" -u: use userfaultfd to handle vCPU page faults. Mode is a\n"
+ 	       "     UFFD registration mode: 'MISSING' or 'MINOR'.\n");
+@@ -426,8 +426,7 @@ static void help(char *name)
+ 	printf(" -b: specify the size of the memory region which should be\n"
+ 	       "     demand paged by each vCPU. e.g. 10M or 3G.\n"
+ 	       "     Default: 1G\n");
+-	printf(" -t: The type of backing memory to use. Default: anonymous\n");
+-	backing_src_help();
++	backing_src_help("-s");
+ 	printf(" -v: specify the number of vCPUs to run.\n");
+ 	printf(" -o: Overlap guest memory accesses instead of partitioning\n"
+ 	       "     them into a separate region of memory for each vCPU.\n");
+@@ -439,14 +438,14 @@ int main(int argc, char *argv[])
+ {
+ 	int max_vcpus = kvm_check_cap(KVM_CAP_MAX_VCPUS);
+ 	struct test_params p = {
+-		.src_type = VM_MEM_SRC_ANONYMOUS,
++		.src_type = DEFAULT_VM_MEM_SRC,
+ 		.partition_vcpu_memory_access = true,
+ 	};
+ 	int opt;
+ 
+ 	guest_modes_append_default();
+ 
+-	while ((opt = getopt(argc, argv, "hm:u:d:b:t:v:o")) != -1) {
++	while ((opt = getopt(argc, argv, "hm:u:d:b:s:v:o")) != -1) {
+ 		switch (opt) {
+ 		case 'm':
+ 			guest_modes_cmdline(optarg);
+@@ -465,7 +464,7 @@ int main(int argc, char *argv[])
+ 		case 'b':
+ 			guest_percpu_mem_size = parse_size(optarg);
+ 			break;
+-		case 't':
++		case 's':
+ 			p.src_type = parse_backing_src_type(optarg);
+ 			break;
+ 		case 'v':
+@@ -485,7 +484,7 @@ int main(int argc, char *argv[])
+ 
+ 	if (p.uffd_mode == UFFDIO_REGISTER_MODE_MINOR &&
+ 	    !backing_src_is_shared(p.src_type)) {
+-		TEST_FAIL("userfaultfd MINOR mode requires shared memory; pick a different -t");
++		TEST_FAIL("userfaultfd MINOR mode requires shared memory; pick a different -s");
+ 	}
+ 
+ 	for_each_guest_mode(run_test, &p);
+diff --git a/tools/testing/selftests/kvm/dirty_log_perf_test.c b/tools/testing/selftests/kvm/dirty_log_perf_test.c
+index 479868570d59..7ffab5bd5ce5 100644
+--- a/tools/testing/selftests/kvm/dirty_log_perf_test.c
++++ b/tools/testing/selftests/kvm/dirty_log_perf_test.c
+@@ -118,42 +118,64 @@ static inline void disable_dirty_logging(struct kvm_vm *vm, int slots)
+ 	toggle_dirty_logging(vm, slots, false);
+ }
+ 
+-static void get_dirty_log(struct kvm_vm *vm, int slots, unsigned long *bitmap,
+-			  uint64_t nr_pages)
++static void get_dirty_log(struct kvm_vm *vm, unsigned long *bitmaps[], int slots)
+ {
+-	uint64_t slot_pages = nr_pages / slots;
+ 	int i;
+ 
+ 	for (i = 0; i < slots; i++) {
+ 		int slot = PERF_TEST_MEM_SLOT_INDEX + i;
+-		unsigned long *slot_bitmap = bitmap + i * slot_pages;
+ 
+-		kvm_vm_get_dirty_log(vm, slot, slot_bitmap);
++		kvm_vm_get_dirty_log(vm, slot, bitmaps[i]);
+ 	}
+ }
+ 
+-static void clear_dirty_log(struct kvm_vm *vm, int slots, unsigned long *bitmap,
+-			    uint64_t nr_pages)
++static void clear_dirty_log(struct kvm_vm *vm, unsigned long *bitmaps[],
++			    int slots, uint64_t pages_per_slot)
+ {
+-	uint64_t slot_pages = nr_pages / slots;
+ 	int i;
+ 
+ 	for (i = 0; i < slots; i++) {
+ 		int slot = PERF_TEST_MEM_SLOT_INDEX + i;
+-		unsigned long *slot_bitmap = bitmap + i * slot_pages;
+ 
+-		kvm_vm_clear_dirty_log(vm, slot, slot_bitmap, 0, slot_pages);
++		kvm_vm_clear_dirty_log(vm, slot, bitmaps[i], 0, pages_per_slot);
+ 	}
+ }
+ 
++static unsigned long **alloc_bitmaps(int slots, uint64_t pages_per_slot)
++{
++	unsigned long **bitmaps;
++	int i;
++
++	bitmaps = malloc(slots * sizeof(bitmaps[0]));
++	TEST_ASSERT(bitmaps, "Failed to allocate bitmaps array.");
++
++	for (i = 0; i < slots; i++) {
++		bitmaps[i] = bitmap_zalloc(pages_per_slot);
++		TEST_ASSERT(bitmaps[i], "Failed to allocate slot bitmap.");
++	}
++
++	return bitmaps;
++}
++
++static void free_bitmaps(unsigned long *bitmaps[], int slots)
++{
++	int i;
++
++	for (i = 0; i < slots; i++)
++		free(bitmaps[i]);
++
++	free(bitmaps);
++}
++
+ static void run_test(enum vm_guest_mode mode, void *arg)
+ {
+ 	struct test_params *p = arg;
+ 	pthread_t *vcpu_threads;
+ 	struct kvm_vm *vm;
+-	unsigned long *bmap;
++	unsigned long **bitmaps;
+ 	uint64_t guest_num_pages;
+ 	uint64_t host_num_pages;
++	uint64_t pages_per_slot;
+ 	int vcpu_id;
+ 	struct timespec start;
+ 	struct timespec ts_diff;
+@@ -171,7 +193,9 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 	guest_num_pages = (nr_vcpus * guest_percpu_mem_size) >> vm_get_page_shift(vm);
+ 	guest_num_pages = vm_adjust_num_guest_pages(mode, guest_num_pages);
+ 	host_num_pages = vm_num_host_pages(mode, guest_num_pages);
+-	bmap = bitmap_zalloc(host_num_pages);
++	pages_per_slot = host_num_pages / p->slots;
++
++	bitmaps = alloc_bitmaps(p->slots, pages_per_slot);
+ 
+ 	if (dirty_log_manual_caps) {
+ 		cap.cap = KVM_CAP_MANUAL_DIRTY_LOG_PROTECT2;
+@@ -239,7 +263,7 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 			iteration, ts_diff.tv_sec, ts_diff.tv_nsec);
+ 
+ 		clock_gettime(CLOCK_MONOTONIC, &start);
+-		get_dirty_log(vm, p->slots, bmap, host_num_pages);
++		get_dirty_log(vm, bitmaps, p->slots);
+ 		ts_diff = timespec_elapsed(start);
+ 		get_dirty_log_total = timespec_add(get_dirty_log_total,
+ 						   ts_diff);
+@@ -248,7 +272,7 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 
+ 		if (dirty_log_manual_caps) {
+ 			clock_gettime(CLOCK_MONOTONIC, &start);
+-			clear_dirty_log(vm, p->slots, bmap, host_num_pages);
++			clear_dirty_log(vm, bitmaps, p->slots, pages_per_slot);
+ 			ts_diff = timespec_elapsed(start);
+ 			clear_dirty_log_total = timespec_add(clear_dirty_log_total,
+ 							     ts_diff);
+@@ -281,7 +305,7 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 			clear_dirty_log_total.tv_nsec, avg.tv_sec, avg.tv_nsec);
+ 	}
+ 
+-	free(bmap);
++	free_bitmaps(bitmaps, p->slots);
+ 	free(vcpu_threads);
+ 	perf_test_destroy_vm(vm);
+ }
+@@ -308,11 +332,9 @@ static void help(char *name)
+ 	printf(" -v: specify the number of vCPUs to run.\n");
+ 	printf(" -o: Overlap guest memory accesses instead of partitioning\n"
+ 	       "     them into a separate region of memory for each vCPU.\n");
+-	printf(" -s: specify the type of memory that should be used to\n"
+-	       "     back the guest data region.\n\n");
++	backing_src_help("-s");
+ 	printf(" -x: Split the memory region into this number of memslots.\n"
+-	       "     (default: 1)");
+-	backing_src_help();
++	       "     (default: 1)\n");
+ 	puts("");
+ 	exit(0);
+ }
+@@ -324,7 +346,7 @@ int main(int argc, char *argv[])
+ 		.iterations = TEST_HOST_LOOP_N,
+ 		.wr_fract = 1,
+ 		.partition_vcpu_memory_access = true,
+-		.backing_src = VM_MEM_SRC_ANONYMOUS,
++		.backing_src = DEFAULT_VM_MEM_SRC,
+ 		.slots = 1,
+ 	};
+ 	int opt;
+diff --git a/tools/testing/selftests/kvm/include/test_util.h b/tools/testing/selftests/kvm/include/test_util.h
+index 451fed5ce8e7..f8fddc84c0d3 100644
+--- a/tools/testing/selftests/kvm/include/test_util.h
++++ b/tools/testing/selftests/kvm/include/test_util.h
+@@ -90,6 +90,8 @@ enum vm_mem_backing_src_type {
+ 	NUM_SRC_TYPES,
+ };
+ 
++#define DEFAULT_VM_MEM_SRC VM_MEM_SRC_ANONYMOUS
++
+ struct vm_mem_backing_src_alias {
+ 	const char *name;
+ 	uint32_t flag;
+@@ -102,7 +104,7 @@ size_t get_trans_hugepagesz(void);
+ size_t get_def_hugetlb_pagesz(void);
+ const struct vm_mem_backing_src_alias *vm_mem_backing_src_alias(uint32_t i);
+ size_t get_backing_src_pagesz(uint32_t i);
+-void backing_src_help(void);
++void backing_src_help(const char *flag);
+ enum vm_mem_backing_src_type parse_backing_src_type(const char *type_name);
+ long get_run_delay(void);
+ 
+diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86_64/processor.h
+index 242ae8e09a65..eba8bd08293e 100644
+--- a/tools/testing/selftests/kvm/include/x86_64/processor.h
++++ b/tools/testing/selftests/kvm/include/x86_64/processor.h
+@@ -312,37 +312,37 @@ static inline void set_xmm(int n, unsigned long val)
+ 	}
+ }
+ 
+-typedef unsigned long v1di __attribute__ ((vector_size (8)));
++#define GET_XMM(__xmm)							\
++({									\
++	unsigned long __val;						\
++	asm volatile("movq %%"#__xmm", %0" : "=r"(__val) : : #__xmm);	\
++	__val;								\
++})
++
+ static inline unsigned long get_xmm(int n)
+ {
+ 	assert(n >= 0 && n <= 7);
+ 
+-	register v1di xmm0 __asm__("%xmm0");
+-	register v1di xmm1 __asm__("%xmm1");
+-	register v1di xmm2 __asm__("%xmm2");
+-	register v1di xmm3 __asm__("%xmm3");
+-	register v1di xmm4 __asm__("%xmm4");
+-	register v1di xmm5 __asm__("%xmm5");
+-	register v1di xmm6 __asm__("%xmm6");
+-	register v1di xmm7 __asm__("%xmm7");
+ 	switch (n) {
+ 	case 0:
+-		return (unsigned long)xmm0;
++		return GET_XMM(xmm0);
+ 	case 1:
+-		return (unsigned long)xmm1;
++		return GET_XMM(xmm1);
+ 	case 2:
+-		return (unsigned long)xmm2;
++		return GET_XMM(xmm2);
+ 	case 3:
+-		return (unsigned long)xmm3;
++		return GET_XMM(xmm3);
+ 	case 4:
+-		return (unsigned long)xmm4;
++		return GET_XMM(xmm4);
+ 	case 5:
+-		return (unsigned long)xmm5;
++		return GET_XMM(xmm5);
+ 	case 6:
+-		return (unsigned long)xmm6;
++		return GET_XMM(xmm6);
+ 	case 7:
+-		return (unsigned long)xmm7;
++		return GET_XMM(xmm7);
+ 	}
++
++	/* never reached */
+ 	return 0;
+ }
+ 
+diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
+index 0d04a7db7f24..36407cb0ec85 100644
+--- a/tools/testing/selftests/kvm/kvm_page_table_test.c
++++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
+@@ -456,10 +456,7 @@ static void help(char *name)
+ 	       "     (default: 1G)\n");
+ 	printf(" -v: specify the number of vCPUs to run\n"
+ 	       "     (default: 1)\n");
+-	printf(" -s: specify the type of memory that should be used to\n"
+-	       "     back the guest data region.\n"
+-	       "     (default: anonymous)\n\n");
+-	backing_src_help();
++	backing_src_help("-s");
+ 	puts("");
+ }
+ 
+@@ -468,7 +465,7 @@ int main(int argc, char *argv[])
+ 	int max_vcpus = kvm_check_cap(KVM_CAP_MAX_VCPUS);
+ 	struct test_params p = {
+ 		.test_mem_size = DEFAULT_TEST_MEM_SIZE,
+-		.src_type = VM_MEM_SRC_ANONYMOUS,
++		.src_type = DEFAULT_VM_MEM_SRC,
+ 	};
+ 	int opt;
+ 
+diff --git a/tools/testing/selftests/kvm/lib/test_util.c b/tools/testing/selftests/kvm/lib/test_util.c
+index a9107bfae402..b72429108993 100644
+--- a/tools/testing/selftests/kvm/lib/test_util.c
++++ b/tools/testing/selftests/kvm/lib/test_util.c
+@@ -283,13 +283,22 @@ size_t get_backing_src_pagesz(uint32_t i)
+ 	}
+ }
+ 
+-void backing_src_help(void)
++static void print_available_backing_src_types(const char *prefix)
+ {
+ 	int i;
+ 
+-	printf("Available backing src types:\n");
++	printf("%sAvailable backing src types:\n", prefix);
++
+ 	for (i = 0; i < NUM_SRC_TYPES; i++)
+-		printf("\t%s\n", vm_mem_backing_src_alias(i)->name);
++		printf("%s    %s\n", prefix, vm_mem_backing_src_alias(i)->name);
++}
++
++void backing_src_help(const char *flag)
++{
++	printf(" %s: specify the type of memory that should be used to\n"
++	       "     back the guest data region. (default: %s)\n",
++	       flag, vm_mem_backing_src_alias(DEFAULT_VM_MEM_SRC)->name);
++	print_available_backing_src_types("     ");
+ }
+ 
+ enum vm_mem_backing_src_type parse_backing_src_type(const char *type_name)
+@@ -300,7 +309,7 @@ enum vm_mem_backing_src_type parse_backing_src_type(const char *type_name)
+ 		if (!strcmp(type_name, vm_mem_backing_src_alias(i)->name))
+ 			return i;
+ 
+-	backing_src_help();
++	print_available_backing_src_types("");
+ 	TEST_FAIL("Unknown backing src type: %s", type_name);
+ 	return -1;
+ }
+diff --git a/tools/testing/selftests/kvm/rseq_test.c b/tools/testing/selftests/kvm/rseq_test.c
+index 060538bd405a..c5e0dd664a7b 100644
+--- a/tools/testing/selftests/kvm/rseq_test.c
++++ b/tools/testing/selftests/kvm/rseq_test.c
+@@ -180,6 +180,7 @@ int main(int argc, char *argv[])
+ 	 * CPU affinity.
+ 	 */
+ 	vm = vm_create_default(VCPU_ID, 0, guest_code);
++	ucall_init(vm, NULL);
+ 
+ 	pthread_create(&migration_thread, NULL, migration_worker, 0);
+ 
+diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
+index 2172d65b85e4..62f2eb9ee3d5 100644
+--- a/tools/testing/selftests/kvm/steal_time.c
++++ b/tools/testing/selftests/kvm/steal_time.c
+@@ -116,12 +116,12 @@ struct st_time {
+ 	uint64_t st_time;
+ };
+ 
+-static int64_t smccc(uint32_t func, uint32_t arg)
++static int64_t smccc(uint32_t func, uint64_t arg)
+ {
+ 	unsigned long ret;
+ 
+ 	asm volatile(
+-		"mov	x0, %1\n"
++		"mov	w0, %w1\n"
+ 		"mov	x1, %2\n"
+ 		"hvc	#0\n"
+ 		"mov	%0, x0\n"
+diff --git a/tools/testing/selftests/kvm/x86_64/svm_int_ctl_test.c b/tools/testing/selftests/kvm/x86_64/svm_int_ctl_test.c
+new file mode 100644
+index 000000000000..df04f56ce859
+--- /dev/null
++++ b/tools/testing/selftests/kvm/x86_64/svm_int_ctl_test.c
+@@ -0,0 +1,128 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * svm_int_ctl_test
++ *
++ * Copyright (C) 2021, Red Hat, Inc.
++ *
++ * Nested SVM testing: test simultaneous use of V_IRQ from L1 and L0.
++ */
++
++#include "test_util.h"
++#include "kvm_util.h"
++#include "processor.h"
++#include "svm_util.h"
++#include "apic.h"
++
++#define VCPU_ID		0
++
++static struct kvm_vm *vm;
++
++bool vintr_irq_called;
++bool intr_irq_called;
++
++#define VINTR_IRQ_NUMBER 0x20
++#define INTR_IRQ_NUMBER 0x30
++
++static void vintr_irq_handler(struct ex_regs *regs)
++{
++	vintr_irq_called = true;
++}
++
++static void intr_irq_handler(struct ex_regs *regs)
++{
++	x2apic_write_reg(APIC_EOI, 0x00);
++	intr_irq_called = true;
++}
++
++static void l2_guest_code(struct svm_test_data *svm)
++{
++	/* This code raises interrupt INTR_IRQ_NUMBER in the L1's LAPIC,
++	 * and since L1 didn't enable virtual interrupt masking,
++	 * L2 should receive it and not L1.
++	 *
++	 * L2 also has virtual interrupt 'VINTR_IRQ_NUMBER' pending in V_IRQ
++	 * so it should also receive it after the following 'sti'.
++	 */
++	x2apic_write_reg(APIC_ICR,
++		APIC_DEST_SELF | APIC_INT_ASSERT | INTR_IRQ_NUMBER);
++
++	__asm__ __volatile__(
++		"sti\n"
++		"nop\n"
++	);
++
++	GUEST_ASSERT(vintr_irq_called);
++	GUEST_ASSERT(intr_irq_called);
++
++	__asm__ __volatile__(
++		"vmcall\n"
++	);
++}
++
++static void l1_guest_code(struct svm_test_data *svm)
++{
++	#define L2_GUEST_STACK_SIZE 64
++	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
++	struct vmcb *vmcb = svm->vmcb;
++
++	x2apic_enable();
++
++	/* Prepare for L2 execution. */
++	generic_svm_setup(svm, l2_guest_code,
++			  &l2_guest_stack[L2_GUEST_STACK_SIZE]);
++
++	/* No virtual interrupt masking */
++	vmcb->control.int_ctl &= ~V_INTR_MASKING_MASK;
++
++	/* No intercepts for real and virtual interrupts */
++	vmcb->control.intercept &= ~(1ULL << INTERCEPT_INTR | INTERCEPT_VINTR);
++
++	/* Make a virtual interrupt VINTR_IRQ_NUMBER pending */
++	vmcb->control.int_ctl |= V_IRQ_MASK | (0x1 << V_INTR_PRIO_SHIFT);
++	vmcb->control.int_vector = VINTR_IRQ_NUMBER;
++
++	run_guest(vmcb, svm->vmcb_gpa);
++	GUEST_ASSERT(vmcb->control.exit_code == SVM_EXIT_VMMCALL);
++	GUEST_DONE();
++}
++
++int main(int argc, char *argv[])
++{
++	vm_vaddr_t svm_gva;
++
++	nested_svm_check_supported();
++
++	vm = vm_create_default(VCPU_ID, 0, (void *) l1_guest_code);
++
++	vm_init_descriptor_tables(vm);
++	vcpu_init_descriptor_tables(vm, VCPU_ID);
++
++	vm_install_exception_handler(vm, VINTR_IRQ_NUMBER, vintr_irq_handler);
++	vm_install_exception_handler(vm, INTR_IRQ_NUMBER, intr_irq_handler);
++
++	vcpu_alloc_svm(vm, &svm_gva);
++	vcpu_args_set(vm, VCPU_ID, 1, svm_gva);
++
++	struct kvm_run *run = vcpu_state(vm, VCPU_ID);
++	struct ucall uc;
++
++	vcpu_run(vm, VCPU_ID);
++	TEST_ASSERT(run->exit_reason == KVM_EXIT_IO,
++		    "Got exit_reason other than KVM_EXIT_IO: %u (%s)\n",
++		    run->exit_reason,
++		    exit_reason_str(run->exit_reason));
++
++	switch (get_ucall(vm, VCPU_ID, &uc)) {
++	case UCALL_ABORT:
++		TEST_FAIL("%s", (const char *)uc.args[0]);
++		break;
++		/* NOT REACHED */
++	case UCALL_DONE:
++		goto done;
++	default:
++		TEST_FAIL("Unknown ucall 0x%lx.", uc.cmd);
++	}
++done:
++	kvm_vm_free(vm);
++	return 0;
++}
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 439d3b4cd1a9..7851f3a1b5f7 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -235,9 +235,13 @@ static void ack_flush(void *_completed)
+ {
+ }
+ 
+-static inline bool kvm_kick_many_cpus(const struct cpumask *cpus, bool wait)
++static inline bool kvm_kick_many_cpus(cpumask_var_t tmp, bool wait)
+ {
+-	if (unlikely(!cpus))
++	const struct cpumask *cpus;
++
++	if (likely(cpumask_available(tmp)))
++		cpus = tmp;
++	else
+ 		cpus = cpu_online_mask;
+ 
+ 	if (cpumask_empty(cpus))
+@@ -263,14 +267,34 @@ bool kvm_make_vcpus_request_mask(struct kvm *kvm, unsigned int req,
+ 			continue;
+ 
+ 		kvm_make_request(req, vcpu);
+-		cpu = vcpu->cpu;
+ 
+ 		if (!(req & KVM_REQUEST_NO_WAKEUP) && kvm_vcpu_wake_up(vcpu))
+ 			continue;
+ 
+-		if (tmp != NULL && cpu != -1 && cpu != me &&
+-		    kvm_request_needs_ipi(vcpu, req))
+-			__cpumask_set_cpu(cpu, tmp);
++		/*
++		 * tmp can be "unavailable" if cpumasks are allocated off stack
++		 * as allocation of the mask is deliberately not fatal and is
++		 * handled by falling back to kicking all online CPUs.
++		 */
++		if (!cpumask_available(tmp))
++			continue;
++
++		/*
++		 * Note, the vCPU could get migrated to a different pCPU at any
++		 * point after kvm_request_needs_ipi(), which could result in
++		 * sending an IPI to the previous pCPU.  But, that's ok because
++		 * the purpose of the IPI is to ensure the vCPU returns to
++		 * OUTSIDE_GUEST_MODE, which is satisfied if the vCPU migrates.
++		 * Entering READING_SHADOW_PAGE_TABLES after this point is also
++		 * ok, as the requirement is only that KVM wait for vCPUs that
++		 * were reading SPTEs _before_ any changes were finalized.  See
++		 * kvm_vcpu_kick() for more details on handling requests.
++		 */
++		if (kvm_request_needs_ipi(vcpu, req)) {
++			cpu = READ_ONCE(vcpu->cpu);
++			if (cpu != -1 && cpu != me)
++				__cpumask_set_cpu(cpu, tmp);
++		}
+ 	}
+ 
+ 	called = kvm_kick_many_cpus(tmp, !!(req & KVM_REQUEST_WAIT));
+@@ -302,13 +326,8 @@ EXPORT_SYMBOL_GPL(kvm_make_all_cpus_request);
+ #ifndef CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
+ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ {
+-	/*
+-	 * Read tlbs_dirty before setting KVM_REQ_TLB_FLUSH in
+-	 * kvm_make_all_cpus_request.
+-	 */
+-	long dirty_count = smp_load_acquire(&kvm->tlbs_dirty);
+-
+ 	++kvm->stat.generic.remote_tlb_flush_requests;
++
+ 	/*
+ 	 * We want to publish modifications to the page tables before reading
+ 	 * mode. Pairs with a memory barrier in arch-specific code.
+@@ -323,7 +342,6 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ 	if (!kvm_arch_flush_remote_tlb(kvm)
+ 	    || kvm_make_all_cpus_request(kvm, KVM_REQ_TLB_FLUSH))
+ 		++kvm->stat.generic.remote_tlb_flush;
+-	cmpxchg(&kvm->tlbs_dirty, dirty_count, 0);
+ }
+ EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
+ #endif
+@@ -528,7 +546,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 		}
+ 	}
+ 
+-	if (range->flush_on_ret && (ret || kvm->tlbs_dirty))
++	if (range->flush_on_ret && ret)
+ 		kvm_flush_remote_tlbs(kvm);
+ 
+ 	if (locked)
+@@ -3134,15 +3152,19 @@ static void grow_halt_poll_ns(struct kvm_vcpu *vcpu)
+ 
+ static void shrink_halt_poll_ns(struct kvm_vcpu *vcpu)
+ {
+-	unsigned int old, val, shrink;
++	unsigned int old, val, shrink, grow_start;
+ 
+ 	old = val = vcpu->halt_poll_ns;
+ 	shrink = READ_ONCE(halt_poll_ns_shrink);
++	grow_start = READ_ONCE(halt_poll_ns_grow_start);
+ 	if (shrink == 0)
+ 		val = 0;
+ 	else
+ 		val /= shrink;
+ 
++	if (val < grow_start)
++		val = 0;
++
+ 	vcpu->halt_poll_ns = val;
+ 	trace_kvm_halt_poll_ns_shrink(vcpu->vcpu_id, val, old);
+ }
+@@ -3290,16 +3312,24 @@ EXPORT_SYMBOL_GPL(kvm_vcpu_wake_up);
+  */
+ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
+ {
+-	int me;
+-	int cpu = vcpu->cpu;
++	int me, cpu;
+ 
+ 	if (kvm_vcpu_wake_up(vcpu))
+ 		return;
+ 
++	/*
++	 * Note, the vCPU could get migrated to a different pCPU at any point
++	 * after kvm_arch_vcpu_should_kick(), which could result in sending an
++	 * IPI to the previous pCPU.  But, that's ok because the purpose of the
++	 * IPI is to force the vCPU to leave IN_GUEST_MODE, and migrating the
++	 * vCPU also requires it to leave IN_GUEST_MODE.
++	 */
+ 	me = get_cpu();
+-	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
+-		if (kvm_arch_vcpu_should_kick(vcpu))
++	if (kvm_arch_vcpu_should_kick(vcpu)) {
++		cpu = READ_ONCE(vcpu->cpu);
++		if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
+ 			smp_send_reschedule(cpu);
++	}
+ 	put_cpu();
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_kick);

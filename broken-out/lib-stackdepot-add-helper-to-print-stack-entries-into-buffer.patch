@@ -161,10 +161,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
  void stack_depot_print(depot_stack_handle_t stack);
  
- unsigned int filter_irq_stacks(unsigned long *entries, unsigned int nr_entries);
+ #ifdef CONFIG_STACKDEPOT
 --- a/lib/stackdepot.c~lib-stackdepot-add-helper-to-print-stack-entries-into-buffer
 +++ a/lib/stackdepot.c
-@@ -215,6 +215,30 @@ static inline struct stack_record *find_
+@@ -214,6 +214,30 @@ static inline struct stack_record *find_
  }
  
  /**

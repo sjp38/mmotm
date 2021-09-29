@@ -17,10 +17,10 @@ Signed-off-by: Peter Xu <peterx@redhat.com>
 Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
 Reviewed-by: David Hildenbrand <david@redhat.com>
 Reviewed-by: Liam Howlett <liam.howlett@oracle.com>
+Acked-by: Hugh Dickins <hughd@google.com>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: Andrea Arcangeli <aarcange@redhat.com>
 Cc: Axel Rasmussen <axelrasmussen@google.com>
-Cc: Hugh Dickins <hughd@google.com>
 Cc: Jerome Glisse <jglisse@redhat.com>
 Cc: "Kirill A . Shutemov" <kirill@shutemov.name>
 Cc: Matthew Wilcox <willy@infradead.org>
@@ -59,7 +59,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return same;
  }
  
-@@ -3487,7 +3487,7 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3488,7 +3488,7 @@ vm_fault_t do_swap_page(struct vm_fault
  	vm_fault_t ret = 0;
  	void *shadow = NULL;
  

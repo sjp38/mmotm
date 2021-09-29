@@ -1,0 +1,34 @@
+From: Pavel Skripkin <paskripkin@gmail.com>
+Subject: sysv: use BUILD_BUG_ON instead of runtime check
+
+There were runtime checks about sizes of struct v7_super_block and struct
+sysv_inode.  If one of these checks fail the kernel will panic.  Since
+these values are known at compile time let's use BUILD_BUG_ON(), because
+it's a standard mechanism for validation checking at build time
+
+Link: https://lkml.kernel.org/r/20210813123020.22971-1-paskripkin@gmail.com
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/sysv/super.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+--- a/fs/sysv/super.c~sysv-use-build_bug_on-instead-of-runtime-check
++++ a/fs/sysv/super.c
+@@ -474,10 +474,8 @@ static int v7_fill_super(struct super_bl
+ 	struct sysv_sb_info *sbi;
+ 	struct buffer_head *bh;
+ 
+-	if (440 != sizeof (struct v7_super_block))
+-		panic("V7 FS: bad super-block size");
+-	if (64 != sizeof (struct sysv_inode))
+-		panic("sysv fs: bad i-node size");
++	BUILD_BUG_ON(sizeof(struct v7_super_block) != 440);
++	BUILD_BUG_ON(sizeof(struct sysv_inode) != 64);
+ 
+ 	sbi = kzalloc(sizeof(struct sysv_sb_info), GFP_KERNEL);
+ 	if (!sbi)
+_

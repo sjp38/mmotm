@@ -98,7 +98,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (new)
  		pte_free(mm, new);
  	return 0;
-@@ -4014,17 +4019,10 @@ vm_fault_t finish_fault(struct vm_fault
+@@ -4015,17 +4020,10 @@ vm_fault_t finish_fault(struct vm_fault
  				return ret;
  		}
  

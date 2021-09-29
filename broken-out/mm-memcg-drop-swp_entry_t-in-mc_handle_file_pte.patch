@@ -19,7 +19,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-drop-swp_entry_t-in-mc_handle_file_pte
 +++ a/mm/memcontrol.c
-@@ -5555,7 +5555,7 @@ static struct page *mc_handle_swap_pte(s
+@@ -5545,7 +5545,7 @@ static struct page *mc_handle_swap_pte(s
  #endif
  
  static struct page *mc_handle_file_pte(struct vm_area_struct *vma,
@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	if (!vma->vm_file) /* anonymous vma */
  		return NULL;
-@@ -5728,7 +5728,7 @@ static enum mc_target_type get_mctgt_typ
+@@ -5718,7 +5718,7 @@ static enum mc_target_type get_mctgt_typ
  	else if (is_swap_pte(ptent))
  		page = mc_handle_swap_pte(vma, ptent, &ent);
  	else if (pte_none(ptent))

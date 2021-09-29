@@ -15,11 +15,11 @@ Fix this by moving fold_vm_numa_events() outside the SMP-only section.
 Link: https://lkml.kernel.org/r/9d16ccdd9ef32803d7100c84f737de6a749314fb.1631781495.git.geert+renesas@glider.be
 Fixes: f19298b9516c1a03 ("mm/vmstat: convert NUMA statistics to basic NUMA counters")
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Mel Gorman <mgorman@suse.de>
 Cc: Gon Solo <gonsolo@gmail.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Juri Lelli <juri.lelli@redhat.com>
 Cc: Matt Fleming <matt@codeblueprint.co.uk>
-Cc: Mel Gorman <mgorman@suse.de>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Rich Felker <dalias@libc.org>
 Cc: Vincent Guittot <vincent.guittot@linaro.org>

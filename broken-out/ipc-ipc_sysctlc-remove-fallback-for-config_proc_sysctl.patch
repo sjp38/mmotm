@@ -16,9 +16,9 @@ fallback can be removed.
 
 Link: https://lkml.kernel.org/r/20210918145337.3369-1-manfred@colorfullife.com
 Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-Cc: Davidlohr Bueso <dbueso@suse.de>
+Reviewed-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Acked-by: Davidlohr Bueso <dbueso@suse.de>
 Cc: Manfred Spraul <manfred@colorfullife.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

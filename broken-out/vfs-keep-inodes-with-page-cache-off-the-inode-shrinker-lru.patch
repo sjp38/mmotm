@@ -76,7 +76,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/inode.c~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/fs/inode.c
-@@ -426,11 +426,20 @@ void ihold(struct inode *inode)
+@@ -428,11 +428,20 @@ void ihold(struct inode *inode)
  }
  EXPORT_SYMBOL(ihold);
  
@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		inode->i_state |= I_REFERENCED;
  }
  
-@@ -441,16 +450,11 @@ static void inode_lru_list_add(struct in
+@@ -443,16 +452,11 @@ static void inode_lru_list_add(struct in
   */
  void inode_add_lru(struct inode *inode)
  {
@@ -117,7 +117,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru))
  		this_cpu_dec(nr_unused);
  }
-@@ -726,10 +730,6 @@ again:
+@@ -728,10 +732,6 @@ again:
  /*
   * Isolate the inode from the LRU in preparation for freeing it.
   *
@@ -128,7 +128,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * If the inode has the I_REFERENCED flag set, then it means that it has been
   * used recently - the flag is set in iput_final(). When we encounter such an
   * inode, clear the flag and move it to the back of the LRU so it gets another
-@@ -745,31 +745,39 @@ static enum lru_status inode_lru_isolate
+@@ -747,31 +747,39 @@ static enum lru_status inode_lru_isolate
  	struct inode	*inode = container_of(item, struct inode, i_lru);
  
  	/*
@@ -174,7 +174,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (inode_has_buffers(inode) || !mapping_empty(&inode->i_data)) {
  		__iget(inode);
  		spin_unlock(&inode->i_lock);
-@@ -1636,7 +1644,7 @@ static void iput_final(struct inode *ino
+@@ -1638,7 +1646,7 @@ static void iput_final(struct inode *ino
  	if (!drop &&
  	    !(inode->i_state & I_DONTCACHE) &&
  	    (sb->s_flags & SB_ACTIVE)) {
@@ -396,7 +396,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/workingset.c~vfs-keep-inodes-with-page-cache-off-the-inode-shrinker-lru
 +++ a/mm/workingset.c
-@@ -542,6 +542,13 @@ static enum lru_status shadow_lru_isolat
+@@ -543,6 +543,13 @@ static enum lru_status shadow_lru_isolat
  		goto out;
  	}
  
@@ -410,7 +410,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	list_lru_isolate(lru, item);
  	__dec_lruvec_kmem_state(node, WORKINGSET_NODES);
  
-@@ -561,6 +568,9 @@ static enum lru_status shadow_lru_isolat
+@@ -562,6 +569,9 @@ static enum lru_status shadow_lru_isolat
  
  out_invalid:
  	xa_unlock_irq(&mapping->i_pages);

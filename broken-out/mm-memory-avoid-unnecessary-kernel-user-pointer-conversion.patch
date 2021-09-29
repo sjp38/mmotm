@@ -17,7 +17,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-memory-avoid-unnecessary-kernel-user-pointer-conversion
 +++ a/mm/memory.c
-@@ -5411,7 +5411,6 @@ long copy_huge_page_from_user(struct pag
+@@ -5412,7 +5412,6 @@ long copy_huge_page_from_user(struct pag
  				unsigned int pages_per_huge_page,
  				bool allow_pagefault)
  {
@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	void *page_kaddr;
  	unsigned long i, rc = 0;
  	unsigned long ret_val = pages_per_huge_page * PAGE_SIZE;
-@@ -5424,8 +5423,7 @@ long copy_huge_page_from_user(struct pag
+@@ -5425,8 +5424,7 @@ long copy_huge_page_from_user(struct pag
  		else
  			page_kaddr = kmap_atomic(subpage);
  		rc = copy_from_user(page_kaddr,

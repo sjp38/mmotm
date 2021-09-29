@@ -1,0 +1,29 @@
+From: Colin Ian King <colin.king@canonical.com>
+Subject: mm/damon/core: nullify pointer ctx->kdamond with a NULL
+
+Currently a plain integer is being used to nullify the pointer
+ctx->kdamond.  Use NULL instead.  Cleans up sparse warning:
+
+mm/damon/core.c:317:40: warning: Using plain integer as NULL pointer
+
+Link: https://lkml.kernel.org/r/20210925215908.181226-1-colin.king@canonical.com
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Reviewed-by: SeongJae Park <sj@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/damon/core.c~mm-damon-core-nullify-pointer-ctx-kdamond-with-a-null
++++ a/mm/damon/core.c
+@@ -314,7 +314,7 @@ static int __damon_start(struct damon_ct
+ 				nr_running_ctxs);
+ 		if (IS_ERR(ctx->kdamond)) {
+ 			err = PTR_ERR(ctx->kdamond);
+-			ctx->kdamond = 0;
++			ctx->kdamond = NULL;
+ 		}
+ 	}
+ 	mutex_unlock(&ctx->kdamond_lock);
+_

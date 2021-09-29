@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks
 +++ a/mm/memcontrol.c
-@@ -242,7 +242,7 @@ enum res_type {
+@@ -239,7 +239,7 @@ enum res_type {
  	     iter != NULL;				\
  	     iter = mem_cgroup_iter(NULL, iter, NULL))
  
@@ -60,7 +60,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return tsk_is_oom_victim(current) || fatal_signal_pending(current) ||
  		(current->flags & PF_EXITING);
-@@ -1580,7 +1580,7 @@ static bool mem_cgroup_out_of_memory(str
+@@ -1575,7 +1575,7 @@ static bool mem_cgroup_out_of_memory(str
  	 * A few threads which were not waiting at mutex_lock_killable() can
  	 * fail to bail out. Therefore, check again after holding oom_lock.
  	 */
@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  unlock:
  	mutex_unlock(&oom_lock);
-@@ -2535,6 +2535,7 @@ static int try_charge_memcg(struct mem_c
+@@ -2530,6 +2530,7 @@ static int try_charge_memcg(struct mem_c
  	struct page_counter *counter;
  	enum oom_status oom_status;
  	unsigned long nr_reclaimed;
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	bool may_swap = true;
  	bool drained = false;
  	unsigned long pflags;
-@@ -2570,15 +2571,6 @@ retry:
+@@ -2565,15 +2566,6 @@ retry:
  		goto force;
  
  	/*
@@ -93,7 +93,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 * Prevent unbounded recursion when reclaim operations need to
  	 * allocate memory. This might exceed the limits temporarily,
  	 * but we prefer facilitating memory reclaim and getting back
-@@ -2635,8 +2627,9 @@ retry:
+@@ -2630,8 +2622,9 @@ retry:
  	if (gfp_mask & __GFP_RETRY_MAYFAIL)
  		goto nomem;
  
@@ -105,7 +105,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * keep retrying as long as the memcg oom killer is able to make
-@@ -2645,14 +2638,10 @@ retry:
+@@ -2640,14 +2633,10 @@ retry:
  	 */
  	oom_status = mem_cgroup_oom(mem_over_limit, gfp_mask,
  		       get_order(nr_pages * PAGE_SIZE));
