@@ -1,0 +1,30 @@
+From: David Hildenbrand <david@redhat.com>
+Subject: memory-hotplug.rst: fix wrong /sys/module/memory_hotplug/parameters/ path
+
+We accidentially added a superfluous "s".
+
+Link: https://lkml.kernel.org/r/20210930144117.23641-3-david@redhat.com
+Fixes: ac3332c44767 ("memory-hotplug.rst: complete admin-guide overhaul")
+Signed-off-by: David Hildenbrand <david@redhat.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Oscar Salvador <osalvador@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/mm/memory-hotplug.rst |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/Documentation/admin-guide/mm/memory-hotplug.rst~memory-hotplugrst-fix-wrong-sys-module-memory_hotplug-parameters-path
++++ a/Documentation/admin-guide/mm/memory-hotplug.rst
+@@ -410,7 +410,7 @@ them with ``memory_hotplug.`` such as::
+ 
+ and they can be observed (and some even modified at runtime) via::
+ 
+-	/sys/modules/memory_hotplug/parameters/
++	/sys/module/memory_hotplug/parameters/
+ 
+ The following module parameters are currently defined:
+ 
+_

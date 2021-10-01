@@ -1,0 +1,85 @@
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: x86: mm: rename __is_kernel_text() to is_x86_32_kernel_text()
+
+Commit b56cd05c55a1 ("x86/mm: Rename is_kernel_text to __is_kernel_text"),
+add '__' prefix not to get in conflict with existing is_kernel_text() in
+<linux/kallsyms.h>.
+
+We will add __is_kernel_text() for the basic kernel text range check in
+the next patch, so use private is_x86_32_kernel_text() naming for x86
+special check.
+
+Link: https://lkml.kernel.org/r/20210930071143.63410-6-wangkefeng.wang@huawei.com
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Alexei Starovoitov <ast@kernel.org>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/mm/init_32.c |   14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+--- a/arch/x86/mm/init_32.c~x86-mm-rename-__is_kernel_text-to-is_x86_32_kernel_text
++++ a/arch/x86/mm/init_32.c
+@@ -238,11 +238,7 @@ page_table_range_init(unsigned long star
+ 	}
+ }
+ 
+-/*
+- * The <linux/kallsyms.h> already defines is_kernel_text,
+- * using '__' prefix not to get in conflict.
+- */
+-static inline int __is_kernel_text(unsigned long addr)
++static inline int is_x86_32_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_text && addr <= (unsigned long)__init_end)
+ 		return 1;
+@@ -333,8 +329,8 @@ repeat:
+ 				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
+ 					PAGE_OFFSET + PAGE_SIZE-1;
+ 
+-				if (__is_kernel_text(addr) ||
+-				    __is_kernel_text(addr2))
++				if (is_x86_32_kernel_text(addr) ||
++				    is_x86_32_kernel_text(addr2))
+ 					prot = PAGE_KERNEL_LARGE_EXEC;
+ 
+ 				pages_2m++;
+@@ -359,7 +355,7 @@ repeat:
+ 				 */
+ 				pgprot_t init_prot = __pgprot(PTE_IDENT_ATTR);
+ 
+-				if (__is_kernel_text(addr))
++				if (is_x86_32_kernel_text(addr))
+ 					prot = PAGE_KERNEL_EXEC;
+ 
+ 				pages_4k++;
+@@ -820,7 +816,7 @@ static void mark_nxdata_nx(void)
+ 	 */
+ 	unsigned long start = PFN_ALIGN(_etext);
+ 	/*
+-	 * This comes from __is_kernel_text upper limit. Also HPAGE where used:
++	 * This comes from is_x86_32_kernel_text upper limit. Also HPAGE where used:
+ 	 */
+ 	unsigned long size = (((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) - start;
+ 
+_

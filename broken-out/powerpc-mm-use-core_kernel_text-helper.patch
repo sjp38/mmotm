@@ -1,0 +1,64 @@
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: powerpc/mm: use core_kernel_text() helper
+
+Use core_kernel_text() helper to simplify code, also drop etext, _stext,
+_sinittext, _einittext declaration which already declared in section.h.
+
+Link: https://lkml.kernel.org/r/20210930071143.63410-10-wangkefeng.wang@huawei.com
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Alexei Starovoitov <ast@kernel.org>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/powerpc/mm/pgtable_32.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+--- a/arch/powerpc/mm/pgtable_32.c~powerpc-mm-use-core_kernel_text-helper
++++ a/arch/powerpc/mm/pgtable_32.c
+@@ -33,8 +33,6 @@
+ 
+ #include <mm/mmu_decl.h>
+ 
+-extern char etext[], _stext[], _sinittext[], _einittext[];
+-
+ static u8 early_fixmap_pagetable[FIXMAP_PTE_SIZE] __page_aligned_data;
+ 
+ notrace void __init early_ioremap_init(void)
+@@ -104,14 +102,13 @@ static void __init __mapin_ram_chunk(uns
+ {
+ 	unsigned long v, s;
+ 	phys_addr_t p;
+-	int ktext;
++	bool ktext;
+ 
+ 	s = offset;
+ 	v = PAGE_OFFSET + s;
+ 	p = memstart_addr + s;
+ 	for (; s < top; s += PAGE_SIZE) {
+-		ktext = ((char *)v >= _stext && (char *)v < etext) ||
+-			((char *)v >= _sinittext && (char *)v < _einittext);
++		ktext = core_kernel_text(v);
+ 		map_kernel_page(v, p, ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
+ 		v += PAGE_SIZE;
+ 		p += PAGE_SIZE;
+_

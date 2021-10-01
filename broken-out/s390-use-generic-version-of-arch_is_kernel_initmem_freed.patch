@@ -1,15 +1,16 @@
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Subject: s390: use generic version of arch_is_kernel_initmem_freed()
 
-Generic version of arch_is_kernel_initmem_freed() now does the same as
-s390 version.
+Generic version of arch_is_kernel_initmem_freed() now does the same
+as s390 version.
 
 Remove the s390 version.
 
-Link: https://lkml.kernel.org/r/d4a15dc0e699e6a60858bff4d183a9b1aea90433.1632813331.git.christophe.leroy@csgroup.eu
+Link: https://lkml.kernel.org/r/b6feb5dfe611a322de482762fc2df3a9eece70c7.1633001016.git.christophe.leroy@csgroup.eu
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Acked-by: Heiko Carstens <hca@linux.ibm.com>
 Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

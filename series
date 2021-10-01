@@ -17,9 +17,22 @@ userfaultfd-fix-a-race-between-writeprotect-and-exit_mmap.patch
 mm-migrate-optimize-hotplug-time-demotion-order-updates.patch
 mm-migrate-add-cpu-hotplug-to-demotion-ifdef.patch
 #
+mm-migrate-fix-cpuhp-state-to-update-node-demotion-order.patch
+#
 #mm/pagealloc
 #mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch: -stable?  numbers?
 mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch
+#
+#ocfs2
+ocfs2-fix-data-corruption-after-conversion-from-inline-format.patch
+#
+ocfs2-mount-fails-with-buffer-overflow-in-strlen.patch
+#
+#mm/memblock
+#memblock-check-memory-total_size.patch: acks?
+memblock-check-memory-total_size.patch
+#
+#
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -332,6 +345,8 @@ mm.patch
 mm-move-kvmalloc-related-functions-to-slabh.patch
 #
 #mm/slab
+mm-remove-useless-lines-in-enable_cpucache.patch
+#
 #mm/slub
 #mm-slub-fix-two-bugs-in-slab_debug_trace_open.patch+N: acks?
 mm-slub-fix-two-bugs-in-slab_debug_trace_open.patch
@@ -340,7 +355,6 @@ mm-slub-fix-potential-memoryleak-in-kmem_cache_open.patch
 mm-slub-fix-potential-use-after-free-in-slab_debugfs_fops.patch
 mm-slub-fix-incorrect-memcg-slab-count-for-bulk-free.patch
 #
-#slub-add-back-check-for-free-nonslab-objects.patch: acks? https://lkml.kernel.org/r/CALvZod568vL3Eg54srOKVg+TMtuPpLJhxbqGi7HS2oaMLUXvAQ@mail.gmail.com
 slub-add-back-check-for-free-nonslab-objects.patch
 #
 #mm/kconfig
@@ -385,6 +399,9 @@ mm-swapfile-remove-needless-request_queue-null-pointer-check.patch
 #mm/memremap
 #mm/memcg
 mm-memcg-drop-swp_entry_t-in-mc_handle_file_pte.patch
+#
+memcg-flush-stats-only-if-updated.patch
+memcg-unify-memcg-stat-flushing.patch
 #
 #memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks.patch: acks? https://lkml.kernel.org/r/YUM+saaJEce0TJyF@dhcp22.suse.cz
 memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks.patch
@@ -475,18 +492,19 @@ mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch
 powerpc-use-generic-version-of-arch_is_kernel_initmem_freed.patch
 s390-use-generic-version-of-arch_is_kernel_initmem_freed.patch
 #
+#
 #mm/memory-failure
 mm-fix-data-race-in-pagepoisoned.patch
 #
 #mm/hugetlb
 mm-hugetlb-drop-__unmap_hugepage_range-definition-from-hugetlbh.patch
 #
-#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch: https://lkml.kernel.org/r/4fcf5b61-8c01-0fa9-7541-afa755a81039@redhat.com https://lkml.kernel.org/r/878rzma1se.fsf@linux.ibm.com
+#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch: https://lkml.kernel.org/r/4fcf5b61-8c01-0fa9-7541-afa755a81039@redhat.com https://lkml.kernel.org/r/878rzma1se.fsf@linux.ibm.com TBU
 hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
-#hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch: https://lkml.kernel.org/r/7ab7690d-aa21-0fd9-75f1-f3a23b892853@redhat.com
+#hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch: https://lkml.kernel.org/r/7ab7690d-aa21-0fd9-75f1-f3a23b892853@redhat.com TBU
 hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch
 hugetlb-add-demote-bool-to-gigantic-page-routines.patch
-#hugetlb-add-hugetlb-demote-page-support.patch: https://lkml.kernel.org/r/9f469308-3c1c-dd9e-2c47-fcbd26b197df@redhat.com
+#hugetlb-add-hugetlb-demote-page-support.patch: https://lkml.kernel.org/r/9f469308-3c1c-dd9e-2c47-fcbd26b197df@redhat.com TBU
 hugetlb-add-hugetlb-demote-page-support.patch
 #
 #mm/userfaultfd
@@ -516,6 +534,14 @@ mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix.patch
 #
 #mm/mempool
 #mm/memblock
+arch_numa-simplify-numa_distance-allocation.patch
+xen-x86-free_p2m_page-use-memblock_free_ptr-to-free-a-virtual-pointer.patch
+memblock-drop-memblock_free_early_nid-and-memblock_free_early.patch
+memblock-stop-aliasing-__memblock_free_late-with-memblock_free_late.patch
+memblock-rename-memblock_free-to-memblock_phys_free.patch
+memblock-use-memblock_free-for-freeing-virtual-pointers.patch
+#
+#
 #mm/oom-kill
 #mm-mark-the-oom-reaper-thread-as-freezable.patch: effects? TBU?
 mm-mark-the-oom-reaper-thread-as-freezable.patch
@@ -529,6 +555,7 @@ mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
 #
 #hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch: acks? https://lkml.kernel.org/r/YVNHIzpmxSotbbBX@kernel.org
 hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
+hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation-fix.patch
 #
 #mm/migration
 mm-migrate-de-duplicate-migrate_reason-strings.patch
@@ -558,6 +585,17 @@ mm-vmstat-annotate-data-race-for-zone-free_areanr_free-fix.patch
 #mm/util
 #mm/memory-hotplug
 mm-memory_hotplug-add-static-qualifier-for-online_policy_to_str.patch
+#
+memory-hotplugrst-fix-two-instances-of-movablecore-that-should-be-movable_node.patch
+memory-hotplugrst-fix-wrong-sys-module-memory_hotplug-parameters-path.patch
+memory-hotplugrst-document-the-auto-movable-online-policy.patch
+#
+mm-memory_hotplug-remove-config_x86_64_acpi_numa-dependency-from-config_memory_hotplug.patch
+mm-memory_hotplug-remove-config_memory_hotplug_sparse.patch
+mm-memory_hotplug-restrict-config_memory_hotplug-to-64-bit.patch
+mm-memory_hotplug-remove-highmem-leftovers.patch
+mm-memory_hotplug-remove-stale-function-declarations.patch
+x86-remove-memory-hotplug-support-on-x86_32.patch
 #
 #mm-memory_hotplug-make-hwpoisoned-dirty-swapcache-pages-unmovable.patch: https://lkml.kernel.org/r/20210823082646.GB1452382@hori.linux.bs1.fc.nec.co.jp
 mm-memory_hotplug-make-hwpoisoned-dirty-swapcache-pages-unmovable.patch
@@ -591,6 +629,7 @@ zram-off-by-one-in-read_block_state.patch
 #
 zram-introduce-an-aged-idle-interface.patch
 zram-introduce-an-aged-idle-interface-v5.patch
+zram-introduce-an-aged-idle-interface-v6.patch
 #
 #mm/cleanups
 mm-remove-hardened_usercopy_fallback.patch
@@ -605,9 +644,12 @@ kfence-count-unexpectedly-skipped-allocations.patch
 kfence-move-saving-stack-trace-of-allocations-into-__kfence_alloc.patch
 kfence-limit-currently-covered-allocations-when-pool-nearly-full.patch
 kfence-limit-currently-covered-allocations-when-pool-nearly-full-fix.patch
+kfence-limit-currently-covered-allocations-when-pool-nearly-full-fix-fix.patch
 kfence-add-note-to-documentation-about-skipping-covered-allocations.patch
 #
 kfence-test-use-kunit_skip-to-skip-tests.patch
+#
+kfence-shorten-critical-sections-of-alloc-free.patch
 #
 #mm/hmm
 #mm/damon
@@ -661,9 +703,8 @@ kernel-hung_taskc-monitor-killed-tasks.patch
 #NEXT_PATCHES_START power-management
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START procfs
-#
-#
-#connector-send-event-on-write-to-proc-comm.patch: acks?
+procfs-do-not-list-tid-0-in-proc-pid-task.patch
+procfs-do-not-list-tid-0-in-proc-pid-task-fix.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sysctl
@@ -777,6 +818,18 @@ binfmt_elf-reintroduce-using-map_fixed_noreplace.patch
 #NEXT_PATCHES_START swiotlb
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kallsyms
+kallsyms-remove-arch-specific-text-and-data-check.patch
+kallsyms-fix-address-checks-for-kernel-related-range.patch
+sections-move-and-rename-core_kernel_data-to-is_kernel_core_data.patch
+sections-move-is_kernel_inittext-into-sectionsh.patch
+x86-mm-rename-__is_kernel_text-to-is_x86_32_kernel_text.patch
+sections-provide-internal-__is_kernel-and-__is_kernel_text-helper.patch
+mm-kasan-use-is_kernel-helper.patch
+extable-use-is_kernel_text-helper.patch
+powerpc-mm-use-core_kernel_text-helper.patch
+microblaze-use-is_kernel_text-helper.patch
+alpha-use-is_kernel_text-helper.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START ramfs
 ramfs-fix-mount-source-show-for-ramfs.patch
@@ -1204,3 +1257,10 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]s390-use-generic-version-of-arch_is_kernel_initmem_freed.patch
 #[obsolete]linux-next-git-rejects.patch
 #[to-be-updated]mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch
+#[to-be-updated]mm-create-a-new-system-state-and-fix-core_kernel_text.patch
+#[to-be-updated]mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch
+#[to-be-updated]powerpc-use-generic-version-of-arch_is_kernel_initmem_freed.patch
+#[to-be-updated]s390-use-generic-version-of-arch_is_kernel_initmem_freed.patch
+#[to-be-updated]kfence-limit-currently-covered-allocations-when-pool-nearly-full-fix-fix.patch
+#[to-be-updated]slub-add-back-check-for-free-nonslab-objects.patch
+#[nacked]memblock-neaten-logging.patch

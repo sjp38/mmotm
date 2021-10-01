@@ -1,17 +1,18 @@
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Subject: powerpc: use generic version of arch_is_kernel_initmem_freed()
 
-Generic version of arch_is_kernel_initmem_freed() now does the same
-as powerpc version.
+Generic version of arch_is_kernel_initmem_freed() now does the same as
+powerpc version.
 
 Remove the powerpc version.
 
-Link: https://lkml.kernel.org/r/026c4fcbe018d35917e044de823efd57252c12e4.1632813331.git.christophe.leroy@csgroup.eu
+Link: https://lkml.kernel.org/r/c53764eb45d41491e2b21da2e7812239897dbebb.1633001016.git.christophe.leroy@csgroup.eu
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@ozlabs.org>
 Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

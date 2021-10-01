@@ -1,0 +1,44 @@
+From: Brian Geffon <bgeffon@google.com>
+Subject: zram: Introduce an aged idle interface
+
+Sergey's cleanup suggestions
+
+Link: https://lkml.kernel.org/r/20210929143056.13067-1-bgeffon@google.com
+Signed-off-by: Brian Geffon <bgeffon@google.com>
+Acked-by: Minchan Kim <minchan@kernel.org>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/block/zram/zram_drv.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/drivers/block/zram/zram_drv.c~zram-introduce-an-aged-idle-interface-v6
++++ a/drivers/block/zram/zram_drv.c
+@@ -310,7 +310,7 @@ static void mark_idle(struct zram *zram,
+ 		if (zram_allocated(zram, index) &&
+ 				!zram_test_flag(zram, index, ZRAM_UNDER_WB)) {
+ #ifdef CONFIG_ZRAM_MEMORY_TRACKING
+-				is_idle = (!cutoff || ktime_after(cutoff, zram->table[index].ac_time));
++			is_idle = !cutoff || ktime_after(cutoff, zram->table[index].ac_time);
+ #endif
+ 			if (is_idle)
+ 				zram_set_flag(zram, index, ZRAM_IDLE);
+@@ -332,6 +332,7 @@ static ssize_t idle_store(struct device
+ 		 * we have memory tracking enabled.
+ 		 */
+ 		u64 age_sec;
++
+ 		if (IS_ENABLED(CONFIG_ZRAM_MEMORY_TRACKING) && !kstrtoull(buf, 0, &age_sec))
+ 			cutoff_time = ktime_sub(ktime_get_boottime(),
+ 					ns_to_ktime(age_sec * NSEC_PER_SEC));
+@@ -343,7 +344,7 @@ static ssize_t idle_store(struct device
+ 	if (!init_done(zram))
+ 		goto out_unlock;
+ 
+-	/* A age_sec of 0 marks everything as idle, this is the "all" behavior */
++	/* A cutoff_time of 0 marks everything as idle, this is the "all" behavior */
+ 	mark_idle(zram, cutoff_time);
+ 	rv = len;
+ 
+_

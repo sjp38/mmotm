@@ -1,0 +1,54 @@
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: microblaze: use is_kernel_text() helper
+
+Use is_kernel_text() helper to simplify code.
+
+Link: https://lkml.kernel.org/r/20210930071143.63410-11-wangkefeng.wang@huawei.com
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Acked-by: Michal Simek <michal.simek@xilinx.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Alexei Starovoitov <ast@kernel.org>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/microblaze/mm/pgtable.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/arch/microblaze/mm/pgtable.c~microblaze-use-is_kernel_text-helper
++++ a/arch/microblaze/mm/pgtable.c
+@@ -34,6 +34,7 @@
+ #include <linux/mm_types.h>
+ #include <linux/pgtable.h>
+ #include <linux/memblock.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <linux/io.h>
+@@ -171,7 +172,7 @@ void __init mapin_ram(void)
+ 	for (s = 0; s < lowmem_size; s += PAGE_SIZE) {
+ 		f = _PAGE_PRESENT | _PAGE_ACCESSED |
+ 				_PAGE_SHARED | _PAGE_HWEXEC;
+-		if ((char *) v < _stext || (char *) v >= _etext)
++		if (!is_kernel_text(v))
+ 			f |= _PAGE_WRENABLE;
+ 		else
+ 			/* On the MicroBlaze, no user access
+_

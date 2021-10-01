@@ -1,5 +1,19 @@
-GIT 6fd3ec5c7af58d5d6b598fba22ac387645af33f4
+GIT 02d5e016800d082058b3d3b7c3ede136cdc6ddcb
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5b33791bb8e9..bc68a13a7655 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -17883,7 +17883,8 @@ M:	Olivier Moysan <olivier.moysan@foss.st.com>
+ M:	Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>
+ L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
+ S:	Maintained
+-F:	Documentation/devicetree/bindings/iio/adc/st,stm32-*.yaml
++F:	Documentation/devicetree/bindings/iio/adc/st,stm32-dfsdm-adc.yaml
++F:	Documentation/devicetree/bindings/sound/st,stm32-*.yaml
+ F:	sound/soc/stm/
+ 
+ STM32 TIMER/LPTIMER DRIVERS
 diff --git a/arch/arm64/kvm/hyp/nvhe/Makefile b/arch/arm64/kvm/hyp/nvhe/Makefile
 index 5df6193fc430..8d741f71377f 100644
 --- a/arch/arm64/kvm/hyp/nvhe/Makefile
@@ -47,6 +61,1376 @@ index f5065f23b413..2af3c37445e0 100644
  {
  	struct perf_event_attr attr = { };
  	struct perf_event *event;
+diff --git a/arch/m68k/68000/entry.S b/arch/m68k/68000/entry.S
+index 259b3661b614..997b54933015 100644
+--- a/arch/m68k/68000/entry.S
++++ b/arch/m68k/68000/entry.S
+@@ -15,7 +15,6 @@
+ #include <asm/unistd.h>
+ #include <asm/errno.h>
+ #include <asm/setup.h>
+-#include <asm/segment.h>
+ #include <asm/traps.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/entry.h>
+@@ -25,7 +24,6 @@
+ .globl system_call
+ .globl resume
+ .globl ret_from_exception
+-.globl ret_from_signal
+ .globl sys_call_table
+ .globl bad_interrupt
+ .globl inthandler1
+@@ -59,8 +57,6 @@ do_trace:
+ 	subql	#4,%sp			/* dummy return address */
+ 	SAVE_SWITCH_STACK
+ 	jbsr	syscall_trace_leave
+-
+-ret_from_signal:
+ 	RESTORE_SWITCH_STACK
+ 	addql	#4,%sp
+ 	jra	ret_from_exception
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 774c35f47eea..0b50da08a9c5 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -29,7 +29,6 @@ config M68K
+ 	select NO_DMA if !MMU && !COLDFIRE
+ 	select OLD_SIGACTION
+ 	select OLD_SIGSUSPEND3
+-	select SET_FS
+ 	select UACCESS_MEMCPY if !MMU
+ 	select VIRT_TO_BUS
+ 	select ZONE_DMA
+diff --git a/arch/m68k/coldfire/entry.S b/arch/m68k/coldfire/entry.S
+index d43a02795a4a..9f337c70243a 100644
+--- a/arch/m68k/coldfire/entry.S
++++ b/arch/m68k/coldfire/entry.S
+@@ -31,7 +31,6 @@
+ #include <asm/thread_info.h>
+ #include <asm/errno.h>
+ #include <asm/setup.h>
+-#include <asm/segment.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/entry.h>
+ 
+@@ -51,7 +50,6 @@ sw_usp:
+ .globl system_call
+ .globl resume
+ .globl ret_from_exception
+-.globl ret_from_signal
+ .globl sys_call_table
+ .globl inthandler
+ 
+@@ -98,8 +96,6 @@ ENTRY(system_call)
+ 	subql	#4,%sp			/* dummy return address */
+ 	SAVE_SWITCH_STACK
+ 	jbsr	syscall_trace_leave
+-
+-ret_from_signal:
+ 	RESTORE_SWITCH_STACK
+ 	addql	#4,%sp
+ 
+diff --git a/arch/m68k/include/asm/processor.h b/arch/m68k/include/asm/processor.h
+index 3750819ac5a1..f4d82c619a5c 100644
+--- a/arch/m68k/include/asm/processor.h
++++ b/arch/m68k/include/asm/processor.h
+@@ -9,7 +9,6 @@
+ #define __ASM_M68K_PROCESSOR_H
+ 
+ #include <linux/thread_info.h>
+-#include <asm/segment.h>
+ #include <asm/fpu.h>
+ #include <asm/ptrace.h>
+ 
+@@ -75,11 +74,37 @@ static inline void wrusp(unsigned long usp)
+ #define TASK_UNMAPPED_BASE	0
+ #endif
+ 
++/* Address spaces (or Function Codes in Motorola lingo) */
++#define USER_DATA     1
++#define USER_PROGRAM  2
++#define SUPER_DATA    5
++#define SUPER_PROGRAM 6
++#define CPU_SPACE     7
++
++#ifdef CONFIG_CPU_HAS_ADDRESS_SPACES
++/*
++ * Set the SFC/DFC registers for special MM operations.  For most normal
++ * operation these remain set to USER_DATA for the uaccess routines.
++ */
++static inline void set_fc(unsigned long val)
++{
++	WARN_ON_ONCE(in_interrupt());
++
++	__asm__ __volatile__ ("movec %0,%/sfc\n\t"
++			      "movec %0,%/dfc\n\t"
++			      : /* no outputs */ : "r" (val) : "memory");
++}
++#else
++static inline void set_fc(unsigned long val)
++{
++}
++#endif /* CONFIG_CPU_HAS_ADDRESS_SPACES */
++
+ struct thread_struct {
+ 	unsigned long  ksp;		/* kernel stack pointer */
+ 	unsigned long  usp;		/* user stack pointer */
+ 	unsigned short sr;		/* saved status register */
+-	unsigned short fs;		/* saved fs (sfc, dfc) */
++	unsigned short fc;		/* saved fc (sfc, dfc) */
+ 	unsigned long  crp[2];		/* cpu root pointer */
+ 	unsigned long  esp0;		/* points to SR of stack frame */
+ 	unsigned long  faddr;		/* info about last fault */
+@@ -92,7 +117,7 @@ struct thread_struct {
+ #define INIT_THREAD  {							\
+ 	.ksp	= sizeof(init_stack) + (unsigned long) init_stack,	\
+ 	.sr	= PS_S,							\
+-	.fs	= __KERNEL_DS,						\
++	.fc	= USER_DATA,						\
+ }
+ 
+ /*
+diff --git a/arch/m68k/include/asm/segment.h b/arch/m68k/include/asm/segment.h
+deleted file mode 100644
+index 2b5e68a71ef7..000000000000
+--- a/arch/m68k/include/asm/segment.h
++++ /dev/null
+@@ -1,59 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef _M68K_SEGMENT_H
+-#define _M68K_SEGMENT_H
+-
+-/* define constants */
+-/* Address spaces (FC0-FC2) */
+-#define USER_DATA     (1)
+-#ifndef __USER_DS
+-#define __USER_DS     (USER_DATA)
+-#endif
+-#define USER_PROGRAM  (2)
+-#define SUPER_DATA    (5)
+-#ifndef __KERNEL_DS
+-#define __KERNEL_DS   (SUPER_DATA)
+-#endif
+-#define SUPER_PROGRAM (6)
+-#define CPU_SPACE     (7)
+-
+-#ifndef __ASSEMBLY__
+-
+-typedef struct {
+-	unsigned long seg;
+-} mm_segment_t;
+-
+-#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
+-
+-#ifdef CONFIG_CPU_HAS_ADDRESS_SPACES
+-/*
+- * Get/set the SFC/DFC registers for MOVES instructions
+- */
+-#define USER_DS		MAKE_MM_SEG(__USER_DS)
+-#define KERNEL_DS	MAKE_MM_SEG(__KERNEL_DS)
+-
+-static inline mm_segment_t get_fs(void)
+-{
+-	mm_segment_t _v;
+-	__asm__ ("movec %/dfc,%0":"=r" (_v.seg):);
+-	return _v;
+-}
+-
+-static inline void set_fs(mm_segment_t val)
+-{
+-	__asm__ __volatile__ ("movec %0,%/sfc\n\t"
+-			      "movec %0,%/dfc\n\t"
+-			      : /* no outputs */ : "r" (val.seg) : "memory");
+-}
+-
+-#else
+-#define USER_DS		MAKE_MM_SEG(TASK_SIZE)
+-#define KERNEL_DS	MAKE_MM_SEG(0xFFFFFFFF)
+-#define get_fs()	(current_thread_info()->addr_limit)
+-#define set_fs(x)	(current_thread_info()->addr_limit = (x))
+-#endif
+-
+-#define uaccess_kernel()	(get_fs().seg == KERNEL_DS.seg)
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#endif /* _M68K_SEGMENT_H */
+diff --git a/arch/m68k/include/asm/thread_info.h b/arch/m68k/include/asm/thread_info.h
+index 15a757073fa5..c952658ba792 100644
+--- a/arch/m68k/include/asm/thread_info.h
++++ b/arch/m68k/include/asm/thread_info.h
+@@ -4,7 +4,6 @@
+ 
+ #include <asm/types.h>
+ #include <asm/page.h>
+-#include <asm/segment.h>
+ 
+ /*
+  * On machines with 4k pages we default to an 8k thread size, though we
+@@ -27,7 +26,6 @@
+ struct thread_info {
+ 	struct task_struct	*task;		/* main task structure */
+ 	unsigned long		flags;
+-	mm_segment_t		addr_limit;	/* thread address space */
+ 	int			preempt_count;	/* 0 => preemptable, <0 => BUG */
+ 	__u32			cpu;		/* should always be 0 on m68k */
+ 	unsigned long		tp_value;	/* thread pointer */
+@@ -37,7 +35,6 @@ struct thread_info {
+ #define INIT_THREAD_INFO(tsk)			\
+ {						\
+ 	.task		= &tsk,			\
+-	.addr_limit	= KERNEL_DS,		\
+ 	.preempt_count	= INIT_PREEMPT_COUNT,	\
+ }
+ 
+diff --git a/arch/m68k/include/asm/tlbflush.h b/arch/m68k/include/asm/tlbflush.h
+index a6318ccd308f..b882e2f4f551 100644
+--- a/arch/m68k/include/asm/tlbflush.h
++++ b/arch/m68k/include/asm/tlbflush.h
+@@ -13,13 +13,12 @@ static inline void flush_tlb_kernel_page(void *addr)
+ 	if (CPU_IS_COLDFIRE) {
+ 		mmu_write(MMUOR, MMUOR_CNL);
+ 	} else if (CPU_IS_040_OR_060) {
+-		mm_segment_t old_fs = get_fs();
+-		set_fs(KERNEL_DS);
++		set_fc(SUPER_DATA);
+ 		__asm__ __volatile__(".chip 68040\n\t"
+ 				     "pflush (%0)\n\t"
+ 				     ".chip 68k"
+ 				     : : "a" (addr));
+-		set_fs(old_fs);
++		set_fc(USER_DATA);
+ 	} else if (CPU_IS_020_OR_030)
+ 		__asm__ __volatile__("pflush #4,#4,(%0)" : : "a" (addr));
+ }
+@@ -84,12 +83,8 @@ static inline void flush_tlb_mm(struct mm_struct *mm)
+ 
+ static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
+ {
+-	if (vma->vm_mm == current->active_mm) {
+-		mm_segment_t old_fs = force_uaccess_begin();
+-
++	if (vma->vm_mm == current->active_mm)
+ 		__flush_tlb_one(addr);
+-		force_uaccess_end(old_fs);
+-	}
+ }
+ 
+ static inline void flush_tlb_range(struct vm_area_struct *vma,
+diff --git a/arch/m68k/include/asm/traps.h b/arch/m68k/include/asm/traps.h
+index 4aff3358fbaf..a9d5c1c870d3 100644
+--- a/arch/m68k/include/asm/traps.h
++++ b/arch/m68k/include/asm/traps.h
+@@ -267,6 +267,10 @@ struct frame {
+     } un;
+ };
+ 
++#ifdef CONFIG_M68040
++asmlinkage void berr_040cleanup(struct frame *fp);
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _M68K_TRAPS_H */
+diff --git a/arch/m68k/include/asm/uaccess.h b/arch/m68k/include/asm/uaccess.h
+index f98208ccbbcd..ba670523885c 100644
+--- a/arch/m68k/include/asm/uaccess.h
++++ b/arch/m68k/include/asm/uaccess.h
+@@ -9,13 +9,16 @@
+  */
+ #include <linux/compiler.h>
+ #include <linux/types.h>
+-#include <asm/segment.h>
+ #include <asm/extable.h>
+ 
+ /* We let the MMU do all checking */
+ static inline int access_ok(const void __user *addr,
+ 			    unsigned long size)
+ {
++	/*
++	 * XXX: for !CONFIG_CPU_HAS_ADDRESS_SPACES this really needs to check
++	 * for TASK_SIZE!
++	 */
+ 	return 1;
+ }
+ 
+@@ -35,12 +38,9 @@ static inline int access_ok(const void __user *addr,
+ #define	MOVES	"move"
+ #endif
+ 
+-extern int __put_user_bad(void);
+-extern int __get_user_bad(void);
+-
+-#define __put_user_asm(res, x, ptr, bwl, reg, err)	\
++#define __put_user_asm(inst, res, x, ptr, bwl, reg, err) \
+ asm volatile ("\n"					\
+-	"1:	"MOVES"."#bwl"	%2,%1\n"		\
++	"1:	"inst"."#bwl"	%2,%1\n"		\
+ 	"2:\n"						\
+ 	"	.section .fixup,\"ax\"\n"		\
+ 	"	.even\n"				\
+@@ -56,6 +56,31 @@ asm volatile ("\n"					\
+ 	: "+d" (res), "=m" (*(ptr))			\
+ 	: #reg (x), "i" (err))
+ 
++#define __put_user_asm8(inst, res, x, ptr)			\
++do {								\
++	const void *__pu_ptr = (const void __force *)(ptr);	\
++								\
++	asm volatile ("\n"					\
++		"1:	"inst".l %2,(%1)+\n"			\
++		"2:	"inst".l %R2,(%1)\n"			\
++		"3:\n"						\
++		"	.section .fixup,\"ax\"\n"		\
++		"	.even\n"				\
++		"10:	movel %3,%0\n"				\
++		"	jra 3b\n"				\
++		"	.previous\n"				\
++		"\n"						\
++		"	.section __ex_table,\"a\"\n"		\
++		"	.align 4\n"				\
++		"	.long 1b,10b\n"				\
++		"	.long 2b,10b\n"				\
++		"	.long 3b,10b\n"				\
++		"	.previous"				\
++		: "+d" (res), "+a" (__pu_ptr)			\
++		: "r" (x), "i" (-EFAULT)			\
++		: "memory");					\
++} while (0)
++
+ /*
+  * These are the main single-value transfer routines.  They automatically
+  * use the right size if we just have the right pointer type.
+@@ -68,51 +93,29 @@ asm volatile ("\n"					\
+ 	__chk_user_ptr(ptr);						\
+ 	switch (sizeof (*(ptr))) {					\
+ 	case 1:								\
+-		__put_user_asm(__pu_err, __pu_val, ptr, b, d, -EFAULT);	\
++		__put_user_asm(MOVES, __pu_err, __pu_val, ptr, b, d, -EFAULT); \
+ 		break;							\
+ 	case 2:								\
+-		__put_user_asm(__pu_err, __pu_val, ptr, w, r, -EFAULT);	\
++		__put_user_asm(MOVES, __pu_err, __pu_val, ptr, w, r, -EFAULT); \
+ 		break;							\
+ 	case 4:								\
+-		__put_user_asm(__pu_err, __pu_val, ptr, l, r, -EFAULT);	\
++		__put_user_asm(MOVES, __pu_err, __pu_val, ptr, l, r, -EFAULT); \
+ 		break;							\
+ 	case 8:								\
+- 	    {								\
+- 		const void __user *__pu_ptr = (ptr);			\
+-		asm volatile ("\n"					\
+-			"1:	"MOVES".l	%2,(%1)+\n"		\
+-			"2:	"MOVES".l	%R2,(%1)\n"		\
+-			"3:\n"						\
+-			"	.section .fixup,\"ax\"\n"		\
+-			"	.even\n"				\
+-			"10:	movel %3,%0\n"				\
+-			"	jra 3b\n"				\
+-			"	.previous\n"				\
+-			"\n"						\
+-			"	.section __ex_table,\"a\"\n"		\
+-			"	.align 4\n"				\
+-			"	.long 1b,10b\n"				\
+-			"	.long 2b,10b\n"				\
+-			"	.long 3b,10b\n"				\
+-			"	.previous"				\
+-			: "+d" (__pu_err), "+a" (__pu_ptr)		\
+-			: "r" (__pu_val), "i" (-EFAULT)			\
+-			: "memory");					\
++		__put_user_asm8(MOVES, __pu_err, __pu_val, ptr);	\
+ 		break;							\
+-	    }								\
+ 	default:							\
+-		__pu_err = __put_user_bad();				\
+-		break;							\
++		BUILD_BUG();						\
+ 	}								\
+ 	__pu_err;							\
+ })
+ #define put_user(x, ptr)	__put_user(x, ptr)
+ 
+ 
+-#define __get_user_asm(res, x, ptr, type, bwl, reg, err) ({		\
++#define __get_user_asm(inst, res, x, ptr, type, bwl, reg, err) ({	\
+ 	type __gu_val;							\
+ 	asm volatile ("\n"						\
+-		"1:	"MOVES"."#bwl"	%2,%1\n"			\
++		"1:	"inst"."#bwl"	%2,%1\n"			\
+ 		"2:\n"							\
+ 		"	.section .fixup,\"ax\"\n"			\
+ 		"	.even\n"					\
+@@ -130,53 +133,57 @@ asm volatile ("\n"					\
+ 	(x) = (__force typeof(*(ptr)))(__force unsigned long)__gu_val;	\
+ })
+ 
++#define __get_user_asm8(inst, res, x, ptr) 				\
++do {									\
++	const void *__gu_ptr = (const void __force *)(ptr);		\
++	union {								\
++		u64 l;							\
++		__typeof__(*(ptr)) t;					\
++	} __gu_val;							\
++									\
++	asm volatile ("\n"						\
++		"1:	"inst".l (%2)+,%1\n"				\
++		"2:	"inst".l (%2),%R1\n"				\
++		"3:\n"							\
++		"	.section .fixup,\"ax\"\n"			\
++		"	.even\n"					\
++		"10:	move.l	%3,%0\n"				\
++		"	sub.l	%1,%1\n"				\
++		"	sub.l	%R1,%R1\n"				\
++		"	jra	3b\n"					\
++		"	.previous\n"					\
++		"\n"							\
++		"	.section __ex_table,\"a\"\n"			\
++		"	.align	4\n"					\
++		"	.long	1b,10b\n"				\
++		"	.long	2b,10b\n"				\
++		"	.previous"					\
++		: "+d" (res), "=&r" (__gu_val.l),			\
++		  "+a" (__gu_ptr)					\
++		: "i" (-EFAULT)						\
++		: "memory");						\
++	(x) = __gu_val.t;						\
++} while (0)
++
+ #define __get_user(x, ptr)						\
+ ({									\
+ 	int __gu_err = 0;						\
+ 	__chk_user_ptr(ptr);						\
+ 	switch (sizeof(*(ptr))) {					\
+ 	case 1:								\
+-		__get_user_asm(__gu_err, x, ptr, u8, b, d, -EFAULT);	\
++		__get_user_asm(MOVES, __gu_err, x, ptr, u8, b, d, -EFAULT); \
+ 		break;							\
+ 	case 2:								\
+-		__get_user_asm(__gu_err, x, ptr, u16, w, r, -EFAULT);	\
++		__get_user_asm(MOVES, __gu_err, x, ptr, u16, w, r, -EFAULT); \
+ 		break;							\
+ 	case 4:								\
+-		__get_user_asm(__gu_err, x, ptr, u32, l, r, -EFAULT);	\
++		__get_user_asm(MOVES, __gu_err, x, ptr, u32, l, r, -EFAULT); \
+ 		break;							\
+-	case 8: {							\
+-		const void __user *__gu_ptr = (ptr);			\
+-		union {							\
+-			u64 l;						\
+-			__typeof__(*(ptr)) t;				\
+-		} __gu_val;						\
+-		asm volatile ("\n"					\
+-			"1:	"MOVES".l	(%2)+,%1\n"		\
+-			"2:	"MOVES".l	(%2),%R1\n"		\
+-			"3:\n"						\
+-			"	.section .fixup,\"ax\"\n"		\
+-			"	.even\n"				\
+-			"10:	move.l	%3,%0\n"			\
+-			"	sub.l	%1,%1\n"			\
+-			"	sub.l	%R1,%R1\n"			\
+-			"	jra	3b\n"				\
+-			"	.previous\n"				\
+-			"\n"						\
+-			"	.section __ex_table,\"a\"\n"		\
+-			"	.align	4\n"				\
+-			"	.long	1b,10b\n"			\
+-			"	.long	2b,10b\n"			\
+-			"	.previous"				\
+-			: "+d" (__gu_err), "=&r" (__gu_val.l),		\
+-			  "+a" (__gu_ptr)				\
+-			: "i" (-EFAULT)					\
+-			: "memory");					\
+-		(x) = __gu_val.t;					\
++	case 8:								\
++		__get_user_asm8(MOVES, __gu_err, x, ptr);		\
+ 		break;							\
+-	}								\
+ 	default:							\
+-		__gu_err = __get_user_bad();				\
+-		break;							\
++		BUILD_BUG();						\
+ 	}								\
+ 	__gu_err;							\
+ })
+@@ -322,16 +329,19 @@ __constant_copy_to_user(void __user *to, const void *from, unsigned long n)
+ 
+ 	switch (n) {
+ 	case 1:
+-		__put_user_asm(res, *(u8 *)from, (u8 __user *)to, b, d, 1);
++		__put_user_asm(MOVES, res, *(u8 *)from, (u8 __user *)to,
++				b, d, 1);
+ 		break;
+ 	case 2:
+-		__put_user_asm(res, *(u16 *)from, (u16 __user *)to, w, r, 2);
++		__put_user_asm(MOVES, res, *(u16 *)from, (u16 __user *)to,
++				w, r, 2);
+ 		break;
+ 	case 3:
+ 		__constant_copy_to_user_asm(res, to, from, tmp, 3, w, b,);
+ 		break;
+ 	case 4:
+-		__put_user_asm(res, *(u32 *)from, (u32 __user *)to, l, r, 4);
++		__put_user_asm(MOVES, res, *(u32 *)from, (u32 __user *)to,
++				l, r, 4);
+ 		break;
+ 	case 5:
+ 		__constant_copy_to_user_asm(res, to, from, tmp, 5, l, b,);
+@@ -380,8 +390,65 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
+ #define INLINE_COPY_FROM_USER
+ #define INLINE_COPY_TO_USER
+ 
+-#define user_addr_max() \
+-	(uaccess_kernel() ? ~0UL : TASK_SIZE)
++#define HAVE_GET_KERNEL_NOFAULT
++
++#define __get_kernel_nofault(dst, src, type, err_label)			\
++do {									\
++	type *__gk_dst = (type *)(dst);					\
++	type *__gk_src = (type *)(src);					\
++	int __gk_err = 0;						\
++									\
++	switch (sizeof(type)) {						\
++	case 1:								\
++		__get_user_asm("move", __gk_err, *__gk_dst, __gk_src,	\
++				u8, b, d, -EFAULT);			\
++		break;							\
++	case 2:								\
++		__get_user_asm("move", __gk_err, *__gk_dst, __gk_src,	\
++				u16, w, r, -EFAULT);			\
++		break;							\
++	case 4:								\
++		__get_user_asm("move", __gk_err, *__gk_dst, __gk_src,	\
++				u32, l, r, -EFAULT);			\
++		break;							\
++	case 8:								\
++		__get_user_asm8("move", __gk_err, *__gk_dst, __gk_src);	\
++		break;							\
++	default:							\
++		BUILD_BUG();						\
++	}								\
++	if (unlikely(__gk_err))						\
++		goto err_label;						\
++} while (0)
++
++#define __put_kernel_nofault(dst, src, type, err_label)			\
++do {									\
++	type __pk_src = *(type *)(src);					\
++	type *__pk_dst = (type *)(dst);					\
++	int __pk_err = 0;						\
++									\
++	switch (sizeof(type)) {						\
++	case 1:								\
++		__put_user_asm("move", __pk_err, __pk_src, __pk_dst,	\
++				b, d, -EFAULT);				\
++		break;							\
++	case 2:								\
++		__put_user_asm("move", __pk_err, __pk_src, __pk_dst,	\
++				w, r, -EFAULT);				\
++		break;							\
++	case 4:								\
++		__put_user_asm("move", __pk_err, __pk_src, __pk_dst,	\
++				l, r, -EFAULT);				\
++		break;							\
++	case 8:								\
++		__put_user_asm8("move", __pk_err, __pk_src, __pk_dst);	\
++		break;							\
++	default:							\
++		BUILD_BUG();						\
++	}								\
++	if (unlikely(__pk_err))						\
++		goto err_label;						\
++} while (0)
+ 
+ extern long strncpy_from_user(char *dst, const char __user *src, long count);
+ extern __must_check long strnlen_user(const char __user *str, long n);
+diff --git a/arch/m68k/kernel/asm-offsets.c b/arch/m68k/kernel/asm-offsets.c
+index ccea355052ef..906d73230537 100644
+--- a/arch/m68k/kernel/asm-offsets.c
++++ b/arch/m68k/kernel/asm-offsets.c
+@@ -31,7 +31,7 @@ int main(void)
+ 	DEFINE(THREAD_KSP, offsetof(struct thread_struct, ksp));
+ 	DEFINE(THREAD_USP, offsetof(struct thread_struct, usp));
+ 	DEFINE(THREAD_SR, offsetof(struct thread_struct, sr));
+-	DEFINE(THREAD_FS, offsetof(struct thread_struct, fs));
++	DEFINE(THREAD_FC, offsetof(struct thread_struct, fc));
+ 	DEFINE(THREAD_CRP, offsetof(struct thread_struct, crp));
+ 	DEFINE(THREAD_ESP0, offsetof(struct thread_struct, esp0));
+ 	DEFINE(THREAD_FPREG, offsetof(struct thread_struct, fp));
+diff --git a/arch/m68k/kernel/entry.S b/arch/m68k/kernel/entry.S
+index 9dd76fbb7c6b..9434fca68de5 100644
+--- a/arch/m68k/kernel/entry.S
++++ b/arch/m68k/kernel/entry.S
+@@ -36,7 +36,6 @@
+ #include <linux/linkage.h>
+ #include <asm/errno.h>
+ #include <asm/setup.h>
+-#include <asm/segment.h>
+ #include <asm/traps.h>
+ #include <asm/unistd.h>
+ #include <asm/asm-offsets.h>
+@@ -78,20 +77,38 @@ ENTRY(__sys_clone3)
+ 
+ ENTRY(sys_sigreturn)
+ 	SAVE_SWITCH_STACK
+-	movel	%sp,%sp@-		  | switch_stack pointer
+-	pea	%sp@(SWITCH_STACK_SIZE+4) | pt_regs pointer
++	movel	%sp,%a1			  	| switch_stack pointer
++	lea	%sp@(SWITCH_STACK_SIZE),%a0	| pt_regs pointer
++	lea     %sp@(-84),%sp			| leave a gap
++	movel	%a1,%sp@-
++	movel	%a0,%sp@-
+ 	jbsr	do_sigreturn
+-	addql	#8,%sp
+-	RESTORE_SWITCH_STACK
+-	rts
++	jra	1f				| shared with rt_sigreturn()
+ 
+ ENTRY(sys_rt_sigreturn)
+ 	SAVE_SWITCH_STACK
+-	movel	%sp,%sp@-		  | switch_stack pointer
+-	pea	%sp@(SWITCH_STACK_SIZE+4) | pt_regs pointer
++	movel	%sp,%a1			  	| switch_stack pointer
++	lea	%sp@(SWITCH_STACK_SIZE),%a0	| pt_regs pointer
++	lea     %sp@(-84),%sp			| leave a gap
++	movel	%a1,%sp@-
++	movel	%a0,%sp@-
++	| stack contents:
++	|   [original pt_regs address] [original switch_stack address]
++	|   [gap] [switch_stack] [pt_regs] [exception frame]
+ 	jbsr	do_rt_sigreturn
+-	addql	#8,%sp
++
++1:
++	| stack contents now:
++	|   [original pt_regs address] [original switch_stack address]
++	|   [unused part of the gap] [moved switch_stack] [moved pt_regs]
++	|   [replacement exception frame]
++	| return value of do_{rt_,}sigreturn() points to moved switch_stack.
++
++	movel	%d0,%sp				| discard the leftover junk
+ 	RESTORE_SWITCH_STACK
++	| stack contents now is just [syscall return address] [pt_regs] [frame]
++	| return pt_regs.d0
++	movel	%sp@(PT_OFF_D0+4),%d0
+ 	rts
+ 
+ ENTRY(buserr)
+@@ -182,25 +199,6 @@ do_trace_exit:
+ 	addql	#4,%sp
+ 	jra	.Lret_from_exception
+ 
+-ENTRY(ret_from_signal)
+-	movel	%curptr@(TASK_STACK),%a1
+-	tstb	%a1@(TINFO_FLAGS+2)
+-	jge	1f
+-	jbsr	syscall_trace
+-1:	RESTORE_SWITCH_STACK
+-	addql	#4,%sp
+-/* on 68040 complete pending writebacks if any */
+-#ifdef CONFIG_M68040
+-	bfextu	%sp@(PT_OFF_FORMATVEC){#0,#4},%d0
+-	subql	#7,%d0				| bus error frame ?
+-	jbne	1f
+-	movel	%sp,%sp@-
+-	jbsr	berr_040cleanup
+-	addql	#4,%sp
+-1:
+-#endif
+-	jra	.Lret_from_exception
+-
+ ENTRY(system_call)
+ 	SAVE_ALL_SYS
+ 
+@@ -338,7 +336,7 @@ resume:
+ 
+ 	/* save fs (sfc,%dfc) (may be pointing to kernel memory) */
+ 	movec	%sfc,%d0
+-	movew	%d0,%a0@(TASK_THREAD+THREAD_FS)
++	movew	%d0,%a0@(TASK_THREAD+THREAD_FC)
+ 
+ 	/* save usp */
+ 	/* it is better to use a movel here instead of a movew 8*) */
+@@ -424,7 +422,7 @@ resume:
+ 	movel	%a0,%usp
+ 
+ 	/* restore fs (sfc,%dfc) */
+-	movew	%a1@(TASK_THREAD+THREAD_FS),%a0
++	movew	%a1@(TASK_THREAD+THREAD_FC),%a0
+ 	movec	%a0,%sfc
+ 	movec	%a0,%dfc
+ 
+diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
+index db49f9091711..1ab692b952cd 100644
+--- a/arch/m68k/kernel/process.c
++++ b/arch/m68k/kernel/process.c
+@@ -92,7 +92,7 @@ void show_regs(struct pt_regs * regs)
+ 
+ void flush_thread(void)
+ {
+-	current->thread.fs = __USER_DS;
++	current->thread.fc = USER_DATA;
+ #ifdef CONFIG_FPU
+ 	if (!FPU_IS_EMU) {
+ 		unsigned long zero = 0;
+@@ -155,7 +155,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp, unsigned long arg,
+ 	 * Must save the current SFC/DFC value, NOT the value when
+ 	 * the parent was last descheduled - RGH  10-08-96
+ 	 */
+-	p->thread.fs = get_fs().seg;
++	p->thread.fc = USER_DATA;
+ 
+ 	if (unlikely(p->flags & (PF_KTHREAD | PF_IO_WORKER))) {
+ 		/* kernel thread */
+diff --git a/arch/m68k/kernel/signal.c b/arch/m68k/kernel/signal.c
+index 8f215e79e70e..338817d0cb3f 100644
+--- a/arch/m68k/kernel/signal.c
++++ b/arch/m68k/kernel/signal.c
+@@ -447,7 +447,7 @@ static inline void save_fpu_state(struct sigcontext *sc, struct pt_regs *regs)
+ 
+ 	if (CPU_IS_060 ? sc->sc_fpstate[2] : sc->sc_fpstate[0]) {
+ 		fpu_version = sc->sc_fpstate[0];
+-		if (CPU_IS_020_OR_030 &&
++		if (CPU_IS_020_OR_030 && !regs->stkadj &&
+ 		    regs->vector >= (VEC_FPBRUC * 4) &&
+ 		    regs->vector <= (VEC_FPNAN * 4)) {
+ 			/* Clear pending exception in 68882 idle frame */
+@@ -510,7 +510,7 @@ static inline int rt_save_fpu_state(struct ucontext __user *uc, struct pt_regs *
+ 		if (!(CPU_IS_060 || CPU_IS_COLDFIRE))
+ 			context_size = fpstate[1];
+ 		fpu_version = fpstate[0];
+-		if (CPU_IS_020_OR_030 &&
++		if (CPU_IS_020_OR_030 && !regs->stkadj &&
+ 		    regs->vector >= (VEC_FPBRUC * 4) &&
+ 		    regs->vector <= (VEC_FPNAN * 4)) {
+ 			/* Clear pending exception in 68882 idle frame */
+@@ -641,56 +641,35 @@ static inline void siginfo_build_tests(void)
+ static int mangle_kernel_stack(struct pt_regs *regs, int formatvec,
+ 			       void __user *fp)
+ {
+-	int fsize = frame_extra_sizes(formatvec >> 12);
+-	if (fsize < 0) {
++	int extra = frame_extra_sizes(formatvec >> 12);
++	char buf[sizeof_field(struct frame, un)];
++
++	if (extra < 0) {
+ 		/*
+ 		 * user process trying to return with weird frame format
+ 		 */
+ 		pr_debug("user process returning with weird frame format\n");
+-		return 1;
++		return -1;
+ 	}
+-	if (!fsize) {
+-		regs->format = formatvec >> 12;
+-		regs->vector = formatvec & 0xfff;
+-	} else {
+-		struct switch_stack *sw = (struct switch_stack *)regs - 1;
+-		/* yes, twice as much as max(sizeof(frame.un.fmt<x>)) */
+-		unsigned long buf[sizeof_field(struct frame, un) / 2];
+-
+-		/* that'll make sure that expansion won't crap over data */
+-		if (copy_from_user(buf + fsize / 4, fp, fsize))
+-			return 1;
+-
+-		/* point of no return */
+-		regs->format = formatvec >> 12;
+-		regs->vector = formatvec & 0xfff;
+-#define frame_offset (sizeof(struct pt_regs)+sizeof(struct switch_stack))
+-		__asm__ __volatile__ (
+-#ifdef CONFIG_COLDFIRE
+-			 "   movel %0,%/sp\n\t"
+-			 "   bra ret_from_signal\n"
+-#else
+-			 "   movel %0,%/a0\n\t"
+-			 "   subl %1,%/a0\n\t"     /* make room on stack */
+-			 "   movel %/a0,%/sp\n\t"  /* set stack pointer */
+-			 /* move switch_stack and pt_regs */
+-			 "1: movel %0@+,%/a0@+\n\t"
+-			 "   dbra %2,1b\n\t"
+-			 "   lea %/sp@(%c3),%/a0\n\t" /* add offset of fmt */
+-			 "   lsrl  #2,%1\n\t"
+-			 "   subql #1,%1\n\t"
+-			 /* copy to the gap we'd made */
+-			 "2: movel %4@+,%/a0@+\n\t"
+-			 "   dbra %1,2b\n\t"
+-			 "   bral ret_from_signal\n"
++	if (extra && copy_from_user(buf, fp, extra))
++		return -1;
++	regs->format = formatvec >> 12;
++	regs->vector = formatvec & 0xfff;
++	if (extra) {
++		void *p = (struct switch_stack *)regs - 1;
++		struct frame *new = (void *)regs - extra;
++		int size = sizeof(struct pt_regs)+sizeof(struct switch_stack);
++
++		memmove(p - extra, p, size);
++		memcpy(p - extra + size, buf, extra);
++		current->thread.esp0 = (unsigned long)&new->ptregs;
++#ifdef CONFIG_M68040
++		/* on 68040 complete pending writebacks if any */
++		if (new->ptregs.format == 7) // bus error frame
++			berr_040cleanup(new);
+ #endif
+-			 : /* no outputs, it doesn't ever return */
+-			 : "a" (sw), "d" (fsize), "d" (frame_offset/4-1),
+-			   "n" (frame_offset), "a" (buf + fsize/4)
+-			 : "a0");
+-#undef frame_offset
+ 	}
+-	return 0;
++	return extra;
+ }
+ 
+ static inline int
+@@ -698,7 +677,6 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *usc, void __u
+ {
+ 	int formatvec;
+ 	struct sigcontext context;
+-	int err = 0;
+ 
+ 	siginfo_build_tests();
+ 
+@@ -707,7 +685,7 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *usc, void __u
+ 
+ 	/* get previous context */
+ 	if (copy_from_user(&context, usc, sizeof(context)))
+-		goto badframe;
++		return -1;
+ 
+ 	/* restore passed registers */
+ 	regs->d0 = context.sc_d0;
+@@ -720,15 +698,10 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *usc, void __u
+ 	wrusp(context.sc_usp);
+ 	formatvec = context.sc_formatvec;
+ 
+-	err = restore_fpu_state(&context);
++	if (restore_fpu_state(&context))
++		return -1;
+ 
+-	if (err || mangle_kernel_stack(regs, formatvec, fp))
+-		goto badframe;
+-
+-	return 0;
+-
+-badframe:
+-	return 1;
++	return mangle_kernel_stack(regs, formatvec, fp);
+ }
+ 
+ static inline int
+@@ -745,7 +718,7 @@ rt_restore_ucontext(struct pt_regs *regs, struct switch_stack *sw,
+ 
+ 	err = __get_user(temp, &uc->uc_mcontext.version);
+ 	if (temp != MCONTEXT_VERSION)
+-		goto badframe;
++		return -1;
+ 	/* restore passed registers */
+ 	err |= __get_user(regs->d0, &gregs[0]);
+ 	err |= __get_user(regs->d1, &gregs[1]);
+@@ -774,22 +747,17 @@ rt_restore_ucontext(struct pt_regs *regs, struct switch_stack *sw,
+ 	err |= restore_altstack(&uc->uc_stack);
+ 
+ 	if (err)
+-		goto badframe;
++		return -1;
+ 
+-	if (mangle_kernel_stack(regs, temp, &uc->uc_extra))
+-		goto badframe;
+-
+-	return 0;
+-
+-badframe:
+-	return 1;
++	return mangle_kernel_stack(regs, temp, &uc->uc_extra);
+ }
+ 
+-asmlinkage int do_sigreturn(struct pt_regs *regs, struct switch_stack *sw)
++asmlinkage void *do_sigreturn(struct pt_regs *regs, struct switch_stack *sw)
+ {
+ 	unsigned long usp = rdusp();
+ 	struct sigframe __user *frame = (struct sigframe __user *)(usp - 4);
+ 	sigset_t set;
++	int size;
+ 
+ 	if (!access_ok(frame, sizeof(*frame)))
+ 		goto badframe;
+@@ -801,20 +769,22 @@ asmlinkage int do_sigreturn(struct pt_regs *regs, struct switch_stack *sw)
+ 
+ 	set_current_blocked(&set);
+ 
+-	if (restore_sigcontext(regs, &frame->sc, frame + 1))
++	size = restore_sigcontext(regs, &frame->sc, frame + 1);
++	if (size < 0)
+ 		goto badframe;
+-	return regs->d0;
++	return (void *)sw - size;
+ 
+ badframe:
+ 	force_sig(SIGSEGV);
+-	return 0;
++	return sw;
+ }
+ 
+-asmlinkage int do_rt_sigreturn(struct pt_regs *regs, struct switch_stack *sw)
++asmlinkage void *do_rt_sigreturn(struct pt_regs *regs, struct switch_stack *sw)
+ {
+ 	unsigned long usp = rdusp();
+ 	struct rt_sigframe __user *frame = (struct rt_sigframe __user *)(usp - 4);
+ 	sigset_t set;
++	int size;
+ 
+ 	if (!access_ok(frame, sizeof(*frame)))
+ 		goto badframe;
+@@ -823,27 +793,34 @@ asmlinkage int do_rt_sigreturn(struct pt_regs *regs, struct switch_stack *sw)
+ 
+ 	set_current_blocked(&set);
+ 
+-	if (rt_restore_ucontext(regs, sw, &frame->uc))
++	size = rt_restore_ucontext(regs, sw, &frame->uc);
++	if (size < 0)
+ 		goto badframe;
+-	return regs->d0;
++	return (void *)sw - size;
+ 
+ badframe:
+ 	force_sig(SIGSEGV);
+-	return 0;
++	return sw;
++}
++
++static inline struct pt_regs *rte_regs(struct pt_regs *regs)
++{
++	return (void *)regs + regs->stkadj;
+ }
+ 
+ static void setup_sigcontext(struct sigcontext *sc, struct pt_regs *regs,
+ 			     unsigned long mask)
+ {
++	struct pt_regs *tregs = rte_regs(regs);
+ 	sc->sc_mask = mask;
+ 	sc->sc_usp = rdusp();
+ 	sc->sc_d0 = regs->d0;
+ 	sc->sc_d1 = regs->d1;
+ 	sc->sc_a0 = regs->a0;
+ 	sc->sc_a1 = regs->a1;
+-	sc->sc_sr = regs->sr;
+-	sc->sc_pc = regs->pc;
+-	sc->sc_formatvec = regs->format << 12 | regs->vector;
++	sc->sc_sr = tregs->sr;
++	sc->sc_pc = tregs->pc;
++	sc->sc_formatvec = tregs->format << 12 | tregs->vector;
+ 	save_a5_state(sc, regs);
+ 	save_fpu_state(sc, regs);
+ }
+@@ -851,6 +828,7 @@ static void setup_sigcontext(struct sigcontext *sc, struct pt_regs *regs,
+ static inline int rt_setup_ucontext(struct ucontext __user *uc, struct pt_regs *regs)
+ {
+ 	struct switch_stack *sw = (struct switch_stack *)regs - 1;
++	struct pt_regs *tregs = rte_regs(regs);
+ 	greg_t __user *gregs = uc->uc_mcontext.gregs;
+ 	int err = 0;
+ 
+@@ -871,9 +849,9 @@ static inline int rt_setup_ucontext(struct ucontext __user *uc, struct pt_regs *
+ 	err |= __put_user(sw->a5, &gregs[13]);
+ 	err |= __put_user(sw->a6, &gregs[14]);
+ 	err |= __put_user(rdusp(), &gregs[15]);
+-	err |= __put_user(regs->pc, &gregs[16]);
+-	err |= __put_user(regs->sr, &gregs[17]);
+-	err |= __put_user((regs->format << 12) | regs->vector, &uc->uc_formatvec);
++	err |= __put_user(tregs->pc, &gregs[16]);
++	err |= __put_user(tregs->sr, &gregs[17]);
++	err |= __put_user((tregs->format << 12) | tregs->vector, &uc->uc_formatvec);
+ 	err |= rt_save_fpu_state(uc, regs);
+ 	return err;
+ }
+@@ -890,13 +868,14 @@ static int setup_frame(struct ksignal *ksig, sigset_t *set,
+ 			struct pt_regs *regs)
+ {
+ 	struct sigframe __user *frame;
+-	int fsize = frame_extra_sizes(regs->format);
++	struct pt_regs *tregs = rte_regs(regs);
++	int fsize = frame_extra_sizes(tregs->format);
+ 	struct sigcontext context;
+ 	int err = 0, sig = ksig->sig;
+ 
+ 	if (fsize < 0) {
+ 		pr_debug("setup_frame: Unknown frame format %#x\n",
+-			 regs->format);
++			 tregs->format);
+ 		return -EFAULT;
+ 	}
+ 
+@@ -907,7 +886,7 @@ static int setup_frame(struct ksignal *ksig, sigset_t *set,
+ 
+ 	err |= __put_user(sig, &frame->sig);
+ 
+-	err |= __put_user(regs->vector, &frame->code);
++	err |= __put_user(tregs->vector, &frame->code);
+ 	err |= __put_user(&frame->sc, &frame->psc);
+ 
+ 	if (_NSIG_WORDS > 1)
+@@ -933,34 +912,28 @@ static int setup_frame(struct ksignal *ksig, sigset_t *set,
+ 
+ 	push_cache ((unsigned long) &frame->retcode);
+ 
+-	/*
+-	 * Set up registers for signal handler.  All the state we are about
+-	 * to destroy is successfully copied to sigframe.
+-	 */
+-	wrusp ((unsigned long) frame);
+-	regs->pc = (unsigned long) ksig->ka.sa.sa_handler;
+-	adjustformat(regs);
+-
+ 	/*
+ 	 * This is subtle; if we build more than one sigframe, all but the
+ 	 * first one will see frame format 0 and have fsize == 0, so we won't
+ 	 * screw stkadj.
+ 	 */
+-	if (fsize)
++	if (fsize) {
+ 		regs->stkadj = fsize;
+-
+-	/* Prepare to skip over the extra stuff in the exception frame.  */
+-	if (regs->stkadj) {
+-		struct pt_regs *tregs =
+-			(struct pt_regs *)((ulong)regs + regs->stkadj);
++		tregs = rte_regs(regs);
+ 		pr_debug("Performing stackadjust=%04lx\n", regs->stkadj);
+-		/* This must be copied with decreasing addresses to
+-                   handle overlaps.  */
+ 		tregs->vector = 0;
+ 		tregs->format = 0;
+-		tregs->pc = regs->pc;
+ 		tregs->sr = regs->sr;
+ 	}
++
++	/*
++	 * Set up registers for signal handler.  All the state we are about
++	 * to destroy is successfully copied to sigframe.
++	 */
++	wrusp ((unsigned long) frame);
++	tregs->pc = (unsigned long) ksig->ka.sa.sa_handler;
++	adjustformat(regs);
++
+ 	return 0;
+ }
+ 
+@@ -968,7 +941,8 @@ static int setup_rt_frame(struct ksignal *ksig, sigset_t *set,
+ 			   struct pt_regs *regs)
+ {
+ 	struct rt_sigframe __user *frame;
+-	int fsize = frame_extra_sizes(regs->format);
++	struct pt_regs *tregs = rte_regs(regs);
++	int fsize = frame_extra_sizes(tregs->format);
+ 	int err = 0, sig = ksig->sig;
+ 
+ 	if (fsize < 0) {
+@@ -1018,34 +992,27 @@ static int setup_rt_frame(struct ksignal *ksig, sigset_t *set,
+ 
+ 	push_cache ((unsigned long) &frame->retcode);
+ 
+-	/*
+-	 * Set up registers for signal handler.  All the state we are about
+-	 * to destroy is successfully copied to sigframe.
+-	 */
+-	wrusp ((unsigned long) frame);
+-	regs->pc = (unsigned long) ksig->ka.sa.sa_handler;
+-	adjustformat(regs);
+-
+ 	/*
+ 	 * This is subtle; if we build more than one sigframe, all but the
+ 	 * first one will see frame format 0 and have fsize == 0, so we won't
+ 	 * screw stkadj.
+ 	 */
+-	if (fsize)
++	if (fsize) {
+ 		regs->stkadj = fsize;
+-
+-	/* Prepare to skip over the extra stuff in the exception frame.  */
+-	if (regs->stkadj) {
+-		struct pt_regs *tregs =
+-			(struct pt_regs *)((ulong)regs + regs->stkadj);
++		tregs = rte_regs(regs);
+ 		pr_debug("Performing stackadjust=%04lx\n", regs->stkadj);
+-		/* This must be copied with decreasing addresses to
+-                   handle overlaps.  */
+ 		tregs->vector = 0;
+ 		tregs->format = 0;
+-		tregs->pc = regs->pc;
+ 		tregs->sr = regs->sr;
+ 	}
++
++	/*
++	 * Set up registers for signal handler.  All the state we are about
++	 * to destroy is successfully copied to sigframe.
++	 */
++	wrusp ((unsigned long) frame);
++	tregs->pc = (unsigned long) ksig->ka.sa.sa_handler;
++	adjustformat(regs);
+ 	return 0;
+ }
+ 
+diff --git a/arch/m68k/kernel/traps.c b/arch/m68k/kernel/traps.c
+index 5b19fcdcd69e..9718ce94cc84 100644
+--- a/arch/m68k/kernel/traps.c
++++ b/arch/m68k/kernel/traps.c
+@@ -181,9 +181,8 @@ static inline void access_error060 (struct frame *fp)
+ static inline unsigned long probe040(int iswrite, unsigned long addr, int wbs)
+ {
+ 	unsigned long mmusr;
+-	mm_segment_t old_fs = get_fs();
+ 
+-	set_fs(MAKE_MM_SEG(wbs));
++	set_fc(wbs);
+ 
+ 	if (iswrite)
+ 		asm volatile (".chip 68040; ptestw (%0); .chip 68k" : : "a" (addr));
+@@ -192,7 +191,7 @@ static inline unsigned long probe040(int iswrite, unsigned long addr, int wbs)
+ 
+ 	asm volatile (".chip 68040; movec %%mmusr,%0; .chip 68k" : "=r" (mmusr));
+ 
+-	set_fs(old_fs);
++	set_fc(USER_DATA);
+ 
+ 	return mmusr;
+ }
+@@ -201,10 +200,8 @@ static inline int do_040writeback1(unsigned short wbs, unsigned long wba,
+ 				   unsigned long wbd)
+ {
+ 	int res = 0;
+-	mm_segment_t old_fs = get_fs();
+ 
+-	/* set_fs can not be moved, otherwise put_user() may oops */
+-	set_fs(MAKE_MM_SEG(wbs));
++	set_fc(wbs);
+ 
+ 	switch (wbs & WBSIZ_040) {
+ 	case BA_SIZE_BYTE:
+@@ -218,9 +215,7 @@ static inline int do_040writeback1(unsigned short wbs, unsigned long wba,
+ 		break;
+ 	}
+ 
+-	/* set_fs can not be moved, otherwise put_user() may oops */
+-	set_fs(old_fs);
+-
++	set_fc(USER_DATA);
+ 
+ 	pr_debug("do_040writeback1, res=%d\n", res);
+ 
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index 90f4e9ca1276..4fab34791758 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -18,7 +18,6 @@
+ 
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+-#include <asm/segment.h>
+ #include <asm/setup.h>
+ #include <asm/macintosh.h>
+ #include <asm/mac_via.h>
+diff --git a/arch/m68k/mm/cache.c b/arch/m68k/mm/cache.c
+index b486c0889eec..dde978e66f14 100644
+--- a/arch/m68k/mm/cache.c
++++ b/arch/m68k/mm/cache.c
+@@ -49,24 +49,7 @@ static unsigned long virt_to_phys_slow(unsigned long vaddr)
+ 		if (mmusr & MMU_R_040)
+ 			return (mmusr & PAGE_MASK) | (vaddr & ~PAGE_MASK);
+ 	} else {
+-		unsigned short mmusr;
+-		unsigned long *descaddr;
+-
+-		asm volatile ("ptestr %3,%2@,#7,%0\n\t"
+-			      "pmove %%psr,%1"
+-			      : "=a&" (descaddr), "=m" (mmusr)
+-			      : "a" (vaddr), "d" (get_fs().seg));
+-		if (mmusr & (MMU_I|MMU_B|MMU_L))
+-			return 0;
+-		descaddr = phys_to_virt((unsigned long)descaddr);
+-		switch (mmusr & MMU_NUM) {
+-		case 1:
+-			return (*descaddr & 0xfe000000) | (vaddr & 0x01ffffff);
+-		case 2:
+-			return (*descaddr & 0xfffc0000) | (vaddr & 0x0003ffff);
+-		case 3:
+-			return (*descaddr & PAGE_MASK) | (vaddr & ~PAGE_MASK);
+-		}
++		WARN_ON_ONCE(!CPU_IS_040_OR_060);
+ 	}
+ 	return 0;
+ }
+@@ -107,11 +90,9 @@ void flush_icache_user_range(unsigned long address, unsigned long endaddr)
+ 
+ void flush_icache_range(unsigned long address, unsigned long endaddr)
+ {
+-	mm_segment_t old_fs = get_fs();
+-
+-	set_fs(KERNEL_DS);
++	set_fc(SUPER_DATA);
+ 	flush_icache_user_range(address, endaddr);
+-	set_fs(old_fs);
++	set_fc(USER_DATA);
+ }
+ EXPORT_SYMBOL(flush_icache_range);
+ 
+diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
+index 5d749e188246..1b47bec15832 100644
+--- a/arch/m68k/mm/init.c
++++ b/arch/m68k/mm/init.c
+@@ -72,12 +72,6 @@ void __init paging_init(void)
+ 	if (!empty_zero_page)
+ 		panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
+ 		      __func__, PAGE_SIZE, PAGE_SIZE);
+-
+-	/*
+-	 * Set up SFC/DFC registers (user data space).
+-	 */
+-	set_fs (USER_DS);
+-
+ 	max_zone_pfn[ZONE_DMA] = end_mem >> PAGE_SHIFT;
+ 	free_area_init(max_zone_pfn);
+ }
+diff --git a/arch/m68k/mm/kmap.c b/arch/m68k/mm/kmap.c
+index 1269d513b221..20ddf71b43d0 100644
+--- a/arch/m68k/mm/kmap.c
++++ b/arch/m68k/mm/kmap.c
+@@ -17,7 +17,6 @@
+ #include <linux/vmalloc.h>
+ 
+ #include <asm/setup.h>
+-#include <asm/segment.h>
+ #include <asm/page.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+diff --git a/arch/m68k/mm/memory.c b/arch/m68k/mm/memory.c
+index fe75aecfb238..c2c03b0a1567 100644
+--- a/arch/m68k/mm/memory.c
++++ b/arch/m68k/mm/memory.c
+@@ -15,7 +15,6 @@
+ #include <linux/gfp.h>
+ 
+ #include <asm/setup.h>
+-#include <asm/segment.h>
+ #include <asm/page.h>
+ #include <asm/traps.h>
+ #include <asm/machdep.h>
+diff --git a/arch/m68k/mm/motorola.c b/arch/m68k/mm/motorola.c
+index 3a653f0a4188..9f3f77785aa7 100644
+--- a/arch/m68k/mm/motorola.c
++++ b/arch/m68k/mm/motorola.c
+@@ -467,7 +467,7 @@ void __init paging_init(void)
+ 	/*
+ 	 * Set up SFC/DFC registers
+ 	 */
+-	set_fs(KERNEL_DS);
++	set_fc(USER_DATA);
+ 
+ #ifdef DEBUG
+ 	printk ("before free_area_init\n");
+diff --git a/arch/m68k/sun3/config.c b/arch/m68k/sun3/config.c
+index f7dd47232b6c..203f428a0344 100644
+--- a/arch/m68k/sun3/config.c
++++ b/arch/m68k/sun3/config.c
+@@ -31,7 +31,6 @@
+ #include <asm/intersil.h>
+ #include <asm/irq.h>
+ #include <asm/sections.h>
+-#include <asm/segment.h>
+ #include <asm/sun3ints.h>
+ 
+ char sun3_reserved_pmeg[SUN3_PMEGS_NUM];
+@@ -89,7 +88,7 @@ void __init sun3_init(void)
+ 	sun3_reserved_pmeg[249] = 1;
+ 	sun3_reserved_pmeg[252] = 1;
+ 	sun3_reserved_pmeg[253] = 1;
+-	set_fs(KERNEL_DS);
++	set_fc(USER_DATA);
+ }
+ 
+ /* Without this, Bad Things happen when something calls arch_reset. */
+diff --git a/arch/m68k/sun3/mmu_emu.c b/arch/m68k/sun3/mmu_emu.c
+index 7aa879b7c7ff..7ec20817c0c9 100644
+--- a/arch/m68k/sun3/mmu_emu.c
++++ b/arch/m68k/sun3/mmu_emu.c
+@@ -23,7 +23,6 @@
+ #include <linux/uaccess.h>
+ #include <asm/page.h>
+ #include <asm/sun3mmu.h>
+-#include <asm/segment.h>
+ #include <asm/oplib.h>
+ #include <asm/mmu_context.h>
+ #include <asm/dvma.h>
+@@ -191,14 +190,13 @@ void __init mmu_emu_init(unsigned long bootmem_end)
+ 	for(seg = 0; seg < PAGE_OFFSET; seg += SUN3_PMEG_SIZE)
+ 		sun3_put_segmap(seg, SUN3_INVALID_PMEG);
+ 
+-	set_fs(MAKE_MM_SEG(3));
++	set_fc(3);
+ 	for(seg = 0; seg < 0x10000000; seg += SUN3_PMEG_SIZE) {
+ 		i = sun3_get_segmap(seg);
+ 		for(j = 1; j < CONTEXTS_NUM; j++)
+ 			(*(romvec->pv_setctxt))(j, (void *)seg, i);
+ 	}
+-	set_fs(KERNEL_DS);
+-
++	set_fc(USER_DATA);
+ }
+ 
+ /* erase the mappings for a dead context.  Uses the pg_dir for hints
+diff --git a/arch/m68k/sun3/sun3ints.c b/arch/m68k/sun3/sun3ints.c
+index 41ae422119d3..36cc280a4505 100644
+--- a/arch/m68k/sun3/sun3ints.c
++++ b/arch/m68k/sun3/sun3ints.c
+@@ -11,7 +11,6 @@
+ #include <linux/sched.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/interrupt.h>
+-#include <asm/segment.h>
+ #include <asm/intersil.h>
+ #include <asm/oplib.h>
+ #include <asm/sun3ints.h>
+diff --git a/arch/m68k/sun3x/prom.c b/arch/m68k/sun3x/prom.c
+index 74d2fe57524b..64c23bfaa90c 100644
+--- a/arch/m68k/sun3x/prom.c
++++ b/arch/m68k/sun3x/prom.c
+@@ -14,7 +14,6 @@
+ #include <asm/traps.h>
+ #include <asm/sun3xprom.h>
+ #include <asm/idprom.h>
+-#include <asm/segment.h>
+ #include <asm/sun3ints.h>
+ #include <asm/openprom.h>
+ #include <asm/machines.h>
+diff --git a/arch/nios2/Kconfig.debug b/arch/nios2/Kconfig.debug
+index a8bc06e96ef5..ca1beb87f987 100644
+--- a/arch/nios2/Kconfig.debug
++++ b/arch/nios2/Kconfig.debug
+@@ -3,9 +3,10 @@
+ config EARLY_PRINTK
+ 	bool "Activate early kernel debugging"
+ 	default y
++	depends on TTY
+ 	select SERIAL_CORE_CONSOLE
+ 	help
+-	  Enable early printk on console
++	  Enable early printk on console.
+ 	  This is useful for kernel debugging when your machine crashes very
+ 	  early before the console code is initialized.
+ 	  You should normally say N here, unless you want to debug such a crash.
+diff --git a/arch/nios2/kernel/setup.c b/arch/nios2/kernel/setup.c
+index cf8d687a2644..40bc8fb75e0b 100644
+--- a/arch/nios2/kernel/setup.c
++++ b/arch/nios2/kernel/setup.c
+@@ -149,8 +149,6 @@ static void __init find_limits(unsigned long *min, unsigned long *max_low,
+ 
+ void __init setup_arch(char **cmdline_p)
+ {
+-	int dram_start;
+-
+ 	console_verbose();
+ 
+ 	memory_start = memblock_start_of_DRAM();
 diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
 index 16256e17a544..10722455fd02 100644
 --- a/arch/s390/kvm/interrupt.c
@@ -93,6 +1477,24 @@ index ecd741ee3276..52bc8fbaa60a 100644
  }
  
  static inline int kvm_is_ucontrol(struct kvm *kvm)
+diff --git a/arch/x86/crypto/sm4-aesni-avx-asm_64.S b/arch/x86/crypto/sm4-aesni-avx-asm_64.S
+index fa2c3f50aecb..18d2f5199194 100644
+--- a/arch/x86/crypto/sm4-aesni-avx-asm_64.S
++++ b/arch/x86/crypto/sm4-aesni-avx-asm_64.S
+@@ -367,10 +367,11 @@ SYM_FUNC_START(sm4_aesni_avx_crypt8)
+ 	 *	%rdx: src (1..8 blocks)
+ 	 *	%rcx: num blocks (1..8)
+ 	 */
+-	FRAME_BEGIN
+-
+ 	cmpq $5, %rcx;
+ 	jb sm4_aesni_avx_crypt4;
++
++	FRAME_BEGIN
++
+ 	vmovdqu (0 * 16)(%rdx), RA0;
+ 	vmovdqu (1 * 16)(%rdx), RA1;
+ 	vmovdqu (2 * 16)(%rdx), RA2;
 diff --git a/arch/x86/include/asm/kvm_page_track.h b/arch/x86/include/asm/kvm_page_track.h
 index 87bd6025d91d..6a5f3acf2b33 100644
 --- a/arch/x86/include/asm/kvm_page_track.h
@@ -1060,6 +2462,98 @@ index 28ef14155726..aabd3a2ec1bc 100644
  	kvm_mmu_init_vm(kvm);
  	kvm_xen_init_vm(kvm);
  
+diff --git a/drivers/crypto/ccp/ccp-ops.c b/drivers/crypto/ccp/ccp-ops.c
+index bb88198c874e..aa4e1a500691 100644
+--- a/drivers/crypto/ccp/ccp-ops.c
++++ b/drivers/crypto/ccp/ccp-ops.c
+@@ -778,7 +778,7 @@ ccp_run_aes_gcm_cmd(struct ccp_cmd_queue *cmd_q, struct ccp_cmd *cmd)
+ 				    in_place ? DMA_BIDIRECTIONAL
+ 					     : DMA_TO_DEVICE);
+ 		if (ret)
+-			goto e_ctx;
++			goto e_aad;
+ 
+ 		if (in_place) {
+ 			dst = src;
+@@ -863,7 +863,7 @@ ccp_run_aes_gcm_cmd(struct ccp_cmd_queue *cmd_q, struct ccp_cmd *cmd)
+ 	op.u.aes.size = 0;
+ 	ret = cmd_q->ccp->vdata->perform->aes(&op);
+ 	if (ret)
+-		goto e_dst;
++		goto e_final_wa;
+ 
+ 	if (aes->action == CCP_AES_ACTION_ENCRYPT) {
+ 		/* Put the ciphered tag after the ciphertext. */
+@@ -873,17 +873,19 @@ ccp_run_aes_gcm_cmd(struct ccp_cmd_queue *cmd_q, struct ccp_cmd *cmd)
+ 		ret = ccp_init_dm_workarea(&tag, cmd_q, authsize,
+ 					   DMA_BIDIRECTIONAL);
+ 		if (ret)
+-			goto e_tag;
++			goto e_final_wa;
+ 		ret = ccp_set_dm_area(&tag, 0, p_tag, 0, authsize);
+-		if (ret)
+-			goto e_tag;
++		if (ret) {
++			ccp_dm_free(&tag);
++			goto e_final_wa;
++		}
+ 
+ 		ret = crypto_memneq(tag.address, final_wa.address,
+ 				    authsize) ? -EBADMSG : 0;
+ 		ccp_dm_free(&tag);
+ 	}
+ 
+-e_tag:
++e_final_wa:
+ 	ccp_dm_free(&final_wa);
+ 
+ e_dst:
+diff --git a/drivers/gpio/gpio-rockchip.c b/drivers/gpio/gpio-rockchip.c
+index 3335bd57761d..ce63cbd14d69 100644
+--- a/drivers/gpio/gpio-rockchip.c
++++ b/drivers/gpio/gpio-rockchip.c
+@@ -689,6 +689,7 @@ static int rockchip_gpio_probe(struct platform_device *pdev)
+ 	struct device_node *pctlnp = of_get_parent(np);
+ 	struct pinctrl_dev *pctldev = NULL;
+ 	struct rockchip_pin_bank *bank = NULL;
++	struct rockchip_pin_output_deferred *cfg;
+ 	static int gpio;
+ 	int id, ret;
+ 
+@@ -716,12 +717,33 @@ static int rockchip_gpio_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	/*
++	 * Prevent clashes with a deferred output setting
++	 * being added right at this moment.
++	 */
++	mutex_lock(&bank->deferred_lock);
++
+ 	ret = rockchip_gpiolib_register(bank);
+ 	if (ret) {
+ 		clk_disable_unprepare(bank->clk);
++		mutex_unlock(&bank->deferred_lock);
+ 		return ret;
+ 	}
+ 
++	while (!list_empty(&bank->deferred_output)) {
++		cfg = list_first_entry(&bank->deferred_output,
++				       struct rockchip_pin_output_deferred, head);
++		list_del(&cfg->head);
++
++		ret = rockchip_gpio_direction_output(&bank->gpio_chip, cfg->pin, cfg->arg);
++		if (ret)
++			dev_warn(dev, "setting output pin %u to %u failed\n", cfg->pin, cfg->arg);
++
++		kfree(cfg);
++	}
++
++	mutex_unlock(&bank->deferred_lock);
++
+ 	platform_set_drvdata(pdev, bank);
+ 	dev_info(dev, "probed %pOF\n", np);
+ 
 diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
 index 79b138fd4261..05c007b213f2 100644
 --- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
@@ -1387,6 +2881,367 @@ index 3cbc3baf087f..295cc7952d0e 100644
  	return 0;
  
  out_destroy:
+diff --git a/drivers/pinctrl/core.c b/drivers/pinctrl/core.c
+index a4ac87c8b4f8..5082102d7d0d 100644
+--- a/drivers/pinctrl/core.c
++++ b/drivers/pinctrl/core.c
+@@ -2306,7 +2306,7 @@ EXPORT_SYMBOL_GPL(devm_pinctrl_register_and_init);
+ 
+ /**
+  * devm_pinctrl_unregister() - Resource managed version of pinctrl_unregister().
+- * @dev: device for which which resource was allocated
++ * @dev: device for which resource was allocated
+  * @pctldev: the pinctrl device to unregister.
+  */
+ void devm_pinctrl_unregister(struct device *dev, struct pinctrl_dev *pctldev)
+diff --git a/drivers/pinctrl/pinctrl-amd.c b/drivers/pinctrl/pinctrl-amd.c
+index c001f2ed20f8..8d0f88e9ca88 100644
+--- a/drivers/pinctrl/pinctrl-amd.c
++++ b/drivers/pinctrl/pinctrl-amd.c
+@@ -445,6 +445,7 @@ static int amd_gpio_irq_set_wake(struct irq_data *d, unsigned int on)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct amd_gpio *gpio_dev = gpiochip_get_data(gc);
+ 	u32 wake_mask = BIT(WAKE_CNTRL_OFF_S0I3) | BIT(WAKE_CNTRL_OFF_S3);
++	int err;
+ 
+ 	raw_spin_lock_irqsave(&gpio_dev->lock, flags);
+ 	pin_reg = readl(gpio_dev->base + (d->hwirq)*4);
+@@ -457,6 +458,15 @@ static int amd_gpio_irq_set_wake(struct irq_data *d, unsigned int on)
+ 	writel(pin_reg, gpio_dev->base + (d->hwirq)*4);
+ 	raw_spin_unlock_irqrestore(&gpio_dev->lock, flags);
+ 
++	if (on)
++		err = enable_irq_wake(gpio_dev->irq);
++	else
++		err = disable_irq_wake(gpio_dev->irq);
++
++	if (err)
++		dev_err(&gpio_dev->pdev->dev, "failed to %s wake-up interrupt\n",
++			on ? "enable" : "disable");
++
+ 	return 0;
+ }
+ 
+@@ -902,7 +912,6 @@ static struct pinctrl_desc amd_pinctrl_desc = {
+ static int amd_gpio_probe(struct platform_device *pdev)
+ {
+ 	int ret = 0;
+-	int irq_base;
+ 	struct resource *res;
+ 	struct amd_gpio *gpio_dev;
+ 	struct gpio_irq_chip *girq;
+@@ -925,9 +934,9 @@ static int amd_gpio_probe(struct platform_device *pdev)
+ 	if (!gpio_dev->base)
+ 		return -ENOMEM;
+ 
+-	irq_base = platform_get_irq(pdev, 0);
+-	if (irq_base < 0)
+-		return irq_base;
++	gpio_dev->irq = platform_get_irq(pdev, 0);
++	if (gpio_dev->irq < 0)
++		return gpio_dev->irq;
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 	gpio_dev->saved_regs = devm_kcalloc(&pdev->dev, amd_pinctrl_desc.npins,
+@@ -987,7 +996,7 @@ static int amd_gpio_probe(struct platform_device *pdev)
+ 		goto out2;
+ 	}
+ 
+-	ret = devm_request_irq(&pdev->dev, irq_base, amd_gpio_irq_handler,
++	ret = devm_request_irq(&pdev->dev, gpio_dev->irq, amd_gpio_irq_handler,
+ 			       IRQF_SHARED, KBUILD_MODNAME, gpio_dev);
+ 	if (ret)
+ 		goto out2;
+diff --git a/drivers/pinctrl/pinctrl-amd.h b/drivers/pinctrl/pinctrl-amd.h
+index 95e763424042..1d4317073654 100644
+--- a/drivers/pinctrl/pinctrl-amd.h
++++ b/drivers/pinctrl/pinctrl-amd.h
+@@ -98,6 +98,7 @@ struct amd_gpio {
+ 	struct resource         *res;
+ 	struct platform_device  *pdev;
+ 	u32			*saved_regs;
++	int			irq;
+ };
+ 
+ /*  KERNCZ configuration*/
+diff --git a/drivers/pinctrl/pinctrl-rockchip.c b/drivers/pinctrl/pinctrl-rockchip.c
+index ae33e376695f..5ce260f152ce 100644
+--- a/drivers/pinctrl/pinctrl-rockchip.c
++++ b/drivers/pinctrl/pinctrl-rockchip.c
+@@ -2092,6 +2092,23 @@ static bool rockchip_pinconf_pull_valid(struct rockchip_pin_ctrl *ctrl,
+ 	return false;
+ }
+ 
++static int rockchip_pinconf_defer_output(struct rockchip_pin_bank *bank,
++					 unsigned int pin, u32 arg)
++{
++	struct rockchip_pin_output_deferred *cfg;
++
++	cfg = kzalloc(sizeof(*cfg), GFP_KERNEL);
++	if (!cfg)
++		return -ENOMEM;
++
++	cfg->pin = pin;
++	cfg->arg = arg;
++
++	list_add_tail(&cfg->head, &bank->deferred_output);
++
++	return 0;
++}
++
+ /* set the pin config settings for a specified pin */
+ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+ 				unsigned long *configs, unsigned num_configs)
+@@ -2136,6 +2153,22 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+ 			if (rc != RK_FUNC_GPIO)
+ 				return -EINVAL;
+ 
++			/*
++			 * Check for gpio driver not being probed yet.
++			 * The lock makes sure that either gpio-probe has completed
++			 * or the gpio driver hasn't probed yet.
++			 */
++			mutex_lock(&bank->deferred_lock);
++			if (!gpio || !gpio->direction_output) {
++				rc = rockchip_pinconf_defer_output(bank, pin - bank->pin_base, arg);
++				mutex_unlock(&bank->deferred_lock);
++				if (rc)
++					return rc;
++
++				break;
++			}
++			mutex_unlock(&bank->deferred_lock);
++
+ 			rc = gpio->direction_output(gpio, pin - bank->pin_base,
+ 						    arg);
+ 			if (rc)
+@@ -2204,6 +2237,11 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+ 		if (rc != RK_FUNC_GPIO)
+ 			return -EINVAL;
+ 
++		if (!gpio || !gpio->get) {
++			arg = 0;
++			break;
++		}
++
+ 		rc = gpio->get(gpio, pin - bank->pin_base);
+ 		if (rc < 0)
+ 			return rc;
+@@ -2450,6 +2488,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+ 						pin_bank->name, pin);
+ 			pdesc++;
+ 		}
++
++		INIT_LIST_HEAD(&pin_bank->deferred_output);
++		mutex_init(&pin_bank->deferred_lock);
+ 	}
+ 
+ 	ret = rockchip_pinctrl_parse_dt(pdev, info);
+@@ -2716,6 +2757,31 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int rockchip_pinctrl_remove(struct platform_device *pdev)
++{
++	struct rockchip_pinctrl *info = platform_get_drvdata(pdev);
++	struct rockchip_pin_bank *bank;
++	struct rockchip_pin_output_deferred *cfg;
++	int i;
++
++	of_platform_depopulate(&pdev->dev);
++
++	for (i = 0; i < info->ctrl->nr_banks; i++) {
++		bank = &info->ctrl->pin_banks[i];
++
++		mutex_lock(&bank->deferred_lock);
++		while (!list_empty(&bank->deferred_output)) {
++			cfg = list_first_entry(&bank->deferred_output,
++					       struct rockchip_pin_output_deferred, head);
++			list_del(&cfg->head);
++			kfree(cfg);
++		}
++		mutex_unlock(&bank->deferred_lock);
++	}
++
++	return 0;
++}
++
+ static struct rockchip_pin_bank px30_pin_banks[] = {
+ 	PIN_BANK_IOMUX_FLAGS(0, 32, "gpio0", IOMUX_SOURCE_PMU,
+ 					     IOMUX_SOURCE_PMU,
+@@ -3175,6 +3241,7 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
+ 
+ static struct platform_driver rockchip_pinctrl_driver = {
+ 	.probe		= rockchip_pinctrl_probe,
++	.remove		= rockchip_pinctrl_remove,
+ 	.driver = {
+ 		.name	= "rockchip-pinctrl",
+ 		.pm = &rockchip_pinctrl_dev_pm_ops,
+diff --git a/drivers/pinctrl/pinctrl-rockchip.h b/drivers/pinctrl/pinctrl-rockchip.h
+index 589d4d2a98c9..91f10279d084 100644
+--- a/drivers/pinctrl/pinctrl-rockchip.h
++++ b/drivers/pinctrl/pinctrl-rockchip.h
+@@ -141,6 +141,8 @@ struct rockchip_drv {
+  * @toggle_edge_mode: bit mask to toggle (falling/rising) edge mode
+  * @recalced_mask: bit mask to indicate a need to recalulate the mask
+  * @route_mask: bits describing the routing pins of per bank
++ * @deferred_output: gpio output settings to be done after gpio bank probed
++ * @deferred_lock: mutex for the deferred_output shared btw gpio and pinctrl
+  */
+ struct rockchip_pin_bank {
+ 	struct device			*dev;
+@@ -169,6 +171,8 @@ struct rockchip_pin_bank {
+ 	u32				toggle_edge_mode;
+ 	u32				recalced_mask;
+ 	u32				route_mask;
++	struct list_head		deferred_output;
++	struct mutex			deferred_lock;
+ };
+ 
+ /**
+@@ -243,6 +247,12 @@ struct rockchip_pin_config {
+ 	unsigned int		nconfigs;
+ };
+ 
++struct rockchip_pin_output_deferred {
++	struct list_head head;
++	unsigned int pin;
++	u32 arg;
++};
++
+ /**
+  * struct rockchip_pin_group: represent group of pins of a pinmux function.
+  * @name: name of the pin group, used to lookup the group.
+diff --git a/drivers/pinctrl/qcom/pinctrl-sc7280.c b/drivers/pinctrl/qcom/pinctrl-sc7280.c
+index afddf6d60dbe..9017ede409c9 100644
+--- a/drivers/pinctrl/qcom/pinctrl-sc7280.c
++++ b/drivers/pinctrl/qcom/pinctrl-sc7280.c
+@@ -1496,6 +1496,7 @@ static const struct of_device_id sc7280_pinctrl_of_match[] = {
+ static struct platform_driver sc7280_pinctrl_driver = {
+ 	.driver = {
+ 		.name = "sc7280-pinctrl",
++		.pm = &msm_pinctrl_dev_pm_ops,
+ 		.of_match_table = sc7280_pinctrl_of_match,
+ 	},
+ 	.probe = sc7280_pinctrl_probe,
+diff --git a/drivers/pinctrl/qcom/pinctrl-spmi-gpio.c b/drivers/pinctrl/qcom/pinctrl-spmi-gpio.c
+index 98bf0e2a2a8d..b2562e893139 100644
+--- a/drivers/pinctrl/qcom/pinctrl-spmi-gpio.c
++++ b/drivers/pinctrl/qcom/pinctrl-spmi-gpio.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+- * Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2012-2014, 2016-2021 The Linux Foundation. All rights reserved.
+  */
+ 
+ #include <linux/gpio/driver.h>
+@@ -14,6 +14,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
++#include <linux/spmi.h>
+ #include <linux/types.h>
+ 
+ #include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+@@ -171,6 +172,8 @@ struct pmic_gpio_state {
+ 	struct pinctrl_dev *ctrl;
+ 	struct gpio_chip chip;
+ 	struct irq_chip irq;
++	u8 usid;
++	u8 pid_base;
+ };
+ 
+ static const struct pinconf_generic_params pmic_gpio_bindings[] = {
+@@ -949,12 +952,36 @@ static int pmic_gpio_child_to_parent_hwirq(struct gpio_chip *chip,
+ 					   unsigned int *parent_hwirq,
+ 					   unsigned int *parent_type)
+ {
+-	*parent_hwirq = child_hwirq + 0xc0;
++	struct pmic_gpio_state *state = gpiochip_get_data(chip);
++
++	*parent_hwirq = child_hwirq + state->pid_base;
+ 	*parent_type = child_type;
+ 
+ 	return 0;
+ }
+ 
++static void *pmic_gpio_populate_parent_fwspec(struct gpio_chip *chip,
++					     unsigned int parent_hwirq,
++					     unsigned int parent_type)
++{
++	struct pmic_gpio_state *state = gpiochip_get_data(chip);
++	struct irq_fwspec *fwspec;
++
++	fwspec = kzalloc(sizeof(*fwspec), GFP_KERNEL);
++	if (!fwspec)
++		return NULL;
++
++	fwspec->fwnode = chip->irq.parent_domain->fwnode;
++
++	fwspec->param_count = 4;
++	fwspec->param[0] = state->usid;
++	fwspec->param[1] = parent_hwirq;
++	/* param[2] must be left as 0 */
++	fwspec->param[3] = parent_type;
++
++	return fwspec;
++}
++
+ static int pmic_gpio_probe(struct platform_device *pdev)
+ {
+ 	struct irq_domain *parent_domain;
+@@ -965,6 +992,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
+ 	struct pmic_gpio_pad *pad, *pads;
+ 	struct pmic_gpio_state *state;
+ 	struct gpio_irq_chip *girq;
++	const struct spmi_device *parent_spmi_dev;
+ 	int ret, npins, i;
+ 	u32 reg;
+ 
+@@ -984,6 +1012,9 @@ static int pmic_gpio_probe(struct platform_device *pdev)
+ 
+ 	state->dev = &pdev->dev;
+ 	state->map = dev_get_regmap(dev->parent, NULL);
++	parent_spmi_dev = to_spmi_device(dev->parent);
++	state->usid = parent_spmi_dev->usid;
++	state->pid_base = reg >> 8;
+ 
+ 	pindesc = devm_kcalloc(dev, npins, sizeof(*pindesc), GFP_KERNEL);
+ 	if (!pindesc)
+@@ -1059,7 +1090,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
+ 	girq->fwnode = of_node_to_fwnode(state->dev->of_node);
+ 	girq->parent_domain = parent_domain;
+ 	girq->child_to_parent_hwirq = pmic_gpio_child_to_parent_hwirq;
+-	girq->populate_parent_alloc_arg = gpiochip_populate_parent_fwspec_fourcell;
++	girq->populate_parent_alloc_arg = pmic_gpio_populate_parent_fwspec;
+ 	girq->child_offset_to_irq = pmic_gpio_child_offset_to_irq;
+ 	girq->child_irq_domain_ops.translate = pmic_gpio_domain_translate;
+ 
+diff --git a/drivers/s390/crypto/vfio_ap_ops.c b/drivers/s390/crypto/vfio_ap_ops.c
+index 118939a7729a..623d5269a52c 100644
+--- a/drivers/s390/crypto/vfio_ap_ops.c
++++ b/drivers/s390/crypto/vfio_ap_ops.c
+@@ -361,6 +361,7 @@ static int vfio_ap_mdev_probe(struct mdev_device *mdev)
+ 	mutex_lock(&matrix_dev->lock);
+ 	list_del(&matrix_mdev->node);
+ 	mutex_unlock(&matrix_dev->lock);
++	vfio_uninit_group_dev(&matrix_mdev->vdev);
+ 	kfree(matrix_mdev);
+ err_dec_available:
+ 	atomic_inc(&matrix_dev->available_instances);
+@@ -376,9 +377,10 @@ static void vfio_ap_mdev_remove(struct mdev_device *mdev)
+ 	mutex_lock(&matrix_dev->lock);
+ 	vfio_ap_mdev_reset_queues(matrix_mdev);
+ 	list_del(&matrix_mdev->node);
++	mutex_unlock(&matrix_dev->lock);
++	vfio_uninit_group_dev(&matrix_mdev->vdev);
+ 	kfree(matrix_mdev);
+ 	atomic_inc(&matrix_dev->available_instances);
+-	mutex_unlock(&matrix_dev->lock);
+ }
+ 
+ static ssize_t name_show(struct mdev_type *mtype,
 diff --git a/drivers/staging/media/hantro/hantro_drv.c b/drivers/staging/media/hantro/hantro_drv.c
 index 8a2edd67f2c6..20e508158871 100644
 --- a/drivers/staging/media/hantro/hantro_drv.c
@@ -1468,6 +3323,19 @@ index 29a38ecba19e..26e3d90d1e7c 100644
  
  	ret = vduse_domain_init();
  	if (ret)
+diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+index 68198e0f2a63..a03b5a99c2da 100644
+--- a/drivers/vfio/pci/vfio_pci_core.c
++++ b/drivers/vfio/pci/vfio_pci_core.c
+@@ -565,7 +565,7 @@ static bool vfio_pci_dev_below_slot(struct pci_dev *pdev, struct pci_slot *slot)
+ }
+ 
+ struct vfio_pci_walk_info {
+-	int (*fn)(struct pci_dev *, void *data);
++	int (*fn)(struct pci_dev *pdev, void *data);
+ 	void *data;
+ 	struct pci_dev *pdev;
+ 	bool slot;
 diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
 index f41d081777f5..35927ceb26ff 100644
 --- a/drivers/vhost/vdpa.c
@@ -1631,6 +3499,864 @@ index 505480217cf1..2512e2f9cd4e 100644
  /* Internal functions only for core arm_pmu code */
  struct arm_pmu *armpmu_alloc(void);
  struct arm_pmu *armpmu_alloc_atomic(void);
+diff --git a/include/sound/rawmidi.h b/include/sound/rawmidi.h
+index 989e1517332d..7a08ed2acd60 100644
+--- a/include/sound/rawmidi.h
++++ b/include/sound/rawmidi.h
+@@ -98,6 +98,7 @@ struct snd_rawmidi_file {
+ 	struct snd_rawmidi *rmidi;
+ 	struct snd_rawmidi_substream *input;
+ 	struct snd_rawmidi_substream *output;
++	unsigned int user_pversion;	/* supported protocol version */
+ };
+ 
+ struct snd_rawmidi_str {
+diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
+index 1d84ec9db93b..5859ca0a1439 100644
+--- a/include/uapi/sound/asound.h
++++ b/include/uapi/sound/asound.h
+@@ -784,6 +784,7 @@ struct snd_rawmidi_status {
+ 
+ #define SNDRV_RAWMIDI_IOCTL_PVERSION	_IOR('W', 0x00, int)
+ #define SNDRV_RAWMIDI_IOCTL_INFO	_IOR('W', 0x01, struct snd_rawmidi_info)
++#define SNDRV_RAWMIDI_IOCTL_USER_PVERSION _IOW('W', 0x02, int)
+ #define SNDRV_RAWMIDI_IOCTL_PARAMS	_IOWR('W', 0x10, struct snd_rawmidi_params)
+ #define SNDRV_RAWMIDI_IOCTL_STATUS	_IOWR('W', 0x20, struct snd_rawmidi_status)
+ #define SNDRV_RAWMIDI_IOCTL_DROP	_IOW('W', 0x30, int)
+diff --git a/sound/core/rawmidi.c b/sound/core/rawmidi.c
+index 6c0a4a67ad2e..6f30231bdb88 100644
+--- a/sound/core/rawmidi.c
++++ b/sound/core/rawmidi.c
+@@ -873,12 +873,21 @@ static long snd_rawmidi_ioctl(struct file *file, unsigned int cmd, unsigned long
+ 			return -EINVAL;
+ 		}
+ 	}
++	case SNDRV_RAWMIDI_IOCTL_USER_PVERSION:
++		if (get_user(rfile->user_pversion, (unsigned int __user *)arg))
++			return -EFAULT;
++		return 0;
++
+ 	case SNDRV_RAWMIDI_IOCTL_PARAMS:
+ 	{
+ 		struct snd_rawmidi_params params;
+ 
+ 		if (copy_from_user(&params, argp, sizeof(struct snd_rawmidi_params)))
+ 			return -EFAULT;
++		if (rfile->user_pversion < SNDRV_PROTOCOL_VERSION(2, 0, 2)) {
++			params.mode = 0;
++			memset(params.reserved, 0, sizeof(params.reserved));
++		}
+ 		switch (params.stream) {
+ 		case SNDRV_RAWMIDI_STREAM_OUTPUT:
+ 			if (rfile->output == NULL)
+diff --git a/sound/drivers/pcsp/pcsp_lib.c b/sound/drivers/pcsp/pcsp_lib.c
+index ed40d0f7432c..773db4bf0876 100644
+--- a/sound/drivers/pcsp/pcsp_lib.c
++++ b/sound/drivers/pcsp/pcsp_lib.c
+@@ -143,7 +143,7 @@ enum hrtimer_restart pcsp_do_timer(struct hrtimer *handle)
+ 	if (pointer_update)
+ 		pcsp_pointer_update(chip);
+ 
+-	hrtimer_forward(handle, hrtimer_get_expires(handle), ns_to_ktime(ns));
++	hrtimer_forward_now(handle, ns_to_ktime(ns));
+ 
+ 	return HRTIMER_RESTART;
+ }
+diff --git a/sound/firewire/motu/amdtp-motu.c b/sound/firewire/motu/amdtp-motu.c
+index 5388b85fb60e..a18c2c033e83 100644
+--- a/sound/firewire/motu/amdtp-motu.c
++++ b/sound/firewire/motu/amdtp-motu.c
+@@ -276,10 +276,11 @@ static void __maybe_unused copy_message(u64 *frames, __be32 *buffer,
+ 
+ 	/* This is just for v2/v3 protocol. */
+ 	for (i = 0; i < data_blocks; ++i) {
+-		*frames = (be32_to_cpu(buffer[1]) << 16) |
+-			  (be32_to_cpu(buffer[2]) >> 16);
++		*frames = be32_to_cpu(buffer[1]);
++		*frames <<= 16;
++		*frames |= be32_to_cpu(buffer[2]) >> 16;
++		++frames;
+ 		buffer += data_block_quadlets;
+-		frames++;
+ 	}
+ }
+ 
+diff --git a/sound/firewire/oxfw/oxfw.c b/sound/firewire/oxfw/oxfw.c
+index cb5b5e3a481b..daf731364695 100644
+--- a/sound/firewire/oxfw/oxfw.c
++++ b/sound/firewire/oxfw/oxfw.c
+@@ -184,13 +184,16 @@ static int detect_quirks(struct snd_oxfw *oxfw, const struct ieee1394_device_id
+ 			model = val;
+ 	}
+ 
+-	/*
+-	 * Mackie Onyx Satellite with base station has a quirk to report a wrong
+-	 * value in 'dbs' field of CIP header against its format information.
+-	 */
+-	if (vendor == VENDOR_LOUD && model == MODEL_SATELLITE)
++	if (vendor == VENDOR_LOUD) {
++		// Mackie Onyx Satellite with base station has a quirk to report a wrong
++		// value in 'dbs' field of CIP header against its format information.
+ 		oxfw->quirks |= SND_OXFW_QUIRK_WRONG_DBS;
+ 
++		// OXFW971-based models may transfer events by blocking method.
++		if (!(oxfw->quirks & SND_OXFW_QUIRK_JUMBO_PAYLOAD))
++			oxfw->quirks |= SND_OXFW_QUIRK_BLOCKING_TRANSMISSION;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+index 3aa432d814a2..47777439961c 100644
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -883,10 +883,11 @@ static unsigned int azx_get_pos_skl(struct azx *chip, struct azx_dev *azx_dev)
+ 	return azx_get_pos_posbuf(chip, azx_dev);
+ }
+ 
+-static void azx_shutdown_chip(struct azx *chip)
++static void __azx_shutdown_chip(struct azx *chip, bool skip_link_reset)
+ {
+ 	azx_stop_chip(chip);
+-	azx_enter_link_reset(chip);
++	if (!skip_link_reset)
++		azx_enter_link_reset(chip);
+ 	azx_clear_irq_pending(chip);
+ 	display_power(chip, false);
+ }
+@@ -895,6 +896,11 @@ static void azx_shutdown_chip(struct azx *chip)
+ static DEFINE_MUTEX(card_list_lock);
+ static LIST_HEAD(card_list);
+ 
++static void azx_shutdown_chip(struct azx *chip)
++{
++	__azx_shutdown_chip(chip, false);
++}
++
+ static void azx_add_card_list(struct azx *chip)
+ {
+ 	struct hda_intel *hda = container_of(chip, struct hda_intel, chip);
+@@ -2357,7 +2363,7 @@ static void azx_shutdown(struct pci_dev *pci)
+ 		return;
+ 	chip = card->private_data;
+ 	if (chip && chip->running)
+-		azx_shutdown_chip(chip);
++		__azx_shutdown_chip(chip, true);
+ }
+ 
+ /* PCI IDs */
+diff --git a/sound/pci/hda/patch_cs8409.c b/sound/pci/hda/patch_cs8409.c
+index 3c7ef55d016e..31ff11ab868e 100644
+--- a/sound/pci/hda/patch_cs8409.c
++++ b/sound/pci/hda/patch_cs8409.c
+@@ -1207,6 +1207,9 @@ void dolphin_fixups(struct hda_codec *codec, const struct hda_fixup *fix, int ac
+ 		snd_hda_jack_add_kctl(codec, DOLPHIN_LO_PIN_NID, "Line Out", true,
+ 				      SND_JACK_HEADPHONE, NULL);
+ 
++		snd_hda_jack_add_kctl(codec, DOLPHIN_AMIC_PIN_NID, "Microphone", true,
++				      SND_JACK_MICROPHONE, NULL);
++
+ 		cs8409_fix_caps(codec, DOLPHIN_HP_PIN_NID);
+ 		cs8409_fix_caps(codec, DOLPHIN_LO_PIN_NID);
+ 		cs8409_fix_caps(codec, DOLPHIN_AMIC_PIN_NID);
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 8b7a389b6aed..4407f7da57c4 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -6429,6 +6429,20 @@ static void alc_fixup_thinkpad_acpi(struct hda_codec *codec,
+ 	hda_fixup_thinkpad_acpi(codec, fix, action);
+ }
+ 
++/* Fixup for Lenovo Legion 15IMHg05 speaker output on headset removal. */
++static void alc287_fixup_legion_15imhg05_speakers(struct hda_codec *codec,
++						  const struct hda_fixup *fix,
++						  int action)
++{
++	struct alc_spec *spec = codec->spec;
++
++	switch (action) {
++	case HDA_FIXUP_ACT_PRE_PROBE:
++		spec->gen.suppress_auto_mute = 1;
++		break;
++	}
++}
++
+ /* for alc295_fixup_hp_top_speakers */
+ #include "hp_x360_helper.c"
+ 
+@@ -6646,6 +6660,10 @@ enum {
+ 	ALC623_FIXUP_LENOVO_THINKSTATION_P340,
+ 	ALC255_FIXUP_ACER_HEADPHONE_AND_MIC,
+ 	ALC236_FIXUP_HP_LIMIT_INT_MIC_BOOST,
++	ALC287_FIXUP_LEGION_15IMHG05_SPEAKERS,
++	ALC287_FIXUP_LEGION_15IMHG05_AUTOMUTE,
++	ALC287_FIXUP_YOGA7_14ITL_SPEAKERS,
++	ALC287_FIXUP_13S_GEN2_SPEAKERS
+ };
+ 
+ static const struct hda_fixup alc269_fixups[] = {
+@@ -8236,6 +8254,113 @@ static const struct hda_fixup alc269_fixups[] = {
+ 		.chained = true,
+ 		.chain_id = ALC236_FIXUP_HP_MUTE_LED_MICMUTE_VREF,
+ 	},
++	[ALC287_FIXUP_LEGION_15IMHG05_SPEAKERS] = {
++		.type = HDA_FIXUP_VERBS,
++		//.v.verbs = legion_15imhg05_coefs,
++		.v.verbs = (const struct hda_verb[]) {
++			 // set left speaker Legion 7i.
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x24 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x41 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xc },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x1a },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x2 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++
++			 // set right speaker Legion 7i.
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x24 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x42 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xc },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x2a },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x2 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++			 {}
++		},
++		.chained = true,
++		.chain_id = ALC287_FIXUP_LEGION_15IMHG05_AUTOMUTE,
++	},
++	[ALC287_FIXUP_LEGION_15IMHG05_AUTOMUTE] = {
++		.type = HDA_FIXUP_FUNC,
++		.v.func = alc287_fixup_legion_15imhg05_speakers,
++		.chained = true,
++		.chain_id = ALC269_FIXUP_HEADSET_MODE,
++	},
++	[ALC287_FIXUP_YOGA7_14ITL_SPEAKERS] = {
++		.type = HDA_FIXUP_VERBS,
++		.v.verbs = (const struct hda_verb[]) {
++			 // set left speaker Yoga 7i.
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x24 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x41 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xc },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x1a },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x2 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++
++			 // set right speaker Yoga 7i.
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x24 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x46 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xc },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x2a },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++
++			 { 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x2 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			 { 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++			 {}
++		},
++		.chained = true,
++		.chain_id = ALC269_FIXUP_HEADSET_MODE,
++	},
++	[ALC287_FIXUP_13S_GEN2_SPEAKERS] = {
++		.type = HDA_FIXUP_VERBS,
++		.v.verbs = (const struct hda_verb[]) {
++			{ 0x20, AC_VERB_SET_COEF_INDEX, 0x24 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x41 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x2 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++			{ 0x20, AC_VERB_SET_COEF_INDEX, 0x24 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x42 },
++			{ 0x20, AC_VERB_SET_COEF_INDEX, 0x26 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x2 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0x0 },
++			{ 0x20, AC_VERB_SET_PROC_COEF, 0xb020 },
++			{}
++		},
++		.chained = true,
++		.chain_id = ALC269_FIXUP_HEADSET_MODE,
++	},
+ };
+ 
+ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+@@ -8630,6 +8755,10 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x17aa, 0x3818, "Lenovo C940", ALC298_FIXUP_LENOVO_SPK_VOLUME),
+ 	SND_PCI_QUIRK(0x17aa, 0x3827, "Ideapad S740", ALC285_FIXUP_IDEAPAD_S740_COEF),
+ 	SND_PCI_QUIRK(0x17aa, 0x3843, "Yoga 9i", ALC287_FIXUP_IDEAPAD_BASS_SPK_AMP),
++	SND_PCI_QUIRK(0x17aa, 0x3813, "Legion 7i 15IMHG05", ALC287_FIXUP_LEGION_15IMHG05_SPEAKERS),
++	SND_PCI_QUIRK(0x17aa, 0x3852, "Lenovo Yoga 7 14ITL5", ALC287_FIXUP_YOGA7_14ITL_SPEAKERS),
++	SND_PCI_QUIRK(0x17aa, 0x3853, "Lenovo Yoga 7 15ITL5", ALC287_FIXUP_YOGA7_14ITL_SPEAKERS),
++	SND_PCI_QUIRK(0x17aa, 0x3819, "Lenovo 13s Gen2 ITL", ALC287_FIXUP_13S_GEN2_SPEAKERS),
+ 	SND_PCI_QUIRK(0x17aa, 0x3902, "Lenovo E50-80", ALC269_FIXUP_DMIC_THINKPAD_ACPI),
+ 	SND_PCI_QUIRK(0x17aa, 0x3977, "IdeaPad S210", ALC283_FIXUP_INT_MIC),
+ 	SND_PCI_QUIRK(0x17aa, 0x3978, "Lenovo B50-70", ALC269_FIXUP_DMIC_THINKPAD_ACPI),
+diff --git a/sound/pci/pcxhr/pcxhr_core.c b/sound/pci/pcxhr/pcxhr_core.c
+index 87d24224c042..23f253effb4f 100644
+--- a/sound/pci/pcxhr/pcxhr_core.c
++++ b/sound/pci/pcxhr/pcxhr_core.c
+@@ -52,7 +52,7 @@
+ #define PCXHR_DSP 2
+ 
+ #if (PCXHR_DSP_OFFSET_MAX > PCXHR_PLX_OFFSET_MIN)
+-#undef  PCXHR_REG_TO_PORT(x)
++#error  PCXHR_REG_TO_PORT(x)
+ #else
+ #define PCXHR_REG_TO_PORT(x)	((x)>PCXHR_DSP_OFFSET_MAX ? PCXHR_PLX : PCXHR_DSP)
+ #endif
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index a961f837cd09..bda66b30e063 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -1073,6 +1073,16 @@ static int fsl_esai_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto err_pm_get_sync;
+ 
++	/*
++	 * Register platform component before registering cpu dai for there
++	 * is not defer probe for platform component in snd_soc_add_pcm_runtime().
++	 */
++	ret = imx_pcm_dma_init(pdev, IMX_ESAI_DMABUF_SIZE);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
++		goto err_pm_get_sync;
++	}
++
+ 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_esai_component,
+ 					      &fsl_esai_dai, 1);
+ 	if (ret) {
+@@ -1082,12 +1092,6 @@ static int fsl_esai_probe(struct platform_device *pdev)
+ 
+ 	INIT_WORK(&esai_priv->work, fsl_esai_hw_reset);
+ 
+-	ret = imx_pcm_dma_init(pdev, IMX_ESAI_DMABUF_SIZE);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
+-		goto err_pm_get_sync;
+-	}
+-
+ 	return ret;
+ 
+ err_pm_get_sync:
+diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
+index 8c0c75ce9490..9f90989ac59a 100644
+--- a/sound/soc/fsl/fsl_micfil.c
++++ b/sound/soc/fsl/fsl_micfil.c
+@@ -737,18 +737,23 @@ static int fsl_micfil_probe(struct platform_device *pdev)
+ 	pm_runtime_enable(&pdev->dev);
+ 	regcache_cache_only(micfil->regmap, true);
+ 
++	/*
++	 * Register platform component before registering cpu dai for there
++	 * is not defer probe for platform component in snd_soc_add_pcm_runtime().
++	 */
++	ret = devm_snd_dmaengine_pcm_register(&pdev->dev, NULL, 0);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to pcm register\n");
++		return ret;
++	}
++
+ 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_micfil_component,
+ 					      &fsl_micfil_dai, 1);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to register component %s\n",
+ 			fsl_micfil_component.name);
+-		return ret;
+ 	}
+ 
+-	ret = devm_snd_dmaengine_pcm_register(&pdev->dev, NULL, 0);
+-	if (ret)
+-		dev_err(&pdev->dev, "failed to pcm register\n");
+-
+ 	return ret;
+ }
+ 
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 223fcd15bfcc..38f6362099d5 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -1152,11 +1152,10 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto err_pm_get_sync;
+ 
+-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_component,
+-					      &sai->cpu_dai_drv, 1);
+-	if (ret)
+-		goto err_pm_get_sync;
+-
++	/*
++	 * Register platform component before registering cpu dai for there
++	 * is not defer probe for platform component in snd_soc_add_pcm_runtime().
++	 */
+ 	if (sai->soc_data->use_imx_pcm) {
+ 		ret = imx_pcm_dma_init(pdev, IMX_SAI_DMABUF_SIZE);
+ 		if (ret)
+@@ -1167,6 +1166,11 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 			goto err_pm_get_sync;
+ 	}
+ 
++	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_component,
++					      &sai->cpu_dai_drv, 1);
++	if (ret)
++		goto err_pm_get_sync;
++
+ 	return ret;
+ 
+ err_pm_get_sync:
+diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+index 8ffb1a6048d6..1c53719bb61e 100644
+--- a/sound/soc/fsl/fsl_spdif.c
++++ b/sound/soc/fsl/fsl_spdif.c
+@@ -1434,16 +1434,20 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+ 	pm_runtime_enable(&pdev->dev);
+ 	regcache_cache_only(spdif_priv->regmap, true);
+ 
+-	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_spdif_component,
+-					      &spdif_priv->cpu_dai_drv, 1);
++	/*
++	 * Register platform component before registering cpu dai for there
++	 * is not defer probe for platform component in snd_soc_add_pcm_runtime().
++	 */
++	ret = imx_pcm_dma_init(pdev, IMX_SPDIF_DMABUF_SIZE);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "failed to register DAI: %d\n", ret);
++		dev_err_probe(&pdev->dev, ret, "imx_pcm_dma_init failed\n");
+ 		goto err_pm_disable;
+ 	}
+ 
+-	ret = imx_pcm_dma_init(pdev, IMX_SPDIF_DMABUF_SIZE);
++	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_spdif_component,
++					      &spdif_priv->cpu_dai_drv, 1);
+ 	if (ret) {
+-		dev_err_probe(&pdev->dev, ret, "imx_pcm_dma_init failed\n");
++		dev_err(&pdev->dev, "failed to register DAI: %d\n", ret);
+ 		goto err_pm_disable;
+ 	}
+ 
+diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+index 31c5ee641fe7..7ba2fd15132d 100644
+--- a/sound/soc/fsl/fsl_xcvr.c
++++ b/sound/soc/fsl/fsl_xcvr.c
+@@ -1215,18 +1215,23 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
+ 	pm_runtime_enable(dev);
+ 	regcache_cache_only(xcvr->regmap, true);
+ 
++	/*
++	 * Register platform component before registering cpu dai for there
++	 * is not defer probe for platform component in snd_soc_add_pcm_runtime().
++	 */
++	ret = devm_snd_dmaengine_pcm_register(dev, NULL, 0);
++	if (ret) {
++		dev_err(dev, "failed to pcm register\n");
++		return ret;
++	}
++
+ 	ret = devm_snd_soc_register_component(dev, &fsl_xcvr_comp,
+ 					      &fsl_xcvr_dai, 1);
+ 	if (ret) {
+ 		dev_err(dev, "failed to register component %s\n",
+ 			fsl_xcvr_comp.name);
+-		return ret;
+ 	}
+ 
+-	ret = devm_snd_dmaengine_pcm_register(dev, NULL, 0);
+-	if (ret)
+-		dev_err(dev, "failed to pcm register\n");
+-
+ 	return ret;
+ }
+ 
+diff --git a/sound/soc/intel/boards/sof_sdw.c b/sound/soc/intel/boards/sof_sdw.c
+index 6602eda89e8e..6b06248a9327 100644
+--- a/sound/soc/intel/boards/sof_sdw.c
++++ b/sound/soc/intel/boards/sof_sdw.c
+@@ -929,6 +929,11 @@ static int create_sdw_dailink(struct snd_soc_card *card,
+ 			      cpus + *cpu_id, cpu_dai_num,
+ 			      codecs, codec_num,
+ 			      NULL, &sdw_ops);
++		/*
++		 * SoundWire DAILINKs use 'stream' functions and Bank Switch operations
++		 * based on wait_for_completion(), tag them as 'nonatomic'.
++		 */
++		dai_links[*be_index].nonatomic = true;
+ 
+ 		ret = set_codec_init_func(card, link, dai_links + (*be_index)++,
+ 					  playback, group_id);
+diff --git a/sound/soc/mediatek/Kconfig b/sound/soc/mediatek/Kconfig
+index 5a2f4667d50b..81ad2dcee9eb 100644
+--- a/sound/soc/mediatek/Kconfig
++++ b/sound/soc/mediatek/Kconfig
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ config SND_SOC_MEDIATEK
+ 	tristate
++	select REGMAP_MMIO
+ 
+ config SND_SOC_MT2701
+ 	tristate "ASoC support for Mediatek MT2701 chip"
+@@ -188,7 +189,9 @@ config SND_SOC_MT8192_MT6359_RT1015_RT5682
+ config SND_SOC_MT8195
+ 	tristate "ASoC support for Mediatek MT8195 chip"
+ 	depends on ARCH_MEDIATEK || COMPILE_TEST
++	depends on COMMON_CLK
+ 	select SND_SOC_MEDIATEK
++	select MFD_SYSCON if SND_SOC_MT6359
+ 	help
+ 	  This adds ASoC platform driver support for Mediatek MT8195 chip
+ 	  that can be used with other codecs.
+diff --git a/sound/soc/mediatek/common/mtk-afe-fe-dai.c b/sound/soc/mediatek/common/mtk-afe-fe-dai.c
+index baaa5881b1d4..e95c7c018e7d 100644
+--- a/sound/soc/mediatek/common/mtk-afe-fe-dai.c
++++ b/sound/soc/mediatek/common/mtk-afe-fe-dai.c
+@@ -334,9 +334,11 @@ int mtk_afe_suspend(struct snd_soc_component *component)
+ 			devm_kcalloc(dev, afe->reg_back_up_list_num,
+ 				     sizeof(unsigned int), GFP_KERNEL);
+ 
+-	for (i = 0; i < afe->reg_back_up_list_num; i++)
+-		regmap_read(regmap, afe->reg_back_up_list[i],
+-			    &afe->reg_back_up[i]);
++	if (afe->reg_back_up) {
++		for (i = 0; i < afe->reg_back_up_list_num; i++)
++			regmap_read(regmap, afe->reg_back_up_list[i],
++				    &afe->reg_back_up[i]);
++	}
+ 
+ 	afe->suspended = true;
+ 	afe->runtime_suspend(dev);
+@@ -356,12 +358,13 @@ int mtk_afe_resume(struct snd_soc_component *component)
+ 
+ 	afe->runtime_resume(dev);
+ 
+-	if (!afe->reg_back_up)
++	if (!afe->reg_back_up) {
+ 		dev_dbg(dev, "%s no reg_backup\n", __func__);
+-
+-	for (i = 0; i < afe->reg_back_up_list_num; i++)
+-		mtk_regmap_write(regmap, afe->reg_back_up_list[i],
+-				 afe->reg_back_up[i]);
++	} else {
++		for (i = 0; i < afe->reg_back_up_list_num; i++)
++			mtk_regmap_write(regmap, afe->reg_back_up_list[i],
++					 afe->reg_back_up[i]);
++	}
+ 
+ 	afe->suspended = false;
+ 	return 0;
+diff --git a/sound/soc/mediatek/mt8195/mt8195-mt6359-rt1019-rt5682.c b/sound/soc/mediatek/mt8195/mt8195-mt6359-rt1019-rt5682.c
+index c97ace7387b4..de09f67c0450 100644
+--- a/sound/soc/mediatek/mt8195/mt8195-mt6359-rt1019-rt5682.c
++++ b/sound/soc/mediatek/mt8195/mt8195-mt6359-rt1019-rt5682.c
+@@ -424,8 +424,8 @@ static int mt8195_hdmi_codec_init(struct snd_soc_pcm_runtime *rtd)
+ 	return snd_soc_component_set_jack(cmpnt_codec, &priv->hdmi_jack, NULL);
+ }
+ 
+-static int mt8195_hdmitx_dptx_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
+-					      struct snd_pcm_hw_params *params)
++static int mt8195_dptx_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
++				       struct snd_pcm_hw_params *params)
+ 
+ {
+ 	/* fix BE i2s format to 32bit, clean param mask first */
+@@ -902,7 +902,7 @@ static struct snd_soc_dai_link mt8195_mt6359_rt1019_rt5682_dai_links[] = {
+ 		.no_pcm = 1,
+ 		.dpcm_playback = 1,
+ 		.ops = &mt8195_dptx_ops,
+-		.be_hw_params_fixup = mt8195_hdmitx_dptx_hw_params_fixup,
++		.be_hw_params_fixup = mt8195_dptx_hw_params_fixup,
+ 		SND_SOC_DAILINK_REG(DPTX_BE),
+ 	},
+ 	[DAI_LINK_ETDM1_IN_BE] = {
+@@ -953,7 +953,6 @@ static struct snd_soc_dai_link mt8195_mt6359_rt1019_rt5682_dai_links[] = {
+ 			SND_SOC_DAIFMT_NB_NF |
+ 			SND_SOC_DAIFMT_CBS_CFS,
+ 		.dpcm_playback = 1,
+-		.be_hw_params_fixup = mt8195_hdmitx_dptx_hw_params_fixup,
+ 		SND_SOC_DAILINK_REG(ETDM3_OUT_BE),
+ 	},
+ 	[DAI_LINK_PCM1_BE] = {
+diff --git a/sound/soc/sof/core.c b/sound/soc/sof/core.c
+index 3e4dd4a86363..59d0d7b2b55c 100644
+--- a/sound/soc/sof/core.c
++++ b/sound/soc/sof/core.c
+@@ -371,7 +371,6 @@ int snd_sof_device_remove(struct device *dev)
+ 			dev_warn(dev, "error: %d failed to prepare DSP for device removal",
+ 				 ret);
+ 
+-		snd_sof_fw_unload(sdev);
+ 		snd_sof_ipc_free(sdev);
+ 		snd_sof_free_debug(sdev);
+ 		snd_sof_free_trace(sdev);
+@@ -394,8 +393,7 @@ int snd_sof_device_remove(struct device *dev)
+ 		snd_sof_remove(sdev);
+ 
+ 	/* release firmware */
+-	release_firmware(pdata->fw);
+-	pdata->fw = NULL;
++	snd_sof_fw_unload(sdev);
+ 
+ 	return 0;
+ }
+diff --git a/sound/soc/sof/imx/imx8.c b/sound/soc/sof/imx/imx8.c
+index 12fedf0984bd..7e9723a10d02 100644
+--- a/sound/soc/sof/imx/imx8.c
++++ b/sound/soc/sof/imx/imx8.c
+@@ -365,7 +365,14 @@ static int imx8_remove(struct snd_sof_dev *sdev)
+ /* on i.MX8 there is 1 to 1 match between type and BAR idx */
+ static int imx8_get_bar_index(struct snd_sof_dev *sdev, u32 type)
+ {
+-	return type;
++	/* Only IRAM and SRAM bars are valid */
++	switch (type) {
++	case SOF_FW_BLK_TYPE_IRAM:
++	case SOF_FW_BLK_TYPE_SRAM:
++		return type;
++	default:
++		return -EINVAL;
++	}
+ }
+ 
+ static void imx8_ipc_msg_data(struct snd_sof_dev *sdev,
+diff --git a/sound/soc/sof/imx/imx8m.c b/sound/soc/sof/imx/imx8m.c
+index cb822d953767..892e1482f97f 100644
+--- a/sound/soc/sof/imx/imx8m.c
++++ b/sound/soc/sof/imx/imx8m.c
+@@ -228,7 +228,14 @@ static int imx8m_remove(struct snd_sof_dev *sdev)
+ /* on i.MX8 there is 1 to 1 match between type and BAR idx */
+ static int imx8m_get_bar_index(struct snd_sof_dev *sdev, u32 type)
+ {
+-	return type;
++	/* Only IRAM and SRAM bars are valid */
++	switch (type) {
++	case SOF_FW_BLK_TYPE_IRAM:
++	case SOF_FW_BLK_TYPE_SRAM:
++		return type;
++	default:
++		return -EINVAL;
++	}
+ }
+ 
+ static void imx8m_ipc_msg_data(struct snd_sof_dev *sdev,
+diff --git a/sound/soc/sof/loader.c b/sound/soc/sof/loader.c
+index 2b38a77cd594..bb79c77775b3 100644
+--- a/sound/soc/sof/loader.c
++++ b/sound/soc/sof/loader.c
+@@ -729,10 +729,10 @@ int snd_sof_load_firmware_raw(struct snd_sof_dev *sdev)
+ 	ret = request_firmware(&plat_data->fw, fw_filename, sdev->dev);
+ 
+ 	if (ret < 0) {
+-		dev_err(sdev->dev, "error: request firmware %s failed err: %d\n",
+-			fw_filename, ret);
+ 		dev_err(sdev->dev,
+-			"you may need to download the firmware from https://github.com/thesofproject/sof-bin/\n");
++			"error: sof firmware file is missing, you might need to\n");
++		dev_err(sdev->dev,
++			"       download it from https://github.com/thesofproject/sof-bin/\n");
+ 		goto err;
+ 	} else {
+ 		dev_dbg(sdev->dev, "request_firmware %s successful\n",
+@@ -880,5 +880,7 @@ EXPORT_SYMBOL(snd_sof_run_firmware);
+ void snd_sof_fw_unload(struct snd_sof_dev *sdev)
+ {
+ 	/* TODO: support module unloading at runtime */
++	release_firmware(sdev->pdata->fw);
++	sdev->pdata->fw = NULL;
+ }
+ EXPORT_SYMBOL(snd_sof_fw_unload);
+diff --git a/sound/soc/sof/trace.c b/sound/soc/sof/trace.c
+index f72a6e83e6af..58f6ca5cf491 100644
+--- a/sound/soc/sof/trace.c
++++ b/sound/soc/sof/trace.c
+@@ -530,7 +530,6 @@ void snd_sof_trace_notify_for_error(struct snd_sof_dev *sdev)
+ 		return;
+ 
+ 	if (sdev->dtrace_is_enabled) {
+-		dev_err(sdev->dev, "error: waking up any trace sleepers\n");
+ 		sdev->dtrace_error = true;
+ 		wake_up(&sdev->trace_sleep);
+ 	}
+diff --git a/sound/soc/sof/xtensa/core.c b/sound/soc/sof/xtensa/core.c
+index bbb9a2282ed9..f6e3411b33cf 100644
+--- a/sound/soc/sof/xtensa/core.c
++++ b/sound/soc/sof/xtensa/core.c
+@@ -122,9 +122,9 @@ static void xtensa_stack(struct snd_sof_dev *sdev, void *oops, u32 *stack,
+ 	 * 0x0049fbb0: 8000f2d0 0049fc00 6f6c6c61 00632e63
+ 	 */
+ 	for (i = 0; i < stack_words; i += 4) {
+-		hex_dump_to_buffer(stack + i * 4, 16, 16, 4,
++		hex_dump_to_buffer(stack + i, 16, 16, 4,
+ 				   buf, sizeof(buf), false);
+-		dev_err(sdev->dev, "0x%08x: %s\n", stack_ptr + i, buf);
++		dev_err(sdev->dev, "0x%08x: %s\n", stack_ptr + i * 4, buf);
+ 	}
+ }
+ 
+diff --git a/sound/usb/card.c b/sound/usb/card.c
+index fd570a42f043..1764b9302d46 100644
+--- a/sound/usb/card.c
++++ b/sound/usb/card.c
+@@ -1054,7 +1054,7 @@ static int usb_audio_suspend(struct usb_interface *intf, pm_message_t message)
+ 	return 0;
+ }
+ 
+-static int __usb_audio_resume(struct usb_interface *intf, bool reset_resume)
++static int usb_audio_resume(struct usb_interface *intf)
+ {
+ 	struct snd_usb_audio *chip = usb_get_intfdata(intf);
+ 	struct snd_usb_stream *as;
+@@ -1080,7 +1080,7 @@ static int __usb_audio_resume(struct usb_interface *intf, bool reset_resume)
+ 	 * we just notify and restart the mixers
+ 	 */
+ 	list_for_each_entry(mixer, &chip->mixer_list, list) {
+-		err = snd_usb_mixer_resume(mixer, reset_resume);
++		err = snd_usb_mixer_resume(mixer);
+ 		if (err < 0)
+ 			goto err_out;
+ 	}
+@@ -1100,20 +1100,10 @@ static int __usb_audio_resume(struct usb_interface *intf, bool reset_resume)
+ 	atomic_dec(&chip->active); /* allow autopm after this point */
+ 	return err;
+ }
+-
+-static int usb_audio_resume(struct usb_interface *intf)
+-{
+-	return __usb_audio_resume(intf, false);
+-}
+-
+-static int usb_audio_reset_resume(struct usb_interface *intf)
+-{
+-	return __usb_audio_resume(intf, true);
+-}
+ #else
+ #define usb_audio_suspend	NULL
+ #define usb_audio_resume	NULL
+-#define usb_audio_reset_resume	NULL
++#define usb_audio_resume	NULL
+ #endif		/* CONFIG_PM */
+ 
+ static const struct usb_device_id usb_audio_ids [] = {
+@@ -1135,7 +1125,7 @@ static struct usb_driver usb_audio_driver = {
+ 	.disconnect =	usb_audio_disconnect,
+ 	.suspend =	usb_audio_suspend,
+ 	.resume =	usb_audio_resume,
+-	.reset_resume =	usb_audio_reset_resume,
++	.reset_resume =	usb_audio_resume,
+ 	.id_table =	usb_audio_ids,
+ 	.supports_autosuspend = 1,
+ };
+diff --git a/sound/usb/mixer.c b/sound/usb/mixer.c
+index 43bc59575a6e..a2ce535df14b 100644
+--- a/sound/usb/mixer.c
++++ b/sound/usb/mixer.c
+@@ -3653,33 +3653,16 @@ static int restore_mixer_value(struct usb_mixer_elem_list *list)
+ 	return 0;
+ }
+ 
+-static int default_mixer_reset_resume(struct usb_mixer_elem_list *list)
+-{
+-	int err;
+-
+-	if (list->resume) {
+-		err = list->resume(list);
+-		if (err < 0)
+-			return err;
+-	}
+-	return restore_mixer_value(list);
+-}
+-
+-int snd_usb_mixer_resume(struct usb_mixer_interface *mixer, bool reset_resume)
++int snd_usb_mixer_resume(struct usb_mixer_interface *mixer)
+ {
+ 	struct usb_mixer_elem_list *list;
+-	usb_mixer_elem_resume_func_t f;
+ 	int id, err;
+ 
+ 	/* restore cached mixer values */
+ 	for (id = 0; id < MAX_ID_ELEMS; id++) {
+ 		for_each_mixer_elem(list, mixer, id) {
+-			if (reset_resume)
+-				f = list->reset_resume;
+-			else
+-				f = list->resume;
+-			if (f) {
+-				err = f(list);
++			if (list->resume) {
++				err = list->resume(list);
+ 				if (err < 0)
+ 					return err;
+ 			}
+@@ -3700,7 +3683,6 @@ void snd_usb_mixer_elem_init_std(struct usb_mixer_elem_list *list,
+ 	list->id = unitid;
+ 	list->dump = snd_usb_mixer_dump_cval;
+ #ifdef CONFIG_PM
+-	list->resume = NULL;
+-	list->reset_resume = default_mixer_reset_resume;
++	list->resume = restore_mixer_value;
+ #endif
+ }
+diff --git a/sound/usb/mixer.h b/sound/usb/mixer.h
+index 876bbc9a71ad..98ea24d91d80 100644
+--- a/sound/usb/mixer.h
++++ b/sound/usb/mixer.h
+@@ -70,7 +70,6 @@ struct usb_mixer_elem_list {
+ 	bool is_std_info;
+ 	usb_mixer_elem_dump_func_t dump;
+ 	usb_mixer_elem_resume_func_t resume;
+-	usb_mixer_elem_resume_func_t reset_resume;
+ };
+ 
+ /* iterate over mixer element list of the given unit id */
+@@ -121,7 +120,7 @@ int snd_usb_mixer_vol_tlv(struct snd_kcontrol *kcontrol, int op_flag,
+ 
+ #ifdef CONFIG_PM
+ int snd_usb_mixer_suspend(struct usb_mixer_interface *mixer);
+-int snd_usb_mixer_resume(struct usb_mixer_interface *mixer, bool reset_resume);
++int snd_usb_mixer_resume(struct usb_mixer_interface *mixer);
+ #endif
+ 
+ int snd_usb_set_cur_mix_value(struct usb_mixer_elem_info *cval, int channel,
+diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
+index a66ce0375fd9..46082dc57be0 100644
+--- a/sound/usb/mixer_quirks.c
++++ b/sound/usb/mixer_quirks.c
+@@ -151,7 +151,7 @@ static int add_single_ctl_with_resume(struct usb_mixer_interface *mixer,
+ 		*listp = list;
+ 	list->mixer = mixer;
+ 	list->id = id;
+-	list->reset_resume = resume;
++	list->resume = resume;
+ 	kctl = snd_ctl_new1(knew, list);
+ 	if (!kctl) {
+ 		kfree(list);
 diff --git a/tools/perf/Documentation/jitdump-specification.txt b/tools/perf/Documentation/jitdump-specification.txt
 index 52152d156ad9..79936355d819 100644
 --- a/tools/perf/Documentation/jitdump-specification.txt
