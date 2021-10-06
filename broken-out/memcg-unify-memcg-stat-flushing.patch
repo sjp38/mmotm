@@ -9,12 +9,11 @@ addition after aa48e47e3906 ("memcg: infrastructure to flush memcg stats")
 the kernel periodically flush the memcg stats from the root, so, the other
 flushers will potentially have much less work to do.
 
-Link: https://lkml.kernel.org/r/20210930044711.2892660-2-shakeelb@google.com
+Link: https://lkml.kernel.org/r/20211001190040.48086-2-shakeelb@google.com
 Signed-off-by: Shakeel Butt <shakeelb@google.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: "Michal Koutný" <mkoutny@suse.com>
-
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -23,53 +22,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~memcg-unify-memcg-stat-flushing
 +++ a/mm/memcontrol.c
-@@ -1425,7 +1425,7 @@ static char *memory_stat_format(struct m
- 	 *
- 	 * Current memory state:
- 	 */
--	cgroup_rstat_flush(memcg->css.cgroup);
-+	mem_cgroup_flush_stats();
- 
- 	for (i = 0; i < ARRAY_SIZE(memory_stats); i++) {
- 		u64 size;
-@@ -3529,8 +3529,7 @@ static unsigned long mem_cgroup_usage(st
- 	unsigned long val;
- 
- 	if (mem_cgroup_is_root(memcg)) {
--		/* mem_cgroup_threshold() calls here from irqsafe context */
--		cgroup_rstat_flush_irqsafe(memcg->css.cgroup);
-+		mem_cgroup_flush_stats();
- 		val = memcg_page_state(memcg, NR_FILE_PAGES) +
- 			memcg_page_state(memcg, NR_ANON_MAPPED);
- 		if (swap)
-@@ -3911,7 +3910,7 @@ static int memcg_numa_stat_show(struct s
- 	int nid;
- 	struct mem_cgroup *memcg = mem_cgroup_from_seq(m);
- 
--	cgroup_rstat_flush(memcg->css.cgroup);
-+	mem_cgroup_flush_stats();
- 
- 	for (stat = stats; stat < stats + ARRAY_SIZE(stats); stat++) {
- 		seq_printf(m, "%s=%lu", stat->name,
-@@ -3983,7 +3982,7 @@ static int memcg_stat_show(struct seq_fi
- 
- 	BUILD_BUG_ON(ARRAY_SIZE(memcg1_stat_names) != ARRAY_SIZE(memcg1_stats));
- 
--	cgroup_rstat_flush(memcg->css.cgroup);
-+	mem_cgroup_flush_stats();
- 
- 	for (i = 0; i < ARRAY_SIZE(memcg1_stats); i++) {
- 		unsigned long nr;
-@@ -4486,7 +4485,7 @@ void mem_cgroup_wb_stats(struct bdi_writ
- 	struct mem_cgroup *memcg = mem_cgroup_from_css(wb->memcg_css);
- 	struct mem_cgroup *parent;
- 
--	cgroup_rstat_flush_irqsafe(memcg->css.cgroup);
-+	mem_cgroup_flush_stats();
- 
- 	*pdirty = memcg_page_state(memcg, NR_FILE_DIRTY);
- 	*pwriteback = memcg_page_state(memcg, NR_WRITEBACK);
-@@ -5354,12 +5353,14 @@ static void mem_cgroup_css_reset(struct
+@@ -660,12 +660,14 @@ static inline void memcg_rstat_updated(s
  
  static void __mem_cgroup_flush_stats(void)
  {
@@ -86,7 +39,53 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  void mem_cgroup_flush_stats(void)
-@@ -6391,7 +6392,7 @@ static int memory_numa_stat_show(struct
+@@ -1461,7 +1463,7 @@ static char *memory_stat_format(struct m
+ 	 *
+ 	 * Current memory state:
+ 	 */
+-	cgroup_rstat_flush(memcg->css.cgroup);
++	mem_cgroup_flush_stats();
+ 
+ 	for (i = 0; i < ARRAY_SIZE(memory_stats); i++) {
+ 		u64 size;
+@@ -3565,8 +3567,7 @@ static unsigned long mem_cgroup_usage(st
+ 	unsigned long val;
+ 
+ 	if (mem_cgroup_is_root(memcg)) {
+-		/* mem_cgroup_threshold() calls here from irqsafe context */
+-		cgroup_rstat_flush_irqsafe(memcg->css.cgroup);
++		mem_cgroup_flush_stats();
+ 		val = memcg_page_state(memcg, NR_FILE_PAGES) +
+ 			memcg_page_state(memcg, NR_ANON_MAPPED);
+ 		if (swap)
+@@ -3947,7 +3948,7 @@ static int memcg_numa_stat_show(struct s
+ 	int nid;
+ 	struct mem_cgroup *memcg = mem_cgroup_from_seq(m);
+ 
+-	cgroup_rstat_flush(memcg->css.cgroup);
++	mem_cgroup_flush_stats();
+ 
+ 	for (stat = stats; stat < stats + ARRAY_SIZE(stats); stat++) {
+ 		seq_printf(m, "%s=%lu", stat->name,
+@@ -4019,7 +4020,7 @@ static int memcg_stat_show(struct seq_fi
+ 
+ 	BUILD_BUG_ON(ARRAY_SIZE(memcg1_stat_names) != ARRAY_SIZE(memcg1_stats));
+ 
+-	cgroup_rstat_flush(memcg->css.cgroup);
++	mem_cgroup_flush_stats();
+ 
+ 	for (i = 0; i < ARRAY_SIZE(memcg1_stats); i++) {
+ 		unsigned long nr;
+@@ -4522,7 +4523,7 @@ void mem_cgroup_wb_stats(struct bdi_writ
+ 	struct mem_cgroup *memcg = mem_cgroup_from_css(wb->memcg_css);
+ 	struct mem_cgroup *parent;
+ 
+-	cgroup_rstat_flush_irqsafe(memcg->css.cgroup);
++	mem_cgroup_flush_stats();
+ 
+ 	*pdirty = memcg_page_state(memcg, NR_FILE_DIRTY);
+ 	*pwriteback = memcg_page_state(memcg, NR_WRITEBACK);
+@@ -6405,7 +6406,7 @@ static int memory_numa_stat_show(struct
  	int i;
  	struct mem_cgroup *memcg = mem_cgroup_from_seq(m);
  

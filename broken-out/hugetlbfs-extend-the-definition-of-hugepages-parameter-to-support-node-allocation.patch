@@ -1,10 +1,10 @@
 From: Zhenguo Yao <yaozhenguo1@gmail.com>
 Subject: hugetlbfs: extend the definition of hugepages parameter to support node allocation
 
-We can specify the number of hugepages to allocate at boot. But the
-hugepages is balanced in all nodes at present. In some scenarios,
-we only need hugepages in one node. For example: DPDK needs hugepages
-which are in the same node as NIC.
+We can specify the number of hugepages to allocate at boot.  But the
+hugepages is balanced in all nodes at present.  In some scenarios, we only
+need hugepages in one node.  For example: DPDK needs hugepages which are
+in the same node as NIC.
 
 If DPDK needs four hugepages of 1G size in node1 and system has 16 numa
 nodes we must reserve 64 hugepages on the kernel cmdline.  But only four
@@ -18,15 +18,18 @@ hugepagesz=1G hugepages=0:1,1:3
 
 It will allocate 1 hugepage in node0 and 3 hugepages in node1.
 
-Link: https://lkml.kernel.org/r/20210927104149.46884-1-yaozhenguo1@gmail.com
+Link: https://lkml.kernel.org/r/20211005054729.86457-1-yaozhenguo1@gmail.com
 Signed-off-by: Zhenguo Yao <yaozhenguo1@gmail.com>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Zhenguo Yao <yaozhenguo1@gmail.com>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Nathan Chancellor <nathan@kernel.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Mike Rapoport <rppt@kernel.org>
-Cc: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -35,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  arch/powerpc/mm/hugetlbpage.c                   |    9 
  include/linux/hugetlb.h                         |    6 
  mm/hugetlb.c                                    |  153 +++++++++++---
- 5 files changed, 157 insertions(+), 31 deletions(-)
+ 5 files changed, 155 insertions(+), 33 deletions(-)
 
 --- a/arch/powerpc/mm/hugetlbpage.c~hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation
 +++ a/arch/powerpc/mm/hugetlbpage.c
@@ -44,7 +47,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return 1;
  }
 +
-+bool __init node_specific_alloc_support(void)
++bool __init hugetlb_node_alloc_supported(void)
 +{
 +	return false;
 +}
@@ -111,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	only be specified once on the command line.  default_hugepagesz can
 --- a/include/linux/hugetlb.h~hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation
 +++ a/include/linux/hugetlb.h
-@@ -603,6 +603,7 @@ struct hstate {
+@@ -596,6 +596,7 @@ struct hstate {
  	unsigned long nr_overcommit_huge_pages;
  	struct list_head hugepage_activelist;
  	struct list_head hugepage_freelists[MAX_NUMNODES];
@@ -119,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned int nr_huge_pages_node[MAX_NUMNODES];
  	unsigned int free_huge_pages_node[MAX_NUMNODES];
  	unsigned int surplus_huge_pages_node[MAX_NUMNODES];
-@@ -635,8 +636,9 @@ void restore_reserve_on_error(struct hst
+@@ -628,8 +629,9 @@ void restore_reserve_on_error(struct hst
  				unsigned long address, struct page *page);
  
  /* arch callback */
@@ -127,13 +130,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -int __init alloc_bootmem_huge_page(struct hstate *h);
 +int __init __alloc_bootmem_huge_page(struct hstate *h, int nid);
 +int __init alloc_bootmem_huge_page(struct hstate *h, int nid);
-+bool __init node_specific_alloc_support(void);
++bool __init hugetlb_node_alloc_supported(void);
  
  void __init hugetlb_add_hstate(unsigned order);
  bool __init arch_hugetlb_valid_size(unsigned long size);
 --- a/mm/hugetlb.c~hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation
 +++ a/mm/hugetlb.c
-@@ -66,6 +66,7 @@ static struct hstate * __initdata parsed
+@@ -76,6 +76,7 @@ static struct hstate * __initdata parsed
  static unsigned long __initdata default_hstate_max_huge_pages;
  static bool __initdata parsed_valid_hugepagesz = true;
  static bool __initdata parsed_default_hugepagesz;
@@ -141,7 +144,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  /*
   * Protects updates to hugepage_freelists, hugepage_activelist, nr_huge_pages,
-@@ -2934,33 +2935,41 @@ out_subpool_put:
+@@ -2936,33 +2937,39 @@ out_subpool_put:
  	return ERR_PTR(-ENOSPC);
  }
  
@@ -151,7 +154,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -int __alloc_bootmem_huge_page(struct hstate *h)
 +int __alloc_bootmem_huge_page(struct hstate *h, int nid)
  {
- 	struct huge_bootmem_page *m;
+-	struct huge_bootmem_page *m;
++	struct huge_bootmem_page *m = NULL; /* initialize for clang */
  	int nr_nodes, node;
  
 +	if (nid >= nr_online_nodes)
@@ -160,12 +164,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	if (nid != NUMA_NO_NODE) {
 +		m = memblock_alloc_try_nid_raw(huge_page_size(h), huge_page_size(h),
 +				0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-+		if (m)
-+			goto found;
-+		else
++		if (!m)
 +			return 0;
++		goto found;
 +	}
-+	/* do all node balanced alloc */
++	/* allocate from next node when distributing huge pages */
  	for_each_node_mask_to_alloc(h, nr_nodes, node, &node_states[N_MEMORY]) {
 -		void *addr;
 -
@@ -180,16 +183,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -			 * puts them into the mem_map).
 -			 */
 -			m = addr;
+-			goto found;
+-		}
 +		/*
 +		 * Use the beginning of the huge page to store the
 +		 * huge_bootmem_page struct (until gather_bootmem
 +		 * puts them into the mem_map).
 +		 */
-+		if (m)
- 			goto found;
--		}
-+		else
++		if (!m)
 +			return 0;
++		goto found;
  	}
 -	return 0;
  
@@ -198,7 +201,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Put them into a private list first because mem_map is not up yet */
  	INIT_LIST_HEAD(&m->list);
  	list_add(&m->list, &huge_boot_pages);
-@@ -3000,12 +3009,61 @@ static void __init gather_bootmem_preall
+@@ -3002,12 +3009,61 @@ static void __init gather_bootmem_preall
  		cond_resched();
  	}
  }
@@ -238,7 +241,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long i;
  	nodemask_t *node_alloc_noretry;
 +	bool node_specific_alloc = false;
- 
++
 +	/* skip gigantic hugepages allocation if hugetlb_cma enabled */
 +	if (hstate_is_gigantic(h) && hugetlb_cma_size) {
 +		pr_warn_once("HugeTLB: hugetlb_cma is enabled, skip boot time allocation\n");
@@ -252,15 +255,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +			node_specific_alloc = true;
 +		}
 +	}
-+
+ 
 +	if (node_specific_alloc)
 +		return;
 +
-+	/* bellow will do all node balanced alloc */
++	/* below will do all node balanced alloc */
  	if (!hstate_is_gigantic(h)) {
  		/*
  		 * Bit mask controlling how hard we retry per-node allocations.
-@@ -3026,11 +3084,7 @@ static void __init hugetlb_hstate_alloc_
+@@ -3028,11 +3084,7 @@ static void __init hugetlb_hstate_alloc_
  
  	for (i = 0; i < h->max_huge_pages; ++i) {
  		if (hstate_is_gigantic(h)) {
@@ -273,7 +276,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				break;
  		} else if (!alloc_pool_huge_page(h,
  					 &node_states[N_MEMORY],
-@@ -3046,7 +3100,6 @@ static void __init hugetlb_hstate_alloc_
+@@ -3048,7 +3100,6 @@ static void __init hugetlb_hstate_alloc_
  			h->max_huge_pages, buf, i);
  		h->max_huge_pages = i;
  	}
@@ -281,30 +284,29 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kfree(node_alloc_noretry);
  }
  
-@@ -3949,6 +4002,11 @@ static int __init hugetlb_init(void)
+@@ -3942,6 +3993,10 @@ static int __init hugetlb_init(void)
  			}
  			default_hstate.max_huge_pages =
  				default_hstate_max_huge_pages;
 +
 +			for (i = 0; i < nr_online_nodes; i++)
-+				if (default_hugepages_in_node[i] > 0)
-+					default_hstate.max_huge_pages_node[i] =
-+						default_hugepages_in_node[i];
++				default_hstate.max_huge_pages_node[i] =
++					default_hugepages_in_node[i];
  		}
  	}
  
-@@ -4009,6 +4067,10 @@ void __init hugetlb_add_hstate(unsigned
+@@ -4002,6 +4057,10 @@ void __init hugetlb_add_hstate(unsigned
  	parsed_hstate = h;
  }
  
-+bool __init __weak node_specific_alloc_support(void)
++bool __init __weak hugetlb_node_alloc_supported(void)
 +{
 +	return true;
 +}
  /*
   * hugepages command line processing
   * hugepages normally follows a valid hugepagsz or default_hugepagsz
-@@ -4020,6 +4082,10 @@ static int __init hugepages_setup(char *
+@@ -4013,6 +4072,10 @@ static int __init hugepages_setup(char *
  {
  	unsigned long *mhp;
  	static unsigned long *last_mhp;
@@ -315,7 +317,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!parsed_valid_hugepagesz) {
  		pr_warn("HugeTLB: hugepages=%s does not follow a valid hugepagesz, ignoring\n", s);
-@@ -4043,8 +4109,40 @@ static int __init hugepages_setup(char *
+@@ -4036,8 +4099,40 @@ static int __init hugepages_setup(char *
  		return 0;
  	}
  
@@ -327,7 +329,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +			goto invalid;
 +		/* Parameter is node format */
 +		if (p[count] == ':') {
-+			if (!node_specific_alloc_support()) {
++			if (!hugetlb_node_alloc_supported()) {
 +				pr_warn("HugeTLB: architecture can't support node specific alloc, ignoring!\n");
 +				return 0;
 +			}
@@ -358,7 +360,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Global state is always initialized later in hugetlb_init.
-@@ -4057,6 +4155,10 @@ static int __init hugepages_setup(char *
+@@ -4050,6 +4145,10 @@ static int __init hugepages_setup(char *
  	last_mhp = mhp;
  
  	return 1;
@@ -369,7 +371,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  __setup("hugepages=", hugepages_setup);
  
-@@ -4118,6 +4220,7 @@ __setup("hugepagesz=", hugepagesz_setup)
+@@ -4111,6 +4210,7 @@ __setup("hugepagesz=", hugepagesz_setup)
  static int __init default_hugepagesz_setup(char *s)
  {
  	unsigned long size;
@@ -377,14 +379,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	parsed_valid_hugepagesz = false;
  	if (parsed_default_hugepagesz) {
-@@ -4146,6 +4249,10 @@ static int __init default_hugepagesz_set
+@@ -4139,6 +4239,9 @@ static int __init default_hugepagesz_set
  	 */
  	if (default_hstate_max_huge_pages) {
  		default_hstate.max_huge_pages = default_hstate_max_huge_pages;
 +		for (i = 0; i < nr_online_nodes; i++)
-+			if (default_hugepages_in_node[i] > 0)
-+				default_hstate.max_huge_pages_node[i] =
-+					default_hugepages_in_node[i];
++			default_hstate.max_huge_pages_node[i] =
++				default_hugepages_in_node[i];
  		if (hstate_is_gigantic(&default_hstate))
  			hugetlb_hstate_alloc_pages(&default_hstate);
  		default_hstate_max_huge_pages = 0;

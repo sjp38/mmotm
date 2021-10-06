@@ -23,7 +23,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/drivers/pci/pci.c~workaround-for-a-pci-restoring-bug
 +++ a/drivers/pci/pci.c
-@@ -1581,6 +1581,15 @@ static void pci_restore_ltr_state(struct
+@@ -1587,6 +1587,15 @@ static void pci_restore_ltr_state(struct
  int pci_save_state(struct pci_dev *dev)
  {
  	int i;

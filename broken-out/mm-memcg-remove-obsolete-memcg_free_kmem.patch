@@ -1,0 +1,63 @@
+From: Waiman Long <longman@redhat.com>
+Subject: mm/memcg: remove obsolete memcg_free_kmem()
+
+Since commit d648bcc7fe65 ("mm: kmem: make memcg_kmem_enabled()
+irreversible"), the only thing memcg_free_kmem() does is to call
+memcg_offline_kmem() when the memcg is still online which can happen when
+online_css() fails due to -ENOMEM.  However, the name memcg_free_kmem() is
+confusing and it is more clear and straight forward to call
+memcg_offline_kmem() directly from mem_cgroup_css_free().
+
+Link: https://lkml.kernel.org/r/20211005202450.11775-1-longman@redhat.com
+Signed-off-by: Waiman Long <longman@redhat.com>
+Suggested-by: Roman Gushchin <guro@fb.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |   14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
+
+--- a/mm/memcontrol.c~mm-memcg-remove-obsolete-memcg_free_kmem
++++ a/mm/memcontrol.c
+@@ -3704,13 +3704,6 @@ static void memcg_offline_kmem(struct me
+ 
+ 	memcg_free_cache_id(kmemcg_id);
+ }
+-
+-static void memcg_free_kmem(struct mem_cgroup *memcg)
+-{
+-	/* css_alloc() failed, offlining didn't happen */
+-	if (unlikely(memcg->kmem_state == KMEM_ONLINE))
+-		memcg_offline_kmem(memcg);
+-}
+ #else
+ static int memcg_online_kmem(struct mem_cgroup *memcg)
+ {
+@@ -3719,9 +3712,6 @@ static int memcg_online_kmem(struct mem_
+ static void memcg_offline_kmem(struct mem_cgroup *memcg)
+ {
+ }
+-static void memcg_free_kmem(struct mem_cgroup *memcg)
+-{
+-}
+ #endif /* CONFIG_MEMCG_KMEM */
+ 
+ static int memcg_update_kmem_max(struct mem_cgroup *memcg,
+@@ -5356,7 +5346,9 @@ static void mem_cgroup_css_free(struct c
+ 	cancel_work_sync(&memcg->high_work);
+ 	mem_cgroup_remove_from_trees(memcg);
+ 	free_shrinker_info(memcg);
+-	memcg_free_kmem(memcg);
++
++	/* Need to offline kmem if online_css() fails */
++	memcg_offline_kmem(memcg);
+ 	mem_cgroup_free(memcg);
+ }
+ 
+_

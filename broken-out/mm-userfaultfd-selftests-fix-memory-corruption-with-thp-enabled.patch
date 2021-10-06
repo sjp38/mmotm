@@ -58,8 +58,8 @@ Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1994931
 Signed-off-by: Peter Xu <peterx@redhat.com>
 Reported-by: Li Wang <liwan@redhat.com>
 Tested-by: Li Wang <liwang@redhat.com>
+Reviewed-by: Axel Rasmussen <axelrasmussen@google.com>
 Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Axel Rasmussen <axelrasmussen@google.com>
 Cc: Nadav Amit <nadav.amit@gmail.com>
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

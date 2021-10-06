@@ -48,6 +48,11 @@ Signed-off-by: Kees Cook <keescook@chromium.org>
 Cc: Russell King <linux@armlinux.org.uk>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Chen Jingwen <chenjingwen6@huawei.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Andrei Vagin <avagin@openvz.org>
+Cc: Khalid Aziz <khalid.aziz@oracle.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

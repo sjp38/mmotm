@@ -1,0 +1,25 @@
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: ELF: simplify STACK_ALLOC macro
+
+"A -= B; A" is equivalent to "A -= B".
+
+Link: https://lkml.kernel.org/r/YVmcP256fRMqCwgK@localhost.localdomain
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/binfmt_elf.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/binfmt_elf.c~elf-simplify-stack_alloc-macro
++++ a/fs/binfmt_elf.c
+@@ -156,7 +156,7 @@ static int padzero(unsigned long elf_bss
+ #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
+ #define STACK_ROUND(sp, items) \
+ 	(((unsigned long) (sp - items)) &~ 15UL)
+-#define STACK_ALLOC(sp, len) ({ sp -= len ; sp; })
++#define STACK_ALLOC(sp, len) (sp -= len)
+ #endif
+ 
+ #ifndef ELF_BASE_PLATFORM
+_

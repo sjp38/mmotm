@@ -91,8 +91,7 @@ comes up online only during memory hotplug.
 
 [bharata@amd.com: Added changelog, review, test validation]
 Link: https://lkml.kernel.org/r/20210830121603.1081-3-bharata@amd.com
-Fixes: f0c0b2b808f2 ("change zonelist order: zonelist order selection
-logic")
+Fixes: f0c0b2b808f2 ("change zonelist order: zonelist order selection logic")
 Signed-off-by: Krupa Ramakrishnan <krupa.ramakrishnan@amd.com>
 Co-developed-by: Sadagopan Srinivasan <Sadagopan.Srinivasan@amd.com>
 Signed-off-by: Sadagopan Srinivasan <Sadagopan.Srinivasan@amd.com>

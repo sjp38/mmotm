@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/Kconfig~mm-disable-zsmalloc-on-preempt_rt
 +++ a/mm/Kconfig
-@@ -640,6 +640,7 @@ config ZSWAP_ZPOOL_DEFAULT_Z3FOLD
+@@ -636,6 +636,7 @@ config ZSWAP_ZPOOL_DEFAULT_Z3FOLD
  
  config ZSWAP_ZPOOL_DEFAULT_ZSMALLOC
  	bool "zsmalloc"
@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	select ZSMALLOC
  	help
  	  Use the zsmalloc allocator as the default allocator.
-@@ -690,7 +691,7 @@ config Z3FOLD
+@@ -686,7 +687,7 @@ config Z3FOLD
  
  config ZSMALLOC
  	tristate "Memory allocator for compressed pages"

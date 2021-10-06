@@ -10,7 +10,7 @@ Added '*_for_demote' wrappers for remove_hugetlb_page,
 destroy_compound_gigantic_page and prep_compound_gigantic_page for use by
 demote code.
 
-Link: https://lkml.kernel.org/r/20210923175347.10727-5-mike.kravetz@oracle.com
+Link: https://lkml.kernel.org/r/20211001175210.45968-6-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Cc: David Hildenbrand <david@redhat.com>
@@ -23,12 +23,12 @@ Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/hugetlb.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 75 insertions(+), 4 deletions(-)
+ mm/hugetlb.c |   82 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 74 insertions(+), 8 deletions(-)
 
 --- a/mm/hugetlb.c~hugetlb-add-hugetlb-demote-page-support
 +++ a/mm/hugetlb.c
-@@ -1260,7 +1260,7 @@ static int hstate_next_node_to_free(stru
+@@ -1270,7 +1270,7 @@ static int hstate_next_node_to_free(stru
  		((node = hstate_next_node_to_free(hs, mask)) || 1);	\
  		nr_nodes--)
  
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void __destroy_compound_gigantic_page(struct page *page,
  					unsigned int order, bool demote)
  {
-@@ -1283,6 +1283,13 @@ static void __destroy_compound_gigantic_
+@@ -1293,6 +1293,13 @@ static void __destroy_compound_gigantic_
  	__ClearPageHead(page);
  }
  
@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void destroy_compound_gigantic_page(struct page *page,
  					unsigned int order)
  {
-@@ -1428,6 +1435,12 @@ static void remove_hugetlb_page(struct h
+@@ -1438,6 +1445,12 @@ static void remove_hugetlb_page(struct h
  	__remove_hugetlb_page(h, page, adjust_surplus, false);
  }
  
@@ -64,7 +64,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void add_hugetlb_page(struct hstate *h, struct page *page,
  			     bool adjust_surplus)
  {
-@@ -1777,6 +1790,12 @@ static bool prep_compound_gigantic_page(
+@@ -1779,6 +1792,12 @@ static bool prep_compound_gigantic_page(
  	return __prep_compound_gigantic_page(page, order, false);
  }
  
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * PageHuge() only returns true for hugetlbfs pages, but not for normal or
   * transparent huge pages.  See the PageTransHuge() documentation for more
-@@ -3298,9 +3317,55 @@ out:
+@@ -3302,9 +3321,54 @@ out:
  	return 0;
  }
  
@@ -85,19 +85,20 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +{
 +	int i, nid = page_to_nid(page);
 +	struct hstate *target_hstate;
-+	bool cma_page = HPageCma(page);
++	int rc = 0;
 +
 +	target_hstate = size_to_hstate(PAGE_SIZE << h->demote_order);
 +
 +	remove_hugetlb_page_for_demote(h, page, false);
 +	spin_unlock_irq(&hugetlb_lock);
 +
-+	if (alloc_huge_page_vmemmap(h, page)) {
++	rc = alloc_huge_page_vmemmap(h, page);
++	if (rc) {
 +		/* Allocation of vmemmmap failed, we can not demote page */
 +		spin_lock_irq(&hugetlb_lock);
 +		set_page_refcounted(page);
 +		add_hugetlb_page(h, page, false);
-+		return 1;
++		return rc;
 +	}
 +
 +	/*
@@ -116,13 +117,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		set_page_private(page + i, 0);
 +		set_page_refcounted(page + i);
 +		prep_new_huge_page(target_hstate, page + i, nid);
-+		if (cma_page)
-+			SetHPageCma(page + i);
 +		put_page(page + i);
 +	}
 +
 +	spin_lock_irq(&hugetlb_lock);
-+	return 0;
++	return rc;
 +}
 +
  static int demote_pool_huge_page(struct hstate *h, nodemask_t *nodes_allowed)
@@ -133,7 +132,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int rc = 0;
  
  	lockdep_assert_held(&hugetlb_lock);
-@@ -3309,9 +3374,15 @@ static int demote_pool_huge_page(struct
+@@ -3313,9 +3377,15 @@ static int demote_pool_huge_page(struct
  	if (!h->demote_order)
  		return rc;
  
@@ -152,4 +151,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return rc;
  }
  
+@@ -3550,10 +3620,6 @@ static ssize_t demote_store(struct kobje
+ 		/*
+ 		 * Check for available pages to demote each time thorough the
+ 		 * loop as demote_pool_huge_page will drop hugetlb_lock.
+-		 *
+-		 * NOTE: demote_pool_huge_page does not yet drop hugetlb_lock
+-		 * but will when full demote functionality is added in a later
+-		 * patch.
+ 		 */
+ 		if (nid != NUMA_NO_NODE)
+ 			nr_available = h->free_huge_pages_node[nid];
 _

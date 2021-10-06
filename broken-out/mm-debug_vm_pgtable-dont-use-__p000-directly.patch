@@ -12,8 +12,8 @@ Using __P000 is not rigorous.
 Link: https://lkml.kernel.org/r/20210924060821.1138281-1-guoren@kernel.org
 Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
 Cc: Gavin Shan <gshan@redhat.com>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
 Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

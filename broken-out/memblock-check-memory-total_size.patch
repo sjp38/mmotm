@@ -9,7 +9,7 @@ bootargs 'mem=[X][G|B]' not work anymore.
 Link: https://lkml.kernel.org/r/20210930024437.32598-1-peng.fan@oss.nxp.com
 Fixes: e888fa7bb882 ("memblock: Check memory add/cap ordering")
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
-Cc: Mike Rapoport <rppt@kernel.org>
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
 Cc: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: David Hildenbrand <david@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

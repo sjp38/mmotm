@@ -73,7 +73,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  					prot = PAGE_KERNEL_EXEC;
  
  				pages_4k++;
-@@ -820,7 +816,7 @@ static void mark_nxdata_nx(void)
+@@ -789,7 +785,7 @@ static void mark_nxdata_nx(void)
  	 */
  	unsigned long start = PFN_ALIGN(_etext);
  	/*

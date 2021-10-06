@@ -1,6 +1,11 @@
 From: Axel Rasmussen <axelrasmussen@google.com>
 Subject: userfaultfd/selftests: don't rely on GNU extensions for random numbers
 
+Patch series "Small userfaultfd selftest fixups", v2.
+
+
+This patch (of 3):
+
 Two arguments for doing this:
 
 First, and maybe most importantly, the resulting code is significantly
@@ -11,11 +16,10 @@ testing userfaultfd with the selftest easier e.g.  on distros which use
 something other than glibc (e.g., Alpine, which uses musl); basically, it
 makes the test more portable.
 
-Link: https://lkml.kernel.org/r/20210921163323.944352-3-axelrasmussen@google.com
+Link: https://lkml.kernel.org/r/20210930212309.4001967-2-axelrasmussen@google.com
 Signed-off-by: Axel Rasmussen <axelrasmussen@google.com>
 Reviewed-by: Peter Xu <peterx@redhat.com>
 Cc: Shuah Khan <shuah@kernel.org>
-Cc: Andrea Arcangeli <aarcange@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -32,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include "../kselftest.h"
  
-@@ -545,22 +546,10 @@ static void continue_range(int ufd, __u6
+@@ -518,22 +519,10 @@ static void continue_range(int ufd, __u6
  static void *locking_thread(void *arg)
  {
  	unsigned long cpu = (unsigned long) arg;
@@ -56,7 +60,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		page_nr = -bounces;
  		if (!(bounces & BOUNCE_RACINGFAULTS))
  			page_nr += cpu * nr_pages_per_cpu;
-@@ -568,15 +557,8 @@ static void *locking_thread(void *arg)
+@@ -541,15 +530,8 @@ static void *locking_thread(void *arg)
  
  	while (!finished) {
  		if (bounces & BOUNCE_RANDOM) {

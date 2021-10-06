@@ -15,6 +15,7 @@ userfaultfd-fix-a-race-between-writeprotect-and-exit_mmap.patch
 #
 #mm/migration
 mm-migrate-optimize-hotplug-time-demotion-order-updates.patch
+#mm-migrate-add-cpu-hotplug-to-demotion-ifdef.patch: https://lkml.kernel.org/r/c1d9e328-ad7c-920b-6c24-9e1598a6421c@infradead.org
 mm-migrate-add-cpu-hotplug-to-demotion-ifdef.patch
 #
 mm-migrate-fix-cpuhp-state-to-update-node-demotion-order.patch
@@ -32,7 +33,16 @@ ocfs2-mount-fails-with-buffer-overflow-in-strlen.patch
 #memblock-check-memory-total_size.patch: acks?
 memblock-check-memory-total_size.patch
 #
+#mm/mempolicy
+mm-mempolicy-do-not-allow-illegal-mpol_f_numa_balancing-mpol_local-in-mbind.patch
 #
+#mm/slub
+#mm-slub-fix-two-bugs-in-slab_debug_trace_open.patch+N: acks?
+mm-slub-fix-two-bugs-in-slab_debug_trace_open.patch
+mm-slub-fix-mismatch-between-reconstructed-freelist-depth-and-cnt.patch
+mm-slub-fix-potential-memoryleak-in-kmem_cache_open.patch
+mm-slub-fix-potential-use-after-free-in-slab_debugfs_fops.patch
+mm-slub-fix-incorrect-memcg-slab-count-for-bulk-free.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -344,16 +354,13 @@ mm.patch
 #mm/slab-generic
 mm-move-kvmalloc-related-functions-to-slabh.patch
 #
+mm-dont-call-should_failslab-for-config_failslab.patch
+mm-dont-call-should_failslab-for-config_failslab-fix.patch
+#
 #mm/slab
 mm-remove-useless-lines-in-enable_cpucache.patch
 #
 #mm/slub
-#mm-slub-fix-two-bugs-in-slab_debug_trace_open.patch+N: acks?
-mm-slub-fix-two-bugs-in-slab_debug_trace_open.patch
-mm-slub-fix-mismatch-between-reconstructed-freelist-depth-and-cnt.patch
-mm-slub-fix-potential-memoryleak-in-kmem_cache_open.patch
-mm-slub-fix-potential-use-after-free-in-slab_debugfs_fops.patch
-mm-slub-fix-incorrect-memcg-slab-count-for-bulk-free.patch
 #
 slub-add-back-check-for-free-nonslab-objects.patch
 #
@@ -364,21 +371,22 @@ slub-add-back-check-for-free-nonslab-objects.patch
 mm-dont-include-linux-daxh-in-linux-mempolicyh.patch
 #
 #mm/debug
-compiler-attributes-add-__alloc_size-for-better-bounds-checking.patch
-compiler-attributes-add-__alloc_size-for-better-bounds-checking-fix.patch
-checkpatch-add-__alloc_size-to-known-attribute.patch
-slab-clean-up-function-declarations.patch
-slab-add-__alloc_size-attributes-for-better-bounds-checking.patch
-mm-page_alloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
-percpu-add-__alloc_size-attributes-for-better-bounds-checking.patch
-mm-vmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
-rapidio-avoid-bogus-__alloc_size-warning.patch
 #
 mm-smaps-fix-shmem-pte-hole-swap-calculation.patch
 mm-smaps-use-vma-vm_pgoff-directly-when-counting-partial-swap.patch
+#mm-smaps-simplify-shmem-handling-of-pte-holes.patch: check review
 mm-smaps-simplify-shmem-handling-of-pte-holes.patch
 #
 mm-debug_vm_pgtable-dont-use-__p000-directly.patch
+#
+#rapidio-avoid-bogus-__alloc_size-warning.patch
+#compiler-attributes-add-__alloc_size-for-better-bounds-checking.patch
+#slab-clean-up-function-prototypes.patch
+#slab-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#mm-kvmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#mm-vmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#mm-page_alloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#percpu-add-__alloc_size-attributes-for-better-bounds-checking.patch
 #
 #mm/pagecache
 #mm-remove-bogus-vm_bug_on.patch: https://lkml.kernel.org/r/813d476-b6d4-456e-b5c3-5fe0455edeb3@google.com
@@ -402,6 +410,8 @@ mm-memcg-drop-swp_entry_t-in-mc_handle_file_pte.patch
 #
 memcg-flush-stats-only-if-updated.patch
 memcg-unify-memcg-stat-flushing.patch
+#
+mm-memcg-remove-obsolete-memcg_free_kmem.patch
 #
 #memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks.patch: acks? https://lkml.kernel.org/r/YUM+saaJEce0TJyF@dhcp22.suse.cz
 memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks.patch
@@ -454,6 +464,13 @@ mm-vmalloc-repair-warn_allocs-in-__vmalloc_area_node.patch
 #
 mm-vmalloc-dont-allow-vm_no_guard-on-vmap.patch
 #
+mm-vmalloc-make-show_numa_info-aware-of-hugepage-mappings.patch
+#
+mm-vmalloc-make-sure-to-dump-unpurged-areas-in-proc-vmallocinfo.patch
+#
+mm-vmalloc-do-not-adjust-the-search-size-for-alignment-overhead.patch
+mm-vmalloc-check-various-alignments-when-debugging.patch
+#
 #mm/documentation
 #mm/kasan
 kasan-test-add-memcpy-test-that-avoids-out-of-bounds-write.patch
@@ -464,6 +481,15 @@ lib-stackdepot-introduce-__stack_depot_save.patch
 kasan-common-provide-can_alloc-in-kasan_save_stack.patch
 kasan-generic-introduce-kasan_record_aux_stack_noalloc.patch
 workqueue-kasan-avoid-alloc_pages-when-recording-stack.patch
+#
+kasan-fix-tag-for-large-allocations-when-using-config_slab.patch
+#
+kasan-remove-duplicate-of-kasan_flag_async.patch
+arm64-mte-bitfield-definitions-for-asymm-mte.patch
+arm64-mte-cpu-feature-detection-for-asymm-mte.patch
+arm64-mte-add-asymmetric-mode-support.patch
+#kasan-extend-kasan-mode-kernel-parameter.patch: TBU
+kasan-extend-kasan-mode-kernel-parameter.patch
 #
 #mm/initialization
 #mm/pagealloc
@@ -488,6 +514,7 @@ mm-page_alloc-detect-allocation-forbidden-by-cpuset-and-bail-out-early.patch
 mm-show-watermark_boost-of-zone-in-zoneinfo.patch
 #
 mm-create-a-new-system-state-and-fix-core_kernel_text.patch
+#mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch: https://lkml.kernel.org/r/87ilyhmd26.fsf@linkitivity.dja.id.au
 mm-make-generic-arch_is_kernel_initmem_freed-do-what-it-says.patch
 powerpc-use-generic-version-of-arch_is_kernel_initmem_freed.patch
 s390-use-generic-version-of-arch_is_kernel_initmem_freed.patch
@@ -499,18 +526,19 @@ mm-fix-data-race-in-pagepoisoned.patch
 #mm/hugetlb
 mm-hugetlb-drop-__unmap_hugepage_range-definition-from-hugetlbh.patch
 #
-#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch: https://lkml.kernel.org/r/4fcf5b61-8c01-0fa9-7541-afa755a81039@redhat.com https://lkml.kernel.org/r/878rzma1se.fsf@linux.ibm.com TBU
+#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch: TBU
 hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
-#hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch: https://lkml.kernel.org/r/7ab7690d-aa21-0fd9-75f1-f3a23b892853@redhat.com TBU
-hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch
+#mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma.patch: TBU
+mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma.patch
+#hugetlb-be-sure-to-free-demoted-cma-pages-to-cma.patch: TBU?
+hugetlb-be-sure-to-free-demoted-cma-pages-to-cma.patch
 hugetlb-add-demote-bool-to-gigantic-page-routines.patch
-#hugetlb-add-hugetlb-demote-page-support.patch: https://lkml.kernel.org/r/9f469308-3c1c-dd9e-2c47-fcbd26b197df@redhat.com TBU
 hugetlb-add-hugetlb-demote-page-support.patch
 #
 #mm/userfaultfd
+userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers.patch
 userfaultfd-selftests-fix-feature-support-detection.patch
 userfaultfd-selftests-fix-calculation-of-expected-ioctls.patch
-userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers.patch
 #
 #mm/vmscan
 mm-page_isolation-fix-potential-missing-call-to-unset_migratetype_isolate.patch
@@ -521,6 +549,10 @@ mm-vmscanc-fix-wunused-but-set-variable-warning.patch
 #
 #mm/tools
 tools-vm-page_owner_sortc-count-and-sort-by-mem.patch
+#
+tools-vm-page-typesc-make-walk_file-aware-of-address-range-option.patch
+tools-vm-page-typesc-move-show_file-to-summary-output.patch
+tools-vm-page-typesc-print-file-offset-in-hexadecimal.patch
 #
 #mm/proc
 #mm/z3fold
@@ -550,12 +582,11 @@ mm-mark-the-oom-reaper-thread-as-freezable.patch
 oom_kill-oom_score_adj-broken-for-processes-with-small-memory-usage.patch
 #
 #mm/hugetlbfs
+hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
+#
 #mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch: too soon?
 mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
 #
-#hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch: acks? https://lkml.kernel.org/r/YVNHIzpmxSotbbBX@kernel.org
-hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
-hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation-fix.patch
 #
 #mm/migration
 mm-migrate-de-duplicate-migrate_reason-strings.patch
@@ -597,6 +628,12 @@ mm-memory_hotplug-remove-highmem-leftovers.patch
 mm-memory_hotplug-remove-stale-function-declarations.patch
 x86-remove-memory-hotplug-support-on-x86_32.patch
 #
+mm-memory_hotplug-handle-memblock_add_node-failures-in-add_memory_resource.patch
+memblock-improve-memblock_hotplug-documentation.patch
+memblock-allow-to-specify-flags-with-memblock_add_node.patch
+memblock-add-memblock_driver_managed-to-mimic-ioresource_sysram_driver_managed.patch
+mm-memory_hotplug-indicate-memblock_driver_managed-with-ioresource_sysram_driver_managed.patch
+#
 #mm-memory_hotplug-make-hwpoisoned-dirty-swapcache-pages-unmovable.patch: https://lkml.kernel.org/r/20210823082646.GB1452382@hori.linux.bs1.fc.nec.co.jp
 mm-memory_hotplug-make-hwpoisoned-dirty-swapcache-pages-unmovable.patch
 #
@@ -630,6 +667,8 @@ zram-off-by-one-in-read_block_state.patch
 zram-introduce-an-aged-idle-interface.patch
 zram-introduce-an-aged-idle-interface-v5.patch
 zram-introduce-an-aged-idle-interface-v6.patch
+#
+#zram-allow-backing-device-to-be-assigned-after-init.patch: why?
 #
 #mm/cleanups
 mm-remove-hardened_usercopy_fallback.patch
@@ -666,6 +705,14 @@ mm-damon-remove-unnecessary-do_exit-from-kdamond.patch
 mm-damon-neednt-hold-kdamond_lock-to-print-pid-of-kdamond.patch
 #
 mm-damon-core-nullify-pointer-ctx-kdamond-with-a-null.patch
+#
+mm-damon-core-account-age-of-target-regions.patch
+mm-damon-core-implement-damon-based-operation-schemes-damos.patch
+mm-damon-vaddr-support-damon-based-operation-schemes.patch
+mm-damon-dbgfs-support-damon-based-operation-schemes.patch
+mm-damon-schemes-implement-statistics-feature.patch
+selftests-damon-add-schemes-debugfs-tests.patch
+docs-admin-guide-mm-damon-document-damon-based-operation-schemes.patch
 #
 # mmend
 #
@@ -705,6 +752,18 @@ kernel-hung_taskc-monitor-killed-tasks.patch
 #NEXT_PATCHES_START procfs
 procfs-do-not-list-tid-0-in-proc-pid-task.patch
 procfs-do-not-list-tid-0-in-proc-pid-task-fix.patch
+#
+x86-xen-update-xen_oldmem_pfn_is_ram-documentation.patch
+x86-xen-simplify-xen_oldmem_pfn_is_ram.patch
+x86-xen-print-a-warning-when-hvmop_get_mem_type-fails.patch
+proc-vmcore-let-pfn_is_ram-return-a-bool.patch
+proc-vmcore-convert-oldmem_pfn_is_ram-callback-to-more-generic-vmcore-callbacks.patch
+virtio-mem-factor-out-hotplug-specifics-from-virtio_mem_init-into-virtio_mem_init_hotplug.patch
+virtio-mem-factor-out-hotplug-specifics-from-virtio_mem_probe-into-virtio_mem_init_hotplug.patch
+virtio-mem-factor-out-hotplug-specifics-from-virtio_mem_remove-into-virtio_mem_deinit_hotplug.patch
+virtio-mem-kdump-mode-to-sanitize-proc-vmcore-access.patch
+#
+proc-allow-pid_revalidate-during-lookup_rcu.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sysctl
@@ -763,7 +822,9 @@ lib-stackdepot-add-helper-to-print-stack-entries-into-buffer.patch
 lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v2.patch
 lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v3.patch
 #
-#kernelh-split-out-kstrtox-and-simple_strtox-to-a-separate-header.patch: https://lkml.kernel.org/r/20210615205015.62c35978@canb.auug.org.au
+lib-string_helpers-add-linux-stringh-for-strlen.patch
+#
+lib-uninline-simple_strntoull-as-well.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitmap
@@ -809,6 +870,11 @@ const_structscheckpatch-add-a-few-sound-ops-structs.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START binfmt
 binfmt_elf-reintroduce-using-map_fixed_noreplace.patch
+#
+#elf-fix-overflow-in-total-mapping-size-calculation.patch: scary
+elf-fix-overflow-in-total-mapping-size-calculation.patch
+#
+elf-simplify-stack_alloc-macro.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START list
@@ -957,6 +1023,8 @@ hfsplus-fix-out-of-bounds-warnings-in-__hfsplus_setxattr.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START seq_file
+seq_file-move-seq_escape-to-a-header.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START fork
 unshare-use-swap-to-make-code-cleaner.patch
@@ -1215,6 +1283,7 @@ ipc-ipc_sysctlc-remove-fallback-for-config_proc_sysctl.patch
 #NEXT_PATCHES_END
 # next
 linux-next.patch
+linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #lib
 #
@@ -1264,3 +1333,24 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]kfence-limit-currently-covered-allocations-when-pool-nearly-full-fix-fix.patch
 #[to-be-updated]slub-add-back-check-for-free-nonslab-objects.patch
 #[nacked]memblock-neaten-logging.patch
+#[to-be-updated]memcg-flush-stats-only-if-updated.patch
+#[to-be-updated]memcg-unify-memcg-stat-flushing.patch
+#[to-be-updated]hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
+#[to-be-updated]hugetlb-add-hpagecma-flag-and-code-to-free-non-gigantic-pages-in-cma.patch
+#[to-be-updated]hugetlb-add-demote-bool-to-gigantic-page-routines.patch
+#[to-be-updated]hugetlb-add-hugetlb-demote-page-support.patch
+#[to-be-updated]compiler-attributes-add-__alloc_size-for-better-bounds-checking.patch
+#[to-be-updated]compiler-attributes-add-__alloc_size-for-better-bounds-checking-fix.patch
+#[to-be-updated]checkpatch-add-__alloc_size-to-known-attribute.patch
+#[to-be-updated]slab-clean-up-function-declarations.patch
+#[to-be-updated]slab-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#[to-be-updated]mm-page_alloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#[to-be-updated]percpu-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#[to-be-updated]mm-vmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#[to-be-updated]rapidio-avoid-bogus-__alloc_size-warning.patch
+#[to-be-updated]userfaultfd-selftests-fix-feature-support-detection.patch
+#[to-be-updated]userfaultfd-selftests-fix-calculation-of-expected-ioctls.patch
+#[to-be-updated]userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers.patch
+#[to-be-updated]hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
+#[to-be-updated]hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation-fix.patch
+#[withdrawn]zram-allow-backing-device-to-be-assigned-after-init.patch

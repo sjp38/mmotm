@@ -1,7 +1,7 @@
 From: Mike Kravetz <mike.kravetz@oracle.com>
 Subject: hugetlb: add demote hugetlb page sysfs interfaces
 
-Patch series "hugetlb: add demote/split page functionality", v2.
+Patch series "hugetlb: add demote/split page functionality", v3.
 
 The concurrent use of multiple hugetlb page sizes on a single system is
 becoming more common.  One of the reasons is better TLB support for
@@ -34,6 +34,7 @@ of the operation is a second or two.
 
 However, when there is activity on the system the following issues
 arise:
+
 1) This process can take quite some time, especially if allocation of
    the smaller pages is not immediate and requires migration/compaction.
 2) There is no guarantee that the total size of smaller pages allocated
@@ -56,11 +57,9 @@ trying to allocate from buddy.
 
 Page demotion is controlled via sysfs files that reside in the per-hugetlb
 page size and per node directories.
-
 - demote_size   Target page size for demotion, a smaller huge page size.
 		File can be written to chose a smaller huge page size if
 		multiple are available.
-
 - demote        Writable number of hugetlb pages to be demoted
 
 To demote 50 GB huge pages, one would:
@@ -84,13 +83,11 @@ experienced.  The occurrence of these issues is dependent on other
 activity within the host and can not be predicted.
 
 
-This patch (of 4):
+This patch (of 5):
 
 Two new sysfs files are added to demote hugtlb pages.  These files are
 both per-hugetlb page size and per node.  Files are:
-
   demote_size - The size in Kb that pages are demoted to. (read-write)
-
   demote - The number of huge pages to demote. (write-only)
 
 By default, demote_size is the next smallest huge page size.  Valid huge
@@ -110,8 +107,8 @@ the sysfs interfaces.
 
 It also provides documentation for the new interfaces.
 
-Link: https://lkml.kernel.org/r/20210923175347.10727-1-mike.kravetz@oracle.com
-Link: https://lkml.kernel.org/r/20210923175347.10727-2-mike.kravetz@oracle.com
+Link: https://lkml.kernel.org/r/20211001175210.45968-1-mike.kravetz@oracle.com
+Link: https://lkml.kernel.org/r/20211001175210.45968-2-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Michal Hocko <mhocko@suse.com>
@@ -197,7 +194,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for_each_hstate(h) {
  		if (minimum_order > huge_page_order(h))
-@@ -2995,6 +2995,17 @@ static void __init hugetlb_init_hstates(
+@@ -2995,6 +2995,23 @@ static void __init hugetlb_init_hstates(
  		/* oversize hugepages were init'ed in early boot */
  		if (!hstate_is_gigantic(h))
  			hugetlb_hstate_alloc_pages(h);
@@ -205,17 +202,23 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		/*
 +		 * Set demote order for each hstate.  Note that
 +		 * h->demote_order is initially 0.
++		 * - We can not demote gigantic pages if runtime freeing
++		 *   is not supported.
 +		 */
-+		for_each_hstate(h2) {
-+			if (h2 == h)
-+				continue;
-+			if (h2->order < h->order && h2->order > h->demote_order)
-+				h->demote_order = h2->order;
++		if (!hstate_is_gigantic(h) ||
++		    gigantic_page_runtime_supported()) {
++			for_each_hstate(h2) {
++				if (h2 == h)
++					continue;
++				if (h2->order < h->order &&
++				    h2->order > h->demote_order)
++					h->demote_order = h2->order;
++			}
 +		}
  	}
  	VM_BUG_ON(minimum_order == UINT_MAX);
  }
-@@ -3235,9 +3246,29 @@ out:
+@@ -3235,9 +3252,29 @@ out:
  	return 0;
  }
  
@@ -245,7 +248,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #define HSTATE_ATTR(_name) \
  	static struct kobj_attribute _name##_attr = \
  		__ATTR(_name, 0644, _name##_show, _name##_store)
-@@ -3433,6 +3464,112 @@ static ssize_t surplus_hugepages_show(st
+@@ -3433,6 +3470,106 @@ static ssize_t surplus_hugepages_show(st
  }
  HSTATE_ATTR_RO(surplus_hugepages);
  
@@ -269,41 +272,35 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +	spin_lock_irq(&hugetlb_lock);
 +	if (nid != NUMA_NO_NODE) {
-+		nr_available = h->free_huge_pages_node[nid];
 +		init_nodemask_of_node(&nodes_allowed, nid);
 +		n_mask = &nodes_allowed;
 +	} else {
-+		nr_available = h->free_huge_pages;
 +		n_mask = &node_states[N_MEMORY];
 +	}
-+	nr_available -= h->resv_huge_pages;
-+	if (nr_available <= 0)
-+		goto out;
-+	nr_demote = min(nr_available, nr_demote);
 +
 +	while (nr_demote) {
-+		if (!demote_pool_huge_page(h, n_mask))
-+			break;
-+
 +		/*
-+		 * We may have dropped the lock in the routines to
-+		 * demote/free a page.  Recompute nr_demote as counts could
-+		 * have changed and we want to make sure we do not demote
-+		 * a reserved huge page.
++		 * Check for available pages to demote each time thorough the
++		 * loop as demote_pool_huge_page will drop hugetlb_lock.
++		 *
++		 * NOTE: demote_pool_huge_page does not yet drop hugetlb_lock
++		 * but will when full demote functionality is added in a later
++		 * patch.
 +		 */
-+		nr_demote--;
 +		if (nid != NUMA_NO_NODE)
 +			nr_available = h->free_huge_pages_node[nid];
 +		else
 +			nr_available = h->free_huge_pages;
 +		nr_available -= h->resv_huge_pages;
-+		if (nr_available <= 0)
-+			nr_demote = 0;
-+		else
-+			nr_demote = min(nr_available, nr_demote);
++		if (!nr_available)
++			break;
++
++		if (!demote_pool_huge_page(h, n_mask))
++			break;
++
++		nr_demote--;
 +	}
 +
-+out:
 +	spin_unlock_irq(&hugetlb_lock);
 +	mutex_unlock(&h->resize_lock);
 +

@@ -22,35 +22,59 @@ specific threshold.  For now the threshold is (nr_cpus * CHARGE_BATCH).
 To evaluate the impact of this patch, an 8 GiB tmpfs file is created on a
 system with swap-on-zram and the file was pushed to swap through
 memory.force_empty interface.  On reading the whole file, the memcg stat
-flush in the refault code path is triggered.  With this patch, we bserved
+flush in the refault code path is triggered.  With this patch, we observed
 63% reduction in the read time of 8 GiB file.
 
-Link: https://lkml.kernel.org/r/20210930044711.2892660-1-shakeelb@google.com
+Link: https://lkml.kernel.org/r/20211001190040.48086-1-shakeelb@google.com
 Signed-off-by: Shakeel Butt <shakeelb@google.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: "Michal Koutný" <mkoutny@suse.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memcontrol.c |   26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+ mm/memcontrol.c |   78 ++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 55 insertions(+), 23 deletions(-)
 
 --- a/mm/memcontrol.c~memcg-flush-stats-only-if-updated
 +++ a/mm/memcontrol.c
-@@ -107,6 +107,8 @@ static bool do_memsw_account(void)
- static void flush_memcg_stats_dwork(struct work_struct *w);
- static DECLARE_DEFERRABLE_WORK(stats_flush_dwork, flush_memcg_stats_dwork);
- static DEFINE_SPINLOCK(stats_flush_lock);
-+static DEFINE_PER_CPU(unsigned int, stats_updates);
-+static atomic_t stats_flush_threshold = ATOMIC_INIT(0);
+@@ -103,11 +103,6 @@ static bool do_memsw_account(void)
+ 	return !cgroup_subsys_on_dfl(memory_cgrp_subsys) && !cgroup_memory_noswap;
+ }
  
+-/* memcg and lruvec stats flushing */
+-static void flush_memcg_stats_dwork(struct work_struct *w);
+-static DECLARE_DEFERRABLE_WORK(stats_flush_dwork, flush_memcg_stats_dwork);
+-static DEFINE_SPINLOCK(stats_flush_lock);
+-
  #define THRESHOLDS_EVENTS_TARGET 128
  #define SOFTLIMIT_EVENTS_TARGET 1024
-@@ -635,6 +637,13 @@ mem_cgroup_largest_soft_limit_node(struc
+ 
+@@ -635,6 +630,56 @@ mem_cgroup_largest_soft_limit_node(struc
  	return mz;
  }
  
++/*
++ * memcg and lruvec stats flushing
++ *
++ * Many codepaths leading to stats update or read are performance sensitive and
++ * adding stats flushing in such codepaths is not desirable. So, to optimize the
++ * flushing the kernel does:
++ *
++ * 1) Periodically and asynchronously flush the stats every 2 seconds to not let
++ *    rstat update tree grow unbounded.
++ *
++ * 2) Flush the stats synchronously on reader side only when there are more than
++ *    (MEMCG_CHARGE_BATCH * nr_cpus) update events. Though this optimization
++ *    will let stats be out of sync by atmost (MEMCG_CHARGE_BATCH * nr_cpus) but
++ *    only for 2 seconds due to (1).
++ */
++static void flush_memcg_stats_dwork(struct work_struct *w);
++static DECLARE_DEFERRABLE_WORK(stats_flush_dwork, flush_memcg_stats_dwork);
++static DEFINE_SPINLOCK(stats_flush_lock);
++static DEFINE_PER_CPU(unsigned int, stats_updates);
++static atomic_t stats_flush_threshold = ATOMIC_INIT(0);
++
 +static inline void memcg_rstat_updated(struct mem_cgroup *memcg)
 +{
 +	cgroup_rstat_updated(memcg->css.cgroup, smp_processor_id());
@@ -58,10 +82,32 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		atomic_inc(&stats_flush_threshold);
 +}
 +
++static void __mem_cgroup_flush_stats(void)
++{
++	if (!spin_trylock(&stats_flush_lock))
++		return;
++
++	cgroup_rstat_flush_irqsafe(root_mem_cgroup->css.cgroup);
++	atomic_set(&stats_flush_threshold, 0);
++	spin_unlock(&stats_flush_lock);
++}
++
++void mem_cgroup_flush_stats(void)
++{
++	if (atomic_read(&stats_flush_threshold) > num_online_cpus())
++		__mem_cgroup_flush_stats();
++}
++
++static void flush_memcg_stats_dwork(struct work_struct *w)
++{
++	mem_cgroup_flush_stats();
++	queue_delayed_work(system_unbound_wq, &stats_flush_dwork, 2UL*HZ);
++}
++
  /**
   * __mod_memcg_state - update cgroup memory statistics
   * @memcg: the memory cgroup
-@@ -647,7 +656,7 @@ void __mod_memcg_state(struct mem_cgroup
+@@ -647,7 +692,7 @@ void __mod_memcg_state(struct mem_cgroup
  		return;
  
  	__this_cpu_add(memcg->vmstats_percpu->state[idx], val);
@@ -70,7 +116,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /* idx can be of type enum memcg_stat_item or node_stat_item. */
-@@ -675,10 +684,12 @@ void __mod_memcg_lruvec_state(struct lru
+@@ -675,10 +720,12 @@ void __mod_memcg_lruvec_state(struct lru
  	memcg = pn->memcg;
  
  	/* Update memcg */
@@ -84,7 +130,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /**
-@@ -780,7 +791,7 @@ void __count_memcg_events(struct mem_cgr
+@@ -780,7 +827,7 @@ void __count_memcg_events(struct mem_cgr
  		return;
  
  	__this_cpu_add(memcg->vmstats_percpu->events[idx], count);
@@ -93,28 +139,26 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static unsigned long memcg_events(struct mem_cgroup *memcg, int event)
-@@ -5341,15 +5352,22 @@ static void mem_cgroup_css_reset(struct
+@@ -5341,21 +5388,6 @@ static void mem_cgroup_css_reset(struct
  	memcg_wb_domain_size_changed(memcg);
  }
  
 -void mem_cgroup_flush_stats(void)
-+static void __mem_cgroup_flush_stats(void)
+-{
+-	if (!spin_trylock(&stats_flush_lock))
+-		return;
+-
+-	cgroup_rstat_flush_irqsafe(root_mem_cgroup->css.cgroup);
+-	spin_unlock(&stats_flush_lock);
+-}
+-
+-static void flush_memcg_stats_dwork(struct work_struct *w)
+-{
+-	mem_cgroup_flush_stats();
+-	queue_delayed_work(system_unbound_wq, &stats_flush_dwork, 2UL*HZ);
+-}
+-
+ static void mem_cgroup_css_rstat_flush(struct cgroup_subsys_state *css, int cpu)
  {
- 	if (!spin_trylock(&stats_flush_lock))
- 		return;
- 
- 	cgroup_rstat_flush_irqsafe(root_mem_cgroup->css.cgroup);
-+	atomic_set(&stats_flush_threshold, 0);
- 	spin_unlock(&stats_flush_lock);
- }
- 
-+void mem_cgroup_flush_stats(void)
-+{
-+	if (atomic_read(&stats_flush_threshold) > num_online_cpus())
-+		__mem_cgroup_flush_stats();
-+}
-+
- static void flush_memcg_stats_dwork(struct work_struct *w)
- {
- 	mem_cgroup_flush_stats();
+ 	struct mem_cgroup *memcg = mem_cgroup_from_css(css);
 _

@@ -6,7 +6,7 @@ Sergey's cleanup suggestions
 Link: https://lkml.kernel.org/r/20210929143056.13067-1-bgeffon@google.com
 Signed-off-by: Brian Geffon <bgeffon@google.com>
 Acked-by: Minchan Kim <minchan@kernel.org>
-Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
