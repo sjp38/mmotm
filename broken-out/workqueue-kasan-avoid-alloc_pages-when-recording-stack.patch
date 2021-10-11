@@ -50,8 +50,8 @@ Reported-by: Shuah Khan <skhan@linuxfoundation.org>
 Tested-by: Shuah Khan <skhan@linuxfoundation.org>
 Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Acked-by: Tejun Heo <tj@kernel.org>
+Reviewed-by: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Alexander Potapenko <glider@google.com>
-Cc: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 Cc: Dmitry Vyukov <dvyukov@google.com>
 Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>

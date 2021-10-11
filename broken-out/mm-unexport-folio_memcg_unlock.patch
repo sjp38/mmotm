@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-unexport-folio_memcg_unlock
 +++ a/mm/memcontrol.c
-@@ -2020,7 +2020,6 @@ again:
+@@ -2058,7 +2058,6 @@ again:
  	memcg->move_lock_task = current;
  	memcg->move_lock_flags = flags;
  }
@@ -33,7 +33,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  void lock_page_memcg(struct page *page)
  {
-@@ -2054,7 +2053,6 @@ void folio_memcg_unlock(struct folio *fo
+@@ -2092,7 +2091,6 @@ void folio_memcg_unlock(struct folio *fo
  {
  	__folio_memcg_unlock(folio_memcg(folio));
  }

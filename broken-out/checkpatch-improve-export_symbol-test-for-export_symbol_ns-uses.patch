@@ -1,0 +1,31 @@
+From: Joe Perches <joe@perches.com>
+Subject: checkpatch: improve EXPORT_SYMBOL test for EXPORT_SYMBOL_NS uses
+
+The EXPORT_SYMBOL test expects a single argument but definitions of
+EXPORT_SYMBOL_NS have multiple arguments.
+
+Update the test to extract only the first argument from any
+EXPORT_SYMBOL related definition.
+
+Link: https://lkml.kernel.org/r/9e8f251b42e405f460f26a23ba9b33ef45a94adc.camel@perches.com
+Signed-off-by: Joe Perches <joe@perches.com>
+Reported-by: Ian Pilcher <arequipeno@gmail.com>
+Cc: Dwaipayan Ray <dwaipayanray1@gmail.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ scripts/checkpatch.pl |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/scripts/checkpatch.pl~checkpatch-improve-export_symbol-test-for-export_symbol_ns-uses
++++ a/scripts/checkpatch.pl
+@@ -4449,6 +4449,7 @@ sub process {
+ 			#   XXX(foo);
+ 			#   EXPORT_SYMBOL(something_foo);
+ 			my $name = $1;
++			$name =~ s/^\s*($Ident).*/$1/;
+ 			if ($stat =~ /^(?:.\s*}\s*\n)?.([A-Z_]+)\s*\(\s*($Ident)/ &&
+ 			    $name =~ /^${Ident}_$2/) {
+ #print "FOO C name<$name>\n";
+_

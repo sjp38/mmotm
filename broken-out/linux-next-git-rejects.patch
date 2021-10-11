@@ -4,172 +4,235 @@ Subject: linux-next-git-rejects
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/9p/cache.c    |  140 ---------------------------------------------
- fs/9p/vfs_addr.c |    7 --
- 2 files changed, 147 deletions(-)
+ arch/riscv/Kconfig                |    3 -
+ arch/riscv/include/asm/vdso.h     |    4 -
+ arch/riscv/kernel/vdso.c          |   70 ----------------------------
+ arch/riscv/kernel/vdso/vdso.lds.S |    3 -
+ arch/x86/kernel/fpu/signal.c      |   11 ----
+ tools/objtool/check.c             |    4 -
+ 6 files changed, 95 deletions(-)
 
---- a/fs/9p/cache.c~linux-next-git-rejects
-+++ a/fs/9p/cache.c
-@@ -199,143 +199,3 @@ void v9fs_cache_inode_reset_cookie(struc
- 
- 	mutex_unlock(&v9inode->fscache_lock);
- }
--<<<<<<< HEAD
--
--int __v9fs_fscache_release_page(struct page *page, gfp_t gfp)
--{
--	struct inode *inode = page->mapping->host;
--	struct v9fs_inode *v9inode = V9FS_I(inode);
--
--	BUG_ON(!v9inode->fscache);
--
--	return fscache_maybe_release_page(v9inode->fscache, page, gfp);
--}
--
--void __v9fs_fscache_invalidate_page(struct page *page)
--{
--	struct inode *inode = page->mapping->host;
--	struct v9fs_inode *v9inode = V9FS_I(inode);
--
--	BUG_ON(!v9inode->fscache);
--
--	if (PageFsCache(page)) {
--		fscache_wait_on_page_write(v9inode->fscache, page);
--		BUG_ON(!PageLocked(page));
--		fscache_uncache_page(v9inode->fscache, page);
--	}
--}
--
--static void v9fs_vfs_readpage_complete(struct page *page, void *data,
--				       int error)
--{
--	if (!error)
--		SetPageUptodate(page);
--
--	unlock_page(page);
--}
--
--/*
-- * __v9fs_readpage_from_fscache - read a page from cache
-- *
-- * Returns 0 if the pages are in cache and a BIO is submitted,
-- * 1 if the pages are not in cache and -error otherwise.
-- */
--
--int __v9fs_readpage_from_fscache(struct inode *inode, struct page *page)
--{
--	int ret;
--	const struct v9fs_inode *v9inode = V9FS_I(inode);
--
--	p9_debug(P9_DEBUG_FSC, "inode %p page %p\n", inode, page);
--	if (!v9inode->fscache)
--		return -ENOBUFS;
--
--	ret = fscache_read_or_alloc_page(v9inode->fscache,
--					 page,
--					 v9fs_vfs_readpage_complete,
--					 NULL,
--					 GFP_KERNEL);
--	switch (ret) {
--	case -ENOBUFS:
--	case -ENODATA:
--		p9_debug(P9_DEBUG_FSC, "page/inode not in cache %d\n", ret);
--		return 1;
--	case 0:
--		p9_debug(P9_DEBUG_FSC, "BIO submitted\n");
--		return ret;
--	default:
--		p9_debug(P9_DEBUG_FSC, "ret %d\n", ret);
--		return ret;
--	}
--}
--
--/*
-- * __v9fs_readpages_from_fscache - read multiple pages from cache
-- *
-- * Returns 0 if the pages are in cache and a BIO is submitted,
-- * 1 if the pages are not in cache and -error otherwise.
-- */
--
--int __v9fs_readpages_from_fscache(struct inode *inode,
--				  struct address_space *mapping,
--				  struct list_head *pages,
--				  unsigned *nr_pages)
--{
--	int ret;
--	const struct v9fs_inode *v9inode = V9FS_I(inode);
--
--	p9_debug(P9_DEBUG_FSC, "inode %p pages %u\n", inode, *nr_pages);
--	if (!v9inode->fscache)
--		return -ENOBUFS;
--
--	ret = fscache_read_or_alloc_pages(v9inode->fscache,
--					  mapping, pages, nr_pages,
--					  v9fs_vfs_readpage_complete,
--					  NULL,
--					  mapping_gfp_mask(mapping));
--	switch (ret) {
--	case -ENOBUFS:
--	case -ENODATA:
--		p9_debug(P9_DEBUG_FSC, "pages/inodes not in cache %d\n", ret);
--		return 1;
--	case 0:
--		BUG_ON(!list_empty(pages));
--		BUG_ON(*nr_pages != 0);
--		p9_debug(P9_DEBUG_FSC, "BIO submitted\n");
--		return ret;
--	default:
--		p9_debug(P9_DEBUG_FSC, "ret %d\n", ret);
--		return ret;
--	}
--}
--
--/*
-- * __v9fs_readpage_to_fscache - write a page to the cache
-- *
-- */
--
--void __v9fs_readpage_to_fscache(struct inode *inode, struct page *page)
--{
--	int ret;
--	const struct v9fs_inode *v9inode = V9FS_I(inode);
--
--	p9_debug(P9_DEBUG_FSC, "inode %p page %p\n", inode, page);
--	ret = fscache_write_page(v9inode->fscache, page,
--				 i_size_read(&v9inode->vfs_inode), GFP_KERNEL);
--	p9_debug(P9_DEBUG_FSC, "ret =  %d\n", ret);
--	if (ret != 0)
--		v9fs_uncache_page(inode, page);
--}
--
--/*
-- * wait for a page to complete writing to the cache
-- */
--void __v9fs_fscache_wait_on_page_write(struct inode *inode, struct page *page)
--{
--	const struct v9fs_inode *v9inode = V9FS_I(inode);
--	p9_debug(P9_DEBUG_FSC, "inode %p page %p\n", inode, page);
--	if (PageFsCache(page))
--		fscache_wait_on_page_write(v9inode->fscache, page);
--}
--=======
-->>>>>>> linux-next/akpm-base
---- a/fs/9p/vfs_addr.c~linux-next-git-rejects
-+++ a/fs/9p/vfs_addr.c
-@@ -29,15 +29,8 @@
- #include "fid.h"
- 
- /**
--<<<<<<< HEAD
-- * v9fs_fid_readpage - read an entire page in from 9P
-- * @data: Opaque pointer to the fid being read
-- * @page: structure to page
-- *
--=======
-  * v9fs_req_issue_op - Issue a read from 9P
-  * @subreq: The read to make
-->>>>>>> linux-next/akpm-base
+--- a/arch/riscv/include/asm/vdso.h~linux-next-git-rejects
++++ a/arch/riscv/include/asm/vdso.h
+@@ -22,11 +22,7 @@
   */
- static void v9fs_req_issue_op(struct netfs_read_subrequest *subreq)
+ #ifdef CONFIG_MMU
+ 
+-<<<<<<< HEAD
+-#define __VVAR_PAGES    1
+-=======
+ #define __VVAR_PAGES    2
+->>>>>>> linux-next/akpm-base
+ 
+ #ifndef __ASSEMBLY__
+ #include <generated/vdso-offsets.h>
+--- a/arch/riscv/Kconfig~linux-next-git-rejects
++++ a/arch/riscv/Kconfig
+@@ -562,8 +562,5 @@ menu "Power management options"
+ source "kernel/power/Kconfig"
+ 
+ endmenu
+-<<<<<<< HEAD
+-=======
+ 
+ source "arch/riscv/kvm/Kconfig"
+->>>>>>> linux-next/akpm-base
+--- a/arch/riscv/kernel/vdso.c~linux-next-git-rejects
++++ a/arch/riscv/kernel/vdso.c
+@@ -13,10 +13,7 @@
+ #include <linux/err.h>
+ #include <asm/page.h>
+ #include <asm/vdso.h>
+-<<<<<<< HEAD
+-=======
+ #include <linux/time_namespace.h>
+->>>>>>> linux-next/akpm-base
+ 
+ #ifdef CONFIG_GENERIC_TIME_VSYSCALL
+ #include <vdso/datapage.h>
+@@ -29,20 +26,11 @@ extern char vdso_start[], vdso_end[];
+ 
+ enum vvar_pages {
+ 	VVAR_DATA_PAGE_OFFSET,
+-<<<<<<< HEAD
+-=======
+ 	VVAR_TIMENS_PAGE_OFFSET,
+->>>>>>> linux-next/akpm-base
+ 	VVAR_NR_PAGES,
+ };
+ 
+ #define VVAR_SIZE  (VVAR_NR_PAGES << PAGE_SHIFT)
+-<<<<<<< HEAD
+-
+-static unsigned int vdso_pages __ro_after_init;
+-static struct page **vdso_pagelist __ro_after_init;
+-=======
+->>>>>>> linux-next/akpm-base
+ 
+ /*
+  * The vDSO data page.
+@@ -84,18 +72,9 @@ static int __init __vdso_init(void)
+ 	struct page **vdso_pagelist;
+ 	unsigned long pfn;
+ 
+-<<<<<<< HEAD
+-	vdso_pages = (vdso_end - vdso_start) >> PAGE_SHIFT;
+-	vdso_pagelist =
+-		kcalloc(vdso_pages + VVAR_NR_PAGES, sizeof(struct page *), GFP_KERNEL);
+-	if (unlikely(vdso_pagelist == NULL)) {
+-		pr_err("vdso: pagelist allocation failed\n");
+-		return -ENOMEM;
+-=======
+ 	if (memcmp(vdso_info.vdso_code_start, "\177ELF", 4)) {
+ 		pr_err("vDSO is not a valid ELF object!\n");
+ 		return -EINVAL;
+->>>>>>> linux-next/akpm-base
+ 	}
+ 
+ 	vdso_info.vdso_pages = (
+@@ -242,67 +221,28 @@ static int __setup_additional_pages(stru
+ 
+ 	BUILD_BUG_ON(VVAR_NR_PAGES != __VVAR_PAGES);
+ 
+-<<<<<<< HEAD
+-	BUILD_BUG_ON(VVAR_NR_PAGES != __VVAR_PAGES);
+-
+-	vdso_len = (vdso_pages + VVAR_NR_PAGES) << PAGE_SHIFT;
+-
+-	if (mmap_write_lock_killable(mm))
+-		return -EINTR;
+-
+-	vdso_base = get_unmapped_area(NULL, 0, vdso_len, 0, 0);
+-=======
+ 	vdso_text_len = vdso_info.vdso_pages << PAGE_SHIFT;
+ 	/* Be sure to map the data page */
+ 	vdso_mapping_len = vdso_text_len + VVAR_SIZE;
+ 
+ 	vdso_base = get_unmapped_area(NULL, 0, vdso_mapping_len, 0, 0);
+->>>>>>> linux-next/akpm-base
+ 	if (IS_ERR_VALUE(vdso_base)) {
+ 		ret = ERR_PTR(vdso_base);
+ 		goto up_fail;
+ 	}
+ 
+-<<<<<<< HEAD
+-	mm->context.vdso = NULL;
+-	ret = install_special_mapping(mm, vdso_base, VVAR_SIZE,
+-		(VM_READ | VM_MAYREAD), &vdso_pagelist[vdso_pages]);
+-	if (unlikely(ret))
+-		goto end;
+-=======
+ 	ret = _install_special_mapping(mm, vdso_base, VVAR_SIZE,
+ 		(VM_READ | VM_MAYREAD | VM_PFNMAP), vdso_info.dm);
+ 	if (IS_ERR(ret))
+ 		goto up_fail;
+->>>>>>> linux-next/akpm-base
+ 
+ 	vdso_base += VVAR_SIZE;
+ 	mm->context.vdso = (void *)vdso_base;
+ 	ret =
+-<<<<<<< HEAD
+-	   install_special_mapping(mm, vdso_base + VVAR_SIZE,
+-		vdso_pages << PAGE_SHIFT,
+-=======
+ 	   _install_special_mapping(mm, vdso_base, vdso_text_len,
+->>>>>>> linux-next/akpm-base
+ 		(VM_READ | VM_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC),
+ 		vdso_info.cm);
+ 
+-<<<<<<< HEAD
+-	if (unlikely(ret))
+-		goto end;
+-
+-	/*
+-	 * Put vDSO base into mm struct. We need to do this before calling
+-	 * install_special_mapping or the perf counter mmap tracking code
+-	 * will fail to recognise it as a vDSO (since arch_vma_name fails).
+-	 */
+-	mm->context.vdso = (void *)vdso_base + VVAR_SIZE;
+-
+-end:
+-	mmap_write_unlock(mm);
+-	return ret;
+-=======
+ 	if (IS_ERR(ret))
+ 		goto up_fail;
+ 
+@@ -311,19 +251,10 @@ end:
+ up_fail:
+ 	mm->context.vdso = NULL;
+ 	return PTR_ERR(ret);
+->>>>>>> linux-next/akpm-base
+ }
+ 
+ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
  {
+-<<<<<<< HEAD
+-	if (vma->vm_mm && (vma->vm_start == (long)vma->vm_mm->context.vdso))
+-		return "[vdso]";
+-	if (vma->vm_mm && (vma->vm_start ==
+-			   (long)vma->vm_mm->context.vdso - VVAR_SIZE))
+-		return "[vdso_data]";
+-	return NULL;
+-=======
+ 	struct mm_struct *mm = current->mm;
+ 	int ret;
+ 
+@@ -334,5 +265,4 @@ int arch_setup_additional_pages(struct l
+ 	mmap_write_unlock(mm);
+ 
+ 	return ret;
+->>>>>>> linux-next/akpm-base
+ }
+--- a/arch/riscv/kernel/vdso/vdso.lds.S~linux-next-git-rejects
++++ a/arch/riscv/kernel/vdso/vdso.lds.S
+@@ -10,12 +10,9 @@ OUTPUT_ARCH(riscv)
+ SECTIONS
+ {
+ 	PROVIDE(_vdso_data = . - __VVAR_PAGES * PAGE_SIZE);
+-<<<<<<< HEAD
+-=======
+ #ifdef CONFIG_TIME_NS
+ 	PROVIDE(_timens_data = _vdso_data + PAGE_SIZE);
+ #endif
+->>>>>>> linux-next/akpm-base
+ 	. = SIZEOF_HEADERS;
+ 
+ 	.hash		: { *(.hash) }			:text
+--- a/arch/x86/kernel/fpu/signal.c~linux-next-git-rejects
++++ a/arch/x86/kernel/fpu/signal.c
+@@ -384,19 +384,8 @@ static bool __fpu_restore_sig(void __use
+ 				     sizeof(fpu->state.fxsave)))
+ 			return false;
+ 
+-<<<<<<< HEAD
+-		if (IS_ENABLED(CONFIG_X86_64)) {
+-			/* Reject invalid MXCSR values. */
+-			if (fpu->state.fxsave.mxcsr & ~mxcsr_feature_mask)
+-				return -EINVAL;
+-		} else {
+-			/* Mask invalid bits out for historical reasons (broken hardware). */
+-			fpu->state.fxsave.mxcsr &= ~mxcsr_feature_mask;
+-		}
+-=======
+ 		/* Mask out reserved MXCSR bits. */
+ 		fpu->state.fxsave.mxcsr &= mxcsr_feature_mask;
+->>>>>>> linux-next/akpm-base
+ 
+ 		/* Enforce XFEATURE_MASK_FPSSE when XSAVE is enabled */
+ 		if (use_xsave())
+--- a/tools/objtool/check.c~linux-next-git-rejects
++++ a/tools/objtool/check.c
+@@ -382,11 +382,7 @@ static int decode_instructions(struct ob
+ 			insn->sec = sec;
+ 			insn->offset = offset;
+ 
+-<<<<<<< HEAD
+-			ret = arch_decode_instruction(file->elf, sec, offset,
+-=======
+ 			ret = arch_decode_instruction(file, sec, offset,
+->>>>>>> linux-next/akpm-base
+ 						      sec->sh.sh_size - offset,
+ 						      &insn->len, &insn->type,
+ 						      &insn->immediate,
 _

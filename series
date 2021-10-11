@@ -26,6 +26,7 @@ mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch
 #
 #ocfs2
 ocfs2-fix-data-corruption-after-conversion-from-inline-format.patch
+ocfs2-fix-data-corruption-after-conversion-from-inline-format-fix.patch
 #
 ocfs2-mount-fails-with-buffer-overflow-in-strlen.patch
 #
@@ -34,6 +35,7 @@ ocfs2-mount-fails-with-buffer-overflow-in-strlen.patch
 memblock-check-memory-total_size.patch
 #
 #mm/mempolicy
+#mm-mempolicy-do-not-allow-illegal-mpol_f_numa_balancing-mpol_local-in-mbind.patch: check review
 mm-mempolicy-do-not-allow-illegal-mpol_f_numa_balancing-mpol_local-in-mbind.patch
 #
 #mm/slub
@@ -43,6 +45,16 @@ mm-slub-fix-mismatch-between-reconstructed-freelist-depth-and-cnt.patch
 mm-slub-fix-potential-memoryleak-in-kmem_cache_open.patch
 mm-slub-fix-potential-use-after-free-in-slab_debugfs_fops.patch
 mm-slub-fix-incorrect-memcg-slab-count-for-bulk-free.patch
+#
+#binfmt
+elfcore-correct-reference-to-config_uml.patch
+elfcore-correct-reference-to-config_uml-fix.patch
+#
+#vfs
+vfs-check-fd-has-read-access-in-kernel_read_file_from_fd.patch
+#
+#mm/secretmem
+mm-fix-null-page-mapping-dereference-in-page_is_secretmem.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -175,6 +187,8 @@ procfs-prevent-unpriveleged-processes-accessing-fdinfo-dir.patch
 scripts-spellingtxt-add-more-spellings-to-spellingtxt.patch
 scripts-spellingtxt-fix-mistake-version-of-synchronization.patch
 #
+scripts-decodecode-fix-faulting-instruction-no-print-when-oppsfile-is-dos-format.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kernfs
 #NEXT_PATCHES_END
@@ -271,6 +285,10 @@ scripts-spellingtxt-fix-mistake-version-of-synchronization.patch
 #NEXT_PATCHES_START ocfs2
 ocfs2-fix-handle-refcount-leak-in-two-exception-handling-paths.patch
 #
+ocfs2-cleanup-journal-init-and-shutdown.patch
+#
+ocfs2-dlm-remove-redundant-assignment-of-variable-ret.patch
+#
 #
 #
 #
@@ -354,15 +372,14 @@ mm.patch
 #mm/slab-generic
 mm-move-kvmalloc-related-functions-to-slabh.patch
 #
-mm-dont-call-should_failslab-for-config_failslab.patch
-mm-dont-call-should_failslab-for-config_failslab-fix.patch
 #
 #mm/slab
 mm-remove-useless-lines-in-enable_cpucache.patch
 #
 #mm/slub
-#
 slub-add-back-check-for-free-nonslab-objects.patch
+#
+mm-slub-use-prefetchw-instead-of-prefetch.patch
 #
 #mm/kconfig
 #mm/kcsan
@@ -379,14 +396,17 @@ mm-smaps-simplify-shmem-handling-of-pte-holes.patch
 #
 mm-debug_vm_pgtable-dont-use-__p000-directly.patch
 #
-#rapidio-avoid-bogus-__alloc_size-warning.patch
-#compiler-attributes-add-__alloc_size-for-better-bounds-checking.patch
-#slab-clean-up-function-prototypes.patch
-#slab-add-__alloc_size-attributes-for-better-bounds-checking.patch
-#mm-kvmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
-#mm-vmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
-#mm-page_alloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
-#percpu-add-__alloc_size-attributes-for-better-bounds-checking.patch
+kasan-test-bypass-__alloc_size-checks.patch
+rapidio-avoid-bogus-__alloc_size-warning.patch
+compiler-attributes-add-__alloc_size-for-better-bounds-checking.patch
+slab-clean-up-function-prototypes.patch
+slab-add-__alloc_size-attributes-for-better-bounds-checking.patch
+mm-kvmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+mm-vmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+mm-page_alloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
+percpu-add-__alloc_size-attributes-for-better-bounds-checking.patch
+#
+mm-fix-a-comment.patch
 #
 #mm/pagecache
 #mm-remove-bogus-vm_bug_on.patch: https://lkml.kernel.org/r/813d476-b6d4-456e-b5c3-5fe0455edeb3@google.com
@@ -402,6 +422,11 @@ mm-gup-further-simplify-__gup_device_huge.patch
 #
 #mm/swap
 mm-swapfile-remove-needless-request_queue-null-pointer-check.patch
+#
+mm-swapfile-fix-an-integer-overflow-in-swap_show.patch
+#
+#mm-optimise-put_pages_list.patch: slower?
+mm-optimise-put_pages_list.patch
 #
 #mm/shmem
 #mm/memremap
@@ -444,6 +469,8 @@ lazy-tlb-allow-lazy-tlb-mm-refcounting-to-be-configurable.patch
 lazy-tlb-shoot-lazies-a-non-refcounting-lazy-tlb-option.patch
 powerpc-64s-enable-mmu_lazy_tlb_shootdown.patch
 #
+memory-remove-unused-config_mem_block_size.patch
+#
 #mm/mprotect
 #mm/mremap
 #
@@ -458,6 +485,9 @@ mm-mremap-dont-account-pages-in-vma_to_resize.patch
 #mm/dma
 #mm/sparsemem
 #mm/tracing
+mm-mmap_lock-remove-redundant-newline-in-tp_printk.patch
+mm-mmap_lock-use-declare_event_class-and-define_event_fn.patch
+#
 #mm/page-reporting
 #mm/vmalloc
 mm-vmalloc-repair-warn_allocs-in-__vmalloc_area_node.patch
@@ -470,6 +500,13 @@ mm-vmalloc-make-sure-to-dump-unpurged-areas-in-proc-vmallocinfo.patch
 #
 mm-vmalloc-do-not-adjust-the-search-size-for-alignment-overhead.patch
 mm-vmalloc-check-various-alignments-when-debugging.patch
+#
+vmalloc-back-off-when-the-current-task-is-oom-killed.patch
+#
+#vmalloc-choose-a-better-start-address-in-vm_area_register_early.patch+N: stable? arm acks?
+vmalloc-choose-a-better-start-address-in-vm_area_register_early.patch
+arm64-support-page-mapping-percpu-first-chunk-allocator.patch
+kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc.patch
 #
 #mm/documentation
 #mm/kasan
@@ -484,12 +521,6 @@ workqueue-kasan-avoid-alloc_pages-when-recording-stack.patch
 #
 kasan-fix-tag-for-large-allocations-when-using-config_slab.patch
 #
-kasan-remove-duplicate-of-kasan_flag_async.patch
-arm64-mte-bitfield-definitions-for-asymm-mte.patch
-arm64-mte-cpu-feature-detection-for-asymm-mte.patch
-arm64-mte-add-asymmetric-mode-support.patch
-#kasan-extend-kasan-mode-kernel-parameter.patch: TBU
-kasan-extend-kasan-mode-kernel-parameter.patch
 #
 #mm/initialization
 #mm/pagealloc
@@ -526,14 +557,15 @@ mm-fix-data-race-in-pagepoisoned.patch
 #mm/hugetlb
 mm-hugetlb-drop-__unmap_hugepage_range-definition-from-hugetlbh.patch
 #
-#hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch: TBU
 hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
-#mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma.patch: TBU
 mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma.patch
-#hugetlb-be-sure-to-free-demoted-cma-pages-to-cma.patch: TBU?
 hugetlb-be-sure-to-free-demoted-cma-pages-to-cma.patch
 hugetlb-add-demote-bool-to-gigantic-page-routines.patch
 hugetlb-add-hugetlb-demote-page-support.patch
+hugetlb-add-hugetlb-demote-page-support-v4.patch
+#
+#mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch: acks?
+mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
 #
 #mm/userfaultfd
 userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers.patch
@@ -584,9 +616,6 @@ oom_kill-oom_score_adj-broken-for-processes-with-small-memory-usage.patch
 #mm/hugetlbfs
 hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
 #
-#mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch: too soon?
-mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
-#
 #
 #mm/migration
 mm-migrate-de-duplicate-migrate_reason-strings.patch
@@ -619,6 +648,7 @@ mm-memory_hotplug-add-static-qualifier-for-online_policy_to_str.patch
 #
 memory-hotplugrst-fix-two-instances-of-movablecore-that-should-be-movable_node.patch
 memory-hotplugrst-fix-wrong-sys-module-memory_hotplug-parameters-path.patch
+#memory-hotplugrst-document-the-auto-movable-online-policy.patch: TBU
 memory-hotplugrst-document-the-auto-movable-online-policy.patch
 #
 mm-memory_hotplug-remove-config_x86_64_acpi_numa-dependency-from-config_memory_hotplug.patch
@@ -752,6 +782,8 @@ kernel-hung_taskc-monitor-killed-tasks.patch
 #NEXT_PATCHES_START procfs
 procfs-do-not-list-tid-0-in-proc-pid-task.patch
 procfs-do-not-list-tid-0-in-proc-pid-task-fix.patch
+#proc-test-that-proc-task-doesnt-contain-0.patch: fold
+proc-test-that-proc-task-doesnt-contain-0.patch
 #
 x86-xen-update-xen_oldmem_pfn_is_ram-documentation.patch
 x86-xen-simplify-xen_oldmem_pfn_is_ram.patch
@@ -810,6 +842,7 @@ proc-sysctl-make-protected_-world-readable.patch
 #NEXT_PATCHES_START get_maintainer
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START MAINTAINERS
+maintainers-add-exec-binfmt-section-with-myself-and-eric.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START leds
@@ -852,6 +885,7 @@ lib-uninline-simple_strntoull-as-well.patch
 #NEXT_PATCHES_START checkpatch
 const_structscheckpatch-add-a-few-sound-ops-structs.patch
 #
+checkpatch-improve-export_symbol-test-for-export_symbol_ns-uses.patch
 #
 #
 #NEXT_PATCHES_END
@@ -871,7 +905,7 @@ const_structscheckpatch-add-a-few-sound-ops-structs.patch
 #NEXT_PATCHES_START binfmt
 binfmt_elf-reintroduce-using-map_fixed_noreplace.patch
 #
-#elf-fix-overflow-in-total-mapping-size-calculation.patch: scary
+#elf-fix-overflow-in-total-mapping-size-calculation.patch: scary https://lkml.kernel.org/r/202110051929.37279B6B4A@keescook
 elf-fix-overflow-in-total-mapping-size-calculation.patch
 #
 elf-simplify-stack_alloc-macro.patch
@@ -992,6 +1026,8 @@ hfsplus-fix-out-of-bounds-warnings-in-__hfsplus_setxattr.patch
 #NEXT_PATCHES_START hppfs
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START fat
+#fs-fat-make-the-volume-label-writable-when-mounted.patch: ack?
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START quota
 #NEXT_PATCHES_END
@@ -1283,6 +1319,7 @@ ipc-ipc_sysctlc-remove-fallback-for-config_proc_sysctl.patch
 #NEXT_PATCHES_END
 # next
 linux-next.patch
+linux-next-rejects.patch
 linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #lib
@@ -1354,3 +1391,18 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation.patch
 #[to-be-updated]hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation-fix.patch
 #[withdrawn]zram-allow-backing-device-to-be-assigned-after-init.patch
+#[obsolete]linux-next-git-rejects.patch
+#[alternative-merged]kasan-remove-duplicate-of-kasan_flag_async.patch
+#[alternative-merged]arm64-mte-bitfield-definitions-for-asymm-mte.patch
+#[alternative-merged]arm64-mte-cpu-feature-detection-for-asymm-mte.patch
+#[alternative-merged]arm64-mte-add-asymmetric-mode-support.patch
+#[alternative-merged]kasan-extend-kasan-mode-kernel-parameter.patch
+#[to-be-updated]hugetlb-add-demote-hugetlb-page-sysfs-interfaces.patch
+#[to-be-updated]mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma.patch
+#[to-be-updated]hugetlb-be-sure-to-free-demoted-cma-pages-to-cma.patch
+#[to-be-updated]hugetlb-add-demote-bool-to-gigantic-page-routines.patch
+#[to-be-updated]hugetlb-add-hugetlb-demote-page-support.patch
+#[to-be-updated]mm-dont-call-should_failslab-for-config_failslab.patch
+#[to-be-updated]mm-dont-call-should_failslab-for-config_failslab-fix.patch
+#[to-be-updated]fs-fat-make-the-volume-label-writable-when-mounted.patch
+#[to-be-updated]mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch

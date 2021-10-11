@@ -19,7 +19,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-make-hwpoisoned-dirty-swapcache-pages-unmovable
 +++ a/mm/memory_hotplug.c
-@@ -1649,6 +1649,12 @@ static int scan_movable_pages(unsigned l
+@@ -1656,6 +1656,12 @@ static int scan_movable_pages(unsigned l
  		 */
  		if (PageOffline(page) && page_count(page))
  			return -EBUSY;

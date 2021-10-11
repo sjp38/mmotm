@@ -10,7 +10,7 @@ Added '*_for_demote' wrappers for remove_hugetlb_page,
 destroy_compound_gigantic_page and prep_compound_gigantic_page for use by
 demote code.
 
-Link: https://lkml.kernel.org/r/20211001175210.45968-6-mike.kravetz@oracle.com
+Link: https://lkml.kernel.org/r/20211007181918.136982-6-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Cc: David Hildenbrand <david@redhat.com>
@@ -18,6 +18,7 @@ Cc: David Rientjes <rientjes@google.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>
+Cc: Nghia Le <nghialm78@gmail.com>
 Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
@@ -41,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	__ClearPageHead(page);
  }
  
-+static void destroy_compound_gigantic_page_for_demote(struct page *page,
++static void destroy_compound_hugetlb_page_for_demote(struct page *page,
 +					unsigned int order)
 +{
 +	__destroy_compound_gigantic_page(page, order, true);
@@ -77,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * PageHuge() only returns true for hugetlbfs pages, but not for normal or
   * transparent huge pages.  See the PageTransHuge() documentation for more
-@@ -3302,9 +3321,54 @@ out:
+@@ -3304,9 +3323,54 @@ out:
  	return 0;
  }
  
@@ -102,10 +103,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	}
 +
 +	/*
-+	 * Use destroy_compound_gigantic_page_for_demote for all huge page
++	 * Use destroy_compound_hugetlb_page_for_demote for all huge page
 +	 * sizes as it will not ref count pages.
 +	 */
-+	destroy_compound_gigantic_page_for_demote(page, huge_page_order(h));
++	destroy_compound_hugetlb_page_for_demote(page, huge_page_order(h));
 +
 +	for (i = 0; i < pages_per_huge_page(h);
 +				i += pages_per_huge_page(target_hstate)) {
@@ -132,9 +133,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int rc = 0;
  
  	lockdep_assert_held(&hugetlb_lock);
-@@ -3313,9 +3377,15 @@ static int demote_pool_huge_page(struct
- 	if (!h->demote_order)
- 		return rc;
+@@ -3317,9 +3381,15 @@ static int demote_pool_huge_page(struct
+ 		return -EINVAL;		/* internal error */
+ 	}
  
 -	/*
 -	 * TODO - demote fucntionality will be added in subsequent patch
@@ -143,7 +144,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		if (!list_empty(&h->hugepage_freelists[node])) {
 +			page = list_entry(h->hugepage_freelists[node].next,
 +					struct page, lru);
-+			rc = !demote_free_huge_page(h, page);
++			rc = demote_free_huge_page(h, page);
 +			break;
 +		}
 +	}
@@ -151,7 +152,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return rc;
  }
  
-@@ -3550,10 +3620,6 @@ static ssize_t demote_store(struct kobje
+@@ -3554,10 +3624,6 @@ static ssize_t demote_store(struct kobje
  		/*
  		 * Check for available pages to demote each time thorough the
  		 * loop as demote_pool_huge_page will drop hugetlb_lock.

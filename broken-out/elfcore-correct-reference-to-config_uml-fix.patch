@@ -1,0 +1,31 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: elfcore-correct-reference-to-config_uml-fix
+
+fix um/x86_64, per Catalin
+
+Link: https://lkml.kernel.org/r/20211006181119.2851441-1-catalin.marinas@arm.com
+Link: https://lkml.kernel.org/r/YV6pejGzLy5ppEpt@arm.com
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Barret Rhoden <brho@google.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Cc: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/elfcore.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/elfcore.h~elfcore-correct-reference-to-config_uml-fix
++++ a/include/linux/elfcore.h
+@@ -109,7 +109,7 @@ static inline int elf_core_copy_task_fpr
+ #endif
+ }
+ 
+-#if defined(CONFIG_UML) || defined(CONFIG_IA64)
++#if (defined(CONFIG_UML) && defined(CONFIG_X86_32)) || defined(CONFIG_IA64)
+ /*
+  * These functions parameterize elf_core_dump in fs/binfmt_elf.c to write out
+  * extra segments containing the gate DSO contents.  Dumping its
+_

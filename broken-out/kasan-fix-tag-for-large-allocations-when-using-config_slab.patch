@@ -9,9 +9,9 @@ Link: https://lkml.kernel.org/r/20211001024105.3217339-1-willy@infradead.org
 Fixes: 7f94ffbc4c6a ("kasan: add hooks implementation for tag-based mode")
 Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
 Acked-by: Marco Elver <elver@google.com>
+Reviewed-by: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 Cc: Alexander Potapenko <glider@google.com>
-Cc: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Dmitry Vyukov <dvyukov@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

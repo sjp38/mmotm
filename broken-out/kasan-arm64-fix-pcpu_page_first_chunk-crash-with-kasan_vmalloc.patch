@@ -1,0 +1,118 @@
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: kasan: arm64: fix pcpu_page_first_chunk crash with KASAN_VMALLOC
+
+With KASAN_VMALLOC and NEED_PER_CPU_PAGE_FIRST_CHUNK, it crashes,
+
+Unable to handle kernel paging request at virtual address ffff7000028f2000
+...
+swapper pgtable: 64k pages, 48-bit VAs, pgdp=0000000042440000
+[ffff7000028f2000] pgd=000000063e7c0003, p4d=000000063e7c0003, pud=000000063e7c0003, pmd=000000063e7b0003, pte=0000000000000000
+Internal error: Oops: 96000007 [#1] PREEMPT SMP
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper Not tainted 5.13.0-rc4-00003-gc6e6e28f3f30-dirty #62
+Hardware name: linux,dummy-virt (DT)
+pstate: 200000c5 (nzCv daIF -PAN -UAO -TCO BTYPE=--)
+pc : kasan_check_range+0x90/0x1a0
+lr : memcpy+0x88/0xf4
+sp : ffff80001378fe20
+...
+Call trace:
+ kasan_check_range+0x90/0x1a0
+ pcpu_page_first_chunk+0x3f0/0x568
+ setup_per_cpu_areas+0xb8/0x184
+ start_kernel+0x8c/0x328
+
+The vm area used in vm_area_register_early() has no kasan shadow memory,
+Let's add a new kasan_populate_early_vm_area_shadow() function to populate
+the vm area shadow memory to fix the issue.
+
+Link: https://lkml.kernel.org/r/20210910053354.26721-4-wangkefeng.wang@huawei.com
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Acked-by: Marco Elver <elver@google.com> (for KASAN parts)
+Acked-by: Andrey Konovalov <andreyknvl@gmail.com> (for KASAN parts)
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arm64/mm/kasan_init.c |   16 ++++++++++++++++
+ include/linux/kasan.h      |    6 ++++++
+ mm/kasan/init.c            |    5 +++++
+ mm/vmalloc.c               |    1 +
+ 4 files changed, 28 insertions(+)
+
+--- a/arch/arm64/mm/kasan_init.c~kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc
++++ a/arch/arm64/mm/kasan_init.c
+@@ -287,6 +287,22 @@ static void __init kasan_init_depth(void
+ 	init_task.kasan_depth = 0;
+ }
+ 
++#ifdef CONFIG_KASAN_VMALLOC
++void __init kasan_populate_early_vm_area_shadow(void *start, unsigned long size)
++{
++	unsigned long shadow_start, shadow_end;
++
++	if (!is_vmalloc_or_module_addr(start))
++		return;
++
++	shadow_start = (unsigned long)kasan_mem_to_shadow(start);
++	shadow_start = ALIGN_DOWN(shadow_start, PAGE_SIZE);
++	shadow_end = (unsigned long)kasan_mem_to_shadow(start + size);
++	shadow_end = ALIGN(shadow_end, PAGE_SIZE);
++	kasan_map_populate(shadow_start, shadow_end, NUMA_NO_NODE);
++}
++#endif
++
+ void __init kasan_init(void)
+ {
+ 	kasan_init_shadow();
+--- a/include/linux/kasan.h~kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc
++++ a/include/linux/kasan.h
+@@ -434,6 +434,8 @@ void kasan_release_vmalloc(unsigned long
+ 			   unsigned long free_region_start,
+ 			   unsigned long free_region_end);
+ 
++void kasan_populate_early_vm_area_shadow(void *start, unsigned long size);
++
+ #else /* CONFIG_KASAN_VMALLOC */
+ 
+ static inline int kasan_populate_vmalloc(unsigned long start,
+@@ -451,6 +453,10 @@ static inline void kasan_release_vmalloc
+ 					 unsigned long free_region_start,
+ 					 unsigned long free_region_end) {}
+ 
++static inline void kasan_populate_early_vm_area_shadow(void *start,
++						       unsigned long size)
++{ }
++
+ #endif /* CONFIG_KASAN_VMALLOC */
+ 
+ #if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && \
+--- a/mm/kasan/init.c~kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc
++++ a/mm/kasan/init.c
+@@ -279,6 +279,11 @@ int __ref kasan_populate_early_shadow(co
+ 	return 0;
+ }
+ 
++void __init __weak kasan_populate_early_vm_area_shadow(void *start,
++						       unsigned long size)
++{
++}
++
+ static void kasan_free_pte(pte_t *pte_start, pmd_t *pmd)
+ {
+ 	pte_t *pte;
+--- a/mm/vmalloc.c~kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc
++++ a/mm/vmalloc.c
+@@ -2291,6 +2291,7 @@ void __init vm_area_register_early(struc
+ 	vm->addr = (void *)addr;
+ 	vm->next = *p;
+ 	*p = vm;
++	kasan_populate_early_vm_area_shadow(vm->addr, vm->size);
+ }
+ 
+ static void vmap_init_free_space(void)
+_

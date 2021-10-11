@@ -6,8 +6,8 @@ Directly use is_kernel() helper in kernel_or_module_addr().
 Link: https://lkml.kernel.org/r/20210930071143.63410-8-wangkefeng.wang@huawei.com
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 Reviewed-by: Alexander Potapenko <glider@google.com>
+Reviewed-by: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Cc: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Dmitry Vyukov <dvyukov@google.com>
 Cc: Alexei Starovoitov <ast@kernel.org>
 Cc: Arnd Bergmann <arnd@arndb.de>

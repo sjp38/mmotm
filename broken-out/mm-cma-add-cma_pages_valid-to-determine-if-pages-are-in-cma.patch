@@ -5,22 +5,28 @@ Add new interface cma_pages_valid() which indicates if the specified pages
 are part of a CMA region.  This interface will be used in a subsequent
 patch by hugetlb code.
 
-Link: https://lkml.kernel.org/r/20211001175210.45968-3-mike.kravetz@oracle.com
+In order to keep the same amount of DEBUG information, a pr_debug() call
+was added to cma_pages_valid().  In the case where the page passed to
+cma_release is not in cma region, the debug message will be printed from
+cma_pages_valid as opposed to cma_release.
+
+Link: https://lkml.kernel.org/r/20211007181918.136982-3-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+Acked-by: David Hildenbrand <david@redhat.com>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
-Cc: David Hildenbrand <david@redhat.com>
 Cc: David Rientjes <rientjes@google.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>
+Cc: Nghia Le <nghialm78@gmail.com>
 Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
  include/linux/cma.h |    1 +
- mm/cma.c            |   21 +++++++++++++++++----
- 2 files changed, 18 insertions(+), 4 deletions(-)
+ mm/cma.c            |   24 ++++++++++++++++++++----
+ 2 files changed, 21 insertions(+), 4 deletions(-)
 
 --- a/include/linux/cma.h~mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma
 +++ a/include/linux/cma.h
@@ -34,7 +40,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern int cma_for_each_area(int (*it)(struct cma *cma, void *data), void *data);
 --- a/mm/cma.c~mm-cma-add-cma_pages_valid-to-determine-if-pages-are-in-cma
 +++ a/mm/cma.c
-@@ -524,6 +524,22 @@ out:
+@@ -524,6 +524,25 @@ out:
  	return page;
  }
  
@@ -48,8 +54,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +	pfn = page_to_pfn(pages);
 +
-+	if (pfn < cma->base_pfn || pfn >= cma->base_pfn + cma->count)
++	if (pfn < cma->base_pfn || pfn >= cma->base_pfn + cma->count) {
++		pr_debug("%s(page %p, count %lu)\n", __func__,
++						(void *)pages, count);
 +		return false;
++	}
 +
 +	return true;
 +}
@@ -57,7 +66,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
   * cma_release() - release allocated pages
   * @cma:   Contiguous memory region for which the allocation is performed.
-@@ -539,16 +555,13 @@ bool cma_release(struct cma *cma, const
+@@ -539,16 +558,13 @@ bool cma_release(struct cma *cma, const
  {
  	unsigned long pfn;
  

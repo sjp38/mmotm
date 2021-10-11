@@ -1,0 +1,50 @@
+From: Hyeonggon Yoo <42.hyeyoo@gmail.com>
+Subject: mm, slub: Use prefetchw instead of prefetch
+
+It's certain that an object will be not only read, but also written after
+allocation.
+
+Use prefetchw instead of prefetch.  On supported architectures like x86,
+it helps to invalidate cache line when the object exists in other
+processors' cache.
+
+Link: https://lkml.kernel.org/r/20211008133602.4963-1-42.hyeyoo@gmail.com
+Signed-off-by: Hyeonggon Yoo <42.hyeyoo@gmail.com>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/slub.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+--- a/mm/slub.c~mm-slub-use-prefetchw-instead-of-prefetch
++++ a/mm/slub.c
+@@ -352,9 +352,9 @@ static inline void *get_freepointer(stru
+ 	return freelist_dereference(s, object + s->offset);
+ }
+ 
+-static void prefetch_freepointer(const struct kmem_cache *s, void *object)
++static void prefetchw_freepointer(const struct kmem_cache *s, void *object)
+ {
+-	prefetch(object + s->offset);
++	prefetchw(object + s->offset);
+ }
+ 
+ static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
+@@ -3202,10 +3202,9 @@ redo:
+ 			note_cmpxchg_failure("slab_alloc", s, tid);
+ 			goto redo;
+ 		}
+-		prefetch_freepointer(s, next_object);
++		prefetchw_freepointer(s, next_object);
+ 		stat(s, ALLOC_FASTPATH);
+ 	}
+-
+ 	maybe_wipe_obj_freeptr(s, object);
+ 	init = slab_want_init_on_alloc(gfpflags, s);
+ 
+_

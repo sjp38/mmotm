@@ -1,0 +1,48 @@
+From: Gang Li <ligang.bdlg@bytedance.com>
+Subject: mm: mmap_lock: remove redundant newline  in TP_printk
+
+Ftrace core will add newline automatically on printing, so using it in
+TP_printkcreates a blank line.
+
+Link: https://lkml.kernel.org/r/20211009071105.69544-1-ligang.bdlg@bytedance.com
+Signed-off-by: Gang Li <ligang.bdlg@bytedance.com>
+Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Axel Rasmussen <axelrasmussen@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/trace/events/mmap_lock.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/include/trace/events/mmap_lock.h~mm-mmap_lock-remove-redundant-newline-in-tp_printk
++++ a/include/trace/events/mmap_lock.h
+@@ -32,7 +32,7 @@ TRACE_EVENT_FN(mmap_lock_start_locking,
+ 	),
+ 
+ 	TP_printk(
+-		"mm=%p memcg_path=%s write=%s\n",
++		"mm=%p memcg_path=%s write=%s",
+ 		__entry->mm,
+ 		__get_str(memcg_path),
+ 		__entry->write ? "true" : "false"
+@@ -63,7 +63,7 @@ TRACE_EVENT_FN(mmap_lock_acquire_returne
+ 	),
+ 
+ 	TP_printk(
+-		"mm=%p memcg_path=%s write=%s success=%s\n",
++		"mm=%p memcg_path=%s write=%s success=%s",
+ 		__entry->mm,
+ 		__get_str(memcg_path),
+ 		__entry->write ? "true" : "false",
+@@ -92,7 +92,7 @@ TRACE_EVENT_FN(mmap_lock_released,
+ 	),
+ 
+ 	TP_printk(
+-		"mm=%p memcg_path=%s write=%s\n",
++		"mm=%p memcg_path=%s write=%s",
+ 		__entry->mm,
+ 		__get_str(memcg_path),
+ 		__entry->write ? "true" : "false"
+_

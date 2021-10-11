@@ -12,7 +12,7 @@ Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Acked-by: Dmitry Vyukov <dvyukov@google.com>
 Acked-by: Marco Elver <elver@google.com>
 Tested-by: Marco Elver <elver@google.com>
-Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Reviewed-by: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Clark Williams <williams@redhat.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

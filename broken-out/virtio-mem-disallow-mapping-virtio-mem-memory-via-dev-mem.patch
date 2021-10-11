@@ -56,7 +56,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 devices, allowing to hotplug and hotunplug memory.
 --- a/drivers/virtio/virtio_mem.c~virtio-mem-disallow-mapping-virtio-mem-memory-via-dev-mem
 +++ a/drivers/virtio/virtio_mem.c
-@@ -2525,8 +2525,10 @@ static int virtio_mem_create_resource(st
+@@ -2672,8 +2672,10 @@ static int virtio_mem_create_resource(st
  	if (!name)
  		return -ENOMEM;
  

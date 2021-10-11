@@ -519,7 +519,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
 --- a/drivers/base/arch_numa.c~memblock-rename-memblock_free-to-memblock_phys_free
 +++ a/drivers/base/arch_numa.c
-@@ -165,7 +165,7 @@ static void * __init pcpu_fc_alloc(unsig
+@@ -166,7 +166,7 @@ static void * __init pcpu_fc_alloc(unsig
  
  static void __init pcpu_fc_free(void *ptr, size_t size)
  {
@@ -527,7 +527,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	memblock_phys_free(__pa(ptr), size);
  }
  
- void __init setup_per_cpu_areas(void)
+ #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
 --- a/drivers/firmware/efi/memmap.c~memblock-rename-memblock_free-to-memblock_phys_free
 +++ a/drivers/firmware/efi/memmap.c
 @@ -35,7 +35,7 @@ void __init __efi_memmap_free(u64 phys,

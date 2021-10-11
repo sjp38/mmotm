@@ -79,6 +79,8 @@ Signed-off-by: Eric Dumazet <edumazet@google.com>
 Reported-by: syzbot <syzkaller@googlegroups.com>
 Cc: "Huang, Ying" <ying.huang@intel.com>
 Cc: Mel Gorman <mgorman@suse.de>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

@@ -259,7 +259,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/drivers/base/arch_numa.c~memblock-use-memblock_free-for-freeing-virtual-pointers
 +++ a/drivers/base/arch_numa.c
-@@ -165,7 +165,7 @@ static void * __init pcpu_fc_alloc(unsig
+@@ -166,7 +166,7 @@ static void * __init pcpu_fc_alloc(unsig
  
  static void __init pcpu_fc_free(void *ptr, size_t size)
  {
@@ -267,8 +267,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	memblock_free(ptr, size);
  }
  
- void __init setup_per_cpu_areas(void)
-@@ -264,7 +264,7 @@ void __init numa_free_distance(void)
+ #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
+@@ -326,7 +326,7 @@ void __init numa_free_distance(void)
  	size = numa_distance_cnt * numa_distance_cnt *
  		sizeof(numa_distance[0]);
  

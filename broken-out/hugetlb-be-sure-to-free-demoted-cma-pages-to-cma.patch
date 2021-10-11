@@ -11,14 +11,28 @@ Use the new interface cma_pages_valid() to determine if a non-gigantic
 hugetlb page should be freed to CMA.  Also, clear mapping field of these
 pages as expected by cma_release.
 
-This also requires a change to CMA reservations for gigantic pages. 
-Currently, the 'order_per_bit' is set to the gigantic page size.  However,
-if gigantic pages can be demoted this needs to be set to the order of the
-smallest huge page.  At CMA reservation time we do not know the size of
-the smallest huge page size, so use HUGETLB_PAGE_ORDER.  Also, prohibit
-demotion to huge page sizes smaller than HUGETLB_PAGE_ORDER.
+This also requires a change to CMA region creation for gigantic pages. 
+CMA uses a per-region bit map to track allocations.  When setting up the
+region, you specify how many pages each bit represents.  Currently, only
+gigantic pages are allocated/freed from CMA so the region is set up such
+that one bit represents a gigantic page size allocation.
 
-Link: https://lkml.kernel.org/r/20211001175210.45968-4-mike.kravetz@oracle.com
+With demote, a gigantic page (allocation) could be split into smaller size
+pages.  And, these smaller size pages will be freed to CMA.  So, since the
+per-region bit map needs to be set up to represent the smallest
+allocation/free size, it now needs to be set to the smallest huge page
+size which can be freed to CMA.
+
+Unfortunately, we set up the CMA region for huge pages before we set up
+huge pages sizes (hstates).  So, technically we do not know the smallest
+huge page size as this can change via command line options and
+architecture specific code.  Therefore, at region setup time we use
+HUGETLB_PAGE_ORDER as the smallest possible huge page size that can be
+given back to CMA.  It is possible that this value is sub-optimal for some
+architectures/config options.  If needed, this can be addressed in follow
+on work.
+
+Link: https://lkml.kernel.org/r/20211007181918.136982-4-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Cc: David Hildenbrand <david@redhat.com>
@@ -26,13 +40,14 @@ Cc: David Rientjes <rientjes@google.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>
+Cc: Nghia Le <nghialm78@gmail.com>
 Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/hugetlb.c |   32 +++++++++++++++++++++++++++++---
- 1 file changed, 29 insertions(+), 3 deletions(-)
+ mm/hugetlb.c |   41 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 39 insertions(+), 2 deletions(-)
 
 --- a/mm/hugetlb.c~hugetlb-be-sure-to-free-demoted-cma-pages-to-cma
 +++ a/mm/hugetlb.c
@@ -76,26 +91,38 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		destroy_compound_gigantic_page(page, huge_page_order(h));
  		free_gigantic_page(page, huge_page_order(h));
  	} else {
-@@ -3003,7 +3020,8 @@ static void __init hugetlb_init_hstates(
- 		 *   is not supported.
+@@ -3001,9 +3018,13 @@ static void __init hugetlb_init_hstates(
+ 		 * h->demote_order is initially 0.
+ 		 * - We can not demote gigantic pages if runtime freeing
+ 		 *   is not supported, so skip this.
++		 * - If CMA allocation is possible, we can not demote
++		 *   HUGETLB_PAGE_ORDER or smaller size pages.
  		 */
- 		if (!hstate_is_gigantic(h) ||
--		    gigantic_page_runtime_supported()) {
-+		    gigantic_page_runtime_supported() ||
-+		    !hugetlb_cma_size || !(h->order <= HUGETLB_PAGE_ORDER)) {
- 			for_each_hstate(h2) {
- 				if (h2 == h)
- 					continue;
-@@ -3555,6 +3573,8 @@ static ssize_t demote_size_store(struct
- 	if (!t_hstate)
+ 		if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported())
+ 			continue;
++		if (hugetlb_cma_size && h->order <= HUGETLB_PAGE_ORDER)
++			continue;
+ 		for_each_hstate(h2) {
+ 			if (h2 == h)
+ 				continue;
+@@ -3555,6 +3576,8 @@ static ssize_t demote_size_store(struct
+ 	if (!demote_hstate)
  		return -EINVAL;
- 	demote_order = t_hstate->order;
+ 	demote_order = demote_hstate->order;
 +	if (demote_order < HUGETLB_PAGE_ORDER)
 +		return -EINVAL;
  
- 	/* demote order must be smaller hstate order */
+ 	/* demote order must be smaller than hstate order */
  	h = kobj_to_hstate(kobj, &nid);
-@@ -6563,7 +6583,13 @@ void __init hugetlb_cma_reserve(int orde
+@@ -6543,6 +6566,7 @@ void __init hugetlb_cma_reserve(int orde
+ 	if (hugetlb_cma_size < (PAGE_SIZE << order)) {
+ 		pr_warn("hugetlb_cma: cma area should be at least %lu MiB\n",
+ 			(PAGE_SIZE << order) / SZ_1M);
++		hugetlb_cma_size = 0;
+ 		return;
+ 	}
+ 
+@@ -6563,7 +6587,13 @@ void __init hugetlb_cma_reserve(int orde
  		size = round_up(size, PAGE_SIZE << order);
  
  		snprintf(name, sizeof(name), "hugetlb%d", nid);
@@ -110,4 +137,18 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  						 0, false, name,
  						 &hugetlb_cma[nid], nid);
  		if (res) {
+@@ -6579,6 +6609,13 @@ void __init hugetlb_cma_reserve(int orde
+ 		if (reserved >= hugetlb_cma_size)
+ 			break;
+ 	}
++
++	if (!reserved)
++		/*
++		 * hugetlb_cma_size is used to determine if allocations from
++		 * cma are possible.  Set to zero if no cma regions are set up.
++		 */
++		hugetlb_cma_size = 0;
+ }
+ 
+ void __init hugetlb_cma_check(void)
 _

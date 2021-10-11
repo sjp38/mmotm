@@ -1,7 +1,7 @@
 From: Mike Kravetz <mike.kravetz@oracle.com>
 Subject: hugetlb: add demote hugetlb page sysfs interfaces
 
-Patch series "hugetlb: add demote/split page functionality", v3.
+Patch series "hugetlb: add demote/split page functionality", v4.
 
 The concurrent use of multiple hugetlb page sizes on a single system is
 becoming more common.  One of the reasons is better TLB support for
@@ -34,14 +34,12 @@ of the operation is a second or two.
 
 However, when there is activity on the system the following issues
 arise:
-
 1) This process can take quite some time, especially if allocation of
    the smaller pages is not immediate and requires migration/compaction.
 2) There is no guarantee that the total size of smaller pages allocated
    will match the size of the larger page which was freed.  This is
    because the area freed by the larger page could quickly be
    fragmented.
-
 In a test environment with a load that continually fills the page cache
 with clean pages, results such as the following can be observed:
 
@@ -75,18 +73,20 @@ will be demoted.  It is possible fewer will actually be demoted.  The
 recently introduced per-hstate mutex is used to synchronize demote
 operations with other operations that modify hugetlb pools.
 
-Real world use cases -------------------- The above scenario describes a
-real world use case where hugetlb pages are used to back VMs on x86.  Both
-issues of long allocation times and not necessarily getting the expected
-number of smaller huge pages after a free and allocate cycle have been
-experienced.  The occurrence of these issues is dependent on other
-activity within the host and can not be predicted.
+Real world use cases
+--------------------
+The above scenario describes a real world use case where hugetlb pages are
+used to back VMs on x86.  Both issues of long allocation times and not
+necessarily getting the expected number of smaller huge pages after a free
+and allocate cycle have been experienced.  The occurrence of these issues
+is dependent on other activity within the host and can not be predicted.
 
 
 This patch (of 5):
 
 Two new sysfs files are added to demote hugtlb pages.  These files are
 both per-hugetlb page size and per node.  Files are:
+
   demote_size - The size in Kb that pages are demoted to. (read-write)
   demote - The number of huge pages to demote. (write-only)
 
@@ -107,8 +107,8 @@ the sysfs interfaces.
 
 It also provides documentation for the new interfaces.
 
-Link: https://lkml.kernel.org/r/20211001175210.45968-1-mike.kravetz@oracle.com
-Link: https://lkml.kernel.org/r/20211001175210.45968-2-mike.kravetz@oracle.com
+Link: https://lkml.kernel.org/r/20211007181918.136982-2-mike.kravetz@oracle.com
+Link: https://lkml.kernel.org/r/20211007181918.136982-2-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Michal Hocko <mhocko@suse.com>
@@ -118,6 +118,8 @@ Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>
 Cc: David Rientjes <rientjes@google.com>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Cc: Nghia Le <nghialm78@gmail.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -158,7 +160,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +        number of huge pages of demote_size will be created.  By default,
 +        demote_size is set to the next smaller huge page size.  If there are
 +        multiple smaller huge page sizes, demote_size can be set to any of
-+        these smaller sizes.  Only huge page sizes less then the current huge
++        these smaller sizes.  Only huge page sizes less than the current huge
 +        pages size are allowed.
 +
 +demote
@@ -194,7 +196,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for_each_hstate(h) {
  		if (minimum_order > huge_page_order(h))
-@@ -2995,6 +2995,23 @@ static void __init hugetlb_init_hstates(
+@@ -2995,6 +2995,22 @@ static void __init hugetlb_init_hstates(
  		/* oversize hugepages were init'ed in early boot */
  		if (!hstate_is_gigantic(h))
  			hugetlb_hstate_alloc_pages(h);
@@ -203,22 +205,21 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		 * Set demote order for each hstate.  Note that
 +		 * h->demote_order is initially 0.
 +		 * - We can not demote gigantic pages if runtime freeing
-+		 *   is not supported.
++		 *   is not supported, so skip this.
 +		 */
-+		if (!hstate_is_gigantic(h) ||
-+		    gigantic_page_runtime_supported()) {
-+			for_each_hstate(h2) {
-+				if (h2 == h)
-+					continue;
-+				if (h2->order < h->order &&
-+				    h2->order > h->demote_order)
-+					h->demote_order = h2->order;
-+			}
++		if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported())
++			continue;
++		for_each_hstate(h2) {
++			if (h2 == h)
++				continue;
++			if (h2->order < h->order &&
++			    h2->order > h->demote_order)
++				h->demote_order = h2->order;
 +		}
  	}
  	VM_BUG_ON(minimum_order == UINT_MAX);
  }
-@@ -3235,9 +3252,29 @@ out:
+@@ -3235,9 +3251,31 @@ out:
  	return 0;
  }
  
@@ -230,8 +231,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	lockdep_assert_held(&hugetlb_lock);
 +
 +	/* We should never get here if no demote order */
-+	if (!h->demote_order)
-+		return rc;
++	if (!h->demote_order) {
++		pr_warn("HugeTLB: NULL demote order passed to demote_pool_huge_page.\n");
++		return -EINVAL;		/* internal error */
++	}
 +
 +	/*
 +	 * TODO - demote fucntionality will be added in subsequent patch
@@ -248,7 +251,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #define HSTATE_ATTR(_name) \
  	static struct kobj_attribute _name##_attr = \
  		__ATTR(_name, 0644, _name##_show, _name##_store)
-@@ -3433,6 +3470,106 @@ static ssize_t surplus_hugepages_show(st
+@@ -3433,6 +3471,105 @@ static ssize_t surplus_hugepages_show(st
  }
  HSTATE_ATTR_RO(surplus_hugepages);
  
@@ -259,7 +262,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	unsigned long nr_available;
 +	nodemask_t nodes_allowed, *n_mask;
 +	struct hstate *h;
-+	int err;
++	int err = 0;
 +	int nid;
 +
 +	err = kstrtoul(buf, 10, &nr_demote);
@@ -270,7 +273,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	/* Synchronize with other sysfs operations modifying huge pages */
 +	mutex_lock(&h->resize_lock);
 +
-+	spin_lock_irq(&hugetlb_lock);
 +	if (nid != NUMA_NO_NODE) {
 +		init_nodemask_of_node(&nodes_allowed, nid);
 +		n_mask = &nodes_allowed;
@@ -278,6 +280,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		n_mask = &node_states[N_MEMORY];
 +	}
 +
++	spin_lock_irq(&hugetlb_lock);
 +	while (nr_demote) {
 +		/*
 +		 * Check for available pages to demote each time thorough the
@@ -295,7 +298,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		if (!nr_available)
 +			break;
 +
-+		if (!demote_pool_huge_page(h, n_mask))
++		err = demote_pool_huge_page(h, n_mask);
++		if (err)
 +			break;
 +
 +		nr_demote--;
@@ -304,6 +308,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	spin_unlock_irq(&hugetlb_lock);
 +	mutex_unlock(&h->resize_lock);
 +
++	if (err)
++		return err;
 +	return len;
 +}
 +HSTATE_ATTR_WO(demote);
@@ -311,34 +317,30 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +static ssize_t demote_size_show(struct kobject *kobj,
 +					struct kobj_attribute *attr, char *buf)
 +{
-+	struct hstate *h;
-+	unsigned long demote_size;
 +	int nid;
++	struct hstate *h = kobj_to_hstate(kobj, &nid);
++	unsigned long demote_size = (PAGE_SIZE << h->demote_order) / SZ_1K;
 +
-+	h = kobj_to_hstate(kobj, &nid);
-+	demote_size = h->demote_order;
-+
-+	return sysfs_emit(buf, "%lukB\n",
-+			(unsigned long)(PAGE_SIZE << h->demote_order) / SZ_1K);
++	return sysfs_emit(buf, "%lukB\n", demote_size);
 +}
 +
 +static ssize_t demote_size_store(struct kobject *kobj,
 +					struct kobj_attribute *attr,
 +					const char *buf, size_t count)
 +{
-+	struct hstate *h, *t_hstate;
++	struct hstate *h, *demote_hstate;
 +	unsigned long demote_size;
 +	unsigned int demote_order;
 +	int nid;
 +
 +	demote_size = (unsigned long)memparse(buf, NULL);
 +
-+	t_hstate = size_to_hstate(demote_size);
-+	if (!t_hstate)
++	demote_hstate = size_to_hstate(demote_size);
++	if (!demote_hstate)
 +		return -EINVAL;
-+	demote_order = t_hstate->order;
++	demote_order = demote_hstate->order;
 +
-+	/* demote order must be smaller hstate order */
++	/* demote order must be smaller than hstate order */
 +	h = kobj_to_hstate(kobj, &nid);
 +	if (demote_order >= h->order)
 +		return -EINVAL;
