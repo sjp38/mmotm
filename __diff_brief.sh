@@ -1,19 +1,20 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-	echo "Usage: $0 <commit>"
+	echo "Usage: $0 <from> <to>"
 	exit 1
 fi
 
-commit=$1
+from=$1
+to=$2
 
-diff_output=$(git diff "$commit^..$commit" --name-status -- broken-out/)
+diff_output=$(git diff "$from..$to" --name-status -- broken-out/)
 dropped=$(echo "$diff_output" | grep -c '^D')
 added=$(echo "$diff_output" | grep -c '^A')
 modified=$(echo "$diff_output" | grep -c '^M')
-date=$(git show "$commit:.DATE" | head -n 1)
-base=$(git show "$commit:.DATE" | tail -n 1)
-total=$(git show "$commit:series" | sed '/^#/d' | wc -l)
+date=$(git show "$to:.DATE" | head -n 1)
+base=$(git show "$to:.DATE" | tail -n 1)
+total=$(git show "$to:series" | sed '/^#/d' | wc -l)
 
 echo "$date: based on $base, $added adds, $modified modifications, $dropped drops, $total total"
