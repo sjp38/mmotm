@@ -80,10 +80,4 @@ echo
 echo "$modified"
 echo
 
-nr_dropped=$(echo "$diff_output" | grep -c '^D')
-nr_added=$(echo "$diff_output" | grep -c '^A')
-nr_modified=$(echo "$diff_output" | grep -c '^M')
-nr_total=$(git show "$to:series" | sed '/^#/d' | wc -l)
-
-echo "summary: $nr_dropped drop, $nr_added add, $nr_modified modified, $nr_total total"
-echo "# the changes are updated in $to_date"
+$(dirname "$0")/__diff_brief.sh "$from" "$to"
