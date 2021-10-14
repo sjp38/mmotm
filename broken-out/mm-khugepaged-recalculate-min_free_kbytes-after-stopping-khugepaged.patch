@@ -1,0 +1,91 @@
+From: Liangcai Fan <liangcaifan19@gmail.com>
+Subject: mm: khugepaged: Recalculate min_free_kbytes after stopping khugepaged
+
+When initializing transparent huge pages, min_free_kbytes would be
+calculated according to what khugepaged expected.
+So when disable transparent huge pages, min_free_kbytes should be
+recalculated instead of the higher value set by khugepaged.
+
+Link: https://lkml.kernel.org/r/1633937809-16558-1-git-send-email-liangcaifan19@gmail.com
+Signed-off-by: Liangcai Fan <liangcaifan19@gmail.com>
+Signed-off-by: Chunyan Zhang <zhang.lyra@gmail.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mm.h |    1 +
+ mm/khugepaged.c    |   10 ++++++++--
+ mm/page_alloc.c    |    7 ++++++-
+ 3 files changed, 15 insertions(+), 3 deletions(-)
+
+--- a/include/linux/mm.h~mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged
++++ a/include/linux/mm.h
+@@ -2453,6 +2453,7 @@ extern void memmap_init_range(unsigned l
+ 		unsigned long, unsigned long, enum meminit_context,
+ 		struct vmem_altmap *, int migratetype);
+ extern void setup_per_zone_wmarks(void);
++extern void calculate_min_free_kbytes(void);
+ extern int __meminit init_per_zone_wmark_min(void);
+ extern void mem_init(void);
+ extern void __init mmap_init(void);
+--- a/mm/khugepaged.c~mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged
++++ a/mm/khugepaged.c
+@@ -2291,6 +2291,11 @@ static void set_recommended_min_free_kby
+ 	int nr_zones = 0;
+ 	unsigned long recommended_min;
+ 
++	if (!khugepaged_enabled()) {
++		calculate_min_free_kbytes();
++		goto update_wmarks;
++	}
++
+ 	for_each_populated_zone(zone) {
+ 		/*
+ 		 * We don't need to worry about fragmentation of
+@@ -2326,6 +2331,8 @@ static void set_recommended_min_free_kby
+ 
+ 		min_free_kbytes = recommended_min;
+ 	}
++
++update_wmarks:
+ 	setup_per_zone_wmarks();
+ }
+ 
+@@ -2347,12 +2354,11 @@ int start_stop_khugepaged(void)
+ 
+ 		if (!list_empty(&khugepaged_scan.mm_head))
+ 			wake_up_interruptible(&khugepaged_wait);
+-
+-		set_recommended_min_free_kbytes();
+ 	} else if (khugepaged_thread) {
+ 		kthread_stop(khugepaged_thread);
+ 		khugepaged_thread = NULL;
+ 	}
++	set_recommended_min_free_kbytes();
+ fail:
+ 	mutex_unlock(&khugepaged_mutex);
+ 	return err;
+--- a/mm/page_alloc.c~mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged
++++ a/mm/page_alloc.c
+@@ -8463,7 +8463,7 @@ void setup_per_zone_wmarks(void)
+  * 8192MB:	11584k
+  * 16384MB:	16384k
+  */
+-int __meminit init_per_zone_wmark_min(void)
++void calculate_min_free_kbytes(void)
+ {
+ 	unsigned long lowmem_kbytes;
+ 	int new_min_free_kbytes;
+@@ -8481,6 +8481,11 @@ int __meminit init_per_zone_wmark_min(vo
+ 		pr_warn("min_free_kbytes is not updated to %d because user defined value %d is preferred\n",
+ 				new_min_free_kbytes, user_min_free_kbytes);
+ 	}
++}
++
++int __meminit init_per_zone_wmark_min(void)
++{
++	calculate_min_free_kbytes();
+ 	setup_per_zone_wmarks();
+ 	refresh_zone_stat_thresholds();
+ 	setup_per_zone_lowmem_reserve();
+_

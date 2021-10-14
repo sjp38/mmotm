@@ -1,6 +1,8 @@
 From: Alexey Dobriyan <adobriyan@gmail.com>
 Subject: proc: test that /proc/*/task doesn't contain "0"
 
+add selftest to check for the errant "0" in /proc/*/task
+
 Link: https://lkml.kernel.org/r/YV88AnVzHxPafQ9o@localhost.localdomain
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 Cc: Christian Brauner <christian.brauner@ubuntu.com>

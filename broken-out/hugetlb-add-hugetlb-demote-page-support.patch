@@ -7,7 +7,7 @@ demoted into 512 2M huge pages.  Demotion is done 'in place' by simply
 splitting the huge page.
 
 Added '*_for_demote' wrappers for remove_hugetlb_page,
-destroy_compound_gigantic_page and prep_compound_gigantic_page for use by
+destroy_compound_hugetlb_page and prep_compound_gigantic_page for use by
 demote code.
 
 Link: https://lkml.kernel.org/r/20211007181918.136982-6-mike.kravetz@oracle.com

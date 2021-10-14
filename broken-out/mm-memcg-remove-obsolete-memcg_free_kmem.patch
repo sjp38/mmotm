@@ -11,11 +11,13 @@ memcg_offline_kmem() directly from mem_cgroup_css_free().
 Link: https://lkml.kernel.org/r/20211005202450.11775-1-longman@redhat.com
 Signed-off-by: Waiman Long <longman@redhat.com>
 Suggested-by: Roman Gushchin <guro@fb.com>
+Reviewed-by: Aaron Tomlin <atomlin@redhat.com>
+Reviewed-by: Shakeel Butt <shakeelb@google.com>
+Reviewed-by: Roman Gushchin <guro@fb.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

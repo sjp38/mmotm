@@ -1,0 +1,53 @@
+From: David Hildenbrand <david@redhat.com>
+Subject: memory-hotplug.rst: document the "auto-movable" online policy
+
+- "memory-hotplug.rst: document the "auto-movable" online policy"
+-- Add a pointer to generic command line parameter documentation
+-- Explain relationship of "auto-movable" and "movable_node" command
+   line parameter, also indicating in which setups "auto-movable" doesn't
+   really make sense.
+
+Link: https://lkml.kernel.org/r/20211011082058.6076-4-david@redhat.com
+Signed-off-by: David Hildenbrand <david@redhat.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/mm/memory-hotplug.rst |   15 +++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+--- a/Documentation/admin-guide/mm/memory-hotplug.rst~memory-hotplugrst-document-the-auto-movable-online-policy-v2
++++ a/Documentation/admin-guide/mm/memory-hotplug.rst
+@@ -402,6 +402,9 @@ command line parameters are relevant:
+ 			 contiguous.
+ ======================== =======================================================
+ 
++See Documentation/admin-guide/kernel-parameters.txt for a more generic
++description of these command line parameters.
++
+ Module Parameters
+ ------------------
+ 
+@@ -457,7 +460,17 @@ The following module parameters are curr
+ 				 hotplugging a lot of memory later and still
+ 				 wanting to be able to hotunplug as much as
+ 				 possible reliably, very desirable in
+-				 virtualized environments. As one example, a
++				 virtualized environments. This policy ignores
++				 the ``movable_node`` kernel command line
++				 parameter and isn't really applicable in
++				 environments that require it (e.g., bare metal
++				 with hotunpluggable nodes) where hotplugged
++				 memory might be exposed via the
++				 firmware-provided memory map early during boot
++				 to the system instead of getting detected,
++				 added and onlined  later during boot (such as
++				 done by virtio-mem or by some hypervisors
++				 implementing emulated DIMMs). As one example, a
+ 				 hotplugged DIMM will be onlined either
+ 				 completely to ZONE_MOVABLE or completely to
+ 				 ZONE_NORMAL, not a mixture.
+_

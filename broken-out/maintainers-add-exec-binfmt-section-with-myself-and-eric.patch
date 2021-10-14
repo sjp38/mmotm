@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/MAINTAINERS~maintainers-add-exec-binfmt-section-with-myself-and-eric
 +++ a/MAINTAINERS
-@@ -7020,6 +7020,20 @@ F:	include/trace/events/mdio.h
+@@ -7025,6 +7025,20 @@ F:	include/trace/events/mdio.h
  F:	include/uapi/linux/mdio.h
  F:	include/uapi/linux/mii.h
  

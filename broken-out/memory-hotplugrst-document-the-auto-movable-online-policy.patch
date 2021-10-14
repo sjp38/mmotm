@@ -14,9 +14,9 @@ work.
 
 Link: https://lkml.kernel.org/r/20210930144117.23641-4-david@redhat.com
 Signed-off-by: David Hildenbrand <david@redhat.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Michal Hocko <mhocko@suse.com>
-Cc: Mike Rapoport <rppt@kernel.org>
 Cc: Oscar Salvador <osalvador@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

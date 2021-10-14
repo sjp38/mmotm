@@ -1,0 +1,132 @@
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: mm/migrate: rework hotplug_memory_notifier() stub
+
+The previous change added a compile time warning for the
+CONFIG_MEMORY_HOTPLUG=n case:
+
+mm/migrate.c:3216:22: error: 'migrate_on_reclaim_callback' defined but not used [-Werror=unused-function]
+ 3216 | static int __meminit migrate_on_reclaim_callback(struct notifier_block *self,
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+mm/migrate.c:3197:13: error: 'set_migration_target_nodes' defined but not used [-Werror=unused-function]
+ 3197 | static void set_migration_target_nodes(void)
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Rework the hotplug_memory_notifier() stub implementation into an inline
+function so it always references its argument but ignores it, leading the
+compiler to silently drop the hotplug memory notifier function and further
+code referenced from it.
+
+To do this, the #ifdef around those functions need to be removed as well,
+but this tends to help with readability and build coverage.
+
+Link: https://lkml.kernel.org/r/20211013144029.2154629-1-arnd@kernel.org
+Fixes: dd3e24b84bc1 ("mm/migrate: add CPU hotplug to demotion #ifdef")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/memory.h |    5 ++++-
+ mm/migrate.c           |    6 +-----
+ mm/page_ext.c          |    4 +---
+ mm/slab.c              |    4 ++--
+ 4 files changed, 8 insertions(+), 11 deletions(-)
+
+--- a/include/linux/memory.h~mm-migrate-rework-hotplug_memory_notifier-stub
++++ a/include/linux/memory.h
+@@ -160,7 +160,10 @@ int walk_dynamic_memory_groups(int nid,
+ #define register_hotmemory_notifier(nb)		register_memory_notifier(nb)
+ #define unregister_hotmemory_notifier(nb) 	unregister_memory_notifier(nb)
+ #else
+-#define hotplug_memory_notifier(fn, pri)	({ 0; })
++static inline int hotplug_memory_notifier(notifier_fn_t fn, int pri)
++{
++	return 0;
++}
+ /* These aren't inline functions due to a GCC bug. */
+ #define register_hotmemory_notifier(nb)    ({ (void)(nb); 0; })
+ #define unregister_hotmemory_notifier(nb)  ({ (void)(nb); })
+--- a/mm/migrate.c~mm-migrate-rework-hotplug_memory_notifier-stub
++++ a/mm/migrate.c
+@@ -3066,7 +3066,7 @@ void migrate_vma_finalize(struct migrate
+ EXPORT_SYMBOL(migrate_vma_finalize);
+ #endif /* CONFIG_DEVICE_PRIVATE */
+ 
+-#if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_HOTPLUG_CPU)
++#if defined(CONFIG_HOTPLUG_CPU)
+ /* Disable reclaim-based migration. */
+ static void __disable_all_migrate_targets(void)
+ {
+@@ -3208,7 +3208,6 @@ static void set_migration_target_nodes(v
+ 	put_online_mems();
+ }
+ 
+-#if defined(CONFIG_MEMORY_HOTPLUG)
+ /*
+  * This leaves migrate-on-reclaim transiently disabled between
+  * the MEM_GOING_OFFLINE and MEM_OFFLINE events.  This runs
+@@ -3265,9 +3264,7 @@ static int __meminit migrate_on_reclaim_
+ 
+ 	return notifier_from_errno(0);
+ }
+-#endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+ /*
+  * React to hotplug events that might affect the migration targets
+  * like events that online or offline NUMA nodes.
+@@ -3309,4 +3306,3 @@ static int __init migrate_on_reclaim_ini
+ }
+ late_initcall(migrate_on_reclaim_init);
+ #endif /* CONFIG_HOTPLUG_CPU */
+-#endif /* CONFIG_MEMORY_HOTPLUG || CONFIG_HOTPLUG_CPU */
+--- a/mm/page_ext.c~mm-migrate-rework-hotplug_memory_notifier-stub
++++ a/mm/page_ext.c
+@@ -269,7 +269,7 @@ static int __meminit init_section_page_e
+ 	total_usage += table_size;
+ 	return 0;
+ }
+-#ifdef CONFIG_MEMORY_HOTPLUG
++
+ static void free_page_ext(void *addr)
+ {
+ 	if (is_vmalloc_addr(addr)) {
+@@ -374,8 +374,6 @@ static int __meminit page_ext_callback(s
+ 	return notifier_from_errno(ret);
+ }
+ 
+-#endif
+-
+ void __init page_ext_init(void)
+ {
+ 	unsigned long pfn;
+--- a/mm/slab.c~mm-migrate-rework-hotplug_memory_notifier-stub
++++ a/mm/slab.c
+@@ -1095,7 +1095,7 @@ static int slab_offline_cpu(unsigned int
+ 	return 0;
+ }
+ 
+-#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
++#if defined(CONFIG_NUMA)
+ /*
+  * Drains freelist for a node on each slab cache, used for memory hot-remove.
+  * Returns -EBUSY if all objects cannot be drained so that the node is not
+@@ -1157,7 +1157,7 @@ static int __meminit slab_memory_callbac
+ out:
+ 	return notifier_from_errno(ret);
+ }
+-#endif /* CONFIG_NUMA && CONFIG_MEMORY_HOTPLUG */
++#endif /* CONFIG_NUMA */
+ 
+ /*
+  * swap the static kmem_cache_node with kmalloced memory
+_

@@ -20,8 +20,10 @@ mm-migrate-add-cpu-hotplug-to-demotion-ifdef.patch
 #
 mm-migrate-fix-cpuhp-state-to-update-node-demotion-order.patch
 #
+mm-migrate-rework-hotplug_memory_notifier-stub.patch
+#
 #mm/pagealloc
-#mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch: -stable?  numbers?
+#mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch: -stable?  numbers? TBU https://lkml.kernel.org/r/CALvZod4G3SzP3kWxQYn0fj+VgG-G3yWXz=gz17+3N57ru1iajw@mail.gmail.com
 mm-vmalloc-fix-numa-spreading-for-large-hash-tables.patch
 #
 #ocfs2
@@ -35,7 +37,6 @@ ocfs2-mount-fails-with-buffer-overflow-in-strlen.patch
 memblock-check-memory-total_size.patch
 #
 #mm/mempolicy
-#mm-mempolicy-do-not-allow-illegal-mpol_f_numa_balancing-mpol_local-in-mbind.patch: check review
 mm-mempolicy-do-not-allow-illegal-mpol_f_numa_balancing-mpol_local-in-mbind.patch
 #
 #mm/slub
@@ -55,6 +56,17 @@ vfs-check-fd-has-read-access-in-kernel_read_file_from_fd.patch
 #
 #mm/secretmem
 mm-fix-null-page-mapping-dereference-in-page_is_secretmem.patch
+#
+#mm/tools
+#fix-application-of-sizeof-to-pointer.patch: check review
+fix-application-of-sizeof-to-pointer.patch
+#
+#mm/kasan
+kasan-test-use-underlying-string-helpers.patch
+kasan-test-use-underlying-string-helpers-checkpatch-fixes.patch
+#
+#mm/thp
+mm-thp-decrease-nr_thps-in-files-mapping-on-thp-split.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -379,6 +391,7 @@ mm-remove-useless-lines-in-enable_cpucache.patch
 #mm/slub
 slub-add-back-check-for-free-nonslab-objects.patch
 #
+#mm-slub-use-prefetchw-instead-of-prefetch.patch: acks?
 mm-slub-use-prefetchw-instead-of-prefetch.patch
 #
 #mm/kconfig
@@ -399,6 +412,7 @@ mm-debug_vm_pgtable-dont-use-__p000-directly.patch
 kasan-test-bypass-__alloc_size-checks.patch
 rapidio-avoid-bogus-__alloc_size-warning.patch
 compiler-attributes-add-__alloc_size-for-better-bounds-checking.patch
+compiler-attributes-add-__alloc_size-for-better-bounds-checking-fix.patch
 slab-clean-up-function-prototypes.patch
 slab-add-__alloc_size-attributes-for-better-bounds-checking.patch
 mm-kvmalloc-add-__alloc_size-attributes-for-better-bounds-checking.patch
@@ -441,6 +455,8 @@ mm-memcg-remove-obsolete-memcg_free_kmem.patch
 #memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks.patch: acks? https://lkml.kernel.org/r/YUM+saaJEce0TJyF@dhcp22.suse.cz
 memcg-prohibit-unconditional-exceeding-the-limit-of-dying-tasks.patch
 #
+memcg-page_alloc-skip-bulk-allocator-for-__gfp_account.patch
+#
 #mm/selftests
 #
 #
@@ -472,6 +488,8 @@ powerpc-64s-enable-mmu_lazy_tlb_shootdown.patch
 memory-remove-unused-config_mem_block_size.patch
 #
 #mm/mprotect
+mm-mprotectc-avoid-repeated-assignment-in-do_mprotect_pkey.patch
+#
 #mm/mremap
 #
 #mm-mremap-dont-account-pages-in-vma_to_resize.patch: unsure?  acks?
@@ -503,10 +521,11 @@ mm-vmalloc-check-various-alignments-when-debugging.patch
 #
 vmalloc-back-off-when-the-current-task-is-oom-killed.patch
 #
-#vmalloc-choose-a-better-start-address-in-vm_area_register_early.patch+N: stable? arm acks?
+#vmalloc-choose-a-better-start-address-in-vm_area_register_early.patch+n: arm acks?
 vmalloc-choose-a-better-start-address-in-vm_area_register_early.patch
 arm64-support-page-mapping-percpu-first-chunk-allocator.patch
 kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc.patch
+kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc-fix.patch
 #
 #mm/documentation
 #mm/kasan
@@ -564,8 +583,14 @@ hugetlb-add-demote-bool-to-gigantic-page-routines.patch
 hugetlb-add-hugetlb-demote-page-support.patch
 hugetlb-add-hugetlb-demote-page-support-v4.patch
 #
-#mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch: acks?
+#mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch: acks? TBU?
 mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
+#
+#mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged.patch: acks?
+mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged.patch
+#
+mm-hugepages-add-mremap-support-for-hugepage-backed-vma.patch
+mm-hugepages-add-hugetlb-vma-mremap-test.patch
 #
 #mm/userfaultfd
 userfaultfd-selftests-dont-rely-on-gnu-extensions-for-random-numbers.patch
@@ -632,6 +657,9 @@ mm-nommu-kill-arch_get_unmapped_area.patch
 #mm/ksm
 selftest-vm-fix-ksm-selftest-to-run-with-different-numa-topologies.patch
 #
+#selftests-vm-add-ksm-huge-pages-merging-time-test.patch: acks?
+selftests-vm-add-ksm-huge-pages-merging-time-test.patch
+#
 #mm/page-poison
 #mm/percpu
 #mm/vmstat
@@ -648,8 +676,8 @@ mm-memory_hotplug-add-static-qualifier-for-online_policy_to_str.patch
 #
 memory-hotplugrst-fix-two-instances-of-movablecore-that-should-be-movable_node.patch
 memory-hotplugrst-fix-wrong-sys-module-memory_hotplug-parameters-path.patch
-#memory-hotplugrst-document-the-auto-movable-online-policy.patch: TBU
 memory-hotplugrst-document-the-auto-movable-online-policy.patch
+memory-hotplugrst-document-the-auto-movable-online-policy-v2.patch
 #
 mm-memory_hotplug-remove-config_x86_64_acpi_numa-dependency-from-config_memory_hotplug.patch
 mm-memory_hotplug-remove-config_memory_hotplug_sparse.patch
@@ -744,6 +772,14 @@ mm-damon-schemes-implement-statistics-feature.patch
 selftests-damon-add-schemes-debugfs-tests.patch
 docs-admin-guide-mm-damon-document-damon-based-operation-schemes.patch
 #
+mm-damon-dbgfs-allow-users-to-set-initial-monitoring-target-regions.patch
+mm-damon-dbgfs-test-add-a-unit-test-case-for-init_regions.patch
+docs-admin-guide-mm-damon-document-init_regions-feature.patch
+mm-damon-vaddr-separate-commonly-usable-functions.patch
+mm-damon-implement-primitives-for-physical-address-space-monitoring.patch
+mm-damon-dbgfs-support-physical-memory-monitoring.patch
+docs-damon-document-physical-memory-monitoring-support.patch
+#
 # mmend
 #
 #NEXT_PATCHES_END mm
@@ -811,6 +847,13 @@ proc-sysctl-make-protected_-world-readable.patch
 #NEXT_PATCHES_START v850
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START misc
+kernelh-drop-unneeded-linux-kernelh-inclusion-from-other-headers.patch
+kernelh-split-out-container_of-and-typeof_member-macros.patch
+kunit-replace-kernelh-with-the-necessary-inclusions.patch
+list-replace-kernelh-with-the-necessary-inclusions.patch
+llist-replace-kernelh-with-the-necessary-inclusions.patch
+plist-replace-kernelh-with-the-necessary-inclusions.patch
+media-entity-replace-kernelh-with-the-necessary-inclusions.patch
 #
 #
 #
@@ -858,6 +901,8 @@ lib-stackdepot-add-helper-to-print-stack-entries-into-buffer-v3.patch
 lib-string_helpers-add-linux-stringh-for-strlen.patch
 #
 lib-uninline-simple_strntoull-as-well.patch
+#
+lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitmap
@@ -938,7 +983,7 @@ ramfs-fix-mount-source-show-for-ramfs.patch
 #NEXT_PATCHES_START rwsem
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START init
-#
+init-make-unknown-command-line-param-message-clearer.patch
 #
 #init-mainc-silence-some-wunused-parameter-warnings.patch: https://lkml.kernel.org/r/f06b8308-645b-031b-f9c6-b92400a269aa@rasmusvillemoes.dk
 init-mainc-silence-some-wunused-parameter-warnings.patch
@@ -1320,7 +1365,6 @@ ipc-ipc_sysctlc-remove-fallback-for-config_proc_sysctl.patch
 # next
 linux-next.patch
 linux-next-rejects.patch
-linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #lib
 #
@@ -1406,3 +1450,5 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]mm-dont-call-should_failslab-for-config_failslab-fix.patch
 #[to-be-updated]fs-fat-make-the-volume-label-writable-when-mounted.patch
 #[to-be-updated]mmhugetlb-remove-mlock-ulimit-for-shm_hugetlb.patch
+#[obsolete]linux-next-git-rejects.patch
+#[to-be-updated]selftests-vm-add-ksm-huge-pages-merging-time-test.patch

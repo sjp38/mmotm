@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/MAINTAINERS~maintainers-update-seongjaes-email-address
 +++ a/MAINTAINERS
-@@ -5156,7 +5156,7 @@ F:	net/ax25/ax25_timer.c
+@@ -5161,7 +5161,7 @@ F:	net/ax25/ax25_timer.c
  F:	net/ax25/sysctl_net_ax25.c
  
  DATA ACCESS MONITOR

@@ -14,7 +14,7 @@ Link: https://lkml.kernel.org/r/20211007220110.600005-1-willy@infradead.org
 Fixes: b844f0ecbc56 ("vfs: define kernel_copy_file_from_fd()")
 Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
 Reported-by: Hao Sun <sunhao.th@gmail.com>
-Cc: Kees Cook <keescook@chromium.org>
+Reviewed-by: Kees Cook <keescook@chromium.org>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Mimi Zohar <zohar@linux.ibm.com>
 Cc: <stable@vger.kernel.org>

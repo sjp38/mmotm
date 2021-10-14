@@ -35,7 +35,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/drivers/base/arch_numa.c~arch_numa-simplify-numa_distance-allocation
 +++ a/drivers/base/arch_numa.c
-@@ -275,15 +275,13 @@ void __init numa_free_distance(void)
+@@ -337,15 +337,13 @@ void __init numa_free_distance(void)
  static int __init numa_alloc_distance(void)
  {
  	size_t size;

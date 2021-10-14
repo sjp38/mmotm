@@ -25,6 +25,7 @@ longer make sense.
 
 Link: https://lkml.kernel.org/r/20210929143600.49379-2-david@redhat.com
 Signed-off-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Alex Shi <alexs@kernel.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -43,7 +44,6 @@ Cc: "Michael S. Tsirkin" <mst@redhat.com>
 Cc: Jason Wang <jasowang@redhat.com>
 Cc: Shuah Khan <shuah@kernel.org>
 Cc: Michal Hocko <mhocko@suse.com>
-Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Mike Rapoport <rppt@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

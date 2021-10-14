@@ -97,7 +97,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static DECLARE_WORK(slab_caches_to_rcu_destroy_work,
 --- a/mm/slub.c~mm-remove-hardened_usercopy_fallback
 +++ a/mm/slub.c
-@@ -4468,7 +4468,6 @@ void __check_heap_object(const void *ptr
+@@ -4467,7 +4467,6 @@ void __check_heap_object(const void *ptr
  {
  	struct kmem_cache *s;
  	unsigned int offset;
@@ -105,7 +105,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	bool is_kfence = is_kfence_address(ptr);
  
  	ptr = kasan_reset_tag(ptr);
-@@ -4501,19 +4500,6 @@ void __check_heap_object(const void *ptr
+@@ -4500,19 +4499,6 @@ void __check_heap_object(const void *ptr
  	    n <= s->useroffset - offset + s->usersize)
  		return;
  

@@ -26,6 +26,7 @@ the kexec-images somewhere else.
 
 Link: https://lkml.kernel.org/r/20211004093605.5830-3-david@redhat.com
 Signed-off-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: Christian Borntraeger <borntraeger@de.ibm.com>
@@ -36,7 +37,6 @@ Cc: Huacai Chen <chenhuacai@kernel.org>
 Cc: Jianyong Wu <Jianyong.Wu@arm.com>
 Cc: Jiaxun Yang <jiaxun.yang@flygoat.com>
 Cc: Michal Hocko <mhocko@suse.com>
-Cc: Mike Rapoport <rppt@kernel.org>
 Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Shahab Vahedi <shahab@synopsys.com>
 Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>

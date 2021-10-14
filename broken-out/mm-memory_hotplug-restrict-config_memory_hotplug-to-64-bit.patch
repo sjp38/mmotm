@@ -16,6 +16,7 @@ some HIGHMEM leftovers from memory hotplug code to clean up.
 
 Link: https://lkml.kernel.org/r/20210929143600.49379-4-david@redhat.com
 Signed-off-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 Cc: Alex Shi <alexs@kernel.org>
 Cc: Andy Lutomirski <luto@kernel.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -30,7 +31,6 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "Michael S. Tsirkin" <mst@redhat.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>

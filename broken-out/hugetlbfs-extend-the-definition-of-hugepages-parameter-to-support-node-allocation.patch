@@ -284,7 +284,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kfree(node_alloc_noretry);
  }
  
-@@ -3942,6 +3993,10 @@ static int __init hugetlb_init(void)
+@@ -3963,6 +4014,10 @@ static int __init hugetlb_init(void)
  			}
  			default_hstate.max_huge_pages =
  				default_hstate_max_huge_pages;
@@ -295,7 +295,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		}
  	}
  
-@@ -4002,6 +4057,10 @@ void __init hugetlb_add_hstate(unsigned
+@@ -4023,6 +4078,10 @@ void __init hugetlb_add_hstate(unsigned
  	parsed_hstate = h;
  }
  
@@ -306,7 +306,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * hugepages command line processing
   * hugepages normally follows a valid hugepagsz or default_hugepagsz
-@@ -4013,6 +4072,10 @@ static int __init hugepages_setup(char *
+@@ -4034,6 +4093,10 @@ static int __init hugepages_setup(char *
  {
  	unsigned long *mhp;
  	static unsigned long *last_mhp;
@@ -317,7 +317,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!parsed_valid_hugepagesz) {
  		pr_warn("HugeTLB: hugepages=%s does not follow a valid hugepagesz, ignoring\n", s);
-@@ -4036,8 +4099,40 @@ static int __init hugepages_setup(char *
+@@ -4057,8 +4120,40 @@ static int __init hugepages_setup(char *
  		return 0;
  	}
  
@@ -360,7 +360,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Global state is always initialized later in hugetlb_init.
-@@ -4050,6 +4145,10 @@ static int __init hugepages_setup(char *
+@@ -4071,6 +4166,10 @@ static int __init hugepages_setup(char *
  	last_mhp = mhp;
  
  	return 1;
@@ -371,7 +371,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  __setup("hugepages=", hugepages_setup);
  
-@@ -4111,6 +4210,7 @@ __setup("hugepagesz=", hugepagesz_setup)
+@@ -4132,6 +4231,7 @@ __setup("hugepagesz=", hugepagesz_setup)
  static int __init default_hugepagesz_setup(char *s)
  {
  	unsigned long size;
@@ -379,7 +379,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	parsed_valid_hugepagesz = false;
  	if (parsed_default_hugepagesz) {
-@@ -4139,6 +4239,9 @@ static int __init default_hugepagesz_set
+@@ -4160,6 +4260,9 @@ static int __init default_hugepagesz_set
  	 */
  	if (default_hstate_max_huge_pages) {
  		default_hstate.max_huge_pages = default_hstate_max_huge_pages;
