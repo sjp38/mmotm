@@ -1,0 +1,64 @@
+From: Len Baker <len.baker@gmx.com>
+Subject: mm/list_lru.c: prefer struct_size over open coded arithmetic
+
+As noted in the "Deprecated Interfaces, Language Features, Attributes, and
+Conventions" documentation [1], size calculations (especially
+multiplication) should not be performed in memory allocator (or similar)
+function arguments due to the risk of them overflowing.  This could lead
+to values wrapping around and a smaller allocation being made than the
+caller was expecting.  Using those allocations could lead to linear
+overflows of heap memory and other misbehaviors.
+
+So, use the struct_size() helper to do the arithmetic instead of the
+argument "size + count * size" in the kvmalloc() functions.
+
+Also, take the opportunity to refactor the memcpy() call to use the
+flex_array_size() helper.
+
+This code was detected with the help of Coccinelle and audited and fixed
+manually.
+
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#open-co=
+ded-arithmetic-in-allocator-arguments
+
+Link: https://lkml.kernel.org/r/20211017105929.9284-1-len.baker@gmx.com
+Signed-off-by: Len Baker <len.baker@gmx.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/list_lru.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+--- a/mm/list_lru.c~mm-list_lruc-prefer-struct_size-over-open-coded-arithmetic
++++ a/mm/list_lru.c
+@@ -354,8 +354,7 @@ static int memcg_init_list_lru_node(stru
+ 	struct list_lru_memcg *memcg_lrus;
+ 	int size = memcg_nr_cache_ids;
+ 
+-	memcg_lrus = kvmalloc(sizeof(*memcg_lrus) +
+-			      size * sizeof(void *), GFP_KERNEL);
++	memcg_lrus = kvmalloc(struct_size(memcg_lrus, lru, size), GFP_KERNEL);
+ 	if (!memcg_lrus)
+ 		return -ENOMEM;
+ 
+@@ -389,7 +388,7 @@ static int memcg_update_list_lru_node(st
+ 
+ 	old = rcu_dereference_protected(nlru->memcg_lrus,
+ 					lockdep_is_held(&list_lrus_mutex));
+-	new = kvmalloc(sizeof(*new) + new_size * sizeof(void *), GFP_KERNEL);
++	new = kvmalloc(struct_size(new, lru, new_size), GFP_KERNEL);
+ 	if (!new)
+ 		return -ENOMEM;
+ 
+@@ -398,7 +397,7 @@ static int memcg_update_list_lru_node(st
+ 		return -ENOMEM;
+ 	}
+ 
+-	memcpy(&new->lru, &old->lru, old_size * sizeof(void *));
++	memcpy(&new->lru, &old->lru, flex_array_size(new, lru, old_size));
+ 
+ 	/*
+ 	 * The locking below allows readers that hold nlru->lock avoid taking
+_

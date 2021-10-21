@@ -4,10 +4,11 @@ Subject: linux-next-rejects
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/migrate.h  |    6 ++++++
  include/linux/sched/mm.h |   28 ++++++++++++++--------------
  kernel/exit.c            |   35 -----------------------------------
  kernel/sched/core.c      |    6 ------
- 3 files changed, 14 insertions(+), 55 deletions(-)
+ 4 files changed, 20 insertions(+), 55 deletions(-)
 
 --- a/include/linux/sched/mm.h~linux-next-rejects
 +++ a/include/linux/sched/mm.h
@@ -53,21 +54,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
   * mmget() - Pin the address space associated with a &struct mm_struct.
   * @mm: The address space to pin.
---- a/kernel/sched/core.c~linux-next-rejects
-+++ a/kernel/sched/core.c
-@@ -4850,12 +4850,6 @@ static struct rq *finish_task_switch(str
- 		if (prev->sched_class->task_dead)
- 			prev->sched_class->task_dead(prev);
- 
--		/*
--		 * Remove function-return probe instances associated with this
--		 * task and put them back on the free list.
--		 */
--		kprobe_flush_task(prev);
--
- 		/* Task is done with its stack. */
- 		put_task_stack(prev);
- 
 --- a/kernel/exit.c~linux-next-rejects
 +++ a/kernel/exit.c
 @@ -475,47 +475,12 @@ assign_new_owner:
@@ -118,4 +104,34 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	mmgrab_lazy_tlb(mm);
  	BUG_ON(mm != current->active_mm);
  	/* more a memory barrier than a real lock */
+--- a/kernel/sched/core.c~linux-next-rejects
++++ a/kernel/sched/core.c
+@@ -4862,12 +4862,6 @@ static struct rq *finish_task_switch(str
+ 		if (prev->sched_class->task_dead)
+ 			prev->sched_class->task_dead(prev);
+ 
+-		/*
+-		 * Remove function-return probe instances associated with this
+-		 * task and put them back on the free list.
+-		 */
+-		kprobe_flush_task(prev);
+-
+ 		/* Task is done with its stack. */
+ 		put_task_stack(prev);
+ 
+--- a/include/linux/migrate.h~linux-next-rejects
++++ a/include/linux/migrate.h
+@@ -42,6 +42,12 @@ extern int migrate_page_move_mapping(str
+ 		struct page *newpage, struct page *page, int extra_count);
+ 
+ extern bool numa_demotion_enabled;
++
++void folio_migrate_flags(struct folio *newfolio, struct folio *folio);
++void folio_migrate_copy(struct folio *newfolio, struct folio *folio);
++int folio_migrate_mapping(struct address_space *mapping,
++		struct folio *newfolio, struct folio *folio, int extra_count);
++
+ #else
+ 
+ static inline void putback_movable_pages(struct list_head *l) {}
 _

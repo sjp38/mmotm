@@ -1,7 +1,7 @@
 From: Shakeel Butt <shakeelb@google.com>
 Subject: memcg: page_alloc: skip bulk allocator for __GFP_ACCOUNT
 
-The commit 5c1f4e690eec ("mm/vmalloc: switch to bulk allocator in
+commit 5c1f4e690eec ("mm/vmalloc: switch to bulk allocator in
 __vmalloc_area_node()") switched to bulk page allocator for order 0
 allocation backing vmalloc.  However bulk page allocator does not support
 __GFP_ACCOUNT allocations and there are several users of
@@ -12,15 +12,15 @@ future if there is workload that can be significantly improved with the
 bulk page allocator with __GFP_ACCCOUNT support, we can revisit the
 decision.
 
-Link: https://lkml.kernel.org/r/20211013194338.1804247-1-shakeelb@google.com
+Link: https://lkml.kernel.org/r/20211014151607.2171970-1-shakeelb@google.com
 Fixes: 5c1f4e690eec ("mm/vmalloc: switch to bulk allocator in __vmalloc_area_node()")
 Signed-off-by: Shakeel Butt <shakeelb@google.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Uladzislau Rezki <urezki@gmail.com>
-Cc: Vasily Averin <vvs@virtuozzo.com>
-Cc: Roman Gushchin <guro@fb.com>
+Reported-by: Vasily Averin <vvs@virtuozzo.com>
+Tested-by: Vasily Averin <vvs@virtuozzo.com>
+Acked-by: David Hildenbrand <david@redhat.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Roman Gushchin <guro@fb.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -29,15 +29,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~memcg-page_alloc-skip-bulk-allocator-for-__gfp_account
 +++ a/mm/page_alloc.c
-@@ -5208,6 +5208,10 @@ unsigned long __alloc_pages_bulk(gfp_t g
- 	unsigned int alloc_flags = ALLOC_WMARK_LOW;
- 	int nr_populated = 0, nr_account = 0;
+@@ -5224,6 +5224,10 @@ unsigned long __alloc_pages_bulk(gfp_t g
+ 	if (unlikely(page_array && nr_pages - nr_populated == 0))
+ 		goto out;
  
 +	/* Bulk allocator does not support memcg accounting. */
-+	if (unlikely(gfp & __GFP_ACCOUNT))
-+		goto out;
++	if (memcg_kmem_enabled() && (gfp & __GFP_ACCOUNT))
++		goto failed;
 +
- 	/*
- 	 * Skip populated array elements to determine if any pages need
- 	 * to be allocated before disabling IRQs.
+ 	/* Use the single page allocator for one page. */
+ 	if (nr_pages - nr_populated == 1)
+ 		goto failed;
 _

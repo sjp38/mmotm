@@ -1,0 +1,81 @@
+From: Kuan-Ying Lee <Kuan-Ying.Lee@mediatek.com>
+Subject: kasan: add kasan mode messages when kasan init
+
+There are multiple kasan modes.  It makes sense that we add some messages
+to know which kasan mode is when booting up.  see [1].
+
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=212195 [1]
+Link: https://lkml.kernel.org/r/20211020094850.4113-1-Kuan-Ying.Lee@mediatek.com
+Signed-off-by: Kuan-Ying Lee <Kuan-Ying.Lee@mediatek.com>
+Reviewed-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Chinwen Chang <chinwen.chang@mediatek.com>
+Cc: Yee Lee <yee.lee@mediatek.com>
+Cc: Nicholas Tang <nicholas.tang@mediatek.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arm64/mm/kasan_init.c |    2 +-
+ mm/kasan/hw_tags.c         |   14 +++++++++++++-
+ mm/kasan/sw_tags.c         |    2 +-
+ 3 files changed, 15 insertions(+), 3 deletions(-)
+
+--- a/arch/arm64/mm/kasan_init.c~kasan-add-kasan-mode-messages-when-kasan-init
++++ a/arch/arm64/mm/kasan_init.c
+@@ -309,7 +309,7 @@ void __init kasan_init(void)
+ 	kasan_init_depth();
+ #if defined(CONFIG_KASAN_GENERIC)
+ 	/* CONFIG_KASAN_SW_TAGS also requires kasan_init_sw_tags(). */
+-	pr_info("KernelAddressSanitizer initialized\n");
++	pr_info("KernelAddressSanitizer initialized (generic)\n");
+ #endif
+ }
+ 
+--- a/mm/kasan/hw_tags.c~kasan-add-kasan-mode-messages-when-kasan-init
++++ a/mm/kasan/hw_tags.c
+@@ -106,6 +106,16 @@ static int __init early_kasan_flag_stack
+ }
+ early_param("kasan.stacktrace", early_kasan_flag_stacktrace);
+ 
++static inline const char *kasan_mode_info(void)
++{
++	if (kasan_mode == KASAN_MODE_ASYNC)
++		return "async";
++	else if (kasan_mode == KASAN_MODE_ASYMM)
++		return "asymm";
++	else
++		return "sync";
++}
++
+ /* kasan_init_hw_tags_cpu() is called for each CPU. */
+ void kasan_init_hw_tags_cpu(void)
+ {
+@@ -177,7 +187,9 @@ void __init kasan_init_hw_tags(void)
+ 		break;
+ 	}
+ 
+-	pr_info("KernelAddressSanitizer initialized\n");
++	pr_info("KernelAddressSanitizer initialized (hw-tags, mode=%s, stacktrace=%s)\n",
++		kasan_mode_info(),
++		kasan_stack_collection_enabled() ? "on" : "off");
+ }
+ 
+ void kasan_alloc_pages(struct page *page, unsigned int order, gfp_t flags)
+--- a/mm/kasan/sw_tags.c~kasan-add-kasan-mode-messages-when-kasan-init
++++ a/mm/kasan/sw_tags.c
+@@ -42,7 +42,7 @@ void __init kasan_init_sw_tags(void)
+ 	for_each_possible_cpu(cpu)
+ 		per_cpu(prng_state, cpu) = (u32)get_cycles();
+ 
+-	pr_info("KernelAddressSanitizer initialized\n");
++	pr_info("KernelAddressSanitizer initialized (sw-tags)\n");
+ }
+ 
+ /*
+_

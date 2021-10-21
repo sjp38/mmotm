@@ -65,7 +65,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *
 --- a/include/linux/kernel.h~sections-move-and-rename-core_kernel_data-to-is_kernel_core_data
 +++ a/include/linux/kernel.h
-@@ -230,7 +230,6 @@ extern char *next_arg(char *args, char *
+@@ -229,7 +229,6 @@ extern char *next_arg(char *args, char *
  
  extern int core_kernel_text(unsigned long addr);
  extern int init_kernel_text(unsigned long addr);

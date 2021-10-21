@@ -33,8 +33,8 @@ Let's choose a suit start address by traversing the vmlist.
 Link: https://lkml.kernel.org/r/20210910053354.26721-1-wangkefeng.wang@huawei.com
 Link: https://lkml.kernel.org/r/20210910053354.26721-2-wangkefeng.wang@huawei.com
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 Cc: Andrey Konovalov <andreyknvl@gmail.com>
 Cc: Dmitry Vyukov <dvyukov@google.com>

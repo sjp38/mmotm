@@ -1,0 +1,29 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: memcg-kmem-further-deprecate-kmemlimit_in_bytes-checkpatch-fixes
+
+WARNING: ENOTSUPP is not a SUSV4 error code, prefer EOPNOTSUPP
+
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Vasily Averin <vvs@virtuozzo.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memcontrol.c~memcg-kmem-further-deprecate-kmemlimit_in_bytes-checkpatch-fixes
++++ a/mm/memcontrol.c
+@@ -3766,7 +3766,7 @@ static ssize_t mem_cgroup_write(struct k
+ 			break;
+ 		case _KMEM:
+ 			/* kmem.limit_in_bytes is deprecated. */
+-			ret = -ENOTSUPP;
++			ret = -EOPNOTSUPP;
+ 			break;
+ 		case _TCP:
+ 			ret = memcg_update_tcp_max(memcg, nr_pages);
+_

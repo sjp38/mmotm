@@ -80,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void kmalloc_uaf(struct kunit *test)
  {
  	char *ptr;
-@@ -1135,6 +1150,7 @@ static struct kunit_case kasan_kunit_tes
+@@ -1150,6 +1165,7 @@ static struct kunit_case kasan_kunit_tes
  	KUNIT_CASE(kmalloc_oob_memset_4),
  	KUNIT_CASE(kmalloc_oob_memset_8),
  	KUNIT_CASE(kmalloc_oob_memset_16),

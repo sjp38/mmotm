@@ -1,0 +1,63 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: lib/stackdepot: allow optional init and stack_table allocation by kvmalloc() - fixup
+
+On FLATMEM, we call page_ext_init_flatmem_late() just before
+kmem_cache_init() which means stack_depot_init() (called by page owner
+init) will not recognize properly it should use kvmalloc() and not
+memblock_alloc().  memblock_alloc() will also not issue a warning and
+return a block memory that can be invalid and cause kernel page fault when
+saving stacks, as reported by the kernel test robot [1].
+
+Fix this by moving page_ext_init_flatmem_late() below kmem_cache_init() so
+that slab_is_available() is true during stack_depot_init().  SPARSEMEM
+doesn't have this issue, as it doesn't do page_ext_init_flatmem_late(),
+but a different page_ext_init() even later in the boot process.
+
+Thanks to Mike Rapoport for pointing out the FLATMEM init ordering issue.
+
+While at it, also actually resolve a checkpatch warning in stack_depot_init()
+from DRM CI, which was supposed to be in the original patch already.
+
+[1] https://lore.kernel.org/all/20211014085450.GC18719@xsang-OptiPlex-9020/
+
+Link: https://lkml.kernel.org/r/6abd9213-19a9-6d58-cedc-2414386d2d81@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Reported-by: kernel test robot <oliver.sang@intel.com>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ init/main.c      |    7 +++++--
+ lib/stackdepot.c |    2 +-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+--- a/init/main.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fix-2
++++ a/init/main.c
+@@ -845,9 +845,12 @@ static void __init mm_init(void)
+ 	stack_depot_early_init();
+ 	mem_init();
+ 	mem_init_print_info();
+-	/* page_owner must be initialized after buddy is ready */
+-	page_ext_init_flatmem_late();
+ 	kmem_cache_init();
++	/*
++	 * page_owner must be initialized after buddy is ready, and also after
++	 * slab is ready so that stack_depot_init() works properly
++	 */
++	page_ext_init_flatmem_late();
+ 	kmemleak_init();
+ 	pgtable_init();
+ 	debug_objects_mem_init();
+--- a/lib/stackdepot.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fix-2
++++ a/lib/stackdepot.c
+@@ -171,7 +171,7 @@ __ref int stack_depot_init(void)
+ 	static DEFINE_MUTEX(stack_depot_init_mutex);
+ 
+ 	mutex_lock(&stack_depot_init_mutex);
+-	if (!stack_depot_disable && stack_table == NULL) {
++	if (!stack_depot_disable && !stack_table) {
+ 		size_t size = (STACK_HASH_SIZE * sizeof(struct stack_record *));
+ 		int i;
+ 
+_

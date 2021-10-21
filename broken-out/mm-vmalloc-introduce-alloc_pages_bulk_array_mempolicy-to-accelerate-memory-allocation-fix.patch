@@ -1,0 +1,39 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-vmalloc-introduce-alloc_pages_bulk_array_mempolicy-to-accelerate-memory-allocation-fix
+
+make two functions static
+
+Cc: Chen Wandun <chenwandun@huawei.com>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Hanjun Guo <guohanjun@huawei.com>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mempolicy.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/mempolicy.c~mm-vmalloc-introduce-alloc_pages_bulk_array_mempolicy-to-accelerate-memory-allocation-fix
++++ a/mm/mempolicy.c
+@@ -2196,7 +2196,7 @@ struct page *alloc_pages(gfp_t gfp, unsi
+ }
+ EXPORT_SYMBOL(alloc_pages);
+ 
+-unsigned long alloc_pages_bulk_array_interleave(gfp_t gfp,
++static unsigned long alloc_pages_bulk_array_interleave(gfp_t gfp,
+ 		struct mempolicy *pol, unsigned long nr_pages,
+ 		struct page **page_array)
+ {
+@@ -2231,7 +2231,7 @@ unsigned long alloc_pages_bulk_array_int
+ 	return total_allocated;
+ }
+ 
+-unsigned long alloc_pages_bulk_array_preferred_many(gfp_t gfp, int nid,
++static unsigned long alloc_pages_bulk_array_preferred_many(gfp_t gfp, int nid,
+ 		struct mempolicy *pol, unsigned long nr_pages,
+ 		struct page **page_array)
+ {
+_

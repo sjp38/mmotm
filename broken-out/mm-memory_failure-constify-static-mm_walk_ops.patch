@@ -1,0 +1,28 @@
+From: Rikard Falkeborn <rikard.falkeborn@gmail.com>
+Subject: mm/memory_failure: constify static mm_walk_ops
+
+The only usage of hwp_walk_ops is to pass its address to walk_page_range()
+which takes a pointer to const mm_walk_ops as argument.  Make it const to
+allow the compiler to put it in read-only memory.
+
+Link: https://lkml.kernel.org/r/20211014075042.17174-3-rikard.falkeborn@gmail.com
+Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memory-failure.c~mm-memory_failure-constify-static-mm_walk_ops
++++ a/mm/memory-failure.c
+@@ -675,7 +675,7 @@ static int hwpoison_hugetlb_range(pte_t
+ #define hwpoison_hugetlb_range	NULL
+ #endif
+ 
+-static struct mm_walk_ops hwp_walk_ops = {
++static const struct mm_walk_ops hwp_walk_ops = {
+ 	.pmd_entry = hwpoison_pte_range,
+ 	.hugetlb_entry = hwpoison_hugetlb_range,
+ };
+_

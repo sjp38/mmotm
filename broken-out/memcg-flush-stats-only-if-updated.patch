@@ -29,7 +29,7 @@ Link: https://lkml.kernel.org/r/20211001190040.48086-1-shakeelb@google.com
 Signed-off-by: Shakeel Butt <shakeelb@google.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
-Cc: "Michal Koutný" <mkoutny@suse.com>
+Reviewed-by: "Michal Koutný" <mkoutny@suse.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

@@ -108,7 +108,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-use-accumulated-load-when-building-node-fallback-list
 +++ a/mm/page_alloc.c
-@@ -6247,7 +6247,7 @@ static void build_zonelists(pg_data_t *p
+@@ -6251,7 +6251,7 @@ static void build_zonelists(pg_data_t *p
  		 */
  		if (node_distance(local_node, node) !=
  		    node_distance(local_node, prev_node))

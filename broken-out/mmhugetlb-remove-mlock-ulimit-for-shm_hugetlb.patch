@@ -10,7 +10,7 @@ should preserve this warning.
 
 Link: https://lkml.kernel.org/r/20211009094355.127705-1-zhangyiru3@huawei.com
 Signed-off-by: zhangyiru <zhangyiru3@huawei.com>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: <wuxu.wu@huawei.com>
 Cc: <liusirui@huawei.com>

@@ -28,10 +28,10 @@ the vm area shadow memory to fix the issue.
 
 Link: https://lkml.kernel.org/r/20210910053354.26721-4-wangkefeng.wang@huawei.com
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
-Acked-by: Marco Elver <elver@google.com> (for KASAN parts)
-Acked-by: Andrey Konovalov <andreyknvl@gmail.com> (for KASAN parts)
+Acked-by: Marco Elver <elver@google.com>		[KASAN]
+Acked-by: Andrey Konovalov <andreyknvl@gmail.com>	[KASAN]
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Dmitry Vyukov <dvyukov@google.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Will Deacon <will@kernel.org>

@@ -1,0 +1,27 @@
+From: Colin Ian King <colin.king@canonical.com>
+Subject: lib/stackdepot: fix spelling mistake and grammar in pr_err message
+
+There is a spelling mistake of the work allocation so fix this and
+re-phrase the message to make it easier to read.
+
+Link: https://lkml.kernel.org/r/20211015104159.11282-1-colin.king@canonical.com
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/stackdepot.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/lib/stackdepot.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fix
++++ a/lib/stackdepot.c
+@@ -186,7 +186,7 @@ __ref int stack_depot_init(void)
+ 			for (i = 0; i < STACK_HASH_SIZE;  i++)
+ 				stack_table[i] = NULL;
+ 		} else {
+-			pr_err("Stack Depot failed hash table allocationg, disabling\n");
++			pr_err("Stack Depot hash table allocation failed, disabling\n");
+ 			stack_depot_disable = true;
+ 			mutex_unlock(&stack_depot_init_mutex);
+ 			return -ENOMEM;
+_

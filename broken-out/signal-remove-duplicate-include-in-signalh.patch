@@ -1,0 +1,26 @@
+From: Ye Guojin <ye.guojin@zte.com.cn>
+Subject: signal: remove duplicate include in signal.h
+
+'linux/string.h' included in 'signal.h' is duplicated.
+it's also included at line 7.
+
+Link: https://lkml.kernel.org/r/20211019024934.973008-1-ye.guojin@zte.com.cn
+Signed-off-by: Ye Guojin <ye.guojin@zte.com.cn>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/signal.h |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/include/linux/signal.h~signal-remove-duplicate-include-in-signalh
++++ a/include/linux/signal.h
+@@ -126,7 +126,6 @@ static inline int sigequalsets(const sig
+ #define sigmask(sig)	(1UL << ((sig) - 1))
+ 
+ #ifndef __HAVE_ARCH_SIG_SETOPS
+-#include <linux/string.h>
+ 
+ #define _SIG_SET_BINOP(name, op)					\
+ static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
+_

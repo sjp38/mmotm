@@ -89,7 +89,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if ((addr >= (unsigned long)_stext && addr < (unsigned long)_etext))
 --- a/include/linux/kernel.h~sections-move-is_kernel_inittext-into-sectionsh
 +++ a/include/linux/kernel.h
-@@ -229,7 +229,6 @@ extern bool parse_option_str(const char
+@@ -228,7 +228,6 @@ extern bool parse_option_str(const char
  extern char *next_arg(char *args, char **param, char **val);
  
  extern int core_kernel_text(unsigned long addr);

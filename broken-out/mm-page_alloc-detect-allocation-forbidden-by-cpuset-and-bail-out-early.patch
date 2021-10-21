@@ -176,7 +176,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /* See "Frequency meter" comments, below. */
  
  struct fmeter {
-@@ -370,6 +377,17 @@ static DECLARE_WORK(cpuset_hotplug_work,
+@@ -372,6 +379,17 @@ static DECLARE_WORK(cpuset_hotplug_work,
  
  static DECLARE_WAIT_QUEUE_HEAD(cpuset_attach_wq);
  
@@ -194,7 +194,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Cgroup v2 behavior is used on the "cpus" and "mems" control files when
   * on default hierarchy or when the cpuset_v2_mode flag is set by mounting
-@@ -1868,6 +1886,8 @@ static int update_nodemask(struct cpuset
+@@ -1870,6 +1888,8 @@ static int update_nodemask(struct cpuset
  	if (retval < 0)
  		goto done;
  
@@ -203,7 +203,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	spin_lock_irq(&callback_lock);
  	cs->mems_allowed = trialcs->mems_allowed;
  	spin_unlock_irq(&callback_lock);
-@@ -3171,6 +3191,9 @@ update_tasks:
+@@ -3173,6 +3193,9 @@ update_tasks:
  	cpus_updated = !cpumask_equal(&new_cpus, cs->effective_cpus);
  	mems_updated = !nodes_equal(new_mems, cs->effective_mems);
  

@@ -19,7 +19,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_allocc-simplify-the-code-by-using-macro-k
 +++ a/mm/page_alloc.c
-@@ -8124,8 +8124,7 @@ unsigned long free_reserved_area(void *s
+@@ -8128,8 +8128,7 @@ unsigned long free_reserved_area(void *s
  	}
  
  	if (pages && s)
@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return pages;
  }
-@@ -8170,14 +8169,13 @@ void __init mem_init_print_info(void)
+@@ -8174,14 +8173,13 @@ void __init mem_init_print_info(void)
  		", %luK highmem"
  #endif
  		")\n",

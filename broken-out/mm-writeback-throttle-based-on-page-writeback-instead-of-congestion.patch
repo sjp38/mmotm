@@ -1,0 +1,54 @@
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: mm/writeback: throttle based on page writeback instead of congestion
+
+do_writepages throttles on congestion if the writepages() fails due to a
+lack of memory but congestion_wait() is partially broken as the congestion
+state is not updated for all BDIs.
+
+This patch stalls waiting for a number of pages to complete writeback that
+located on the local node.  The main weakness is that there is no
+correlation between the location of the inode's pages and locality but
+that is still better than congestion_wait.
+
+Link: https://lkml.kernel.org/r/20211019090108.25501-5-mgorman@techsingularity.net
+Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
+Cc: Andreas Dilger <adilger.kernel@dilger.ca>
+Cc: "Darrick J . Wong" <djwong@kernel.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Hillf Danton <hdanton@sina.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: NeilBrown <neilb@suse.de>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page-writeback.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+--- a/mm/page-writeback.c~mm-writeback-throttle-based-on-page-writeback-instead-of-congestion
++++ a/mm/page-writeback.c
+@@ -2366,8 +2366,15 @@ int do_writepages(struct address_space *
+ 			ret = generic_writepages(mapping, wbc);
+ 		if ((ret != -ENOMEM) || (wbc->sync_mode != WB_SYNC_ALL))
+ 			break;
+-		cond_resched();
+-		congestion_wait(BLK_RW_ASYNC, HZ/50);
++
++		/*
++		 * Lacking an allocation context or the locality or writeback
++		 * state of any of the inode's pages, throttle based on
++		 * writeback activity on the local node. It's as good a
++		 * guess as any.
++		 */
++		reclaim_throttle(NODE_DATA(numa_node_id()),
++			VMSCAN_THROTTLE_WRITEBACK, HZ/50);
+ 	}
+ 	/*
+ 	 * Usually few pages are written by now from those we've just submitted
+_

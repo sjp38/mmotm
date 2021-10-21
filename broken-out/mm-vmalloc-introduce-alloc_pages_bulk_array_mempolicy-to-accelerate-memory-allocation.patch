@@ -1,0 +1,168 @@
+From: Chen Wandun <chenwandun@huawei.com>
+Subject: mm/vmalloc: introduce alloc_pages_bulk_array_mempolicy to accelerate memory allocation
+
+It will cause significant performance regressions in some situations as
+Andrew mentioned in [1].  The main situation is vmalloc, vmalloc will
+allocate pages with NUMA_NO_NODE by default, that will result in alloc
+page one by one;
+
+In order to solve this, __alloc_pages_bulk and mempolicy should be
+considered at the same time.
+
+1) If node is specified in memory allocation request, it will alloc all
+   pages by __alloc_pages_bulk.
+
+2) If interleaving allocate memory, it will cauculate how many pages
+   should be allocated in each node, and use __alloc_pages_bulk to alloc
+   pages in each node.
+
+Based on "[PATCH] mm/vmalloc: fix numa spreading for large hash
+   tables".
+
+[1]: https://lore.kernel.org/lkml/CALvZod4G3SzP3kWxQYn0fj+VgG-G3yWXz=gz17+3N57ru1iajw@mail.gmail.com/t/#m750c8e3231206134293b089feaa090590afa0f60
+
+Link: https://lkml.kernel.org/r/20211014092952.1500982-1-chenwandun@huawei.com
+Signed-off-by: Chen Wandun <chenwandun@huawei.com>
+Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Hanjun Guo <guohanjun@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/gfp.h |    4 ++
+ mm/mempolicy.c      |   76 ++++++++++++++++++++++++++++++++++++++++++
+ mm/vmalloc.c        |   19 ++--------
+ 3 files changed, 85 insertions(+), 14 deletions(-)
+
+--- a/include/linux/gfp.h~mm-vmalloc-introduce-alloc_pages_bulk_array_mempolicy-to-accelerate-memory-allocation
++++ a/include/linux/gfp.h
+@@ -535,6 +535,10 @@ unsigned long __alloc_pages_bulk(gfp_t g
+ 				struct list_head *page_list,
+ 				struct page **page_array);
+ 
++unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
++				unsigned long nr_pages,
++				struct page **page_array);
++
+ /* Bulk allocate order-0 pages */
+ static inline unsigned long
+ alloc_pages_bulk_list(gfp_t gfp, unsigned long nr_pages, struct list_head *list)
+--- a/mm/mempolicy.c~mm-vmalloc-introduce-alloc_pages_bulk_array_mempolicy-to-accelerate-memory-allocation
++++ a/mm/mempolicy.c
+@@ -2196,6 +2196,82 @@ struct page *alloc_pages(gfp_t gfp, unsi
+ }
+ EXPORT_SYMBOL(alloc_pages);
+ 
++unsigned long alloc_pages_bulk_array_interleave(gfp_t gfp,
++		struct mempolicy *pol, unsigned long nr_pages,
++		struct page **page_array)
++{
++	int nodes;
++	unsigned long nr_pages_per_node;
++	int delta;
++	int i;
++	unsigned long nr_allocated;
++	unsigned long total_allocated = 0;
++
++	nodes = nodes_weight(pol->nodes);
++	nr_pages_per_node = nr_pages / nodes;
++	delta = nr_pages - nodes * nr_pages_per_node;
++
++	for (i = 0; i < nodes; i++) {
++		if (delta) {
++			nr_allocated = __alloc_pages_bulk(gfp,
++					interleave_nodes(pol), NULL,
++					nr_pages_per_node + 1, NULL,
++					page_array);
++			delta--;
++		} else {
++			nr_allocated = __alloc_pages_bulk(gfp,
++					interleave_nodes(pol), NULL,
++					nr_pages_per_node, NULL, page_array);
++		}
++
++		page_array += nr_allocated;
++		total_allocated += nr_allocated;
++	}
++
++	return total_allocated;
++}
++
++unsigned long alloc_pages_bulk_array_preferred_many(gfp_t gfp, int nid,
++		struct mempolicy *pol, unsigned long nr_pages,
++		struct page **page_array)
++{
++	gfp_t preferred_gfp;
++	unsigned long nr_allocated = 0;
++
++	preferred_gfp = gfp | __GFP_NOWARN;
++	preferred_gfp &= ~(__GFP_DIRECT_RECLAIM | __GFP_NOFAIL);
++
++	nr_allocated  = __alloc_pages_bulk(preferred_gfp, nid, &pol->nodes,
++					   nr_pages, NULL, page_array);
++
++	if (nr_allocated < nr_pages)
++		nr_allocated += __alloc_pages_bulk(gfp, numa_node_id(), NULL,
++				nr_pages - nr_allocated, NULL,
++				page_array + nr_allocated);
++	return nr_allocated;
++}
++
++unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
++		unsigned long nr_pages, struct page **page_array)
++{
++	struct mempolicy *pol = &default_policy;
++
++	if (!in_interrupt() && !(gfp & __GFP_THISNODE))
++		pol = get_task_policy(current);
++
++	if (pol->mode == MPOL_INTERLEAVE)
++		return alloc_pages_bulk_array_interleave(gfp, pol,
++							 nr_pages, page_array);
++
++	if (pol->mode == MPOL_PREFERRED_MANY)
++		return alloc_pages_bulk_array_preferred_many(gfp,
++				numa_node_id(), pol, nr_pages, page_array);
++
++	return __alloc_pages_bulk(gfp, policy_node(gfp, pol, numa_node_id()),
++				  policy_nodemask(gfp, pol), nr_pages, NULL,
++				  page_array);
++}
++
+ int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst)
+ {
+ 	struct mempolicy *pol = mpol_dup(vma_policy(src));
+--- a/mm/vmalloc.c~mm-vmalloc-introduce-alloc_pages_bulk_array_mempolicy-to-accelerate-memory-allocation
++++ a/mm/vmalloc.c
+@@ -2856,23 +2856,14 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+ 			 */
+ 			nr_pages_request = min(100U, nr_pages - nr_allocated);
+ 
+-			if (nid == NUMA_NO_NODE) {
+-				for (i = 0; i < nr_pages_request; i++) {
+-					page = alloc_page(gfp);
+-					if (page)
+-						pages[nr_allocated + i] = page;
+-					else {
+-						nr = i;
+-						break;
+-					}
+-				}
+-				if (i >= nr_pages_request)
+-					nr = nr_pages_request;
+-			} else {
++			if (nid == NUMA_NO_NODE)
++				nr = alloc_pages_bulk_array_mempolicy(gfp,
++							nr_pages_request,
++							pages + nr_allocated);
++			else
+ 				nr = alloc_pages_bulk_array_node(gfp, nid,
+ 							nr_pages_request,
+ 							pages + nr_allocated);
+-			}
+ 			nr_allocated += nr;
+ 			cond_resched();
+ 
+_

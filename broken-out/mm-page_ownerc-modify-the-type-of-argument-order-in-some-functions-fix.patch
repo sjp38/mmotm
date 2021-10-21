@@ -1,0 +1,62 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-page_ownerc-modify-the-type-of-argument-order-in-some-functions-fix
+
+update include/linux/page_owner.h
+
+Cc: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/page_owner.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+--- a/include/linux/page_owner.h~mm-page_ownerc-modify-the-type-of-argument-order-in-some-functions-fix
++++ a/include/linux/page_owner.h
+@@ -8,9 +8,9 @@
+ extern struct static_key_false page_owner_inited;
+ extern struct page_ext_operations page_owner_ops;
+ 
+-extern void __reset_page_owner(struct page *page, unsigned int order);
++extern void __reset_page_owner(struct page *page, unsigned short order);
+ extern void __set_page_owner(struct page *page,
+-			unsigned int order, gfp_t gfp_mask);
++			unsigned short order, gfp_t gfp_mask);
+ extern void __split_page_owner(struct page *page, unsigned int nr);
+ extern void __copy_page_owner(struct page *oldpage, struct page *newpage);
+ extern void __set_page_owner_migrate_reason(struct page *page, int reason);
+@@ -18,14 +18,14 @@ extern void __dump_page_owner(const stru
+ extern void pagetypeinfo_showmixedcount_print(struct seq_file *m,
+ 					pg_data_t *pgdat, struct zone *zone);
+ 
+-static inline void reset_page_owner(struct page *page, unsigned int order)
++static inline void reset_page_owner(struct page *page, unsigned short order)
+ {
+ 	if (static_branch_unlikely(&page_owner_inited))
+ 		__reset_page_owner(page, order);
+ }
+ 
+ static inline void set_page_owner(struct page *page,
+-			unsigned int order, gfp_t gfp_mask)
++			unsigned short order, gfp_t gfp_mask)
+ {
+ 	if (static_branch_unlikely(&page_owner_inited))
+ 		__set_page_owner(page, order, gfp_mask);
+@@ -52,7 +52,7 @@ static inline void dump_page_owner(const
+ 		__dump_page_owner(page);
+ }
+ #else
+-static inline void reset_page_owner(struct page *page, unsigned int order)
++static inline void reset_page_owner(struct page *page, unsigned short order)
+ {
+ }
+ static inline void set_page_owner(struct page *page,
+@@ -60,7 +60,7 @@ static inline void set_page_owner(struct
+ {
+ }
+ static inline void split_page_owner(struct page *page,
+-			unsigned int order)
++			unsigned short order)
+ {
+ }
+ static inline void copy_page_owner(struct page *oldpage, struct page *newpage)
+_

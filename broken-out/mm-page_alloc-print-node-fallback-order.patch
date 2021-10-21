@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-print-node-fallback-order
 +++ a/mm/page_alloc.c
-@@ -6256,6 +6256,10 @@ static void build_zonelists(pg_data_t *p
+@@ -6260,6 +6260,10 @@ static void build_zonelists(pg_data_t *p
  
  	build_zonelists_in_node_order(pgdat, node_order, nr_nodes);
  	build_thisnode_zonelists(pgdat);

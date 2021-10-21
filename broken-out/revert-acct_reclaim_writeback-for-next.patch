@@ -1,0 +1,27 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: revert-acct_reclaim_writeback-for-next
+
+take away this change from Mel's "mm/vmscan: throttle reclaim and
+compaction when too may pages are isolated" so that linux-next.patch
+applies more easily.
+
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/filemap.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/mm/filemap.c~revert-acct_reclaim_writeback-for-next
++++ a/mm/filemap.c
+@@ -1613,7 +1613,6 @@ void end_page_writeback(struct page *pag
+ 
+ 	smp_mb__after_atomic();
+ 	wake_up_page(page, PG_writeback);
+-	acct_reclaim_writeback(page);
+ 	put_page(page);
+ }
+ EXPORT_SYMBOL(end_page_writeback);
+_

@@ -1,7 +1,7 @@
 From: David Hildenbrand <david@redhat.com>
 Subject: memory-hotplug.rst: fix two instances of "movablecore" that should be "movable_node"
 
-Pach series "memory-hotplug.rst: document the "auto-movable" online policy".
+Patch series "memory-hotplug.rst: document the "auto-movable" online policy".
 
 Now that the memory-hotplug.rst overhaul is upstream, proper documentation
 for the "auto-movable" online policy, documenting all new toggles and
@@ -16,10 +16,10 @@ parameter here.
 Link: https://lkml.kernel.org/r/20210930144117.23641-2-david@redhat.com
 Fixes: ac3332c44767 ("memory-hotplug.rst: complete admin-guide overhaul")
 Signed-off-by: David Hildenbrand <david@redhat.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Mike Rapoport <rppt@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

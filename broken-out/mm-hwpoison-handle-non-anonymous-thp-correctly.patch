@@ -1,0 +1,41 @@
+From: Yang Shi <shy828301@gmail.com>
+Subject: mm: hwpoison: handle non-anonymous THP correctly
+
+Currently hwpoison doesn't handle non-anonymous THP, but since v4.8 THP
+support for tmpfs and read-only file cache has been added.  They could be
+offlined by split THP, just like anonymous THP.
+
+Link: https://lkml.kernel.org/r/20211020210755.23964-7-shy828301@gmail.com
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Yang Shi <shy828301@gmail.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Peter Xu <peterx@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+--- a/mm/memory-failure.c~mm-hwpoison-handle-non-anonymous-thp-correctly
++++ a/mm/memory-failure.c
+@@ -1444,14 +1444,11 @@ static int identify_page_state(unsigned
+ static int try_to_split_thp_page(struct page *page, const char *msg)
+ {
+ 	lock_page(page);
+-	if (!PageAnon(page) || unlikely(split_huge_page(page))) {
++	if (unlikely(split_huge_page(page))) {
+ 		unsigned long pfn = page_to_pfn(page);
+ 
+ 		unlock_page(page);
+-		if (!PageAnon(page))
+-			pr_info("%s: %#lx: non anonymous thp\n", msg, pfn);
+-		else
+-			pr_info("%s: %#lx: thp split failed\n", msg, pfn);
++		pr_info("%s: %#lx: thp split failed\n", msg, pfn);
+ 		put_page(page);
+ 		return -EBUSY;
+ 	}
+_

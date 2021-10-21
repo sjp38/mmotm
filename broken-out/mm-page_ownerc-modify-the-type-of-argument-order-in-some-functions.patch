@@ -1,0 +1,50 @@
+From: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Subject: mm/page_owner.c: modify the type of argument "order" in some functions
+
+The type of "order" in struct page_owner is unsigned short.
+However, it is unsigned int in the following 3 functions:
+__reset_page_owner
+__set_page_owner_handle
+__set_page_owner_handle
+
+The type of "order" in argument list is unsigned int, which is
+inconsistent.
+
+Link: https://lkml.kernel.org/r/20211020125945.47792-1-caoyixuan2019@email.szu.edu.cn
+Signed-off-by: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_owner.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/mm/page_owner.c~mm-page_ownerc-modify-the-type-of-argument-order-in-some-functions
++++ a/mm/page_owner.c
+@@ -125,7 +125,7 @@ static noinline depot_stack_handle_t sav
+ 	return handle;
+ }
+ 
+-void __reset_page_owner(struct page *page, unsigned int order)
++void __reset_page_owner(struct page *page, unsigned short order)
+ {
+ 	int i;
+ 	struct page_ext *page_ext;
+@@ -149,7 +149,7 @@ void __reset_page_owner(struct page *pag
+ 
+ static inline void __set_page_owner_handle(struct page_ext *page_ext,
+ 					depot_stack_handle_t handle,
+-					unsigned int order, gfp_t gfp_mask)
++					unsigned short order, gfp_t gfp_mask)
+ {
+ 	struct page_owner *page_owner;
+ 	int i;
+@@ -169,7 +169,7 @@ static inline void __set_page_owner_hand
+ 	}
+ }
+ 
+-noinline void __set_page_owner(struct page *page, unsigned int order,
++noinline void __set_page_owner(struct page *page, unsigned short order,
+ 					gfp_t gfp_mask)
+ {
+ 	struct page_ext *page_ext = lookup_page_ext(page);
+_

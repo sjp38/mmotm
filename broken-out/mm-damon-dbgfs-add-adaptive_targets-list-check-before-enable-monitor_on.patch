@@ -1,0 +1,80 @@
+From: Xin Hao <xhao@linux.alibaba.com>
+Subject: mm/damon/dbgfs: add adaptive_targets list check before enable monitor_on
+
+When the ctx->adaptive_targets list is empty, I did some test on
+monitor_on interface like this.
+
+    # cat /sys/kernel/debug/damon/target_ids
+    #
+    # echo on > /sys/kernel/debug/damon/monitor_on
+    # damon: kdamond (5390) starts
+
+Though the ctx->adaptive_targets list is empty, but the kthread_run still
+be called, and the kdamond.x thread still be created, this is meaningless.
+
+So there adds a judgment in 'dbgfs_monitor_on_write', if the
+ctx->adaptive_targets list is empty, return -EINVAL.
+
+Link: https://lkml.kernel.org/r/0a60a6e8ec9d71989e0848a4dc3311996ca3b5d4.1634720326.git.xhao@linux.alibaba.com
+Signed-off-by: Xin Hao <xhao@linux.alibaba.com>
+Reviewed-by: SeongJae Park <sj@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/damon.h |    1 +
+ mm/damon/core.c       |    5 +++++
+ mm/damon/dbgfs.c      |   15 ++++++++++++---
+ 3 files changed, 18 insertions(+), 3 deletions(-)
+
+--- a/include/linux/damon.h~mm-damon-dbgfs-add-adaptive_targets-list-check-before-enable-monitor_on
++++ a/include/linux/damon.h
+@@ -440,6 +440,7 @@ void damon_destroy_scheme(struct damos *
+ 
+ struct damon_target *damon_new_target(unsigned long id);
+ void damon_add_target(struct damon_ctx *ctx, struct damon_target *t);
++bool damon_targets_empty(struct damon_ctx *ctx);
+ void damon_free_target(struct damon_target *t);
+ void damon_destroy_target(struct damon_target *t);
+ unsigned int damon_nr_regions(struct damon_target *t);
+--- a/mm/damon/core.c~mm-damon-dbgfs-add-adaptive_targets-list-check-before-enable-monitor_on
++++ a/mm/damon/core.c
+@@ -180,6 +180,11 @@ void damon_add_target(struct damon_ctx *
+ 	list_add_tail(&t->list, &ctx->adaptive_targets);
+ }
+ 
++bool damon_targets_empty(struct damon_ctx *ctx)
++{
++	return list_empty(&ctx->adaptive_targets);
++}
++
+ static void damon_del_target(struct damon_target *t)
+ {
+ 	list_del(&t->list);
+--- a/mm/damon/dbgfs.c~mm-damon-dbgfs-add-adaptive_targets-list-check-before-enable-monitor_on
++++ a/mm/damon/dbgfs.c
+@@ -878,12 +878,21 @@ static ssize_t dbgfs_monitor_on_write(st
+ 		return -EINVAL;
+ 	}
+ 
+-	if (!strncmp(kbuf, "on", count))
++	if (!strncmp(kbuf, "on", count)) {
++		int i;
++
++		for (i = 0; i < dbgfs_nr_ctxs; i++) {
++			if (damon_targets_empty(dbgfs_ctxs[i])) {
++				kfree(kbuf);
++				return -EINVAL;
++			}
++		}
+ 		ret = damon_start(dbgfs_ctxs, dbgfs_nr_ctxs);
+-	else if (!strncmp(kbuf, "off", count))
++	} else if (!strncmp(kbuf, "off", count)) {
+ 		ret = damon_stop(dbgfs_ctxs, dbgfs_nr_ctxs);
+-	else
++	} else {
+ 		ret = -EINVAL;
++	}
+ 
+ 	if (!ret)
+ 		ret = count;
+_
