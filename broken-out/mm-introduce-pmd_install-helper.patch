@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/filemap.c~mm-introduce-pmd_install-helper
 +++ a/mm/filemap.c
-@@ -3210,15 +3210,8 @@ static bool filemap_map_pmd(struct vm_fa
+@@ -3213,15 +3213,8 @@ static bool filemap_map_pmd(struct vm_fa
  	    }
  	}
  
@@ -98,7 +98,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (new)
  		pte_free(mm, new);
  	return 0;
-@@ -4015,17 +4020,10 @@ vm_fault_t finish_fault(struct vm_fault
+@@ -4024,17 +4029,10 @@ vm_fault_t finish_fault(struct vm_fault
  				return ret;
  		}
  

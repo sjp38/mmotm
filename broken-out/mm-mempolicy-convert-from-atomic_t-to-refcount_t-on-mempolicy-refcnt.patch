@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return;
  	kmem_cache_free(policy_cache, p);
  }
-@@ -2237,7 +2237,7 @@ struct mempolicy *__mpol_dup(struct memp
+@@ -2313,7 +2313,7 @@ struct mempolicy *__mpol_dup(struct memp
  		nodemask_t mems = cpuset_mems_allowed(current);
  		mpol_rebind_policy(new, &mems);
  	}
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return new;
  }
  
-@@ -2532,7 +2532,7 @@ restart:
+@@ -2608,7 +2608,7 @@ restart:
  					goto alloc_new;
  
  				*mpol_new = *n->policy;

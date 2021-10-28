@@ -32,6 +32,7 @@ patch where this functionality is used.
 
 Link: https://lkml.kernel.org/r/20211007181918.136982-5-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: David Rientjes <rientjes@google.com>
@@ -39,7 +40,6 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>
 Cc: Nghia Le <nghialm78@gmail.com>
-Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

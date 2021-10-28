@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	memblock_memory = NULL;
-@@ -1586,7 +1586,7 @@ void * __init memblock_alloc_try_nid(
+@@ -1591,7 +1591,7 @@ void * __init memblock_alloc_try_nid(
  }
  
  /**
@@ -70,7 +70,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * @base: phys starting address of the  boot memory block
   * @size: size of the boot memory block in bytes
   *
-@@ -1594,7 +1594,7 @@ void * __init memblock_alloc_try_nid(
+@@ -1599,7 +1599,7 @@ void * __init memblock_alloc_try_nid(
   * down, but we are still initializing the system.  Pages are released directly
   * to the buddy allocator.
   */

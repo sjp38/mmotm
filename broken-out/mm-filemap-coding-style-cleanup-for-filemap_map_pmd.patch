@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/filemap.c~mm-filemap-coding-style-cleanup-for-filemap_map_pmd
 +++ a/mm/filemap.c
-@@ -3202,12 +3202,12 @@ static bool filemap_map_pmd(struct vm_fa
+@@ -3205,12 +3205,12 @@ static bool filemap_map_pmd(struct vm_fa
  	}
  
  	if (pmd_none(*vmf->pmd) && PageTransHuge(page)) {

@@ -8,6 +8,7 @@ allow the compiler to put it in read-only memory.
 Link: https://lkml.kernel.org/r/20211014075042.17174-3-rikard.falkeborn@gmail.com
 Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
 Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -16,7 +17,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory-failure.c~mm-memory_failure-constify-static-mm_walk_ops
 +++ a/mm/memory-failure.c
-@@ -675,7 +675,7 @@ static int hwpoison_hugetlb_range(pte_t
+@@ -674,7 +674,7 @@ static int hwpoison_hugetlb_range(pte_t
  #define hwpoison_hugetlb_range	NULL
  #endif
  

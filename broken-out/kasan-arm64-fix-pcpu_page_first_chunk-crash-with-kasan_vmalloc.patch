@@ -71,7 +71,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kasan_init_shadow();
 --- a/include/linux/kasan.h~kasan-arm64-fix-pcpu_page_first_chunk-crash-with-kasan_vmalloc
 +++ a/include/linux/kasan.h
-@@ -434,6 +434,8 @@ void kasan_release_vmalloc(unsigned long
+@@ -436,6 +436,8 @@ void kasan_release_vmalloc(unsigned long
  			   unsigned long free_region_start,
  			   unsigned long free_region_end);
  
@@ -80,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #else /* CONFIG_KASAN_VMALLOC */
  
  static inline int kasan_populate_vmalloc(unsigned long start,
-@@ -451,6 +453,10 @@ static inline void kasan_release_vmalloc
+@@ -453,6 +455,10 @@ static inline void kasan_release_vmalloc
  					 unsigned long free_region_start,
  					 unsigned long free_region_end) {}
  

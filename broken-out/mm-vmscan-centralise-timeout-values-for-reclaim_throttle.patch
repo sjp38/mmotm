@@ -15,13 +15,12 @@ usage in reclaim context would select a larger timeout.  Ideally a large
 value would always be used and the wakeups would occur before a timeout
 but that requires careful testing.
 
-Link: https://lkml.kernel.org/r/20211019090108.25501-7-mgorman@techsingularity.net
+Link: https://lkml.kernel.org/r/20211022144651.19914-7-mgorman@techsingularity.net
 Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Andreas Dilger <adilger.kernel@dilger.ca>
 Cc: "Darrick J . Wong" <djwong@kernel.org>
 Cc: Dave Chinner <david@fromorbit.com>
-Cc: Hillf Danton <hdanton@sina.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Matthew Wilcox <willy@infradead.org>
@@ -29,15 +28,14 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: NeilBrown <neilb@suse.de>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
  mm/compaction.c     |    2 -
  mm/internal.h       |    3 --
  mm/page-writeback.c |    2 -
- mm/vmscan.c         |   48 ++++++++++++++++++++++++++++++------------
- 4 files changed, 38 insertions(+), 17 deletions(-)
+ mm/vmscan.c         |   50 +++++++++++++++++++++++++++++++-----------
+ 4 files changed, 40 insertions(+), 17 deletions(-)
 
 --- a/mm/compaction.c~mm-vmscan-centralise-timeout-values-for-reclaim_throttle
 +++ a/mm/compaction.c
@@ -90,7 +88,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	DEFINE_WAIT(wait);
  
  	/*
-@@ -1023,17 +1021,41 @@ void reclaim_throttle(pg_data_t *pgdat,
+@@ -1023,17 +1021,43 @@ void reclaim_throttle(pg_data_t *pgdat,
  	    current->flags & (PF_IO_WORKER|PF_KTHREAD))
  		return;
  
@@ -109,7 +107,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	 * of the inactive LRU.
 +	 */
 +	switch(reason) {
-+	case VMSCAN_THROTTLE_NOPROGRESS:
 +	case VMSCAN_THROTTLE_WRITEBACK:
 +		timeout = HZ/10;
 +
@@ -118,6 +115,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				node_page_state(pgdat, NR_THROTTLED_WRITTEN));
 +		}
 +
++		break;
++	case VMSCAN_THROTTLE_NOPROGRESS:
++		timeout = HZ/10;
 +		break;
 +	case VMSCAN_THROTTLE_ISOLATED:
 +		timeout = HZ/50;
@@ -133,11 +133,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	finish_wait(wqh, &wait);
  
 -	if (acct_writeback)
-+	if (reason == VMSCAN_THROTTLE_ISOLATED)
++	if (reason == VMSCAN_THROTTLE_WRITEBACK)
  		atomic_dec(&pgdat->nr_writeback_throttled);
  
  	trace_mm_vmscan_throttled(pgdat->node_id, jiffies_to_usecs(timeout),
-@@ -2325,7 +2347,7 @@ shrink_inactive_list(unsigned long nr_to
+@@ -2325,7 +2349,7 @@ shrink_inactive_list(unsigned long nr_to
  
  		/* wait a bit for the reclaimer. */
  		stalled = true;
@@ -146,7 +146,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		/* We are about to die and free our memory. Return now. */
  		if (fatal_signal_pending(current))
-@@ -3257,7 +3279,7 @@ again:
+@@ -3257,7 +3281,7 @@ again:
  		 * until some pages complete writeback.
  		 */
  		if (sc->nr.immediate)
@@ -155,7 +155,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	/*
-@@ -3281,7 +3303,7 @@ again:
+@@ -3281,7 +3305,7 @@ again:
  	if (!current_is_kswapd() && current_may_throttle() &&
  	    !sc->hibernation_mode &&
  	    test_bit(LRUVEC_CONGESTED, &target_lruvec->flags))
@@ -164,7 +164,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (should_continue_reclaim(pgdat, sc->nr_reclaimed - nr_reclaimed,
  				    sc))
-@@ -3353,7 +3375,7 @@ static void consider_reclaim_throttle(pg
+@@ -3353,7 +3377,7 @@ static void consider_reclaim_throttle(pg
  
  	/* Throttle if making no progress at high prioities. */
  	if (sc->priority < DEF_PRIORITY - 2)

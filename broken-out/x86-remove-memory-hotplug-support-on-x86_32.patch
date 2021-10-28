@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	select ARCH_ENABLE_MEMORY_HOTREMOVE if MEMORY_HOTPLUG
  	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if (PGTABLE_LEVELS > 2) && (X86_64 || X86_PAE)
  	select ARCH_ENABLE_THP_MIGRATION if X86_64 && TRANSPARENT_HUGEPAGE
-@@ -1615,7 +1615,7 @@ config ARCH_SELECT_MEMORY_MODEL
+@@ -1614,7 +1614,7 @@ config ARCH_SELECT_MEMORY_MODEL
  
  config ARCH_MEMORY_PROBE
  	bool "Enable sysfs memory/probe interface"
@@ -54,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	help
  	  This option enables a sysfs memory/probe interface for testing.
  	  See Documentation/admin-guide/mm/memory-hotplug.rst for more information.
-@@ -2395,7 +2395,7 @@ endmenu
+@@ -2394,7 +2394,7 @@ endmenu
  
  config ARCH_HAS_ADD_PAGES
  	def_bool y

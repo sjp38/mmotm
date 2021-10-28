@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifndef CONFIG_PPC_BOOK3S_64
 --- a/Documentation/admin-guide/kernel-parameters.txt~hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation
 +++ a/Documentation/admin-guide/kernel-parameters.txt
-@@ -1599,9 +1599,11 @@
+@@ -1601,9 +1601,11 @@
  			the number of pages of hugepagesz to be allocated.
  			If this is the first HugeTLB parameter on the command
  			line, it specifies the number of pages to allocate for
@@ -136,7 +136,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  bool __init arch_hugetlb_valid_size(unsigned long size);
 --- a/mm/hugetlb.c~hugetlbfs-extend-the-definition-of-hugepages-parameter-to-support-node-allocation
 +++ a/mm/hugetlb.c
-@@ -76,6 +76,7 @@ static struct hstate * __initdata parsed
+@@ -77,6 +77,7 @@ static struct hstate * __initdata parsed
  static unsigned long __initdata default_hstate_max_huge_pages;
  static bool __initdata parsed_valid_hugepagesz = true;
  static bool __initdata parsed_default_hugepagesz;
@@ -144,7 +144,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  /*
   * Protects updates to hugepage_freelists, hugepage_activelist, nr_huge_pages,
-@@ -2965,33 +2966,39 @@ out_subpool_put:
+@@ -2966,33 +2967,39 @@ out_subpool_put:
  	return ERR_PTR(-ENOSPC);
  }
  
@@ -201,7 +201,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Put them into a private list first because mem_map is not up yet */
  	INIT_LIST_HEAD(&m->list);
  	list_add(&m->list, &huge_boot_pages);
-@@ -3031,12 +3038,61 @@ static void __init gather_bootmem_preall
+@@ -3032,12 +3039,61 @@ static void __init gather_bootmem_preall
  		cond_resched();
  	}
  }
@@ -263,7 +263,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!hstate_is_gigantic(h)) {
  		/*
  		 * Bit mask controlling how hard we retry per-node allocations.
-@@ -3057,11 +3113,7 @@ static void __init hugetlb_hstate_alloc_
+@@ -3058,11 +3114,7 @@ static void __init hugetlb_hstate_alloc_
  
  	for (i = 0; i < h->max_huge_pages; ++i) {
  		if (hstate_is_gigantic(h)) {
@@ -276,7 +276,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				break;
  		} else if (!alloc_pool_huge_page(h,
  					 &node_states[N_MEMORY],
-@@ -3077,7 +3129,6 @@ static void __init hugetlb_hstate_alloc_
+@@ -3078,7 +3130,6 @@ static void __init hugetlb_hstate_alloc_
  			h->max_huge_pages, buf, i);
  		h->max_huge_pages = i;
  	}
@@ -284,7 +284,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kfree(node_alloc_noretry);
  }
  
-@@ -3992,6 +4043,10 @@ static int __init hugetlb_init(void)
+@@ -3993,6 +4044,10 @@ static int __init hugetlb_init(void)
  			}
  			default_hstate.max_huge_pages =
  				default_hstate_max_huge_pages;
@@ -295,7 +295,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		}
  	}
  
-@@ -4052,6 +4107,10 @@ void __init hugetlb_add_hstate(unsigned
+@@ -4053,6 +4108,10 @@ void __init hugetlb_add_hstate(unsigned
  	parsed_hstate = h;
  }
  
@@ -306,7 +306,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * hugepages command line processing
   * hugepages normally follows a valid hugepagsz or default_hugepagsz
-@@ -4063,6 +4122,10 @@ static int __init hugepages_setup(char *
+@@ -4064,6 +4123,10 @@ static int __init hugepages_setup(char *
  {
  	unsigned long *mhp;
  	static unsigned long *last_mhp;
@@ -317,7 +317,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!parsed_valid_hugepagesz) {
  		pr_warn("HugeTLB: hugepages=%s does not follow a valid hugepagesz, ignoring\n", s);
-@@ -4086,8 +4149,40 @@ static int __init hugepages_setup(char *
+@@ -4087,8 +4150,40 @@ static int __init hugepages_setup(char *
  		return 0;
  	}
  
@@ -360,7 +360,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Global state is always initialized later in hugetlb_init.
-@@ -4100,6 +4195,10 @@ static int __init hugepages_setup(char *
+@@ -4101,6 +4196,10 @@ static int __init hugepages_setup(char *
  	last_mhp = mhp;
  
  	return 1;
@@ -371,7 +371,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  __setup("hugepages=", hugepages_setup);
  
-@@ -4161,6 +4260,7 @@ __setup("hugepagesz=", hugepagesz_setup)
+@@ -4162,6 +4261,7 @@ __setup("hugepagesz=", hugepagesz_setup)
  static int __init default_hugepagesz_setup(char *s)
  {
  	unsigned long size;
@@ -379,7 +379,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	parsed_valid_hugepagesz = false;
  	if (parsed_default_hugepagesz) {
-@@ -4189,6 +4289,9 @@ static int __init default_hugepagesz_set
+@@ -4190,6 +4290,9 @@ static int __init default_hugepagesz_set
  	 */
  	if (default_hstate_max_huge_pages) {
  		default_hstate.max_huge_pages = default_hstate_max_huge_pages;

@@ -63,7 +63,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	KUNIT_EXPECT_KASAN_FAIL(test,
  				memset(ptr, 0, size + KASAN_GRANULE_SIZE));
  	kfree(ptr);
-@@ -497,7 +502,7 @@ static void kmalloc_memmove_invalid_size
+@@ -497,7 +502,7 @@ static void kmalloc_memmove_negative_siz
  {
  	char *ptr;
  	size_t size = 64;
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Hardware tag-based mode doesn't check memmove for negative size.
-@@ -510,6 +515,7 @@ static void kmalloc_memmove_invalid_size
+@@ -510,6 +515,7 @@ static void kmalloc_memmove_negative_siz
  	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
  
  	memset((char *)ptr, 0, 64);

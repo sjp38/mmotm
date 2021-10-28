@@ -1,0 +1,30 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: mm: don't automatically unregister bdis
+
+All BDI users now unregister explicitly.
+
+Link: https://lkml.kernel.org/r/20211021124441.668816-5-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Vignesh Raghavendra <vigneshr@ti.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/backing-dev.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/backing-dev.c~mm-dont-automatically-unregister-bdis
++++ a/mm/backing-dev.c
+@@ -972,8 +972,7 @@ static void release_bdi(struct kref *ref
+ 	struct backing_dev_info *bdi =
+ 			container_of(ref, struct backing_dev_info, refcnt);
+ 
+-	if (test_bit(WB_registered, &bdi->wb.state))
+-		bdi_unregister(bdi);
++	WARN_ON_ONCE(test_bit(WB_registered, &bdi->wb.state));
+ 	WARN_ON_ONCE(bdi->dev);
+ 	wb_exit(&bdi->wb);
+ 	kfree(bdi);
+_

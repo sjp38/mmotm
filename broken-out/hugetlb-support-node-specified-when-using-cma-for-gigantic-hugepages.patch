@@ -30,7 +30,7 @@ https://lkml.kernel.org/r/20211005054729.86457-1-yaozhenguo1@gmail.com
 
 Link: https://lkml.kernel.org/r/bb790775ca60bb8f4b26956bb3f6988f74e075c7.1634261144.git.baolin.wang@linux.alibaba.com
 Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Roman Gushchin <guro@fb.com>
 Cc: Jonathan Corbet <corbet@lwn.net>

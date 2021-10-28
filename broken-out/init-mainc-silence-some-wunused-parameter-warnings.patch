@@ -43,7 +43,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	console_loglevel = CONSOLE_LOGLEVEL_QUIET;
  	return 0;
-@@ -481,7 +481,7 @@ static void __init setup_boot_config(voi
+@@ -482,7 +482,7 @@ static void __init setup_boot_config(voi
  	get_boot_config_from_initrd(NULL, NULL);
  }
  
@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	pr_warn("WARNING: 'bootconfig' found on the kernel command line but CONFIG_BOOT_CONFIG is not set.\n");
  	return 0;
-@@ -510,7 +510,8 @@ static void __init repair_env_string(cha
+@@ -511,7 +511,8 @@ static void __init repair_env_string(cha
  
  /* Anything after -- gets handed straight to init. */
  static int __init set_init_arg(char *param, char *val,
@@ -62,7 +62,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	unsigned int i;
  
-@@ -535,7 +536,8 @@ static int __init set_init_arg(char *par
+@@ -536,7 +537,8 @@ static int __init set_init_arg(char *par
   * unused parameters (modprobe will find them in /proc/cmdline).
   */
  static int __init unknown_bootoption(char *param, char *val,
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	size_t len = strlen(param);
  
-@@ -735,7 +737,8 @@ noinline void __ref rest_init(void)
+@@ -736,7 +738,8 @@ noinline void __ref rest_init(void)
  
  /* Check for early params. */
  static int __init do_early_param(char *param, char *val,
@@ -82,7 +82,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	const struct obs_kernel_param *p;
  
-@@ -1357,8 +1360,10 @@ static const char *initcall_level_names[
+@@ -1361,8 +1364,10 @@ static const char *initcall_level_names[
  	"late",
  };
  
@@ -95,7 +95,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return 0;
  }
-@@ -1495,7 +1500,7 @@ void __weak free_initmem(void)
+@@ -1499,7 +1504,7 @@ void __weak free_initmem(void)
  	free_initmem_default(POISON_FREE_INITMEM);
  }
  

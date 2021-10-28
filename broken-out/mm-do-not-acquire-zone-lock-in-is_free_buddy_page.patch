@@ -19,7 +19,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-do-not-acquire-zone-lock-in-is_free_buddy_page
 +++ a/mm/page_alloc.c
-@@ -9354,21 +9354,21 @@ void __offline_isolated_pages(unsigned l
+@@ -9356,21 +9356,21 @@ void __offline_isolated_pages(unsigned l
  }
  #endif
  

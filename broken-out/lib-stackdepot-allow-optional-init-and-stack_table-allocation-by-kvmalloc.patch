@@ -143,7 +143,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/init/main.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc
 +++ a/init/main.c
-@@ -842,7 +842,7 @@ static void __init mm_init(void)
+@@ -843,7 +843,7 @@ static void __init mm_init(void)
  	init_mem_debugging_and_hardening();
  	kfence_alloc_pool();
  	report_meminit();

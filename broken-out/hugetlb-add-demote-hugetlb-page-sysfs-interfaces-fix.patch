@@ -1,0 +1,41 @@
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Subject: hugetlb-add-demote-hugetlb-page-sysfs-interfaces-fix
+
+The n_mask initialization does not need to be protected by the mutex. 
+Thanks for pointing that out.
+
+Simply move taking the mutex after this initialization code.
+
+Link: https://lkml.kernel.org/r/0530e4ef-2492-5186-f919-5db68edea654@oracle.com
+Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/mm/hugetlb.c~hugetlb-add-demote-hugetlb-page-sysfs-interfaces-fix
++++ a/mm/hugetlb.c
+@@ -3486,9 +3486,6 @@ static ssize_t demote_store(struct kobje
+ 		return err;
+ 	h = kobj_to_hstate(kobj, &nid);
+ 
+-	/* Synchronize with other sysfs operations modifying huge pages */
+-	mutex_lock(&h->resize_lock);
+-
+ 	if (nid != NUMA_NO_NODE) {
+ 		init_nodemask_of_node(&nodes_allowed, nid);
+ 		n_mask = &nodes_allowed;
+@@ -3496,7 +3493,10 @@ static ssize_t demote_store(struct kobje
+ 		n_mask = &node_states[N_MEMORY];
+ 	}
+ 
++	/* Synchronize with other sysfs operations modifying huge pages */
++	mutex_lock(&h->resize_lock);
+ 	spin_lock_irq(&hugetlb_lock);
++
+ 	while (nr_demote) {
+ 		/*
+ 		 * Check for available pages to demote each time thorough the
+_

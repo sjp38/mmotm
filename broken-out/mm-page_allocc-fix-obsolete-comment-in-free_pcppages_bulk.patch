@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_allocc-fix-obsolete-comment-in-free_pcppages_bulk
 +++ a/mm/page_alloc.c
-@@ -1426,14 +1426,8 @@ static inline void prefetch_buddy(struct
+@@ -1428,14 +1428,8 @@ static inline void prefetch_buddy(struct
  
  /*
   * Frees a number of pages from the PCP lists

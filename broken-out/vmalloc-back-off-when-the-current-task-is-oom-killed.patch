@@ -40,9 +40,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~vmalloc-back-off-when-the-current-task-is-oom-killed
 +++ a/mm/vmalloc.c
-@@ -2887,6 +2887,9 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+@@ -2871,6 +2871,9 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+ 	/* High-order pages or fallback path if "bulk" fails. */
  
- 	page = NULL;
  	while (nr_allocated < nr_pages) {
 +		if (fatal_signal_pending(current))
 +			break;

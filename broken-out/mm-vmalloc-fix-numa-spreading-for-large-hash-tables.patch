@@ -27,8 +27,8 @@ alloc_large_system_hash
                     alloc_pages_node /* choose nid by nuam_mem_id() */
                         __alloc_pages_node(nid, ....)
 
-So after commit 121e6f3258fe ("mm/vmalloc: hugepage vmalloc mappings"),
-it will allocate memory in current node instead of interleaving allocate
+So after commit 121e6f3258fe ("mm/vmalloc: hugepage vmalloc mappings"), it
+will allocate memory in current node instead of interleaving allocate
 memory.
 
 [1]
@@ -37,18 +37,20 @@ https://lore.kernel.org/linux-mm/CANn89iL6AAyWhfxdHO+jaT075iOa3XcYn9k6JJc7JR2XYn
 [2]
 https://lore.kernel.org/linux-mm/CANn89iLofTR=AK-QOZY87RdUZENCZUT4O6a0hvhu3_EwRMerOg@mail.gmail.com/
 
-Link: https://lkml.kernel.org/r/20210928121040.2547407-1-chenwandun@huawei.com
+Link: https://lkml.kernel.org/r/20211021080744.874701-2-chenwandun@huawei.com
 Fixes: 121e6f3258fe ("mm/vmalloc: hugepage vmalloc mappings")
 Signed-off-by: Chen Wandun <chenwandun@huawei.com>
 Reported-by: Eric Dumazet <edumazet@google.com>
+Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
 Cc: Hanjun Guo <guohanjun@huawei.com>
+Cc: Uladzislau Rezki <urezki@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/vmalloc.c |   33 ++++++++++++++++++++++++++-------
- 1 file changed, 26 insertions(+), 7 deletions(-)
+ mm/vmalloc.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
 --- a/mm/vmalloc.c~mm-vmalloc-fix-numa-spreading-for-large-hash-tables
 +++ a/mm/vmalloc.c
@@ -61,42 +63,25 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * For order-0 pages we make use of bulk allocator, if
-@@ -2826,6 +2828,7 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
- 	if (!order) {
+@@ -2823,7 +2825,7 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+ 	 * to fails, fallback to a single page allocator that is
+ 	 * more permissive.
+ 	 */
+-	if (!order) {
++	if (!order && nid != NUMA_NO_NODE) {
  		while (nr_allocated < nr_pages) {
  			unsigned int nr, nr_pages_request;
-+			page = NULL;
  
- 			/*
- 			 * A maximum allowed request is hard-coded and is 100
-@@ -2835,9 +2838,23 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
- 			 */
- 			nr_pages_request = min(100U, nr_pages - nr_allocated);
- 
--			nr = alloc_pages_bulk_array_node(gfp, nid,
--				nr_pages_request, pages + nr_allocated);
--
-+			if (nid == NUMA_NO_NODE) {
-+				for (i = 0; i < nr_pages_request; i++) {
-+					page = alloc_page(gfp);
-+					if (page)
-+						pages[nr_allocated + i] = page;
-+					else {
-+						nr = i;
-+						break;
-+					}
-+				}
-+				if (i >= nr_pages_request)
-+					nr = nr_pages_request;
-+			} else {
-+				nr = alloc_pages_bulk_array_node(gfp, nid,
-+							nr_pages_request,
-+							pages + nr_allocated);
-+			}
- 			nr_allocated += nr;
- 			cond_resched();
- 
-@@ -2856,11 +2873,13 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+@@ -2848,7 +2850,7 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+ 			if (nr != nr_pages_request)
+ 				break;
+ 		}
+-	} else
++	} else if (order)
+ 		/*
+ 		 * Compound pages required for remap_vmalloc_page if
+ 		 * high-order pages.
+@@ -2856,11 +2858,12 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
  		gfp |= __GFP_COMP;
  
  	/* High-order pages or fallback path if "bulk" fails. */
@@ -105,7 +90,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -		int i;
  
 -		page = alloc_pages_node(nid, gfp, order);
-+	page = NULL;
 +	while (nr_allocated < nr_pages) {
 +		if (nid == NUMA_NO_NODE)
 +			page = alloc_pages(gfp, order);

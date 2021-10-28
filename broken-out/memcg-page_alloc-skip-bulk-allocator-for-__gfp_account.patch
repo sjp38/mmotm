@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~memcg-page_alloc-skip-bulk-allocator-for-__gfp_account
 +++ a/mm/page_alloc.c
-@@ -5224,6 +5224,10 @@ unsigned long __alloc_pages_bulk(gfp_t g
+@@ -5223,6 +5223,10 @@ unsigned long __alloc_pages_bulk(gfp_t g
  	if (unlikely(page_array && nr_pages - nr_populated == 0))
  		goto out;
  

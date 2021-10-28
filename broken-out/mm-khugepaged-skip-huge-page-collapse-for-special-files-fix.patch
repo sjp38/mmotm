@@ -1,0 +1,34 @@
+From: Yang Shi <shy828301@gmail.com>
+Subject: mm-khugepaged-skip-huge-page-collapse-for-special-files-fix
+
+fix vm_file check
+
+Link: https://lkml.kernel.org/r/CAHbLzkqTW9U3VvTu1Ki5v_cLRC9gHW+znBukg_ycergE0JWj-A@mail.gmail.com
+Cc: Andrea Righi <andrea.righi@canonical.com>
+Cc: Hao Sun <sunhao.th@gmail.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Song Liu <songliubraving@fb.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/khugepaged.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/mm/khugepaged.c~mm-khugepaged-skip-huge-page-collapse-for-special-files-fix
++++ a/mm/khugepaged.c
+@@ -445,9 +445,9 @@ static bool hugepage_vma_check(struct vm
+ 	if (!transhuge_vma_enabled(vma, vm_flags))
+ 		return false;
+ 
+-	if (vma->vm_file)
+-		return IS_ALIGNED((vma->vm_start >> PAGE_SHIFT) - vma->vm_pgoff,
+-				HPAGE_PMD_NR);
++	if (vma->vm_file && !IS_ALIGNED((vma->vm_start >> PAGE_SHIFT) -
++				vma->vm_pgoff, HPAGE_PMD_NR))
++		return false;
+ 
+ 	/* Enabled via shmem mount options or sysfs settings. */
+ 	if (shmem_file(vma->vm_file))
+_

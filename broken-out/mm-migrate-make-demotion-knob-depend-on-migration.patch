@@ -67,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifdef CONFIG_COMPACTION
 --- a/mm/mempolicy.c~mm-migrate-make-demotion-knob-depend-on-migration
 +++ a/mm/mempolicy.c
-@@ -2975,64 +2975,3 @@ void mpol_to_str(char *buffer, int maxle
+@@ -3051,64 +3051,3 @@ void mpol_to_str(char *buffer, int maxle
  		p += scnprintf(p, buffer + maxlen - p, ":%*pbl",
  			       nodemask_pr_args(&nodes));
  }

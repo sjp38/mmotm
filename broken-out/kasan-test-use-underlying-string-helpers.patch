@@ -21,6 +21,7 @@ it at runtime.
 
 Link: https://lkml.kernel.org/r/20211013150025.2875883-1-arnd@kernel.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Reviewed-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
 Cc: Kees Cook <keescook@chomium.org>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 Cc: Alexander Potapenko <glider@google.com>
@@ -30,7 +31,6 @@ Cc: Marco Elver <elver@google.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Peter Collingbourne <pcc@google.com>
 Cc: Patricia Alfonso <trishalfonso@google.com>
-Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

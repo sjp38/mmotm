@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern void __init mmap_init(void);
 --- a/mm/khugepaged.c~mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged
 +++ a/mm/khugepaged.c
-@@ -2291,6 +2291,11 @@ static void set_recommended_min_free_kby
+@@ -2296,6 +2296,11 @@ static void set_recommended_min_free_kby
  	int nr_zones = 0;
  	unsigned long recommended_min;
  
@@ -42,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	for_each_populated_zone(zone) {
  		/*
  		 * We don't need to worry about fragmentation of
-@@ -2326,6 +2331,8 @@ static void set_recommended_min_free_kby
+@@ -2331,6 +2336,8 @@ static void set_recommended_min_free_kby
  
  		min_free_kbytes = recommended_min;
  	}
@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	setup_per_zone_wmarks();
  }
  
-@@ -2347,12 +2354,11 @@ int start_stop_khugepaged(void)
+@@ -2352,12 +2359,11 @@ int start_stop_khugepaged(void)
  
  		if (!list_empty(&khugepaged_scan.mm_head))
  			wake_up_interruptible(&khugepaged_wait);
@@ -67,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return err;
 --- a/mm/page_alloc.c~mm-khugepaged-recalculate-min_free_kbytes-after-stopping-khugepaged
 +++ a/mm/page_alloc.c
-@@ -8467,7 +8467,7 @@ void setup_per_zone_wmarks(void)
+@@ -8469,7 +8469,7 @@ void setup_per_zone_wmarks(void)
   * 8192MB:	11584k
   * 16384MB:	16384k
   */
@@ -76,10 +76,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	unsigned long lowmem_kbytes;
  	int new_min_free_kbytes;
-@@ -8485,6 +8485,11 @@ int __meminit init_per_zone_wmark_min(vo
+@@ -8483,6 +8483,11 @@ int __meminit init_per_zone_wmark_min(vo
  		pr_warn("min_free_kbytes is not updated to %d because user defined value %d is preferred\n",
  				new_min_free_kbytes, user_min_free_kbytes);
- 	}
+ 
 +}
 +
 +int __meminit init_per_zone_wmark_min(void)

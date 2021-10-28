@@ -553,16 +553,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
 --- a/drivers/of/of_reserved_mem.c~memblock-rename-memblock_free-to-memblock_phys_free
 +++ a/drivers/of/of_reserved_mem.c
-@@ -45,7 +45,7 @@ static int __init early_init_dt_alloc_re
+@@ -46,7 +46,7 @@ static int __init early_init_dt_alloc_re
  	if (nomap) {
  		err = memblock_mark_nomap(base, size);
  		if (err)
 -			memblock_free(base, size);
 +			memblock_phys_free(base, size);
+ 		kmemleak_ignore_phys(base);
  	}
  
- 	return err;
-@@ -282,7 +282,8 @@ void __init fdt_init_reserved_mem(void)
+@@ -284,7 +284,8 @@ void __init fdt_init_reserved_mem(void)
  				if (nomap)
  					memblock_clear_nomap(rmem->base, rmem->size);
  				else
@@ -708,7 +708,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	phys_addr_t end = base + size - 1;
  
-@@ -1934,7 +1934,7 @@ static void __init free_memmap(unsigned
+@@ -1937,7 +1937,7 @@ static void __init free_memmap(unsigned
  	 * memmap array.
  	 */
  	if (pg < pgend)

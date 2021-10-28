@@ -54,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/mm/page_alloc.c~mm-move-node_reclaim_distance-to-fix-numa-without-smp
 +++ a/mm/page_alloc.c
-@@ -3958,6 +3958,8 @@ bool zone_watermark_ok_safe(struct zone
+@@ -3960,6 +3960,8 @@ bool zone_watermark_ok_safe(struct zone
  }
  
  #ifdef CONFIG_NUMA

@@ -110,9 +110,9 @@ It also provides documentation for the new interfaces.
 Link: https://lkml.kernel.org/r/20211007181918.136982-2-mike.kravetz@oracle.com
 Link: https://lkml.kernel.org/r/20211007181918.136982-2-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Michal Hocko <mhocko@suse.com>
-Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Zi Yan <ziy@nvidia.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>

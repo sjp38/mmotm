@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/init/main.c~init-make-unknown-command-line-param-message-clearer
 +++ a/init/main.c
-@@ -923,7 +923,9 @@ static void __init print_unknown_bootopt
+@@ -927,7 +927,9 @@ static void __init print_unknown_bootopt
  	for (p = &envp_init[2]; *p; p++)
  		end += sprintf(end, " %s", *p);
  

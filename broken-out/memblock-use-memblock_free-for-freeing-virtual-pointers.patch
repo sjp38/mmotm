@@ -323,7 +323,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	free_reserved_area((void *)start, (void *)end, POISON_FREE_INITMEM,
 --- a/init/main.c~memblock-use-memblock_free-for-freeing-virtual-pointers
 +++ a/init/main.c
-@@ -924,7 +924,7 @@ static void __init print_unknown_bootopt
+@@ -925,7 +925,7 @@ static void __init print_unknown_bootopt
  		end += sprintf(end, " %s", *p);
  
  	pr_notice("Unknown command line parameters:%s\n", unknown_options);

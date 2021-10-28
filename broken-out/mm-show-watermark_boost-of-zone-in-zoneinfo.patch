@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-show-watermark_boost-of-zone-in-zoneinfo
 +++ a/mm/page_alloc.c
-@@ -5991,6 +5991,7 @@ void show_free_areas(unsigned int filter
+@@ -5993,6 +5993,7 @@ void show_free_areas(unsigned int filter
  		printk(KERN_CONT
  			"%s"
  			" free:%lukB"
@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			" min:%lukB"
  			" low:%lukB"
  			" high:%lukB"
-@@ -6011,6 +6012,7 @@ void show_free_areas(unsigned int filter
+@@ -6013,6 +6014,7 @@ void show_free_areas(unsigned int filter
  			"\n",
  			zone->name,
  			K(zone_page_state(zone, NR_FREE_PAGES)),

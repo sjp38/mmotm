@@ -1,0 +1,31 @@
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: include/linux/radix-tree.h: replace kernel.h with the necessary inclusions
+
+When kernel.h is used in the headers it adds a lot into dependency hell,
+especially when there are circular dependencies are involved.
+
+Replace kernel.h inclusion with the list of what is really being used.
+
+Link: https://lkml.kernel.org/r/20211027150528.80003-1-andriy.shevchenko@linux.intel.com
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/radix-tree.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/include/linux/radix-tree.h~radix-tree-replace-kernelh-with-the-necessary-inclusions
++++ a/include/linux/radix-tree.h
+@@ -9,8 +9,10 @@
+ #define _LINUX_RADIX_TREE_H
+ 
+ #include <linux/bitops.h>
+-#include <linux/kernel.h>
++#include <linux/gfp.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
++#include <linux/math.h>
+ #include <linux/percpu.h>
+ #include <linux/preempt.h>
+ #include <linux/rcupdate.h>
+_

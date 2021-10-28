@@ -38,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	SYSTEM_POWER_OFF,
 --- a/init/main.c~mm-create-a-new-system-state-and-fix-core_kernel_text
 +++ a/init/main.c
-@@ -1505,6 +1505,8 @@ static int __ref kernel_init(void *unuse
+@@ -1506,6 +1506,8 @@ static int __ref kernel_init(void *unuse
  	kernel_init_freeable();
  	/* need to finish all async __init code before freeing the memory */
  	async_synchronize_full();

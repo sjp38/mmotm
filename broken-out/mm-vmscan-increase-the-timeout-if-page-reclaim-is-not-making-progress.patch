@@ -23,13 +23,12 @@ All the throttling hit the full timeout and then there was wakeup delays
 meaning that the wakeups are premature as no other reclaimer such as
 kswapd has made progress.  This patch increases the maximum timeout.
 
-Link: https://lkml.kernel.org/r/20211019090108.25501-8-mgorman@techsingularity.net
+Link: https://lkml.kernel.org/r/20211022144651.19914-8-mgorman@techsingularity.net
 Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Andreas Dilger <adilger.kernel@dilger.ca>
 Cc: "Darrick J . Wong" <djwong@kernel.org>
 Cc: Dave Chinner <david@fromorbit.com>
-Cc: Hillf Danton <hdanton@sina.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Matthew Wilcox <willy@infradead.org>
@@ -37,22 +36,21 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: NeilBrown <neilb@suse.de>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/vmscan.c |    2 ++
- 1 file changed, 2 insertions(+)
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/mm/vmscan.c~mm-vmscan-increase-the-timeout-if-page-reclaim-is-not-making-progress
 +++ a/mm/vmscan.c
-@@ -1033,6 +1033,8 @@ void reclaim_throttle(pg_data_t *pgdat,
- 	 */
- 	switch(reason) {
- 	case VMSCAN_THROTTLE_NOPROGRESS:
-+		timeout = HZ/2;
-+		break;
- 	case VMSCAN_THROTTLE_WRITEBACK:
- 		timeout = HZ/10;
+@@ -1042,7 +1042,7 @@ void reclaim_throttle(pg_data_t *pgdat,
  
+ 		break;
+ 	case VMSCAN_THROTTLE_NOPROGRESS:
+-		timeout = HZ/10;
++		timeout = HZ/2;
+ 		break;
+ 	case VMSCAN_THROTTLE_ISOLATED:
+ 		timeout = HZ/50;
 _

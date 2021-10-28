@@ -1,0 +1,38 @@
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+Subject: hugetlb_cgroup: remove unused hugetlb_cgroup_from_counter macro
+
+Patch series "Some cleanups and improvements for hugetlb".
+
+This patchset does some cleanups and improvements for hugetlb and
+hugetlb_cgroup.
+
+
+This patch (of 4):
+
+Since commit 726b7bbe ("hugetlb_cgroup: fix illegal access to memory"),
+the hugetlb_cgroup_from_counter() macro is not used any more, remove it.
+
+Link: https://lkml.kernel.org/r/cover.1634797639.git.baolin.wang@linux.alibaba.com
+Link: https://lkml.kernel.org/r/f03b29b801fa9942466ab15334ec09988e124ae6.1634797639.git.baolin.wang@linux.alibaba.com
+Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb_cgroup.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/mm/hugetlb_cgroup.c~hugetlb_cgroup-remove-unused-hugetlb_cgroup_from_counter-macro
++++ a/mm/hugetlb_cgroup.c
+@@ -27,9 +27,6 @@
+ #define MEMFILE_IDX(val)	(((val) >> 16) & 0xffff)
+ #define MEMFILE_ATTR(val)	((val) & 0xffff)
+ 
+-#define hugetlb_cgroup_from_counter(counter, idx)                   \
+-	container_of(counter, struct hugetlb_cgroup, hugepage[idx])
+-
+ static struct hugetlb_cgroup *root_h_cgroup __read_mostly;
+ 
+ static inline struct page_counter *
+_

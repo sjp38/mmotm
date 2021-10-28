@@ -8,6 +8,7 @@ Make them const to allow the compiler to put them in read-only memory.
 Link: https://lkml.kernel.org/r/20211014075042.17174-2-rikard.falkeborn@gmail.com
 Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
 Reviewed-by: SeongJae Park <sj@kernel.org>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

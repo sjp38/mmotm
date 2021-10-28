@@ -137,7 +137,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  						&mstart, &mend, NULL) {
 --- a/mm/memblock.c~memblock-add-memblock_driver_managed-to-mimic-ioresource_sysram_driver_managed
 +++ a/mm/memblock.c
-@@ -979,6 +979,10 @@ static bool should_skip_region(struct me
+@@ -984,6 +984,10 @@ static bool should_skip_region(struct me
  	if (!(flags & MEMBLOCK_NOMAP) && memblock_is_nomap(m))
  		return true;
  

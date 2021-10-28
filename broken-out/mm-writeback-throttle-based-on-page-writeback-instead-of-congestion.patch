@@ -10,13 +10,12 @@ located on the local node.  The main weakness is that there is no
 correlation between the location of the inode's pages and locality but
 that is still better than congestion_wait.
 
-Link: https://lkml.kernel.org/r/20211019090108.25501-5-mgorman@techsingularity.net
+Link: https://lkml.kernel.org/r/20211022144651.19914-5-mgorman@techsingularity.net
 Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Andreas Dilger <adilger.kernel@dilger.ca>
 Cc: "Darrick J . Wong" <djwong@kernel.org>
 Cc: Dave Chinner <david@fromorbit.com>
-Cc: Hillf Danton <hdanton@sina.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Matthew Wilcox <willy@infradead.org>
@@ -24,7 +23,6 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: NeilBrown <neilb@suse.de>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

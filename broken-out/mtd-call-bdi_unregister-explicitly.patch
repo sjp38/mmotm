@@ -1,0 +1,29 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: mtd: call bdi_unregister explicitly
+
+Call bdi_unregister explicitly instead of relying on the automatic
+unregistration.
+
+Link: https://lkml.kernel.org/r/20211021124441.668816-3-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Vignesh Raghavendra <vigneshr@ti.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/mtd/mtdcore.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/mtd/mtdcore.c~mtd-call-bdi_unregister-explicitly
++++ a/drivers/mtd/mtdcore.c
+@@ -2409,6 +2409,7 @@ static void __exit cleanup_mtd(void)
+ 	if (proc_mtd)
+ 		remove_proc_entry("mtd", NULL);
+ 	class_unregister(&mtd_class);
++	bdi_unregister(mtd_bdi);
+ 	bdi_put(mtd_bdi);
+ 	idr_destroy(&mtd_idr);
+ }
+_

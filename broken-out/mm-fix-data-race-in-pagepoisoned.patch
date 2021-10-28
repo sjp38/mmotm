@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/page-flags.h~mm-fix-data-race-in-pagepoisoned
 +++ a/include/linux/page-flags.h
-@@ -206,7 +206,7 @@ static __always_inline int PageCompound(
+@@ -215,7 +215,7 @@ static __always_inline int PageCompound(
  #define	PAGE_POISON_PATTERN	-1l
  static inline int PagePoisoned(const struct page *page)
  {

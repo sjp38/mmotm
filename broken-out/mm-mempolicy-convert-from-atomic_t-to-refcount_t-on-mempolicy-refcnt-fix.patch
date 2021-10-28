@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	.mode = MPOL_LOCAL,
  };
  
-@@ -2726,7 +2726,7 @@ void __init numa_policy_init(void)
+@@ -2802,7 +2802,7 @@ void __init numa_policy_init(void)
  
  	for_each_node(nid) {
  		preferred_node_policy[nid] = (struct mempolicy) {

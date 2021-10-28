@@ -215,7 +215,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				     cpus_updated, mems_updated);
 --- a/mm/page_alloc.c~mm-page_alloc-detect-allocation-forbidden-by-cpuset-and-bail-out-early
 +++ a/mm/page_alloc.c
-@@ -4908,6 +4908,19 @@ retry_cpuset:
+@@ -4910,6 +4910,19 @@ retry_cpuset:
  	if (!ac->preferred_zoneref->zone)
  		goto nopage;
  
