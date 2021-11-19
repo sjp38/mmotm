@@ -1,0 +1,26 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: kthread-add-the-helper-function-kthread_run_on_cpu-fix
+
+export kthread_create_on_cpu to modules
+
+ERROR: modpost: "kthread_create_on_cpu" [drivers/infiniband/sw/siw/siw.ko] undefined!
+ERROR: modpost: "kthread_create_on_cpu" [kernel/rcu/rcutorture.ko] undefined!
+
+Cc: Cai Huoqing <caihuoqing@baidu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/kthread.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/kernel/kthread.c~kthread-add-the-helper-function-kthread_run_on_cpu-fix
++++ a/kernel/kthread.c
+@@ -523,6 +523,7 @@ struct task_struct *kthread_create_on_cp
+ 	to_kthread(p)->cpu = cpu;
+ 	return p;
+ }
++EXPORT_SYMBOL(kthread_create_on_cpu);
+ 
+ void kthread_set_per_cpu(struct task_struct *k, int cpu)
+ {
+_

@@ -143,7 +143,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/init/main.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc
 +++ a/init/main.c
-@@ -843,7 +843,7 @@ static void __init mm_init(void)
+@@ -837,7 +837,7 @@ static void __init mm_init(void)
  	init_mem_debugging_and_hardening();
  	kfence_alloc_pool();
  	report_meminit();
@@ -154,7 +154,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* page_owner must be initialized after buddy is ready */
 --- a/lib/Kconfig~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc
 +++ a/lib/Kconfig
-@@ -671,6 +671,10 @@ config STACKDEPOT
+@@ -668,6 +668,10 @@ config STACKDEPOT
  	bool
  	select STACKTRACE
  

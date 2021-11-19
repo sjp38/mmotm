@@ -1,0 +1,59 @@
+From: Quanfa Fu <fuqf0919@gmail.com>
+Subject: mm: fix some comment errors
+
+Link: https://lkml.kernel.org/r/20211101040208.460810-1-fuqf0919@gmail.com
+Signed-off-by: Quanfa Fu <fuqf0919@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/khugepaged.c     |    2 +-
+ mm/memory-failure.c |    2 +-
+ mm/slab_common.c    |    2 +-
+ mm/swap.c           |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+--- a/mm/khugepaged.c~writeback-fix-some-comment-errors
++++ a/mm/khugepaged.c
+@@ -1306,7 +1306,7 @@ static int khugepaged_scan_pmd(struct mm
+ 		/*
+ 		 * Record which node the original page is from and save this
+ 		 * information to khugepaged_node_load[].
+-		 * Khupaged will allocate hugepage from the node has the max
++		 * Khugepaged will allocate hugepage from the node has the max
+ 		 * hit record.
+ 		 */
+ 		node = page_to_nid(page);
+--- a/mm/memory-failure.c~writeback-fix-some-comment-errors
++++ a/mm/memory-failure.c
+@@ -1298,7 +1298,7 @@ static int __get_unpoison_page(struct pa
+  *
+  * get_hwpoison_page() takes a page refcount of an error page to handle memory
+  * error on it, after checking that the error page is in a well-defined state
+- * (defined as a page-type we can successfully handle the memor error on it,
++ * (defined as a page-type we can successfully handle the memory error on it,
+  * such as LRU page and hugetlb page).
+  *
+  * Memory error handling could be triggered at any time on any type of page,
+--- a/mm/slab_common.c~writeback-fix-some-comment-errors
++++ a/mm/slab_common.c
+@@ -819,7 +819,7 @@ void __init setup_kmalloc_cache_index_ta
+ 
+ 	if (KMALLOC_MIN_SIZE >= 64) {
+ 		/*
+-		 * The 96 byte size cache is not used if the alignment
++		 * The 96 byte sized cache is not used if the alignment
+ 		 * is 64 byte.
+ 		 */
+ 		for (i = 64 + 8; i <= 96; i += 8)
+--- a/mm/swap.c~writeback-fix-some-comment-errors
++++ a/mm/swap.c
+@@ -882,7 +882,7 @@ void lru_cache_disable(void)
+ 	 * all online CPUs so any calls of lru_cache_disabled wrapped by
+ 	 * local_lock or preemption disabled would be ordered by that.
+ 	 * The atomic operation doesn't need to have stronger ordering
+-	 * requirements because that is enforeced by the scheduling
++	 * requirements because that is enforced by the scheduling
+ 	 * guarantees.
+ 	 */
+ 	__lru_add_drain_all(true);
+_

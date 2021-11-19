@@ -1,0 +1,46 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: fs: proc: store PDE()->data into inode->i_private
+
+Patch series "remove PDE_DATA()".
+
+I found a bug [1] some days ago, which is because we want to use
+inode->i_private to pass user private data.  However, this is wrong on
+proc fs.  We provide a specific function PDE_DATA() to get user private
+data.  Actually, we can hide this detail by storing PDE()->data into
+inode->i_private and removing PDE_DATA() completely.  The user could use
+inode->i_private to get user private data just like debugfs does.  This
+series is trying to remove PDE_DATA().
+
+[1] https://lore.kernel.org/lkml/20211029032638.84884-1-songmuchun@bytedance.com/
+
+
+This patch (of 4):
+
+PDE_DATA(inode) is introduced to get user private data and hide the layout
+of struct proc_dir_entry.  The inode->i_private is used to do the same
+thing as well.  Save a copy of user private data to inode-> i_private when
+proc inode is allocated.  This means the user also can get their private
+data by inode->i_private.
+
+Link: https://lkml.kernel.org/r/20211101093518.86845-1-songmuchun@bytedance.com
+Link: https://lkml.kernel.org/r/20211101093518.86845-2-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Alexey Gladkov <gladkov.alexey@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/inode.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/fs/proc/inode.c~fs-proc-store-pde-data-into-inode-i_private
++++ a/fs/proc/inode.c
+@@ -650,6 +650,7 @@ struct inode *proc_get_inode(struct supe
+ 		return NULL;
+ 	}
+ 
++	inode->i_private = de->data;
+ 	inode->i_ino = de->low_ino;
+ 	inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+ 	PROC_I(inode)->pde = de;
+_

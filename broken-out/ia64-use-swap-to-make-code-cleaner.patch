@@ -1,0 +1,31 @@
+From: Yang Guang <yang.guang5@zte.com.cn>
+Subject: arch/ia64/kernel/setup.c: use swap() to make code cleaner
+
+Use the macro 'swap()' defined in 'include/linux/minmax.h' to avoid
+opencoding it.
+
+Link: https://lkml.kernel.org/r/20211104001908.695110-1-yang.guang5@zte.com.cn
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
+Cc: David Yang <davidcomponentone@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/ia64/kernel/setup.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/arch/ia64/kernel/setup.c~ia64-use-swap-to-make-code-cleaner
++++ a/arch/ia64/kernel/setup.c
+@@ -208,10 +208,7 @@ sort_regions (struct rsvd_region *rsvd_r
+ 	while (max--) {
+ 		for (j = 0; j < max; ++j) {
+ 			if (rsvd_region[j].start > rsvd_region[j+1].start) {
+-				struct rsvd_region tmp;
+-				tmp = rsvd_region[j];
+-				rsvd_region[j] = rsvd_region[j + 1];
+-				rsvd_region[j + 1] = tmp;
++				swap(rsvd_region[j], rsvd_region[j + 1]);
+ 			}
+ 		}
+ 	}
+_

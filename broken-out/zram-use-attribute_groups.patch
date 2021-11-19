@@ -1,0 +1,47 @@
+From: Luis Chamberlain <mcgrof@kernel.org>
+Subject: zram: use ATTRIBUTE_GROUPS
+
+Embrace ATTRIBUTE_GROUPS to avoid boiler plate code.  This should not
+introduce any functional changes.
+
+Link: https://lkml.kernel.org/r/20211028203600.2157356-1-mcgrof@kernel.org
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Nitin Gupta <ngupta@vflare.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/block/zram/zram_drv.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+--- a/drivers/block/zram/zram_drv.c~zram-use-attribute_groups
++++ a/drivers/block/zram/zram_drv.c
+@@ -1901,14 +1901,7 @@ static struct attribute *zram_disk_attrs
+ 	NULL,
+ };
+ 
+-static const struct attribute_group zram_disk_attr_group = {
+-	.attrs = zram_disk_attrs,
+-};
+-
+-static const struct attribute_group *zram_disk_attr_groups[] = {
+-	&zram_disk_attr_group,
+-	NULL,
+-};
++ATTRIBUTE_GROUPS(zram_disk);
+ 
+ /*
+  * Allocate and initialize new zram device. the function returns
+@@ -1980,7 +1973,7 @@ static int zram_add(void)
+ 		blk_queue_max_write_zeroes_sectors(zram->disk->queue, UINT_MAX);
+ 
+ 	blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, zram->disk->queue);
+-	ret = device_add_disk(NULL, zram->disk, zram_disk_attr_groups);
++	ret = device_add_disk(NULL, zram->disk, zram_disk_groups);
+ 	if (ret)
+ 		goto out_cleanup_disk;
+ 
+_

@@ -1,0 +1,25 @@
+From: Jason Wang <wangborong@cdjrlc.com>
+Subject: ia64: fix typo in a comment
+
+The double `the' in a comment is repeated, thus it should be removed.
+
+Link: https://lkml.kernel.org/r/20211113030316.22650-1-wangborong@cdjrlc.com
+Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/ia64/kernel/uncached.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/ia64/kernel/uncached.c~ia64-fix-typo-in-a-comment
++++ a/arch/ia64/kernel/uncached.c
+@@ -171,7 +171,7 @@ failed:
+  * @n_pages: number of contiguous pages to allocate
+  *
+  * Allocate the specified number of contiguous uncached pages on the
+- * the requested node. If not enough contiguous uncached pages are available
++ * requested node. If not enough contiguous uncached pages are available
+  * on the requested node, roundrobin starting with the next higher node.
+  */
+ unsigned long uncached_alloc_page(int starting_nid, int n_pages)
+_

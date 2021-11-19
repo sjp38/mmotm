@@ -1,0 +1,36 @@
+From: Matthew Wilcox <willy@infradead.org>
+Subject: ipc/ipc_sysctl.c:put_pages_list(): reinitialise the page list
+
+
+While free_unref_page_list() puts pages onto the CPU local LRU list, it
+does not remove them from the list they were passed in on.  That makes the
+list_head appear to be non-empty, and would lead to various corruption
+problems if we didn't have an assertion that the list was empty.
+
+Reinitialise the list after calling free_unref_page_list() to avoid this
+problem.
+
+Link: https://lkml.kernel.org/r/YYp40A2lNrxaZji8@casper.infradead.org
+Fixes: 988c69f1bc23 ("mm: optimise put_pages_list()")
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+Reported-by: Namjae Jeon <linkinjeon@kernel.org>
+Tested-by: Namjae Jeon <linkinjeon@kernel.org>
+Cc: Steve French <smfrench@gmail.com>
+Cc: Hyeoncheol Lee <hyc.lee@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/swap.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/swap.c~hitting-bug_on-trap-in-read_pages-mm-optimise-put_pages_list
++++ a/mm/swap.c
+@@ -155,6 +155,7 @@ void put_pages_list(struct list_head *pa
+ 	}
+ 
+ 	free_unref_page_list(pages);
++	INIT_LIST_HEAD(pages);
+ }
+ EXPORT_SYMBOL(put_pages_list);
+ 
+_

@@ -1,0 +1,30 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next-git-rejects
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/bpf/index.rst |    4 ----
+ 1 file changed, 4 deletions(-)
+
+--- a/Documentation/bpf/index.rst~linux-next-git-rejects
++++ a/Documentation/bpf/index.rst
+@@ -12,8 +12,6 @@ BPF instruction-set.
+ The Cilium project also maintains a `BPF and XDP Reference Guide`_
+ that goes into great technical depth about the BPF Architecture.
+ 
+-<<<<<<< HEAD
+-libbpf
+ ======
+ 
+ Documentation/bpf/libbpf/index.rst is a userspace library for loading and interacting with bpf programs.
+@@ -21,8 +19,6 @@ Documentation/bpf/libbpf/index.rst is a
+ BPF Type Format (BTF)
+ =====================
+ 
+-=======
+->>>>>>> linux-next/akpm-base
+ .. toctree::
+    :maxdepth: 1
+ 
+_

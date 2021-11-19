@@ -1,0 +1,42 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-remove-redundant-check-about-fault_flag_allow_retry-bit-checkpatch-fixes
+
+WARNING: Block comments use a trailing */ on a separate line
+#407: FILE: arch/s390/mm/fault.c:459:
++			 * mmap_lock has not been released */
+
+total: 0 errors, 1 warnings, 444 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+./patches/mm-remove-redundant-check-about-fault_flag_allow_retry-bit.patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
+Please run checkpatch prior to sending patches
+
+Cc: Qi Zheng <zhengqi.arch@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/s390/mm/fault.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- a/arch/s390/mm/fault.c~mm-remove-redundant-check-about-fault_flag_allow_retry-bit-checkpatch-fixes
++++ a/arch/s390/mm/fault.c
+@@ -455,8 +455,10 @@ retry:
+ 	if (fault & VM_FAULT_RETRY) {
+ 		if (IS_ENABLED(CONFIG_PGSTE) && gmap &&
+ 			(flags & FAULT_FLAG_RETRY_NOWAIT)) {
+-			/* FAULT_FLAG_RETRY_NOWAIT has been set,
+-			 * mmap_lock has not been released */
++			/*
++			 * FAULT_FLAG_RETRY_NOWAIT has been set, mmap_lock has
++			 * not been released
++			 */
+ 			current->thread.gmap_pfault = 1;
+ 			fault = VM_FAULT_PFAULT;
+ 			goto out_up;
+_

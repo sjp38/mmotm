@@ -34,7 +34,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/init/main.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fix-2
 +++ a/init/main.c
-@@ -846,9 +846,12 @@ static void __init mm_init(void)
+@@ -840,9 +840,12 @@ static void __init mm_init(void)
  	stack_depot_early_init();
  	mem_init();
  	mem_init_print_info();

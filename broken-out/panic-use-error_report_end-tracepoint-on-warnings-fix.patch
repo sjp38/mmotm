@@ -1,0 +1,25 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: panic-use-error_report_end-tracepoint-on-warnings-fix
+
+add comma to enum list, per Andy.
+
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/trace/events/error_report.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/trace/events/error_report.h~panic-use-error_report_end-tracepoint-on-warnings-fix
++++ a/include/trace/events/error_report.h
+@@ -18,7 +18,7 @@
+ enum error_detector {
+ 	ERROR_DETECTOR_KFENCE,
+ 	ERROR_DETECTOR_KASAN,
+-	ERROR_DETECTOR_WARN
++	ERROR_DETECTOR_WARN,
+ };
+ 
+ #endif /* __ERROR_REPORT_DECLARE_TRACE_ENUMS_ONCE_ONLY */
+_
