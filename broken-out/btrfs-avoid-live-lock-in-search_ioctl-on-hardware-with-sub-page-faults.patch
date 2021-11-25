@@ -1,0 +1,41 @@
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: btrfs: avoid live-lock in search_ioctl() on hardware with sub-page faults
+
+Commit a48b73eca4ce ("btrfs: fix potential deadlock in the search ioctl")
+addressed a lockdep warning by pre-faulting the user pages and attempting
+the copy_to_user_nofault() in an infinite loop.  On architectures like
+arm64 with MTE, an access may fault within a page at a location different
+from what fault_in_writeable() probed.  Since the sk_offset is rewound to
+the previous struct btrfs_ioctl_search_header boundary, there is no
+guaranteed forward progress and search_ioctl() may live-lock.
+
+Use fault_in_exact_writeable() instead which probes the entire user
+buffer for faults at sub-page granularity.
+
+Link: https://lkml.kernel.org/r/20211124192024.2408218-4-catalin.marinas@arm.com
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Reported-by: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Josef Bacik <josef@toxicpanda.com>
+Cc: David Sterba <dsterba@suse.com>
+Cc: Andreas Gruenbacher <agruenba@redhat.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/btrfs/ioctl.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/fs/btrfs/ioctl.c~btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults
++++ a/fs/btrfs/ioctl.c
+@@ -2223,7 +2223,8 @@ static noinline int search_ioctl(struct
+ 
+ 	while (1) {
+ 		ret = -EFAULT;
+-		if (fault_in_writeable(ubuf + sk_offset, *buf_size - sk_offset))
++		if (fault_in_exact_writeable(ubuf + sk_offset,
++					     *buf_size - sk_offset))
+ 			break;
+ 
+ 		ret = btrfs_search_forward(root, &key, path, sk->min_transid);
+_

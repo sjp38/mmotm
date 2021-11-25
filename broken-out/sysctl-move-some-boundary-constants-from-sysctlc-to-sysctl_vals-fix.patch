@@ -1,0 +1,59 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals-fix
+
+update it for "mm/pagealloc: sysctl: change watermark_scale_factor max
+limit to 30%".
+
+Cc: Xiaoming Ni <nixiaoming@huawei.com>
+Cc: Suren Baghdasaryan <surenb@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/proc_sysctl.c  |    2 +-
+ include/linux/sysctl.h |    3 ++-
+ kernel/sysctl.c        |    3 +--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+--- a/fs/proc/proc_sysctl.c~sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals-fix
++++ a/fs/proc/proc_sysctl.c
+@@ -26,7 +26,7 @@ static const struct file_operations proc
+ static const struct inode_operations proc_sys_dir_operations;
+ 
+ /* shared constants to be used in various sysctls */
+-const int sysctl_vals[] = { -1, 0, 1, 2, 4, 100, 200, 1000, INT_MAX };
++const int sysctl_vals[] = { -1, 0, 1, 2, 4, 100, 200, 1000, 3000, INT_MAX };
+ EXPORT_SYMBOL(sysctl_vals);
+ 
+ /* Support for permanently empty directories */
+--- a/include/linux/sysctl.h~sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals-fix
++++ a/include/linux/sysctl.h
+@@ -46,7 +46,8 @@ struct ctl_dir;
+ #define SYSCTL_ONE_HUNDRED		((void *)&sysctl_vals[5])
+ #define SYSCTL_TWO_HUNDRED		((void *)&sysctl_vals[6])
+ #define SYSCTL_ONE_THOUSAND		((void *)&sysctl_vals[7])
+-#define SYSCTL_INT_MAX			((void *)&sysctl_vals[8])
++#define SYSCTL_THREE_THOUSAND		((void *)&sysctl_vals[8])
++#define SYSCTL_INT_MAX			((void *)&sysctl_vals[9])
+ 
+ extern const int sysctl_vals[];
+ 
+--- a/kernel/sysctl.c~sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals-fix
++++ a/kernel/sysctl.c
+@@ -116,7 +116,6 @@ static int sixty = 60;
+ static unsigned long zero_ul;
+ static unsigned long one_ul = 1;
+ static unsigned long long_max = LONG_MAX;
+-static int three_thousand = 3000;
+ #ifdef CONFIG_PRINTK
+ static int ten_thousand = 10000;
+ #endif
+@@ -2954,7 +2953,7 @@ static struct ctl_table vm_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= watermark_scale_factor_sysctl_handler,
+ 		.extra1		= SYSCTL_ONE,
+-		.extra2		= &three_thousand,
++		.extra2		= SYSCTL_THREE_THOUSAND,
+ 	},
+ 	{
+ 		.procname	= "percpu_pagelist_high_fraction",
+_

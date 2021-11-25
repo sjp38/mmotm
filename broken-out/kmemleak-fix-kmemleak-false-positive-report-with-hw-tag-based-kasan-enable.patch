@@ -13,7 +13,8 @@ kmalloc(), and kfree() gets the pointer with 0xFF tag.
 Call sequence:
 ptr = kmalloc(size, GFP_KERNEL);
 page = virt_to_page(ptr);
-kfree(page_address(page));
+offset = offset_in_page(ptr);
+kfree(page_address(page) + offset);
 ptr = kmalloc(size, GFP_KERNEL);
 
 Call sequence like that may cause the warning as following:

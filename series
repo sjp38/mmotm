@@ -2,49 +2,11 @@ origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
-#
-#mm/swap
-hitting-bug_on-trap-in-read_pages-mm-optimise-put_pages_list.patch
-#
-#ipc
-ipc-warn-if-trying-to-remove-ipc-object-which-is-absent.patch
-shm-extend-forced-shm-destroy-to-support-objects-from-several-ipc-nses-simplified.patch
-#
-#mm/slab-generic
-mm-emit-the-free-trace-report-before-freeing-memory-in-kmem_cache_free.patch
-#
-#hexagon
-hexagon-export-raw-i-o-routines-for-modules.patch
-hexagon-clean-up-timer-regsh.patch
-hexagon-ignore-vmlinuxlds.patch
-#
-#mm/kmemleak
-mm-kmemleak-slob-respect-slab_noleaktrace-flag.patch
-#
-#mm/hugetlb
-hugetlb-fix-hugetlb-cgroup-refcounting-during-mremap.patch
-#
-#mm/kasan
-kasan-test-silence-intentional-read-overflow-warnings.patch
-#
-#mm/damon
-mm-damon-dbgfs-use-__gfp_nowarn-for-user-specified-size-buffer-allocation.patch
-mm-damon-dbgfs-fix-missed-use-of-damon_dbgfs_lock.patch
-#
-#mm/highmem
-kmap_local-dont-assume-kmap-ptes-are-linear-arrays-in-memory.patch
-#
-#proc
-proc-vmcore-fix-clearing-user-buffer-by-properly-using-clear_user.patch
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/percpu
 #mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
 mm-fix-panic-in-__alloc_pages.patch
-#
-#mm/hugetlb
-hugetlb-userfaultfd-fix-reservation-restore-on-userfaultfd-error.patch
 #
 #mm/pagecache
 #mm-bdi-initialize-bdi_min_ratio-when-bdi-unregister.patch: acks?  check?
@@ -54,6 +16,24 @@ mm-bdi-initialize-bdi_min_ratio-when-bdi-unregister-fix.patch
 #mm/mlock
 #increase-default-mlock_limit-to-8-mib.patch: review?  5.17? why?
 increase-default-mlock_limit-to-8-mib.patch
+#
+#mm/selftests
+#mm-hugepages-fix-size-in-hugetlb-mremap-test.patch: check review
+#
+#MAINTAINERS
+maintainers-update-kdump-maintainers.patch
+#
+#mailmap
+mailmap-update-email-address-for-guo-ren.patch
+#
+#mm/pagecache
+#filemap-remove-pagehwpoison-check-from-next_uptodate_page.patch: effects?  -stable?
+filemap-remove-pagehwpoison-check-from-next_uptodate_page.patch
+#
+#
+#
+#
+#
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -193,6 +173,8 @@ ia64-fix-typo-in-a-comment.patch
 #NEXT_PATCHES_START kbuild
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START scripts
+scripts-spellingtxt-add-oveflow.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kernfs
 #NEXT_PATCHES_END
@@ -347,6 +329,8 @@ ocfs2-fix-ocfs2-corrupt-when-iputting-an-inode.patch
 #NEXT_PATCHES_START vfs-viro
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START vfs-akpm
+fs-ioctl-remove-unnecessary-__user-annotation.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kernel/watchdog
 #NEXT_PATCHES_END
@@ -377,11 +361,37 @@ mm-slab-make-slab-iterator-functions-static.patch
 #mm/kmemleak
 kmemleak-fix-kmemleak-false-positive-report-with-hw-tag-based-kasan-enable.patch
 #
+#mm-kmemleak-alloc-gray-object-for-reserved-region-with-direct-map.patch: acks?
+mm-kmemleak-alloc-gray-object-for-reserved-region-with-direct-map.patch
+#
+#mm-defer-kmemleak-object-creation-of-module_alloc.patch: -stable? Fixes:?
+mm-defer-kmemleak-object-creation-of-module_alloc.patch
+#
 #mm/dax
+memory-failure-fetch-compound_head-after-pgmap_pfn_valid.patch
+mm-page_alloc-split-prep_compound_page-into-head-and-tail-subparts.patch
+mm-page_alloc-refactor-memmap_init_zone_device-page-init.patch
+mm-memremap-add-zone_device-support-for-compound-pages.patch
+device-dax-use-align-for-determining-pgoff.patch
+device-dax-use-struct_size.patch
+device-dax-ensure-dev_dax-pgmap-is-valid-for-dynamic-devices.patch
+device-dax-factor-out-page-mapping-initialization.patch
+device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud.patch
+device-dax-compound-devmap-support.patch
+#
 #mm/kasan
 kasan-test-add-globals-left-out-of-bounds-test.patch
 #
+kasan-add-ability-to-detect-double-kmem_cache_destroy.patch
+kasan-test-add-test-case-for-double-kmem_cache_destroy.patch
+#
+#
 #mm/debug
+mmfs-split-dump_mapping-out-from-dump_page.patch
+#
+tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling.patch
+tools-vm-page_owner_sortc-support-sorting-by-stack-trace.patch
+#
 #mm/pagecache
 #mm/msync
 #mm/fadvise
@@ -391,6 +401,7 @@ gup-avoid-multiple-user-access-locking-unlocking-in-fault_in_read-writeable.patc
 #mm/swap
 #mm/shmem
 mm-shmem-dont-truncate-page-if-memory-failure-happens.patch
+#
 #
 #mm/memremap
 #mm/memcg
@@ -402,6 +413,8 @@ mm-page_counter-remove-an-incorrect-call-to-propagate_protected_usage.patch
 memcg-better-bounds-on-the-memcg-stats-updates.patch
 #
 #mm/selftests
+selftests-vm-use-swap-to-make-code-cleaner.patch
+#
 #mm/pagemap
 mm-remove-redundant-check-about-fault_flag_allow_retry-bit.patch
 mm-remove-redundant-check-about-fault_flag_allow_retry-bit-checkpatch-fixes.patch
@@ -409,7 +422,13 @@ mm-remove-redundant-check-about-fault_flag_allow_retry-bit-checkpatch-fixes.patc
 #mm-rearrange-madvise-code-to-allow-for-reuse.patch: check review (IDs)
 mm-rearrange-madvise-code-to-allow-for-reuse.patch
 mm-add-a-field-to-store-names-for-private-anonymous-memory.patch
+mm-add-a-field-to-store-names-for-private-anonymous-memory-fix.patch
 mm-add-anonymous-vma-name-refcounting.patch
+#
+mm-ptep_clear-page-table-helper.patch
+mm-page-table-check.patch
+mm-page-table-check-fix.patch
+x86-mm-add-x86_64-support-for-page-table-check.patch
 #
 #mm/mprotect
 #mm/mremap
@@ -428,10 +447,26 @@ mm-add-anonymous-vma-name-refcounting.patch
 #mm/documentation
 #mm/initialization
 #mm/pagealloc
+#mm-discard-__gfp_atomic.patch: check review
 mm-discard-__gfp_atomic.patch
+#
+mm-introduce-memalloc_retry_wait.patch
+#
+sysctl-change-watermark_scale_factor-max-limit-to-30%.patch
 #
 #mm/memory-failure
 #mm/hugetlb
+hugetlb-add-hugetlbnuma_stat-file.patch
+#
+#mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch: more review?
+mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
+mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key.patch
+mm-sparsemem-use-page-table-lock-to-protect-kernel-pmd-operations.patch
+selftests-vm-add-a-hugetlb-test-case.patch
+mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap.patch
+#
+mm-hugepages-make-memory-size-variable-in-hugepage-mremap-selftest.patch
+#
 #mm/userfaultfd
 selftests-uffd-allow-eintr-eagain.patch
 #
@@ -460,17 +495,21 @@ mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix.patch
 #mm/hugetlbfs
 #mm/migration
 mm-migrate-fix-the-return-value-of-migrate_pages.patch
+#mm-migrate-correct-the-hugetlb-migration-stats.patch: https://lkml.kernel.org/r/3e6dcac6-c947-5f94-cd94-b59a8247dbcf@oracle.com TBU
 mm-migrate-correct-the-hugetlb-migration-stats.patch
 mm-compaction-fix-the-migration-stats-in-trace_mm_compaction_migratepages.patch
 #
-#mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref.patch: acks?
+#mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref.patch: acks? TBU
 mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref.patch
 #
 #mm-migrate-support-multiple-target-nodes-demotion.patch: TBU
 mm-migrate-support-multiple-target-nodes-demotion.patch
 #
+mm-migrate-add-more-comments-for-selecting-target-node-randomly.patch
+#
 #mm/kmap
 #mm/thp
+#
 #mm/cma
 #mm/readahead
 #mm/nommu
@@ -504,10 +543,17 @@ zsmalloc-introduce-obj_allocated.patch
 zsmalloc-move-huge-compressed-obj-from-page-to-zspage.patch
 zsmalloc-remove-zspage-isolation-for-migration.patch
 locking-rwlocks-introduce-write_lock_nested.patch
+locking-rwlocks-introduce-write_lock_nested-fix.patch
+locking-rwlocks-introduce-write_lock_nested-fix-2.patch
 zsmalloc-replace-per-zpage-lock-with-pool-migrate_lock.patch
 zsmalloc-replace-get_cpu_var-with-local_lock.patch
 #
 #mm/uaccess
+mm-introduce-fault_in_exact_writeable-to-probe-for-sub-page-faults.patch
+arm64-add-support-for-sub-page-faults-user-probing.patch
+#btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults.patch: TBU?
+btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults.patch
+#
 #mm/ioremap
 #mm/highmem
 #mm/support
@@ -569,6 +615,7 @@ kernel-hung_taskc-monitor-killed-tasks.patch
 proc-vmcore-dont-fake-reading-zeroes-on-surprise-vmcore_cb-unregistration.patch
 #
 proc-make-the-proc_create-stubs-static-inlines.patch
+proc-make-the-proc_create-stubs-static-inlines-fix.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sysctl
@@ -588,6 +635,16 @@ proc-sysctl-make-protected_-world-readable.patch
 #NEXT_PATCHES_START notifiers
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START core-kernel
+fs-exec-replace-strlcpy-with-strscpy_pad-in-__set_task_comm.patch
+fs-exec-replace-strncpy-with-strscpy_pad-in-__get_task_comm.patch
+drivers-infiniband-replace-open-coded-string-copy-with-get_task_comm.patch
+fs-binfmt_elf-replace-open-coded-string-copy-with-get_task_comm.patch
+samples-bpf-test_overhead_kprobe_kern-replace-bpf_probe_read_kernel-with-bpf_probe_read_kernel_str-to-get-task-comm.patch
+tools-bpf-bpftool-skeleton-replace-bpf_probe_read_kernel-with-bpf_probe_read_kernel_str-to-get-task-comm.patch
+tools-testing-selftests-bpf-replace-open-coded-16-with-task_comm_len.patch
+#
+kthread-dynamically-allocate-memory-to-store-kthreads-full-name.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START dca
 #NEXT_PATCHES_END
@@ -636,6 +693,8 @@ lz4-fix-lz4_decompress_safe_partial-read-out-of-bound.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START checkpatch
 checkpatch-relax-regexp-for-commit_log_long_line.patch
+#
+checkpatch-improve-kconfig-help-test.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START crc
@@ -723,8 +782,7 @@ init-mainc-silence-some-wunused-parameter-warnings.patch
 #NEXT_PATCHES_START nilfs2
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START hfs
-#hfsplus-fix-out-of-bounds-warnings-in-__hfsplus_setxattr.patch: legit or workaround?
-hfsplus-fix-out-of-bounds-warnings-in-__hfsplus_setxattr.patch
+hfsplus-use-struct_group_attr-for-memcpy-region.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START ufs
@@ -895,6 +953,10 @@ panic-use-error_report_end-tracepoint-on-warnings-fix.patch
 #NEXT_PATCHES_START delayacct
 delayacct-support-swapin-delay-accounting-for-swapping-without-blkio.patch
 #
+delayacct-fix-incomplete-disable-operation-when-switch-enable-to-disable.patch
+#
+delayacct-cleanup-flags-in-struct-task_delay_info-and-functions-use-it.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mutex
 #NEXT_PATCHES_END
@@ -1005,13 +1067,35 @@ linux-next-git-rejects.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START post-linux-next
 #
+#sysctl
+sysctl-add-a-new-register_sysctl_init-interface.patch
+#sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals.patch: TBU?
+sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals.patch
+sysctl-move-some-boundary-constants-from-sysctlc-to-sysctl_vals-fix.patch
+hung_task-move-hung_task-sysctl-interface-to-hung_taskc.patch
+watchdog-move-watchdog-sysctl-interface-to-watchdogc.patch
+sysctl-make-ngroups_max-const.patch
+sysctl-use-const-for-typically-used-max-min-proc-sysctls.patch
+sysctl-use-sysctl_zero-to-replace-some-static-int-zero-uses.patch
+aio-move-aio-sysctl-to-aioc.patch
+dnotify-move-dnotify-sysctl-to-dnotifyc.patch
+#
+hpet-simplify-subdirectory-registration-with-register_sysctl.patch
+i915-simplify-subdirectory-registration-with-register_sysctl.patch
+macintosh-mac_hidc-simplify-subdirectory-registration-with-register_sysctl.patch
+ocfs2-simplify-subdirectory-registration-with-register_sysctl.patch
+test_sysctl-simplify-subdirectory-registration-with-register_sysctl.patch
+inotify-simplify-subdirectory-registration-with-register_sysctl.patch
+inotify-simplify-subdirectory-registration-with-register_sysctl-fix.patch
+cdrom-simplify-subdirectory-registration-with-register_sysctl.patch
+eventpoll-simplify-sysctl-declaration-with-register_sysctl.patch
+#
 #proc
-#fs-proc-store-pde-data-into-inode-i_private.patch+N: TBU
 fs-proc-store-pde-data-into-inode-i_private.patch
-fs-proc-replace-pde_datainode-with-inode-i_private.patch
+proc-remove-pde_data-completely.patch
+#
+#fs-proc-store-pde-data-into-inode-i_private.patch+N: TBU
 #fs-proc-remove-pde_data.patch: regrep
-fs-proc-remove-pde_data.patch
-fs-proc-use-define_proc_show_attribute-to-simplify-the-code.patch
 #
 #lib
 #lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc.patch: needs cd06ab2fd48f
@@ -1042,3 +1126,26 @@ workaround-for-a-pci-restoring-bug.patch
 #[merged]kasan-test-use-underlying-string-helpers-checkpatch-fixes.patch
 #[merged]kasan-test-consolidate-workarounds-for-unwanted-__alloc_size-protection.patch
 #[to-be-updated]hugetlb-userfaultfd-fix-reservation-restore-on-userfaultfd-error.patch
+#[wrecked]hfsplus-fix-out-of-bounds-warnings-in-__hfsplus_setxattr.patch
+#[merged]hitting-bug_on-trap-in-read_pages-mm-optimise-put_pages_list.patch
+#[merged]ipc-warn-if-trying-to-remove-ipc-object-which-is-absent.patch
+#[merged]shm-extend-forced-shm-destroy-to-support-objects-from-several-ipc-nses-simplified.patch
+#[merged]mm-emit-the-free-trace-report-before-freeing-memory-in-kmem_cache_free.patch
+#[merged]hexagon-export-raw-i-o-routines-for-modules.patch
+#[merged]hexagon-clean-up-timer-regsh.patch
+#[merged]hexagon-ignore-vmlinuxlds.patch
+#[merged]mm-kmemleak-slob-respect-slab_noleaktrace-flag.patch
+#[merged]hugetlb-fix-hugetlb-cgroup-refcounting-during-mremap.patch
+#[merged]hugetlb-userfaultfd-fix-reservation-restore-on-userfaultfd-error.patch
+#[merged]kasan-test-silence-intentional-read-overflow-warnings.patch
+#[merged]mm-damon-dbgfs-use-__gfp_nowarn-for-user-specified-size-buffer-allocation.patch
+#[merged]mm-damon-dbgfs-fix-missed-use-of-damon_dbgfs_lock.patch
+#[merged]kmap_local-dont-assume-kmap-ptes-are-linear-arrays-in-memory.patch
+#[merged]proc-vmcore-fix-clearing-user-buffer-by-properly-using-clear_user.patch
+#[nacked]mm-thp-update-split_queue_len-correctly.patch
+#[alternative-merged]mm-hugepages-fix-size-in-hugetlb-mremap-test.patch
+#[to-be-updated]fs-proc-store-pde-data-into-inode-i_private.patch
+#[to-be-updated]fs-proc-replace-pde_datainode-with-inode-i_private.patch
+#[to-be-updated]fs-proc-remove-pde_data.patch
+#[to-be-updated]fs-proc-use-define_proc_show_attribute-to-simplify-the-code.patch
+#[to-be-updated]kasan-distinguish-kasan-report-from-generic-bug.patch

@@ -60,7 +60,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <linux/list.h>
  #include <linux/spinlock.h>
  #include <linux/rbtree.h>
-@@ -375,6 +376,12 @@ struct vm_userfaultfd_ctx {
+@@ -386,6 +387,12 @@ struct vm_userfaultfd_ctx {
  struct vm_userfaultfd_ctx {};
  #endif /* CONFIG_USERFAULTFD */
  
@@ -73,7 +73,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * This struct describes a virtual memory area. There is one of these
   * per VM-area/task. A VM area is any part of the process virtual memory
-@@ -426,7 +433,7 @@ struct vm_area_struct {
+@@ -437,7 +444,7 @@ struct vm_area_struct {
  			unsigned long rb_subtree_last;
  		} shared;
  		/* Serialized by mmap_sem. */

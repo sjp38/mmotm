@@ -18,7 +18,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/init/main.c~init-mainc-silence-some-wunused-parameter-warnings
 +++ a/init/main.c
-@@ -181,7 +181,7 @@ EXPORT_SYMBOL_GPL(static_key_initialized
+@@ -180,7 +180,7 @@ EXPORT_SYMBOL_GPL(static_key_initialized
  unsigned int reset_devices;
  EXPORT_SYMBOL(reset_devices);
  
@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	reset_devices = 1;
  	return 1;
-@@ -231,13 +231,13 @@ static bool __init obsolete_checksetup(c
+@@ -230,13 +230,13 @@ static bool __init obsolete_checksetup(c
  unsigned long loops_per_jiffy = (1<<12);
  EXPORT_SYMBOL(loops_per_jiffy);
  
@@ -43,7 +43,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	console_loglevel = CONSOLE_LOGLEVEL_QUIET;
  	return 0;
-@@ -482,7 +482,7 @@ static void __init setup_boot_config(voi
+@@ -473,7 +473,7 @@ static void __init setup_boot_config(voi
  	get_boot_config_from_initrd(NULL, NULL);
  }
  
@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	pr_warn("WARNING: 'bootconfig' found on the kernel command line but CONFIG_BOOT_CONFIG is not set.\n");
  	return 0;
-@@ -511,7 +511,8 @@ static void __init repair_env_string(cha
+@@ -502,7 +502,8 @@ static void __init repair_env_string(cha
  
  /* Anything after -- gets handed straight to init. */
  static int __init set_init_arg(char *param, char *val,
@@ -62,7 +62,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	unsigned int i;
  
-@@ -536,7 +537,8 @@ static int __init set_init_arg(char *par
+@@ -527,7 +528,8 @@ static int __init set_init_arg(char *par
   * unused parameters (modprobe will find them in /proc/cmdline).
   */
  static int __init unknown_bootoption(char *param, char *val,
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	size_t len = strlen(param);
  
-@@ -736,7 +738,8 @@ noinline void __ref rest_init(void)
+@@ -727,7 +729,8 @@ noinline void __ref rest_init(void)
  
  /* Check for early params. */
  static int __init do_early_param(char *param, char *val,
@@ -82,7 +82,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	const struct obs_kernel_param *p;
  
-@@ -1358,8 +1361,10 @@ static const char *initcall_level_names[
+@@ -1349,8 +1352,10 @@ static const char *initcall_level_names[
  	"late",
  };
  
@@ -95,7 +95,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return 0;
  }
-@@ -1496,7 +1501,7 @@ void __weak free_initmem(void)
+@@ -1487,7 +1492,7 @@ void __weak free_initmem(void)
  	free_initmem_default(POISON_FREE_INITMEM);
  }
  

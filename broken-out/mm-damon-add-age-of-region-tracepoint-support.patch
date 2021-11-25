@@ -13,10 +13,9 @@ Through this，we can conclude that the region has a very low nr_access
 value for a long time.
 
 Link: https://lkml.kernel.org/r/b9def1262af95e0dc1d0caea447886434db01161.1636989871.git.xhao@linux.alibaba.com
-Fixes: 2fcb93629ad8 ("mm/damon: add a tracepoint")
 Signed-off-by: Xin Hao <xhao@linux.alibaba.com>
+Reviewed-by: SeongJae Park <sj@kernel.org>
 Cc: Muchun Song <songmuchun@bytedance.com>
-Cc: SeongJae Park <sj@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

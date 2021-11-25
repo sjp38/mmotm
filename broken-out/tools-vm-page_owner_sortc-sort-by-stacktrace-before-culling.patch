@@ -1,0 +1,80 @@
+From: Sean Anderson <seanga2@gmail.com>
+Subject: tools/vm/page_owner_sort.c: sort by stacktrace before culling
+
+The contents of page_owner have changed to include more information than
+the stack trace.  On a modern kernel, the blocks look like
+
+Page allocated via order 0, mask 0x0(), pid 1, ts 165564237 ns, free_ts 0 ns
+ register_early_stack+0x4b/0x90
+ init_page_owner+0x39/0x250
+ kernel_init_freeable+0x11e/0x242
+ kernel_init+0x16/0x130
+
+Sorting by the contents of .txt will result in almost no repeated pages,
+as the pid, ts, and free_ts will almost never be the same.  Instead, sort
+by the contents of the stack trace, which we assume to be whatever is
+after the first line.
+
+Link: https://lkml.kernel.org/r/20211124193709.1805776-1-seanga2@gmail.com
+Signed-off-by: Sean Anderson <seanga2@gmail.com>
+Cc: Changhee Han <ch0.han@lge.com>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling
++++ a/tools/vm/page_owner_sort.c
+@@ -23,6 +23,7 @@
+ 
+ struct block_list {
+ 	char *txt;
++	char *stacktrace;
+ 	int len;
+ 	int num;
+ 	int page_num;
+@@ -51,11 +52,11 @@ int read_block(char *buf, int buf_size,
+ 	return -1; /* EOF or no space left in buf. */
+ }
+ 
+-static int compare_txt(const void *p1, const void *p2)
++static int compare_stacktrace(const void *p1, const void *p2)
+ {
+ 	const struct block_list *l1 = p1, *l2 = p2;
+ 
+-	return strcmp(l1->txt, l2->txt);
++	return strcmp(l1->stacktrace ?: "", l2->stacktrace ?: "");
+ }
+ 
+ static int compare_num(const void *p1, const void *p2)
+@@ -121,6 +122,7 @@ static void add_list(char *buf, int len)
+ 	list[list_size].page_num = get_page_num(buf);
+ 	memcpy(list[list_size].txt, buf, len);
+ 	list[list_size].txt[len] = 0;
++	list[list_size].stacktrace = strchr(list[list_size].txt, '\n');
+ 	list_size++;
+ 	if (list_size % 1000 == 0) {
+ 		printf("loaded %d\r", list_size);
+@@ -199,7 +201,7 @@ int main(int argc, char **argv)
+ 
+ 	printf("sorting ....\n");
+ 
+-	qsort(list, list_size, sizeof(list[0]), compare_txt);
++	qsort(list, list_size, sizeof(list[0]), compare_stacktrace);
+ 
+ 	list2 = malloc(sizeof(*list) * list_size);
+ 	if (!list2) {
+@@ -211,7 +213,7 @@ int main(int argc, char **argv)
+ 
+ 	for (i = count = 0; i < list_size; i++) {
+ 		if (count == 0 ||
+-		    strcmp(list2[count-1].txt, list[i].txt) != 0) {
++		    strcmp(list2[count-1].stacktrace, list[i].stacktrace) != 0) {
+ 			list2[count++] = list[i];
+ 		} else {
+ 			list2[count-1].num += list[i].num;
+_

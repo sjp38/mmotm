@@ -35,7 +35,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/backing-dev.c~mm-bdi-initialize-bdi_min_ratio-when-bdi-unregister
 +++ a/mm/backing-dev.c
-@@ -947,6 +947,11 @@ void bdi_unregister(struct backing_dev_i
+@@ -945,6 +945,11 @@ void bdi_unregister(struct backing_dev_i
  	wb_shutdown(&bdi->wb);
  	cgwb_bdi_unregister(bdi);
  

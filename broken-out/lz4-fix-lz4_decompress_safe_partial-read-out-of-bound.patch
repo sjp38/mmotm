@@ -20,8 +20,8 @@ it first.
 Link: https://lkml.kernel.org/r/20211111105048.2006070-1-guoxuenan@huawei.com
 Reported-by: syzbot+63d688f1d899c588fb71@syzkaller.appspotmail.com
 Signed-off-by: Guo Xuenan <guoxuenan@huawei.com>
+Reviewed-by: Nick Terrell <terrelln@fb.com>
 Cc: Gao Xiang <hsiangkao@linux.alibaba.com>
-Cc: Nick Terrell <terrelln@fb.com>
 Cc: Yann Collet <cyan@fb.com>
 Cc: Chengyang Fan <cy.fan@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

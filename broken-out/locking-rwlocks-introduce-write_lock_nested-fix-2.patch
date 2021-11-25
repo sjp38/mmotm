@@ -1,0 +1,56 @@
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: locking: fixup write_lock_nested() implementation
+
+    kernel/locking/spinlock.c:306:9: error: implicit declaration of
+    function '__raw_write_lock_nested'; did you mean
+
+
+Link: https://lkml.kernel.org/r/20211123170134.y6xb7pmpgdn4m3bn@linutronix.de
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Tested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Waiman Long <longman@redhat.com>
+Cc: Boqun Feng <boqun.feng@gmail.com>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Mike Galbraith <umgwanakikbuti@gmail.com>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Yoshinori Sato <ysato@users.osdn.me>
+Cc: Rich Felker <dalias@libc.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/rwlock_api_smp.h |    1 -
+ kernel/locking/spinlock.c      |    4 ++++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+--- a/include/linux/rwlock_api_smp.h~locking-rwlocks-introduce-write_lock_nested-fix-2
++++ a/include/linux/rwlock_api_smp.h
+@@ -47,7 +47,6 @@ _raw_write_unlock_irqrestore(rwlock_t *l
+ 
+ #ifdef CONFIG_INLINE_WRITE_LOCK
+ #define _raw_write_lock(lock) __raw_write_lock(lock)
+-#define _raw_write_lock_nested(lock, subclass) __raw_write_lock_nested(lock, subclass)
+ #endif
+ 
+ #ifdef CONFIG_INLINE_READ_LOCK_BH
+--- a/kernel/locking/spinlock.c~locking-rwlocks-introduce-write_lock_nested-fix-2
++++ a/kernel/locking/spinlock.c
+@@ -301,6 +301,10 @@ void __lockfunc _raw_write_lock(rwlock_t
+ }
+ EXPORT_SYMBOL(_raw_write_lock);
+ 
++#ifndef CONFIG_DEBUG_LOCK_ALLOC
++#define __raw_write_lock_nested(lock, subclass)	__raw_write_lock(((void)(subclass), (lock)))
++#endif
++
+ void __lockfunc _raw_write_lock_nested(rwlock_t *lock, int subclass)
+ {
+ 	__raw_write_lock_nested(lock, subclass);
+_

@@ -1,0 +1,61 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: sparsemem: move vmemmap related to HugeTLB to CONFIG_HUGETLB_PAGE_FREE_VMEMMAP
+
+The vmemmap_remap_free/alloc are relevant to HugeTLB, so move those
+functiongs to the scope of CONFIG_HUGETLB_PAGE_FREE_VMEMMAP.
+
+Link: https://lkml.kernel.org/r/20211101031651.75851-6-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Barry Song <song.bao.hua@hisilicon.com>
+Cc: Bodeddula Balasubramaniam <bodeddub@amazon.com>
+Cc: Chen Huang <chenhuang5@huawei.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Fam Zheng <fam.zheng@bytedance.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Qi Zheng <zhengqi.arch@bytedance.com>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mm.h  |    2 ++
+ mm/sparse-vmemmap.c |    2 ++
+ 2 files changed, 4 insertions(+)
+
+--- a/include/linux/mm.h~mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap
++++ a/include/linux/mm.h
+@@ -3184,10 +3184,12 @@ static inline void print_vma_addr(char *
+ }
+ #endif
+ 
++#ifdef CONFIG_HUGETLB_PAGE_FREE_VMEMMAP
+ int vmemmap_remap_free(unsigned long start, unsigned long end,
+ 		       unsigned long reuse);
+ int vmemmap_remap_alloc(unsigned long start, unsigned long end,
+ 			unsigned long reuse, gfp_t gfp_mask);
++#endif
+ 
+ void *sparse_buffer_alloc(unsigned long size);
+ struct page * __populate_section_memmap(unsigned long pfn,
+--- a/mm/sparse-vmemmap.c~mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap
++++ a/mm/sparse-vmemmap.c
+@@ -34,6 +34,7 @@
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+ 
++#ifdef CONFIG_HUGETLB_PAGE_FREE_VMEMMAP
+ /**
+  * struct vmemmap_remap_walk - walk vmemmap page table
+  *
+@@ -419,6 +420,7 @@ int vmemmap_remap_alloc(unsigned long st
+ 
+ 	return 0;
+ }
++#endif /* CONFIG_HUGETLB_PAGE_FREE_VMEMMAP */
+ 
+ /*
+  * Allocate a block of memory to be used to back the virtual memory map
+_

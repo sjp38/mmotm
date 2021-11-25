@@ -1,0 +1,47 @@
+From: Minchan Kim <minchan@kernel.org>
+Subject: locking/rwlocks: fix write_lock_nested for RT
+
+Fix build break of write_lock_nested for RT.
+
+Link: https://lkml.kernel.org/r/YZfrMTAXV56HFWJY@google.com
+Signed-off-by: Minchan Kim <minchan@kernel.org>
+Suggested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Tested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/rwlock_rt.h    |    4 ++++
+ kernel/locking/spinlock_rt.c |    2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+--- a/include/linux/rwlock_rt.h~locking-rwlocks-introduce-write_lock_nested-fix
++++ a/include/linux/rwlock_rt.h
+@@ -84,10 +84,14 @@ static __always_inline void write_lock(r
+ 	rt_write_lock(rwlock);
+ }
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
+ static __always_inline void write_lock_nested(rwlock_t *rwlock, int subclass)
+ {
+ 	rt_write_lock_nested(rwlock, subclass);
+ }
++#else
++#define write_lock_nested(lock, subclass)	rt_write_lock(((void)(subclass), (lock)))
++#endif
+ 
+ static __always_inline void write_lock_bh(rwlock_t *rwlock)
+ {
+--- a/kernel/locking/spinlock_rt.c~locking-rwlocks-introduce-write_lock_nested-fix
++++ a/kernel/locking/spinlock_rt.c
+@@ -242,7 +242,7 @@ EXPORT_SYMBOL(rt_write_lock);
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ void __sched rt_write_lock_nested(rwlock_t *rwlock, int subclass)
+ {
+-	___might_sleep(__FILE__, __LINE__, 0);
++	rtlock_might_resched();
+ 	rwlock_acquire(&rwlock->dep_map, subclass, 0, _RET_IP_);
+ 	rwbase_write_lock(&rwlock->rwbase, TASK_RTLOCK_WAIT);
+ 	rcu_read_lock();
+_

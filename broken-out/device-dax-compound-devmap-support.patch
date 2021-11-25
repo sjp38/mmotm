@@ -1,0 +1,85 @@
+From: Joao Martins <joao.m.martins@oracle.com>
+Subject: device-dax: compound devmap support
+
+Use the newly added compound devmap facility which maps the assigned dax
+ranges as compound pages at a page size of @align.
+
+dax devices are created with a fixed @align (huge page size) which is
+enforced through as well at mmap() of the device.  Faults, consequently
+happen too at the specified @align specified at the creation, and those
+don't change throughout dax device lifetime.  MCEs unmap a whole dax huge
+page, as well as splits occurring at the configured page size.
+
+Performance measured by gup_test improves considerably for
+unpin_user_pages() and altmap with NVDIMMs:
+
+$ gup_test -f /dev/dax1.0 -m 16384 -r 10 -S -a -n 512 -w
+(pin_user_pages_fast 2M pages) put:~71 ms -> put:~22 ms
+[altmap]
+(pin_user_pages_fast 2M pages) get:~524ms put:~525 ms -> get: ~127ms put:~71ms
+
+ $ gup_test -f /dev/dax1.0 -m 129022 -r 10 -S -a -n 512 -w
+(pin_user_pages_fast 2M pages) put:~513 ms -> put:~188 ms
+[altmap with -m 127004]
+(pin_user_pages_fast 2M pages) get:~4.1 secs put:~4.12 secs -> get:~1sec put:~563ms
+
+.. as well as unpin_user_page_range_dirty_lock() being just as effective
+as THP/hugetlb[0] pages.
+
+[0] https://lore.kernel.org/linux-mm/20210212130843.13865-5-joao.m.martins@oracle.com/
+
+Link: https://lkml.kernel.org/r/20211124191005.20783-11-joao.m.martins@oracle.com
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Dave Jiang <dave.jiang@intel.com>
+Cc: Jane Chu <jane.chu@oracle.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: John Hubbard <jhubbard@nvidia.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Vishal Verma <vishal.l.verma@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/dax/device.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+--- a/drivers/dax/device.c~device-dax-compound-devmap-support
++++ a/drivers/dax/device.c
+@@ -78,14 +78,20 @@ static void dax_set_mapping(struct vm_fa
+ {
+ 	unsigned long i, nr_pages = fault_size / PAGE_SIZE;
+ 	struct file *filp = vmf->vma->vm_file;
++	struct dev_dax *dev_dax = filp->private_data;
+ 	pgoff_t pgoff;
+ 
++	/* mapping is only set on the head */
++	if (dev_dax->pgmap->vmemmap_shift)
++		nr_pages = 1;
++
+ 	pgoff = linear_page_index(vmf->vma,
+ 			ALIGN(vmf->address, fault_size));
+ 
+ 	for (i = 0; i < nr_pages; i++) {
+ 		struct page *page = pfn_to_page(pfn_t_to_pfn(pfn) + i);
+ 
++		page = compound_head(page);
+ 		if (page->mapping)
+ 			continue;
+ 
+@@ -445,6 +451,9 @@ int dev_dax_probe(struct dev_dax *dev_da
+ 	}
+ 
+ 	pgmap->type = MEMORY_DEVICE_GENERIC;
++	if (dev_dax->align > PAGE_SIZE)
++		pgmap->vmemmap_shift =
++			order_base_2(dev_dax->align >> PAGE_SHIFT);
+ 	addr = devm_memremap_pages(dev, pgmap);
+ 	if (IS_ERR(addr))
+ 		return PTR_ERR(addr);
+_

@@ -15,7 +15,7 @@ is also fixed in any other drivers hitting the same -Werror issue.
 Link: https://lkml.kernel.org/r/20211116131112.508304-1-hdegoede@redhat.com
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Reported-by: kernel test robot <lkp@intel.com>
-Cc: Christian Brauner <christian@brauner.io>
+Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
 Cc: Alexander Viro <viro@zeniv.linux.org.uk>
 Cc: Hans de Goede <hdegoede@redhat.com>
 Cc: David Howells <dhowells@redhat.com>

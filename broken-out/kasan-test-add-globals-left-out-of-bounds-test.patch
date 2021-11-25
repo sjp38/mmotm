@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /* Check that ksize() makes the whole object accessible. */
  static void ksize_unpoisons_memory(struct kunit *test)
  {
-@@ -1160,7 +1174,8 @@ static struct kunit_case kasan_kunit_tes
+@@ -1162,7 +1176,8 @@ static struct kunit_case kasan_kunit_tes
  	KUNIT_CASE(kmem_cache_oob),
  	KUNIT_CASE(kmem_cache_accounted),
  	KUNIT_CASE(kmem_cache_bulk),

@@ -1,0 +1,132 @@
+From: Xiaoming Ni <nixiaoming@huawei.com>
+Subject: dnotify: move dnotify sysctl to dnotify.c
+
+The kernel/sysctl.c is a kitchen sink where everyone leaves their dirty
+dishes, this makes it very difficult to maintain.
+
+To help with this maintenance let's start by moving sysctls to places
+where they actually belong.  The proc sysctl maintainers do not want to
+know what sysctl knobs you wish to add for your own piece of code, we just
+care about the core logic.
+
+So move dnotify sysctls to dnotify.c and use the new
+register_sysctl_init() to register the sysctl interface.
+
+[mcgrof@kernel.org: adjust the commit log to justify the move]
+Link: https://lkml.kernel.org/r/20211123202347.818157-10-mcgrof@kernel.org
+Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Amir Goldstein <amir73il@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Benjamin LaHaise <bcrl@kvack.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Iurii Zaikin <yzaikin@google.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Paul Turner <pjt@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Qing Wang <wangqing@vivo.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Stephen Kitt <steve@sk2.org>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Antti Palosaari <crope@iki.fi>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Clemens Ladisch <clemens@ladisch.de>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Jani Nikula <jani.nikula@linux.intel.com>
+Cc: Joel Becker <jlbec@evilplan.org>
+Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+Cc: Joseph Qi <joseph.qi@linux.alibaba.com>
+Cc: Julia Lawall <julia.lawall@inria.fr>
+Cc: Lukas Middendorf <kernel@tuxforce.de>
+Cc: Mark Fasheh <mark@fasheh.com>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Phillip Potter <phil@philpotter.co.uk>
+Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/notify/dnotify/dnotify.c |   21 ++++++++++++++++++++-
+ include/linux/dnotify.h     |    1 -
+ kernel/sysctl.c             |   10 ----------
+ 3 files changed, 20 insertions(+), 12 deletions(-)
+
+--- a/fs/notify/dnotify/dnotify.c~dnotify-move-dnotify-sysctl-to-dnotifyc
++++ a/fs/notify/dnotify/dnotify.c
+@@ -19,7 +19,25 @@
+ #include <linux/fdtable.h>
+ #include <linux/fsnotify_backend.h>
+ 
+-int dir_notify_enable __read_mostly = 1;
++static int dir_notify_enable __read_mostly = 1;
++#ifdef CONFIG_SYSCTL
++static struct ctl_table dnotify_sysctls[] = {
++	{
++		.procname	= "dir-notify-enable",
++		.data		= &dir_notify_enable,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec,
++	},
++	{}
++};
++static void __init dnotify_sysctl_init(void)
++{
++	register_sysctl_init("fs", dnotify_sysctls);
++}
++#else
++#define dnotify_sysctl_init() do { } while (0)
++#endif
+ 
+ static struct kmem_cache *dnotify_struct_cache __read_mostly;
+ static struct kmem_cache *dnotify_mark_cache __read_mostly;
+@@ -386,6 +404,7 @@ static int __init dnotify_init(void)
+ 	dnotify_group = fsnotify_alloc_group(&dnotify_fsnotify_ops);
+ 	if (IS_ERR(dnotify_group))
+ 		panic("unable to allocate fsnotify group for dnotify\n");
++	dnotify_sysctl_init();
+ 	return 0;
+ }
+ 
+--- a/include/linux/dnotify.h~dnotify-move-dnotify-sysctl-to-dnotifyc
++++ a/include/linux/dnotify.h
+@@ -29,7 +29,6 @@ struct dnotify_struct {
+ 			    FS_CREATE | FS_DN_RENAME |\
+ 			    FS_MOVED_FROM | FS_MOVED_TO)
+ 
+-extern int dir_notify_enable;
+ extern void dnotify_flush(struct file *, fl_owner_t);
+ extern int fcntl_dirnotify(int, struct file *, unsigned long);
+ 
+--- a/kernel/sysctl.c~dnotify-move-dnotify-sysctl-to-dnotifyc
++++ a/kernel/sysctl.c
+@@ -48,7 +48,6 @@
+ #include <linux/times.h>
+ #include <linux/limits.h>
+ #include <linux/dcache.h>
+-#include <linux/dnotify.h>
+ #include <linux/syscalls.h>
+ #include <linux/vmstat.h>
+ #include <linux/nfs_fs.h>
+@@ -3088,15 +3087,6 @@ static struct ctl_table fs_table[] = {
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= proc_dointvec,
+-	},
+-#endif
+-#ifdef CONFIG_DNOTIFY
+-	{
+-		.procname	= "dir-notify-enable",
+-		.data		= &dir_notify_enable,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= proc_dointvec,
+ 	},
+ #endif
+ #ifdef CONFIG_MMU
+_

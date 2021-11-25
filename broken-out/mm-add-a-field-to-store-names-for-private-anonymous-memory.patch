@@ -258,7 +258,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* _LINUX_MM_H */
 --- a/include/linux/mm_types.h~mm-add-a-field-to-store-names-for-private-anonymous-memory
 +++ a/include/linux/mm_types.h
-@@ -415,11 +415,19 @@ struct vm_area_struct {
+@@ -426,11 +426,19 @@ struct vm_area_struct {
  	/*
  	 * For areas with an address space and backing store,
  	 * linkage into the address_space->i_mmap interval tree.
@@ -282,7 +282,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * A file's MAP_PRIVATE vma can be in both i_mmap tree and anon_vma
-@@ -864,4 +872,52 @@ typedef struct {
+@@ -875,4 +883,52 @@ typedef struct {
  	unsigned long val;
  } swp_entry_t;
  
@@ -443,7 +443,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		break;
 --- a/mm/Kconfig~mm-add-a-field-to-store-names-for-private-anonymous-memory
 +++ a/mm/Kconfig
-@@ -897,6 +897,20 @@ config IO_MAPPING
+@@ -900,6 +900,20 @@ config IO_MAPPING
  config SECRETMEM
  	def_bool ARCH_HAS_SET_DIRECT_MAP && !EMBEDDED
  

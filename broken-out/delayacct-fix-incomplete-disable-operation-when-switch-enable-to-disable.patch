@@ -1,0 +1,82 @@
+From: Yang Yang <yang.yang29@zte.com.cn>
+Subject: delayacct: fix incomplete disable operation when switch enable to disable
+
+When a task is created after delayacct is enabled, kernel will do all the
+delay accountings for that task.  The problems is if user disables
+delayacct by set /proc/sys/kernel/task_delayacct to zero, only blkio delay
+accounting is disabled.
+
+Now disable all the kinds of delay accountings when
+/proc/sys/kernel/task_delayacct sets to zero.
+
+Link: https://lkml.kernel.org/r/20211123140342.32962-1-ran.xiaokai@zte.com.cn
+Signed-off-by: Yang Yang <yang.yang29@zte.com.cn>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/delayacct.h |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+--- a/include/linux/delayacct.h~delayacct-fix-incomplete-disable-operation-when-switch-enable-to-disable
++++ a/include/linux/delayacct.h
+@@ -131,36 +131,54 @@ static inline __u64 delayacct_blkio_tick
+ 
+ static inline void delayacct_freepages_start(void)
+ {
++	if (!static_branch_unlikely(&delayacct_key))
++		return;
++
+ 	if (current->delays)
+ 		__delayacct_freepages_start();
+ }
+ 
+ static inline void delayacct_freepages_end(void)
+ {
++	if (!static_branch_unlikely(&delayacct_key))
++		return;
++
+ 	if (current->delays)
+ 		__delayacct_freepages_end();
+ }
+ 
+ static inline void delayacct_thrashing_start(void)
+ {
++	if (!static_branch_unlikely(&delayacct_key))
++		return;
++
+ 	if (current->delays)
+ 		__delayacct_thrashing_start();
+ }
+ 
+ static inline void delayacct_thrashing_end(void)
+ {
++	if (!static_branch_unlikely(&delayacct_key))
++		return;
++
+ 	if (current->delays)
+ 		__delayacct_thrashing_end();
+ }
+ 
+ static inline void delayacct_swapin_start(void)
+ {
++	if (!static_branch_unlikely(&delayacct_key))
++		return;
++
+ 	if (current->delays)
+ 		__delayacct_swapin_start();
+ }
+ 
+ static inline void delayacct_swapin_end(void)
+ {
++	if (!static_branch_unlikely(&delayacct_key))
++		return;
++
+ 	if (current->delays)
+ 		__delayacct_swapin_end();
+ }
+_

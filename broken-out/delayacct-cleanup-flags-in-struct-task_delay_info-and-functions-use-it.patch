@@ -1,0 +1,63 @@
+From: Yang Yang <yang.yang29@zte.com.cn>
+Subject: delayacct: cleanup flags in struct task_delay_info and functions use it
+
+Flags in struct task_delay_info is used to distinguish the difference
+between swapin and blkio delay acountings.  But after patch "delayacct:
+support swapin delay accounting for swapping without blkio", there is no
+need to do that since swapin and blkio delay accounting use their own
+functions.
+
+Link: https://lkml.kernel.org/r/20211124065958.36703-1-yang.yang29@zte.com.cn
+Signed-off-by: Yang Yang <yang.yang29@zte.com.cn>
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/delayacct.h |   17 -----------------
+ 1 file changed, 17 deletions(-)
+
+--- a/include/linux/delayacct.h~delayacct-cleanup-flags-in-struct-task_delay_info-and-functions-use-it
++++ a/include/linux/delayacct.h
+@@ -12,7 +12,6 @@
+ #ifdef CONFIG_TASK_DELAY_ACCT
+ struct task_delay_info {
+ 	raw_spinlock_t	lock;
+-	unsigned int	flags;	/* Private per-task flags */
+ 
+ 	/* For each stat XXX, add following, aligned appropriately
+ 	 *
+@@ -74,18 +73,6 @@ extern void __delayacct_thrashing_end(vo
+ extern void __delayacct_swapin_start(void);
+ extern void __delayacct_swapin_end(void);
+ 
+-static inline void delayacct_set_flag(struct task_struct *p, int flag)
+-{
+-	if (p->delays)
+-		p->delays->flags |= flag;
+-}
+-
+-static inline void delayacct_clear_flag(struct task_struct *p, int flag)
+-{
+-	if (p->delays)
+-		p->delays->flags &= ~flag;
+-}
+-
+ static inline void delayacct_tsk_init(struct task_struct *tsk)
+ {
+ 	/* reinitialize in case parent's non-null pointer was dup'ed*/
+@@ -184,10 +171,6 @@ static inline void delayacct_swapin_end(
+ }
+ 
+ #else
+-static inline void delayacct_set_flag(struct task_struct *p, int flag)
+-{}
+-static inline void delayacct_clear_flag(struct task_struct *p, int flag)
+-{}
+ static inline void delayacct_init(void)
+ {}
+ static inline void delayacct_tsk_init(struct task_struct *tsk)
+_

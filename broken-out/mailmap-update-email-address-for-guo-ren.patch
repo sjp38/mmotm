@@ -1,0 +1,26 @@
+From: Guo Ren <guoren@linux.alibaba.com>
+Subject: mailmap: Update email address for Guo Ren
+
+The ren_guo@c-sky.com would be deprecated and use guoren@kernel.org as the
+main email address.
+
+Link: https://lkml.kernel.org/r/20211123022741.545541-1-guoren@kernel.org
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ .mailmap |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/.mailmap~mailmap-update-email-address-for-guo-ren
++++ a/.mailmap
+@@ -126,6 +126,8 @@ Greg Kroah-Hartman <gregkh@suse.de>
+ Greg Kroah-Hartman <greg@kroah.com>
+ Greg Kurz <groug@kaod.org> <gkurz@linux.vnet.ibm.com>
+ Gregory CLEMENT <gregory.clement@bootlin.com> <gregory.clement@free-electrons.com>
++Guo Ren <guoren@kernel.org> <guoren@linux.alibaba.com>
++Guo Ren <guoren@kernel.org> <ren_guo@c-sky.com>
+ Gustavo Padovan <gustavo@las.ic.unicamp.br>
+ Gustavo Padovan <padovan@profusion.mobi>
+ Hanjun Guo <guohanjun@huawei.com> <hanjun.guo@linaro.org>
+_

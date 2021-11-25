@@ -28,8 +28,9 @@ index, either so this patch introduces obj_to_page.
 Link: https://lkml.kernel.org/r/20211115185909.3949505-1-minchan@kernel.org
 Link: https://lkml.kernel.org/r/20211115185909.3949505-2-minchan@kernel.org
 Signed-off-by: Minchan Kim <minchan@kernel.org>
+Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Tested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
 Cc: Mike Galbraith <umgwanakikbuti@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>

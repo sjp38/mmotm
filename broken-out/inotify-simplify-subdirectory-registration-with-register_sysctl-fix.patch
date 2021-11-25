@@ -1,0 +1,59 @@
+From: Luis Chamberlain <mcgrof@kernel.org>
+Subject: inotify-simplify-subdirectory-registration-with-register_sysctl-fix
+
+remember to register fanotify_table
+
+Link: https://lkml.kernel.org/r/YZ5A6iWLb0h3N3RC@bombadil.infradead.org
+Reported-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/notify/fanotify/fanotify_user.c |   10 +++++++++-
+ include/linux/fanotify.h           |    2 --
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+--- a/fs/notify/fanotify/fanotify_user.c~inotify-simplify-subdirectory-registration-with-register_sysctl-fix
++++ a/fs/notify/fanotify/fanotify_user.c
+@@ -59,7 +59,7 @@ static int fanotify_max_queued_events __
+ static long ft_zero = 0;
+ static long ft_int_max = INT_MAX;
+ 
+-struct ctl_table fanotify_table[] = {
++static struct ctl_table fanotify_table[] = {
+ 	{
+ 		.procname	= "max_user_groups",
+ 		.data	= &init_user_ns.ucount_max[UCOUNT_FANOTIFY_GROUPS],
+@@ -88,6 +88,13 @@ struct ctl_table fanotify_table[] = {
+ 	},
+ 	{ }
+ };
++
++static void __init fanotify_sysctls_init(void)
++{
++	register_sysctl("fs/fanotify", fanotify_table);
++}
++#else
++#define fanotify_sysctls_init() do { } while (0)
+ #endif /* CONFIG_SYSCTL */
+ 
+ /*
+@@ -1685,6 +1692,7 @@ static int __init fanotify_user_setup(vo
+ 	init_user_ns.ucount_max[UCOUNT_FANOTIFY_GROUPS] =
+ 					FANOTIFY_DEFAULT_MAX_GROUPS;
+ 	init_user_ns.ucount_max[UCOUNT_FANOTIFY_MARKS] = max_marks;
++	fanotify_sysctls_init();
+ 
+ 	return 0;
+ }
+--- a/include/linux/fanotify.h~inotify-simplify-subdirectory-registration-with-register_sysctl-fix
++++ a/include/linux/fanotify.h
+@@ -5,8 +5,6 @@
+ #include <linux/sysctl.h>
+ #include <uapi/linux/fanotify.h>
+ 
+-extern struct ctl_table fanotify_table[]; /* for sysctl */
+-
+ #define FAN_GROUP_FLAG(group, flag) \
+ 	((group)->fanotify_data.flags & (flag))
+ 
+_

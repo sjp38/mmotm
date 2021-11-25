@@ -8,7 +8,7 @@ To avoid that, use user access blocks.
 
 Link: https://lkml.kernel.org/r/720dcf79314acca1a78fae56d478cc851952149d.1637084492.git.christophe.leroy@csgroup.eu
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Andreas Gruenbacher <agruenba@redhat.com>
+Reviewed-by: Andreas Gruenbacher <agruenba@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

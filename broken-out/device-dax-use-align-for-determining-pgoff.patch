@@ -1,0 +1,41 @@
+From: Joao Martins <joao.m.martins@oracle.com>
+Subject: device-dax: use ALIGN() for determining pgoff
+
+Rather than calculating @pgoff manually, switch to ALIGN() instead.
+
+Link: https://lkml.kernel.org/r/20211124191005.20783-6-joao.m.martins@oracle.com
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Suggested-by: Dan Williams <dan.j.williams@intel.com>
+Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Dave Jiang <dave.jiang@intel.com>
+Cc: Jane Chu <jane.chu@oracle.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: John Hubbard <jhubbard@nvidia.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Vishal Verma <vishal.l.verma@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/dax/device.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/dax/device.c~device-dax-use-align-for-determining-pgoff
++++ a/drivers/dax/device.c
+@@ -234,8 +234,8 @@ static vm_fault_t dev_dax_huge_fault(str
+ 		 * mapped. No need to consider the zero page, or racing
+ 		 * conflicting mappings.
+ 		 */
+-		pgoff = linear_page_index(vmf->vma, vmf->address
+-				& ~(fault_size - 1));
++		pgoff = linear_page_index(vmf->vma,
++				ALIGN(vmf->address, fault_size));
+ 		for (i = 0; i < fault_size / PAGE_SIZE; i++) {
+ 			struct page *page;
+ 
+_

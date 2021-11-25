@@ -7,10 +7,11 @@ supposed to be different zspage instance.  Thus, it's not deadlock.  This
 patch adds write_lock_nested to support the case for LOCKDEP.
 
 Link: https://lkml.kernel.org/r/20211115185909.3949505-8-minchan@kernel.org
-Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Minchan Kim <minchan@kernel.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Tested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Cc: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

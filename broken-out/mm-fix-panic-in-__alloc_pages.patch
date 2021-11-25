@@ -65,10 +65,10 @@ state.  This node is not ready to use, fallback to numa_mem_id().
 Link: https://lkml.kernel.org/r/20211108202325.20304-1-amakhalov@vmware.com
 Signed-off-by: Alexey Makhalov <amakhalov@vmware.com>
 Reviewed-by: David Hildenbrand <david@redhat.com>
+Acked-by: Dennis Zhou <dennis@kernel.org>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Dennis Zhou <dennis@kernel.org>
 Cc: Tejun Heo <tj@kernel.org>
 Cc: Christoph Lameter <cl@linux.com>
 Cc: <stable@vger.kernel.org>

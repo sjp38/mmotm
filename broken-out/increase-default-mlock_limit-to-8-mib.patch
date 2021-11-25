@@ -33,7 +33,12 @@ Link: https://lkml.kernel.org/r/20211028080813.15966-1-sir@cmpwn.com
 Signed-off-by: Drew DeVault <sir@cmpwn.com>
 Acked-by: Jens Axboe <axboe@kernel.dk>
 Acked-by: Cyril Hrubis <chrubis@suse.cz>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Pavel Begunkov <asml.silence@gmail.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Andrew Dona-Couch <andrew@donacou.ch>
+Cc: Ammar Faizi <ammarfaizi2@gnuweeb.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

@@ -1,0 +1,44 @@
+From: chiminghao <chi.minghao@zte.com.cn>
+Subject: tools/testing/selftests/vm/userfaultfd.c: use swap() to make code cleaner
+
+Fix the following coccicheck REVIEW:
+./tools/testing/selftests/vm/userfaultfd.c:1531:21-22:use swap() to make
+code cleaner
+
+Link: https://lkml.kernel.org/r/20211124031632.35317-1-chi.minghao@zte.com.cn
+Signed-off-by: chiminghao <chi.minghao@zte.com.cn>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/vm/userfaultfd.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+--- a/tools/testing/selftests/vm/userfaultfd.c~selftests-vm-use-swap-to-make-code-cleaner
++++ a/tools/testing/selftests/vm/userfaultfd.c
+@@ -1413,7 +1413,6 @@ static void userfaultfd_pagemap_test(uns
+ static int userfaultfd_stress(void)
+ {
+ 	void *area;
+-	char *tmp_area;
+ 	unsigned long nr;
+ 	struct uffdio_register uffdio_register;
+ 	struct uffd_stats uffd_stats[nr_cpus];
+@@ -1524,13 +1523,9 @@ static int userfaultfd_stress(void)
+ 					    count_verify[nr], nr);
+ 
+ 		/* prepare next bounce */
+-		tmp_area = area_src;
+-		area_src = area_dst;
+-		area_dst = tmp_area;
+-
+-		tmp_area = area_src_alias;
+-		area_src_alias = area_dst_alias;
+-		area_dst_alias = tmp_area;
++		swap(area_src, area_dst);
++
++		swap(area_src_alias, area_dst_alias);
+ 
+ 		uffd_stats_report(uffd_stats, nr_cpus);
+ 	}
+_

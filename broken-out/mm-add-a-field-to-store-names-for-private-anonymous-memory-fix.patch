@@ -1,0 +1,38 @@
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: docs: proc.rst: /proc/PID/maps: fix malformed table
+
+Fix malformed table describing "pathname" values for mappings not
+associated with a file.
+
+Link: https://lkml.kernel.org/r/20211123185928.2513763-1-surenb@google.com
+Fixes: 2df148be9486 ("mm: add a field to store names for private anonymous memory")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Cc: Colin Cross <ccross@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/filesystems/proc.rst |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/Documentation/filesystems/proc.rst~mm-add-a-field-to-store-names-for-private-anonymous-memory-fix
++++ a/Documentation/filesystems/proc.rst
+@@ -426,14 +426,14 @@ with the memory region, as the case woul
+ The "pathname" shows the name associated file for this mapping.  If the mapping
+ is not associated with a file:
+ 
+- =======                    ====================================
++ =============              ====================================
+  [heap]                     the heap of the program
+  [stack]                    the stack of the main process
+  [vdso]                     the "virtual dynamic shared object",
+                             the kernel system call handler
+-[anon:<name>]               an anonymous mapping that has been
++ [anon:<name>]              an anonymous mapping that has been
+                             named by userspace
+- =======                    ====================================
++ =============              ====================================
+ 
+  or if empty, the mapping is anonymous.
+ 
+_

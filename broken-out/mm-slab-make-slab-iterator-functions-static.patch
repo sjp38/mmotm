@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	{
 --- a/mm/slab_common.c~mm-slab-make-slab-iterator-functions-static
 +++ a/mm/slab_common.c
-@@ -1044,18 +1044,18 @@ static void print_slabinfo_header(struct
+@@ -1039,18 +1039,18 @@ static void print_slabinfo_header(struct
  	seq_putc(m, '\n');
  }
  
@@ -74,7 +74,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	mutex_unlock(&slab_mutex);
  }
-@@ -1123,17 +1123,6 @@ void dump_unreclaimable_slab(void)
+@@ -1118,17 +1118,6 @@ void dump_unreclaimable_slab(void)
  	mutex_unlock(&slab_mutex);
  }
  

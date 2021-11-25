@@ -15,6 +15,7 @@ Signed-off-by: Mike Galbraith <umgwanakikbuti@gmail.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Minchan Kim <minchan@kernel.org>
+Tested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
 Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
