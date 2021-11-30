@@ -150,7 +150,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	zone_pcp_enable(page_zone(p));
  
  	return ret;
-@@ -1942,6 +1987,28 @@ core_initcall(memory_failure_init);
+@@ -1948,6 +1993,28 @@ core_initcall(memory_failure_init);
  		pr_info(fmt, pfn);			\
  })
  
@@ -179,7 +179,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
   * unpoison_memory - Unpoison a previously poisoned page
   * @pfn: Page number of the to be unpoisoned page
-@@ -1958,9 +2025,7 @@ int unpoison_memory(unsigned long pfn)
+@@ -1964,9 +2031,7 @@ int unpoison_memory(unsigned long pfn)
  {
  	struct page *page;
  	struct page *p;
@@ -190,7 +190,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	static DEFINE_RATELIMIT_STATE(unpoison_rs, DEFAULT_RATELIMIT_INTERVAL,
  					DEFAULT_RATELIMIT_BURST);
  
-@@ -1996,24 +2061,30 @@ int unpoison_memory(unsigned long pfn)
+@@ -2002,24 +2067,30 @@ int unpoison_memory(unsigned long pfn)
  		goto unlock_mutex;
  	}
  
@@ -245,7 +245,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <linux/interrupt.h>
  #include <linux/pagemap.h>
  #include <linux/jiffies.h>
-@@ -9444,6 +9445,7 @@ bool take_page_off_buddy(struct page *pa
+@@ -9498,6 +9499,7 @@ bool take_page_off_buddy(struct page *pa
  			del_page_from_free_list(page_head, zone, page_order);
  			break_down_buddy_pages(zone, page_head, page, 0,
  						page_order, migratetype);
@@ -253,7 +253,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			if (!is_migrate_isolate(migratetype))
  				__mod_zone_freepage_state(zone, -1, migratetype);
  			ret = true;
-@@ -9455,4 +9457,29 @@ bool take_page_off_buddy(struct page *pa
+@@ -9509,4 +9511,29 @@ bool take_page_off_buddy(struct page *pa
  	spin_unlock_irqrestore(&zone->lock, flags);
  	return ret;
  }

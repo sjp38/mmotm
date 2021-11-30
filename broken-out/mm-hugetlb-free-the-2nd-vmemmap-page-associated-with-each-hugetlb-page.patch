@@ -283,8 +283,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +__CLEARPAGEFLAG(Head, head, PF_ANY)
 +CLEARPAGEFLAG(Head, head, PF_ANY)
  
- /* Whether there are one or multiple pages in a folio */
- static inline bool folio_test_single(struct folio *folio)
+ /**
+  * folio_test_large() - Does this folio contain more than one page?
 --- a/mm/hugetlb_vmemmap.c~mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page
 +++ a/mm/hugetlb_vmemmap.c
 @@ -124,9 +124,9 @@

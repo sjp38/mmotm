@@ -13,6 +13,7 @@ Use fault_in_exact_writeable() instead which probes the entire user
 buffer for faults at sub-page granularity.
 
 Link: https://lkml.kernel.org/r/20211124192024.2408218-4-catalin.marinas@arm.com
+Fixes: a48b73eca4ce ("btrfs: fix potential deadlock in the search ioctl") 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 Reported-by: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Josef Bacik <josef@toxicpanda.com>
@@ -20,6 +21,7 @@ Cc: David Sterba <dsterba@suse.com>
 Cc: Andreas Gruenbacher <agruenba@redhat.com>
 Cc: Will Deacon <will@kernel.org>
 Cc: Matthew Wilcox <willy@infradead.org>
+Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

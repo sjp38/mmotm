@@ -1,0 +1,127 @@
+From: Yinan Zhang <zhangyinan2019@email.szu.edu.cn>
+Subject: tools/vm/page_owner_sort.c: add switch between culling by stacktrace and txt
+
+Culling by comparing stacktrace would casue loss of some information.  For
+example, if there exists 2 blocks which have the same stacktrace and the
+different head info
+
+Page allocated via order 0, mask 0x108c48(...), pid 73696,
+ ts 1578829190639010 ns, free_ts 1576583851324450 ns
+ prep_new_page+0x80/0xb8
+ get_page_from_freelist+0x924/0xee8
+ __alloc_pages+0x138/0xc18
+ alloc_pages+0x80/0xf0
+ __page_cache_alloc+0x90/0xc8
+
+Page allocated via order 0, mask 0x108c48(...), pid 61806,
+ ts 1354113726046100 ns, free_ts 1354104926841400 ns
+ prep_new_page+0x80/0xb8
+ get_page_from_freelist+0x924/0xee8
+ __alloc_pages+0x138/0xc18
+ alloc_pages+0x80/0xf0
+ __page_cache_alloc+0x90/0xc8
+
+After culling, it would be like this
+
+2 times, 2 pages:
+Page allocated via order 0, mask 0x108c48(...), pid 73696,
+ ts 1578829190639010 ns, free_ts 1576583851324450 ns
+ prep_new_page+0x80/0xb8
+ get_page_from_freelist+0x924/0xee8
+ __alloc_pages+0x138/0xc18
+ alloc_pages+0x80/0xf0
+ __page_cache_alloc+0x90/0xc8
+
+The info of second block missed.  So, add -c to turn on culling by
+stacktrace.  By default, it will cull by txt.
+
+Link: https://lkml.kernel.org/r/20211129145658.2491-1-zhangyinan2019@email.szu.edu.cn
+Signed-off-by: Yinan Zhang <zhangyinan2019@email.szu.edu.cn>
+Cc: Changhee Han <ch0.han@lge.com>
+Cc: Sean Anderson <seanga2@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |   23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-add-switch-between-culling-by-stacktrace-and-txt
++++ a/tools/vm/page_owner_sort.c
+@@ -51,6 +51,13 @@ int read_block(char *buf, int buf_size,
+ 	return -1; /* EOF or no space left in buf. */
+ }
+ 
++static int compare_txt(const void *p1, const void *p2)
++{
++	const struct block_list *l1 = p1, *l2 = p2;
++
++	return strcmp(l1->txt, l2->txt);
++}
++
+ static int compare_stacktrace(const void *p1, const void *p2)
+ {
+ 	const struct block_list *l1 = p1, *l2 = p2;
+@@ -137,12 +144,14 @@ static void usage(void)
+ 		"-m	Sort by total memory.\n"
+ 		"-s	Sort by the stack trace.\n"
+ 		"-t	Sort by times (default).\n"
++		"-c	cull by comparing stacktrace instead of total block.\n"
+ 	);
+ }
+ 
+ int main(int argc, char **argv)
+ {
+ 	int (*cmp)(const void *, const void *) = compare_num;
++	int cull_st = 0;
+ 	FILE *fin, *fout;
+ 	char *buf;
+ 	int ret, i, count;
+@@ -151,7 +160,7 @@ int main(int argc, char **argv)
+ 	int err;
+ 	int opt;
+ 
+-	while ((opt = getopt(argc, argv, "mst")) != -1)
++	while ((opt = getopt(argc, argv, "mstc")) != -1)
+ 		switch (opt) {
+ 		case 'm':
+ 			cmp = compare_page_num;
+@@ -162,6 +171,9 @@ int main(int argc, char **argv)
+ 		case 't':
+ 			cmp = compare_num;
+ 			break;
++		case 'c':
++			cull_st = 1;
++			break;
+ 		default:
+ 			usage();
+ 			exit(1);
+@@ -209,7 +221,10 @@ int main(int argc, char **argv)
+ 
+ 	printf("sorting ....\n");
+ 
+-	qsort(list, list_size, sizeof(list[0]), compare_stacktrace);
++	if (cull_st == 1)
++		qsort(list, list_size, sizeof(list[0]), compare_stacktrace);
++	else
++		qsort(list, list_size, sizeof(list[0]), compare_txt);
+ 
+ 	list2 = malloc(sizeof(*list) * list_size);
+ 	if (!list2) {
+@@ -219,9 +234,11 @@ int main(int argc, char **argv)
+ 
+ 	printf("culling\n");
+ 
++	long offset = cull_st ? &list[0].stacktrace - &list[0].txt : 0;
++
+ 	for (i = count = 0; i < list_size; i++) {
+ 		if (count == 0 ||
+-		    strcmp(list2[count-1].stacktrace, list[i].stacktrace) != 0) {
++		    strcmp(*(&list2[count-1].txt+offset), *(&list[i].txt+offset)) != 0) {
+ 			list2[count++] = list[i];
+ 		} else {
+ 			list2[count-1].num += list[i].num;
+_

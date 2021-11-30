@@ -99,6 +99,7 @@ header =
 Generated-by: Coccinelle SmPL
 Link: https://lkml.kernel.org/r/20211123202422.819032-5-mcgrof@kernel.org
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Reviewed-by: Jan Kara <jack@suse.cz>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Amir Goldstein <amir73il@gmail.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
@@ -112,7 +113,6 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Iurii Zaikin <yzaikin@google.com>
 Cc: Jani Nikula <jani.nikula@linux.intel.com>
-Cc: Jan Kara <jack@suse.cz>
 Cc: Joel Becker <jlbec@evilplan.org>
 Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
 Cc: Joseph Qi <joseph.qi@linux.alibaba.com>

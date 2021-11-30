@@ -1,0 +1,86 @@
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: mm/oom_kill: allow process_mrelease to run under mmap_lock protection
+
+With exit_mmap holding mmap_write_lock during free_pgtables call,
+process_mrelease does not need to elevate mm->mm_users in order to prevent
+exit_mmap from destrying pagetables while __oom_reap_task_mm is walking
+the VMA tree.  The change prevents process_mrelease from calling the last
+mmput, which can lead to waiting for IO completion in exit_aio.
+
+Link: https://lkml.kernel.org/r/20211124235906.14437-2-surenb@google.com
+Fixes: 337546e83fc7 ("mm/oom_kill.c: prevent a race between process_mrelease and exit_mmap")
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Kirill Shutemov <kirill@shutemov.name>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christian Brauner <christian@brauner.io>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jann Horn <jannh@google.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: Florian Weimer <fweimer@redhat.com>
+Cc: Jan Engelhardt <jengelh@inai.de>
+Cc: Tim Murray <timmurray@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/oom_kill.c |   27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
+
+--- a/mm/oom_kill.c~mm-oom_kill-allow-process_mrelease-to-run-under-mmap_lock-protection
++++ a/mm/oom_kill.c
+@@ -1169,15 +1169,15 @@ SYSCALL_DEFINE2(process_mrelease, int, p
+ 		goto put_task;
+ 	}
+ 
+-	if (mmget_not_zero(p->mm)) {
+-		mm = p->mm;
+-		if (task_will_free_mem(p))
+-			reap = true;
+-		else {
+-			/* Error only if the work has not been done already */
+-			if (!test_bit(MMF_OOM_SKIP, &mm->flags))
+-				ret = -EINVAL;
+-		}
++	mm = p->mm;
++	mmgrab(mm);
++
++	if (task_will_free_mem(p))
++		reap = true;
++	else {
++		/* Error only if the work has not been done already */
++		if (!test_bit(MMF_OOM_SKIP, &mm->flags))
++			ret = -EINVAL;
+ 	}
+ 	task_unlock(p);
+ 
+@@ -1188,13 +1188,16 @@ SYSCALL_DEFINE2(process_mrelease, int, p
+ 		ret = -EINTR;
+ 		goto drop_mm;
+ 	}
+-	if (!__oom_reap_task_mm(mm))
++	/*
++	 * Check MMF_OOM_SKIP again under mmap_read_lock protection to ensure
++	 * possible change in exit_mmap is seen
++	 */
++	if (!test_bit(MMF_OOM_SKIP, &mm->flags) && !__oom_reap_task_mm(mm))
+ 		ret = -EAGAIN;
+ 	mmap_read_unlock(mm);
+ 
+ drop_mm:
+-	if (mm)
+-		mmput(mm);
++	mmdrop(mm);
+ put_task:
+ 	put_task_struct(task);
+ 	return ret;
+_

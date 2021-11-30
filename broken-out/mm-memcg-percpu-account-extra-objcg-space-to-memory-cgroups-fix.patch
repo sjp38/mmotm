@@ -1,0 +1,27 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-memcg-percpu-account-extra-objcg-space-to-memory-cgroups-fix
+
+fix layout
+
+Cc: Qi Zheng <zhengqi.arch@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/percpu-internal.h |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/percpu-internal.h~mm-memcg-percpu-account-extra-objcg-space-to-memory-cgroups-fix
++++ a/mm/percpu-internal.h
+@@ -123,8 +123,9 @@ static inline int pcpu_chunk_map_bits(st
+  */
+ static inline size_t pcpu_obj_full_size(size_t size)
+ {
+-	size_t extra_size =
+-		size / PCPU_MIN_ALLOC_SIZE * sizeof(struct obj_cgroup *);
++	size_t extra_size;
++
++	extra_size = size / PCPU_MIN_ALLOC_SIZE * sizeof(struct obj_cgroup *);
+ 
+ 	return size * num_possible_cpus() + extra_size;
+ }
+_

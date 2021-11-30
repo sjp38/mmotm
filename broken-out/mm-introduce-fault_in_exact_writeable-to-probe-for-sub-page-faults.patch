@@ -75,6 +75,7 @@ probe_user_writeable().
 
 Link: https://lkml.kernel.org/r/20211124192024.2408218-1-catalin.marinas@arm.com
 Link: https://lkml.kernel.org/r/20211124192024.2408218-2-catalin.marinas@arm.com
+Fixes: a48b73eca4ce ("btrfs: fix potential deadlock in the search ioctl") 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
@@ -82,6 +83,7 @@ Cc: Andreas Gruenbacher <agruenba@redhat.com>
 Cc: David Sterba <dsterba@suse.com>
 Cc: Josef Bacik <josef@toxicpanda.com>
 Cc: Will Deacon <will@kernel.org>
+Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

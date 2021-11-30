@@ -33,7 +33,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/kernel/sysctl.c~proc-sysctl-make-protected_-world-readable
 +++ a/kernel/sysctl.c
-@@ -3316,7 +3316,7 @@ static struct ctl_table fs_table[] = {
+@@ -3317,7 +3317,7 @@ static struct ctl_table fs_table[] = {
  		.procname	= "protected_symlinks",
  		.data		= &sysctl_protected_symlinks,
  		.maxlen		= sizeof(int),
@@ -42,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= SYSCTL_ONE,
-@@ -3325,7 +3325,7 @@ static struct ctl_table fs_table[] = {
+@@ -3326,7 +3326,7 @@ static struct ctl_table fs_table[] = {
  		.procname	= "protected_hardlinks",
  		.data		= &sysctl_protected_hardlinks,
  		.maxlen		= sizeof(int),
@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= SYSCTL_ONE,
-@@ -3334,7 +3334,7 @@ static struct ctl_table fs_table[] = {
+@@ -3335,7 +3335,7 @@ static struct ctl_table fs_table[] = {
  		.procname	= "protected_fifos",
  		.data		= &sysctl_protected_fifos,
  		.maxlen		= sizeof(int),
@@ -60,7 +60,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= &two,
-@@ -3343,7 +3343,7 @@ static struct ctl_table fs_table[] = {
+@@ -3344,7 +3344,7 @@ static struct ctl_table fs_table[] = {
  		.procname	= "protected_regular",
  		.data		= &sysctl_protected_regular,
  		.maxlen		= sizeof(int),

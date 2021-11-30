@@ -1,4 +1,4 @@
-origin.patch
+#origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
@@ -27,8 +27,25 @@ maintainers-update-kdump-maintainers.patch
 mailmap-update-email-address-for-guo-ren.patch
 #
 #mm/pagecache
-#filemap-remove-pagehwpoison-check-from-next_uptodate_page.patch: effects?  -stable?
 filemap-remove-pagehwpoison-check-from-next_uptodate_page.patch
+#
+#mm/damon
+timers-implement-usleep_idle_range.patch
+mm-damon-core-fix-fake-load-reports-due-to-uninterruptible-sleeps.patch
+#
+#mm/slub
+mm-slub-fix-endianness-bug-for-alloc-free_traces-attributes.patch
+#
+#mm/shmem
+shmem-fix-a-race-between-shmem_unused_huge_shrink-and-shmem_evict_inode.patch
+shmem-fix-a-race-between-shmem_unused_huge_shrink-and-shmem_evict_inode-checkpatch-fixes.patch
+#
+#mm/memcg
+mm-memcg-relocate-mod_objcg_mlstate-get_obj_stock-and-put_obj_stock.patch
+#
+#mm/hugetlb
+hugetlbfs-fix-issue-of-preallocation-of-gigantic-pages-cant-work.patch
+#
 #
 #
 #
@@ -360,14 +377,17 @@ mm-slab-make-slab-iterator-functions-static.patch
 #mm/kcsan
 #mm/kmemleak
 kmemleak-fix-kmemleak-false-positive-report-with-hw-tag-based-kasan-enable.patch
+kmemleak-fix-kmemleak-false-positive-report-with-hw-tag-based-kasan-enable-fix.patch
 #
 #mm-kmemleak-alloc-gray-object-for-reserved-region-with-direct-map.patch: acks?
 mm-kmemleak-alloc-gray-object-for-reserved-region-with-direct-map.patch
 #
-#mm-defer-kmemleak-object-creation-of-module_alloc.patch: -stable? Fixes:?
+#mm-defer-kmemleak-object-creation-of-module_alloc.patch: -stable? Fixes:? https://lkml.kernel.org/r/CA+fCnZcnwJHUQq34VuRxpdoY6_XbJCDJ-jopksS5Eia4PijPzw@mail.gmail.com
 mm-defer-kmemleak-object-creation-of-module_alloc.patch
+mm-defer-kmemleak-object-creation-of-module_alloc-v4.patch
 #
 #mm/dax
+#memory-failure-fetch-compound_head-after-pgmap_pfn_valid.patch+N: TBU
 memory-failure-fetch-compound_head-after-pgmap_pfn_valid.patch
 mm-page_alloc-split-prep_compound_page-into-head-and-tail-subparts.patch
 mm-page_alloc-refactor-memmap_init_zone_device-page-init.patch
@@ -377,6 +397,7 @@ device-dax-use-struct_size.patch
 device-dax-ensure-dev_dax-pgmap-is-valid-for-dynamic-devices.patch
 device-dax-factor-out-page-mapping-initialization.patch
 device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud.patch
+device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud-fix.patch
 device-dax-compound-devmap-support.patch
 #
 #mm/kasan
@@ -390,7 +411,9 @@ kasan-test-add-test-case-for-double-kmem_cache_destroy.patch
 mmfs-split-dump_mapping-out-from-dump_page.patch
 #
 tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling.patch
+tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling-fix.patch
 tools-vm-page_owner_sortc-support-sorting-by-stack-trace.patch
+tools-vm-page_owner_sortc-add-switch-between-culling-by-stacktrace-and-txt.patch
 #
 #mm/pagecache
 #mm/msync
@@ -402,6 +425,8 @@ gup-avoid-multiple-user-access-locking-unlocking-in-fault_in_read-writeable.patc
 #mm/shmem
 mm-shmem-dont-truncate-page-if-memory-failure-happens.patch
 #
+#mm/frontswap
+mm-mempool-use-non-atomic-__set_bit-when-possible.patch
 #
 #mm/memremap
 #mm/memcg
@@ -426,9 +451,14 @@ mm-add-a-field-to-store-names-for-private-anonymous-memory-fix.patch
 mm-add-anonymous-vma-name-refcounting.patch
 #
 mm-ptep_clear-page-table-helper.patch
+#mm-page-table-check.patch: https://lkml.kernel.org/r/6d82e674-76dc-f3b0-2e53-a92eeb249eff@gmail.com
 mm-page-table-check.patch
 mm-page-table-check-fix.patch
 x86-mm-add-x86_64-support-for-page-table-check.patch
+#
+#mm-protect-free_pgtables-with-mmap_lock-write-lock-in-exit_mmap.patch: https://lkml.kernel.org/r/YaS4KxCSLK+02xaF@dhcp22.suse.cz
+mm-protect-free_pgtables-with-mmap_lock-write-lock-in-exit_mmap.patch
+mm-oom_kill-allow-process_mrelease-to-run-under-mmap_lock-protection.patch
 #
 #mm/mprotect
 #mm/mremap
@@ -443,6 +473,12 @@ x86-mm-add-x86_64-support-for-page-table-check.patch
 #mm/tracing
 #mm/page-reporting
 #mm/vmalloc
+mm-vmalloc-alloc-gfp_nofsio-for-vmalloc.patch
+mm-vmalloc-add-support-for-__gfp_nofail.patch
+mm-vmalloc-be-more-explicit-about-supported-gfp-flags.patch
+mm-allow-gfp_kernel-allocations-for-kvmalloc.patch
+#
+mm-make-slab-and-vmalloc-allocators-__gfp_nolockdep-aware.patch
 #
 #mm/documentation
 #mm/initialization
@@ -454,9 +490,16 @@ mm-introduce-memalloc_retry_wait.patch
 #
 sysctl-change-watermark_scale_factor-max-limit-to-30%.patch
 #
+mm-fix-boolreturncocci-warning.patch
+#
+mm-page_alloc-fix-building-error-on-werror=array-compare.patch
+#
+mm-drop-node-from-alloc_pages_vma.patch
+#
 #mm/memory-failure
 #mm/hugetlb
 hugetlb-add-hugetlbnuma_stat-file.patch
+hugetlb-add-hugetlbnuma_stat-file-fix.patch
 #
 #mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch: more review?
 mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
@@ -495,8 +538,8 @@ mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix.patch
 #mm/hugetlbfs
 #mm/migration
 mm-migrate-fix-the-return-value-of-migrate_pages.patch
-#mm-migrate-correct-the-hugetlb-migration-stats.patch: https://lkml.kernel.org/r/3e6dcac6-c947-5f94-cd94-b59a8247dbcf@oracle.com TBU
 mm-migrate-correct-the-hugetlb-migration-stats.patch
+mm-migrate-correct-the-hugetlb-migration-stats-fix.patch
 mm-compaction-fix-the-migration-stats-in-trace_mm_compaction_migratepages.patch
 #
 #mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref.patch: acks? TBU
@@ -522,6 +565,9 @@ mm-hwpoison-remove-mf_msg_buddy_2nd-and-mf_msg_poisoned_huge.patch
 mm-hwpoison-fix-unpoison_memory.patch
 #
 #mm/percpu
+mm-memcg-percpu-account-extra-objcg-space-to-memory-cgroups.patch
+mm-memcg-percpu-account-extra-objcg-space-to-memory-cgroups-fix.patch
+#
 #mm/vmstat
 #mm/balloon-compaction
 #mm/mmap
@@ -551,7 +597,7 @@ zsmalloc-replace-get_cpu_var-with-local_lock.patch
 #mm/uaccess
 mm-introduce-fault_in_exact_writeable-to-probe-for-sub-page-faults.patch
 arm64-add-support-for-sub-page-faults-user-probing.patch
-#btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults.patch: TBU?
+#btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults.patch: TBU? check review
 btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults.patch
 #
 #mm/ioremap
@@ -695,6 +741,8 @@ lz4-fix-lz4_decompress_safe_partial-read-out-of-bound.patch
 checkpatch-relax-regexp-for-commit_log_long_line.patch
 #
 checkpatch-improve-kconfig-help-test.patch
+#
+const_structscheckpatch-add-frequently-used-ops-structs.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START crc
@@ -1058,7 +1106,6 @@ configs-introduce-debugconfig-for-ci-like-setup.patch
 #NEXT_PATCHES_END
 # next
 linux-next.patch
-linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-urgent
@@ -1089,6 +1136,33 @@ inotify-simplify-subdirectory-registration-with-register_sysctl.patch
 inotify-simplify-subdirectory-registration-with-register_sysctl-fix.patch
 cdrom-simplify-subdirectory-registration-with-register_sysctl.patch
 eventpoll-simplify-sysctl-declaration-with-register_sysctl.patch
+#
+firmware_loader-move-firmware-sysctl-to-its-own-files.patch
+random-move-the-random-sysctl-declarations-to-its-own-file.patch
+sysctl-add-helper-to-register-a-sysctl-mount-point.patch
+sysctl-add-helper-to-register-a-sysctl-mount-point-fix.patch
+fs-move-binfmt_misc-sysctl-to-its-own-file.patch
+printk-move-printk-sysctl-to-printk-sysctlc.patch
+scsi-sg-move-sg-big-buff-sysctl-to-scsi-sgc.patch
+stackleak-move-stack_erasing-sysctl-to-stackleakc.patch
+sysctl-share-unsigned-long-const-values.patch
+#
+fs-move-inode-sysctls-to-its-own-file.patch
+fs-move-fs-stat-sysctls-to-file_tablec.patch
+fs-move-dcache-sysctls-to-its-own-file.patch
+sysctl-move-maxolduid-as-a-sysctl-specific-const.patch
+fs-move-shared-sysctls-to-fs-sysctlsc.patch
+fs-move-locking-sysctls-where-they-are-used.patch
+fs-move-namei-sysctls-to-its-own-file.patch
+fs-move-fs-execc-sysctls-into-its-own-file.patch
+fs-move-pipe-sysctls-to-is-own-file.patch
+#
+sysctl-add-and-use-base-directory-declarer-and-registration-helper.patch
+fs-move-namespace-sysctls-and-declare-fs-base-directory.patch
+kernel-sysctlc-rename-sysctl_init-to-sysctl_init_bases.patch
+printk-fix-build-warning-when-config_printk=n.patch
+fs-coredump-move-coredump-sysctls-into-its-own-file.patch
+kprobe-move-sysctl_kprobes_optimization-to-kprobesc.patch
 #
 #proc
 fs-proc-store-pde-data-into-inode-i_private.patch
@@ -1149,3 +1223,4 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]fs-proc-remove-pde_data.patch
 #[to-be-updated]fs-proc-use-define_proc_show_attribute-to-simplify-the-code.patch
 #[to-be-updated]kasan-distinguish-kasan-report-from-generic-bug.patch
+#[obsolete]linux-next-git-rejects.patch

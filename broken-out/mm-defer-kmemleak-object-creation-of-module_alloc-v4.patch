@@ -1,0 +1,26 @@
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: mm-defer-kmemleak-object-creation-of-module_alloc-v4
+
+fix build
+
+Link: https://lkml.kernel.org/r/20211125080307.27225-1-wangkefeng.wang@huawei.com
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/shadow.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/kasan/shadow.c~mm-defer-kmemleak-object-creation-of-module_alloc-v4
++++ a/mm/kasan/shadow.c
+@@ -525,7 +525,7 @@ int kasan_module_alloc(void *addr, size_
+ 		vm->flags |= VM_KASAN;
+ 		kmemleak_ignore(ret);
+ 
+-		if (vm->flags & VM_DELAY_KMEMLEAK)
++		if (vm->flags & VM_DEFER_KMEMLEAK)
+ 			kmemleak_vmalloc(vm, size, gfp_mask);
+ 
+ 		return 0;
+_

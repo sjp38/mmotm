@@ -16,6 +16,7 @@ register the sysctl interface for aio.
 Link: https://lkml.kernel.org/r/20211123202347.818157-9-mcgrof@kernel.org
 Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Reviewed-by: Jan Kara <jack@suse.cz>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Amir Goldstein <amir73il@gmail.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
@@ -23,7 +24,6 @@ Cc: Benjamin LaHaise <bcrl@kvack.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Iurii Zaikin <yzaikin@google.com>
-Cc: Jan Kara <jack@suse.cz>
 Cc: Kees Cook <keescook@chromium.org>
 Cc: Paul Turner <pjt@google.com>
 Cc: Peter Zijlstra <peterz@infradead.org>

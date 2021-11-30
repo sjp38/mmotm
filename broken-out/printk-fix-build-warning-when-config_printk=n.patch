@@ -1,0 +1,80 @@
+From: Xiaoming Ni <nixiaoming@huawei.com>
+Subject: printk: fix build warning when CONFIG_PRINTK=n
+
+build warning when CONFIG_PRINTK=n
+	kernel/printk/printk.c:175:5: warning: no previous prototype for
+	 'devkmsg_sysctl_set_loglvl' [-Wmissing-prototypes]
+
+devkmsg_sysctl_set_loglvl() is only used in sysctl.c when CONFIG_PRINTK=y,
+but it participates in the build when CONFIG_PRINTK=n.  So add compile
+dependency CONFIG_PRINTK=y && CONFIG_SYSCTL=y to fix the build warning.
+
+Link: https://lkml.kernel.org/r/20211129211943.640266-5-mcgrof@kernel.org
+Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Cc: Antti Palosaari <crope@iki.fi>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Eric Biggers <ebiggers@google.com>
+Cc: Iurii Zaikin <yzaikin@google.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Lukas Middendorf <kernel@tuxforce.de>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: Stephen Kitt <steve@sk2.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/printk.h   |    4 ----
+ kernel/printk/internal.h |    2 ++
+ kernel/printk/printk.c   |    3 ++-
+ 3 files changed, 4 insertions(+), 5 deletions(-)
+
+--- a/include/linux/printk.h~printk-fix-build-warning-when-config_printk=n
++++ a/include/linux/printk.h
+@@ -183,10 +183,6 @@ extern bool printk_timed_ratelimit(unsig
+ extern int printk_delay_msec;
+ extern int dmesg_restrict;
+ 
+-extern int
+-devkmsg_sysctl_set_loglvl(struct ctl_table *table, int write, void *buf,
+-			  size_t *lenp, loff_t *ppos);
+-
+ extern void wake_up_klogd(void);
+ 
+ char *log_buf_addr_get(void);
+--- a/kernel/printk/internal.h~printk-fix-build-warning-when-config_printk=n
++++ a/kernel/printk/internal.h
+@@ -6,6 +6,8 @@
+ 
+ #if defined(CONFIG_PRINTK) && defined(CONFIG_SYSCTL)
+ void __init printk_sysctl_init(void);
++int devkmsg_sysctl_set_loglvl(struct ctl_table *table, int write,
++			      void *buffer, size_t *lenp, loff_t *ppos);
+ #else
+ #define printk_sysctl_init() do { } while (0)
+ #endif
+--- a/kernel/printk/printk.c~printk-fix-build-warning-when-config_printk=n
++++ a/kernel/printk/printk.c
+@@ -171,7 +171,7 @@ static int __init control_devkmsg(char *
+ __setup("printk.devkmsg=", control_devkmsg);
+ 
+ char devkmsg_log_str[DEVKMSG_STR_MAX_SIZE] = "ratelimit";
+-
++#if defined(CONFIG_PRINTK) && defined(CONFIG_SYSCTL)
+ int devkmsg_sysctl_set_loglvl(struct ctl_table *table, int write,
+ 			      void *buffer, size_t *lenp, loff_t *ppos)
+ {
+@@ -210,6 +210,7 @@ int devkmsg_sysctl_set_loglvl(struct ctl
+ 
+ 	return 0;
+ }
++#endif /* CONFIG_PRINTK && CONFIG_SYSCTL */
+ 
+ /* Number of registered extended console drivers. */
+ static int nr_ext_console_drivers;
+_

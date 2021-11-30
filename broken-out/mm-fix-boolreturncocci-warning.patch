@@ -1,0 +1,27 @@
+From: Changcheng Deng <deng.changcheng@zte.com.cn>
+Subject: mm: fix boolreturn.cocci warning
+
+Return statements in functions returning bool should use true/false
+instead of 1/0.
+
+Link: https://lkml.kernel.org/r/20211126073327.74815-1-deng.changcheng@zte.com.cn
+Signed-off-by: Changcheng Deng <deng.changcheng@zte.com.cn>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/page-flags.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/page-flags.h~mm-fix-boolreturncocci-warning
++++ a/include/linux/page-flags.h
+@@ -383,7 +383,7 @@ static __always_inline int TestClearPage
+ 	TESTCLEARFLAG(uname, lname, policy)
+ 
+ #define TESTPAGEFLAG_FALSE(uname, lname)				\
+-static inline bool folio_test_##lname(const struct folio *folio) { return 0; } \
++static inline bool folio_test_##lname(const struct folio *folio) { return false; } \
+ static inline int Page##uname(const struct page *page) { return 0; }
+ 
+ #define SETPAGEFLAG_NOOP(uname, lname)					\
+_

@@ -1,0 +1,48 @@
+From: Michal Hocko <mhocko@suse.com>
+Subject: mm/vmalloc: be more explicit about supported gfp flags.
+
+b7d90e7a5ea8 ("mm/vmalloc: be more explicit about supported gfp flags")
+has been merged prematurely without the rest of the series and without
+addressed review feedback from Neil.  Fix that up now.  Only wording is
+changed slightly.
+
+Link: https://lkml.kernel.org/r/20211122153233.9924-4-mhocko@kernel.org
+Signed-off-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+--- a/mm/vmalloc.c~mm-vmalloc-be-more-explicit-about-supported-gfp-flags
++++ a/mm/vmalloc.c
+@@ -3021,12 +3021,14 @@ fail:
+  *
+  * Allocate enough pages to cover @size from the page level
+  * allocator with @gfp_mask flags. Please note that the full set of gfp
+- * flags are not supported. GFP_KERNEL would be a preferred allocation mode
+- * but GFP_NOFS and GFP_NOIO are supported as well. Zone modifiers are not
+- * supported. From the reclaim modifiers__GFP_DIRECT_RECLAIM is required (aka
+- * GFP_NOWAIT is not supported) and only __GFP_NOFAIL is supported (aka
+- * __GFP_NORETRY and __GFP_RETRY_MAYFAIL are not supported).
+- * __GFP_NOWARN can be used to suppress error messages about failures.
++ * flags are not supported. GFP_KERNEL, GFP_NOFS and GFP_NOIO are all
++ * supported.
++ * Zone modifiers are not supported. From the reclaim modifiers
++ * __GFP_DIRECT_RECLAIM is required (aka GFP_NOWAIT is not supported)
++ * and only __GFP_NOFAIL is supported (i.e. __GFP_NORETRY and
++ * __GFP_RETRY_MAYFAIL are not supported).
++ *
++ * __GFP_NOWARN can be used to suppress failures messages.
+  *
+  * Map them into contiguous kernel virtual space, using a pagetable
+  * protection of @prot.
+_

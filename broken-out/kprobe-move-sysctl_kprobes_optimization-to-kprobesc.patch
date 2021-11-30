@@ -1,0 +1,144 @@
+From: Xiaoming Ni <nixiaoming@huawei.com>
+Subject: kprobe: move sysctl_kprobes_optimization to kprobes.c
+
+kernel/sysctl.c is a kitchen sink where everyone leaves their dirty
+dishes, this makes it very difficult to maintain.
+
+To help with this maintenance let's start by moving sysctls to places
+where they actually belong.  The proc sysctl maintainers do not want to
+know what sysctl knobs you wish to add for your own piece of code, we just
+care about the core logic.
+
+Move sysctl_kprobes_optimization from kernel/sysctl.c to kernel/kprobes.c.
+Use register_sysctl() to register the sysctl interface.
+
+[mcgrof@kernel.org: fix compile issue when CONFIG_OPTPROBES is disabled]
+Link: https://lkml.kernel.org/r/20211129211943.640266-7-mcgrof@kernel.org
+Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Cc: Antti Palosaari <crope@iki.fi>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Eric Biggers <ebiggers@google.com>
+Cc: Iurii Zaikin <yzaikin@google.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Lukas Middendorf <kernel@tuxforce.de>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: Stephen Kitt <steve@sk2.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kprobes.h |    6 ------
+ kernel/kprobes.c        |   30 ++++++++++++++++++++++++++----
+ kernel/sysctl.c         |   12 ------------
+ 3 files changed, 26 insertions(+), 22 deletions(-)
+
+--- a/include/linux/kprobes.h~kprobe-move-sysctl_kprobes_optimization-to-kprobesc
++++ a/include/linux/kprobes.h
+@@ -346,12 +346,6 @@ extern void opt_pre_handler(struct kprob
+ 
+ DEFINE_INSN_CACHE_OPS(optinsn);
+ 
+-#ifdef CONFIG_SYSCTL
+-extern int sysctl_kprobes_optimization;
+-extern int proc_kprobes_optimization_handler(struct ctl_table *table,
+-					     int write, void *buffer,
+-					     size_t *length, loff_t *ppos);
+-#endif /* CONFIG_SYSCTL */
+ extern void wait_for_kprobe_optimizer(void);
+ #else /* !CONFIG_OPTPROBES */
+ static inline void wait_for_kprobe_optimizer(void) { }
+--- a/kernel/kprobes.c~kprobe-move-sysctl_kprobes_optimization-to-kprobesc
++++ a/kernel/kprobes.c
+@@ -48,6 +48,9 @@
+ #define KPROBE_HASH_BITS 6
+ #define KPROBE_TABLE_SIZE (1 << KPROBE_HASH_BITS)
+ 
++#if !defined(CONFIG_OPTPROBES) || !defined(CONFIG_SYSCTL)
++#define kprobe_sysctls_init() do { } while (0)
++#endif
+ 
+ static int kprobes_initialized;
+ /* kprobe_table can be accessed by
+@@ -938,10 +941,10 @@ static void unoptimize_all_kprobes(void)
+ }
+ 
+ static DEFINE_MUTEX(kprobe_sysctl_mutex);
+-int sysctl_kprobes_optimization;
+-int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
+-				      void *buffer, size_t *length,
+-				      loff_t *ppos)
++static int sysctl_kprobes_optimization;
++static int proc_kprobes_optimization_handler(struct ctl_table *table,
++					     int write, void *buffer,
++					     size_t *length, loff_t *ppos)
+ {
+ 	int ret;
+ 
+@@ -957,6 +960,24 @@ int proc_kprobes_optimization_handler(st
+ 
+ 	return ret;
+ }
++
++static struct ctl_table kprobe_sysctls[] = {
++	{
++		.procname	= "kprobes-optimization",
++		.data		= &sysctl_kprobes_optimization,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_kprobes_optimization_handler,
++		.extra1		= SYSCTL_ZERO,
++		.extra2		= SYSCTL_ONE,
++	},
++	{}
++};
++
++static void __init kprobe_sysctls_init(void)
++{
++	register_sysctl_init("debug", kprobe_sysctls);
++}
+ #endif /* CONFIG_SYSCTL */
+ 
+ /* Put a breakpoint for a probe. */
+@@ -2581,6 +2602,7 @@ static int __init init_kprobes(void)
+ 		err = register_module_notifier(&kprobe_module_nb);
+ 
+ 	kprobes_initialized = (err == 0);
++	kprobe_sysctls_init();
+ 	return err;
+ }
+ early_initcall(init_kprobes);
+--- a/kernel/sysctl.c~kprobe-move-sysctl_kprobes_optimization-to-kprobesc
++++ a/kernel/sysctl.c
+@@ -55,7 +55,6 @@
+ #include <linux/reboot.h>
+ #include <linux/ftrace.h>
+ #include <linux/perf_event.h>
+-#include <linux/kprobes.h>
+ #include <linux/oom.h>
+ #include <linux/kmod.h>
+ #include <linux/capability.h>
+@@ -2818,17 +2817,6 @@ static struct ctl_table debug_table[] =
+ 		.proc_handler	= proc_dointvec
+ 	},
+ #endif
+-#if defined(CONFIG_OPTPROBES)
+-	{
+-		.procname	= "kprobes-optimization",
+-		.data		= &sysctl_kprobes_optimization,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= proc_kprobes_optimization_handler,
+-		.extra1		= SYSCTL_ZERO,
+-		.extra2		= SYSCTL_ONE,
+-	},
+-#endif
+ 	{ }
+ };
+ 
+_

@@ -1,0 +1,31 @@
+From: Zhenguo Yao <yaozhenguo1@gmail.com>
+Subject: hugetlbfs: fix issue of preallocation of gigantic pages can't work
+
+Preallocation of gigantic pages can't work bacause of commit b5389086ad7b
+("hugetlbfs: extend the definition of hugepages parameter to support node
+allocation").  When nid is NUMA_NO_NODE(-1), alloc_bootmem_huge_page will
+always return without doing allocation.  Fix this by adding more check.
+
+Link: https://lkml.kernel.org/r/20211129133803.15653-1-yaozhenguo1@gmail.com
+Fixes: b5389086ad7b ("hugetlbfs: extend the definition of hugepages parameter to support node allocation")
+Signed-off-by: Zhenguo Yao <yaozhenguo1@gmail.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Maxim Levitsky <mlevitsk@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/hugetlb.c~hugetlbfs-fix-issue-of-preallocation-of-gigantic-pages-cant-work
++++ a/mm/hugetlb.c
+@@ -2973,7 +2973,7 @@ int __alloc_bootmem_huge_page(struct hst
+ 	struct huge_bootmem_page *m = NULL; /* initialize for clang */
+ 	int nr_nodes, node;
+ 
+-	if (nid >= nr_online_nodes)
++	if (nid != NUMA_NO_NODE && nid >= nr_online_nodes)
+ 		return 0;
+ 	/* do node specific alloc */
+ 	if (nid != NUMA_NO_NODE) {
+_

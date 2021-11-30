@@ -354,7 +354,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <linux/kthread.h>
  #include <linux/memcontrol.h>
  #include <linux/ftrace.h>
-@@ -1297,6 +1298,7 @@ static __always_inline bool free_pages_p
+@@ -1307,6 +1308,7 @@ static __always_inline bool free_pages_p
  		if (memcg_kmem_enabled() && PageMemcgKmem(page))
  			__memcg_kmem_uncharge_page(page, order);
  		reset_page_owner(page, order);
@@ -362,7 +362,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return false;
  	}
  
-@@ -1336,6 +1338,7 @@ static __always_inline bool free_pages_p
+@@ -1346,6 +1348,7 @@ static __always_inline bool free_pages_p
  	page_cpupid_reset_last(page);
  	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
  	reset_page_owner(page, order);
@@ -370,7 +370,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!PageHighMem(page)) {
  		debug_check_no_locks_freed(page_address(page),
-@@ -2410,6 +2413,7 @@ inline void post_alloc_hook(struct page
+@@ -2420,6 +2423,7 @@ inline void post_alloc_hook(struct page
  	}
  
  	set_page_owner(page, order, gfp_flags);

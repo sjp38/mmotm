@@ -13,8 +13,8 @@ device and workload requirements.
 
 Link: https://lkml.kernel.org/r/20211124193604.2758863-1-surenb@google.com
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@suse.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Antti Palosaari <crope@iki.fi>
 Cc: Mauro Carvalho Chehab <mchehab@kernel.org>

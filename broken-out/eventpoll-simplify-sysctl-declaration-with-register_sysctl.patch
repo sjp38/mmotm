@@ -106,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifdef __clang__
 --- a/include/linux/sysctl.h~eventpoll-simplify-sysctl-declaration-with-register_sysctl
 +++ a/include/linux/sysctl.h
-@@ -218,7 +218,6 @@ extern int no_unaligned_warning;
+@@ -219,7 +219,6 @@ extern int no_unaligned_warning;
  extern struct ctl_table sysctl_mount_point[];
  extern struct ctl_table random_table[];
  extern struct ctl_table firmware_config_table[];

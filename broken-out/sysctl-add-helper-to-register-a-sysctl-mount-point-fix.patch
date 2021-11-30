@@ -1,0 +1,25 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: sysctl-add-helper-to-register-a-sysctl-mount-point-fix
+
+export register_sysctl_mount_point() to modules
+
+ERROR: modpost: "register_sysctl_mount_point" [fs/binfmt_misc.ko] undefined!
+
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/proc_sysctl.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/fs/proc/proc_sysctl.c~sysctl-add-helper-to-register-a-sysctl-mount-point-fix
++++ a/fs/proc/proc_sysctl.c
+@@ -47,6 +47,7 @@ struct ctl_table_header *register_sysctl
+ {
+ 	return register_sysctl(path, sysctl_mount_point);
+ }
++EXPORT_SYMBOL(register_sysctl_mount_point);
+ 
+ static bool is_empty_dir(struct ctl_table_header *head)
+ {
+_

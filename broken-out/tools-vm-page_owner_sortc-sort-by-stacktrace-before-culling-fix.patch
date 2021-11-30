@@ -1,0 +1,43 @@
+From: Sean Anderson <seanga2@gmail.com>
+Subject: tools/vm/page_owner_sort.c: fix NULL-pointer dereference when comparing stack traces
+
+If there is no newline in a block, then strchr returns NULL.  We check for
+this in stacktrace_compare, but not when culling.  Fix this (and any
+future bugs like it) by replacing NULL stack traces with "" in add_list.
+
+Link: https://lkml.kernel.org/r/20211125162653.1855958-1-seanga2@gmail.com
+Fixes: d0abbab9e9e9 ("tools/vm/page_owner_sort.c: sort by stacktrace before culling")
+Signed-off-by: Sean Anderson <seanga2@gmail.com>
+Cc: Changhee Han <ch0.han@lge.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Cc: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Sean Anderson <seanga2@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling-fix
++++ a/tools/vm/page_owner_sort.c
+@@ -56,7 +56,7 @@ static int compare_stacktrace(const void
+ {
+ 	const struct block_list *l1 = p1, *l2 = p2;
+ 
+-	return strcmp(l1->stacktrace ?: "", l2->stacktrace ?: "");
++	return strcmp(l1->stacktrace, l2->stacktrace);
+ }
+ 
+ static int compare_num(const void *p1, const void *p2)
+@@ -122,7 +122,7 @@ static void add_list(char *buf, int len)
+ 	list[list_size].page_num = get_page_num(buf);
+ 	memcpy(list[list_size].txt, buf, len);
+ 	list[list_size].txt[len] = 0;
+-	list[list_size].stacktrace = strchr(list[list_size].txt, '\n');
++	list[list_size].stacktrace = strchr(list[list_size].txt, '\n') ?: "";
+ 	list_size++;
+ 	if (list_size % 1000 == 0) {
+ 		printf("loaded %d\r", list_size);
+_

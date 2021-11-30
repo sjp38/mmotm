@@ -33,7 +33,7 @@ On cgroup-v1:
 
 This patch was tested manually by allocating hugetlb memory and querying
 the hugetlb.*.numa_stat file of the cgroup and its parents.
-￼
+
 Link: https://lkml.kernel.org/r/20211123001020.4083653-1-almasrymina@google.com
 Signed-off-by: Mina Almasry <almasrymina@google.com>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>

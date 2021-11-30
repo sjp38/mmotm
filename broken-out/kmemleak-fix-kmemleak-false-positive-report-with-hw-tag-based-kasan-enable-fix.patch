@@ -1,0 +1,28 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: kmemleak-fix-kmemleak-false-positive-report-with-hw-tag-based-kasan-enable-fix
+
+whitespace tweak
+
+Cc: Kuan-Ying Lee <Kuan-Ying.Lee@mediatek.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kmemleak.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/kmemleak.c~kmemleak-fix-kmemleak-false-positive-report-with-hw-tag-based-kasan-enable-fix
++++ a/mm/kmemleak.c
+@@ -384,10 +384,10 @@ static struct kmemleak_object *lookup_ob
+ 	unsigned long untagged_ptr = (unsigned long)kasan_reset_tag((void *)ptr);
+ 
+ 	while (rb) {
+-		struct kmemleak_object *object =
+-			rb_entry(rb, struct kmemleak_object, rb_node);
++		struct kmemleak_object *object;
+ 		unsigned long untagged_objp;
+ 
++		object = rb_entry(rb, struct kmemleak_object, rb_node);
+ 		untagged_objp = (unsigned long)kasan_reset_tag((void *)object->pointer);
+ 
+ 		if (untagged_ptr < untagged_objp)
+_
