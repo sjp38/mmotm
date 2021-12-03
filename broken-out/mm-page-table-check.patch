@@ -54,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/arch/Kconfig~mm-page-table-check
 +++ a/arch/Kconfig
-@@ -1287,6 +1287,9 @@ config HAVE_ARCH_PFN_VALID
+@@ -1297,6 +1297,9 @@ config HAVE_ARCH_PFN_VALID
  config ARCH_SUPPORTS_DEBUG_PAGEALLOC
  	bool
  
@@ -285,7 +285,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +#endif /* __LINUX_PAGE_TABLE_CHECK_H */
 --- a/MAINTAINERS~mm-page-table-check
 +++ a/MAINTAINERS
-@@ -14376,6 +14376,15 @@ F:	include/net/page_pool.h
+@@ -14387,6 +14387,15 @@ F:	include/net/page_pool.h
  F:	include/trace/events/page_pool.h
  F:	net/core/page_pool.c
  

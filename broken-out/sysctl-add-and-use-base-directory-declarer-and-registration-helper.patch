@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/proc/proc_sysctl.c~sysctl-add-and-use-base-directory-declarer-and-registration-helper
 +++ a/fs/proc/proc_sysctl.c
-@@ -1646,6 +1646,15 @@ struct ctl_table_header *register_sysctl
+@@ -1647,6 +1647,15 @@ struct ctl_table_header *register_sysctl
  }
  EXPORT_SYMBOL(register_sysctl_table);
  

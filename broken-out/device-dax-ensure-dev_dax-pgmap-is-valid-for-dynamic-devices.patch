@@ -20,9 +20,9 @@ allocate the @pgmap for the dynamic dax region case.  Also take the
 opportunity to document the differences between static and dynamic da
 regions.
 
-Link: https://lkml.kernel.org/r/20211124191005.20783-8-joao.m.martins@oracle.com
-Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Link: https://lkml.kernel.org/r/20211202204422.26777-8-joao.m.martins@oracle.com
 Suggested-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 Cc: Christoph Hellwig <hch@lst.de>
 Cc: Dave Jiang <dave.jiang@intel.com>
 Cc: Jane Chu <jane.chu@oracle.com>
@@ -30,7 +30,7 @@ Cc: Jason Gunthorpe <jgg@nvidia.com>
 Cc: Jason Gunthorpe <jgg@ziepe.ca>
 Cc: John Hubbard <jhubbard@nvidia.com>
 Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
 Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>

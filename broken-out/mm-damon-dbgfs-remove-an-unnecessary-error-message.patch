@@ -1,0 +1,35 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon/dbgfs: remove an unnecessary error message
+
+When wrong scheme action is requested via the debugfs interface, DAMON
+prints an error message.  Because the function returns error code, this is
+not really needed.  Because the code path is triggered by the user
+specified input, this can result in kernel log mistakenly being messy.  To
+avoid the case, this commit removes the message.
+
+Link: https://lkml.kernel.org/r/20211201150440.1088-3-sj@kernel.org
+Fixes: af122dd8f3c0 ("mm/damon/dbgfs: support DAMON-based Operation Schemes")
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: Brendan Higgins <brendanhiggins@google.com>
+Cc: Shuah Khan <shuah@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/dbgfs.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+--- a/mm/damon/dbgfs.c~mm-damon-dbgfs-remove-an-unnecessary-error-message
++++ a/mm/damon/dbgfs.c
+@@ -210,10 +210,8 @@ static struct damos **str_to_schemes(con
+ 				&wmarks.low, &parsed);
+ 		if (ret != 18)
+ 			break;
+-		if (!damos_action_valid(action)) {
+-			pr_err("wrong action %d\n", action);
++		if (!damos_action_valid(action))
+ 			goto fail;
+-		}
+ 
+ 		pos += parsed;
+ 		scheme = damon_new_scheme(min_sz, max_sz, min_nr_a, max_nr_a,
+_

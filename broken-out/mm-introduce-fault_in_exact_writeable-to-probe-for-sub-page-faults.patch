@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/include/linux/pagemap.h~mm-introduce-fault_in_exact_writeable-to-probe-for-sub-page-faults
 +++ a/include/linux/pagemap.h
-@@ -910,6 +910,7 @@ void folio_add_wait_queue(struct folio *
+@@ -926,6 +926,7 @@ void folio_add_wait_queue(struct folio *
   * Fault in userspace address range.
   */
  size_t fault_in_writeable(char __user *uaddr, size_t size);

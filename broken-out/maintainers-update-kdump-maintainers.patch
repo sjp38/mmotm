@@ -15,7 +15,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/MAINTAINERS~maintainers-update-kdump-maintainers
 +++ a/MAINTAINERS
-@@ -10269,9 +10269,9 @@ F:	lib/Kconfig.kcsan
+@@ -10280,9 +10280,9 @@ F:	lib/Kconfig.kcsan
  F:	scripts/Makefile.kcsan
  
  KDUMP

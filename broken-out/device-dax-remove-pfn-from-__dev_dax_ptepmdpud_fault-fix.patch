@@ -1,0 +1,24 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: device-dax-remove-pfn-from-__dev_dax_ptepmdpud_fault-fix
+
+fix CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD=n build
+
+Cc: Joao Martins <joao.m.martins@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/dax/device.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/dax/device.c~device-dax-remove-pfn-from-__dev_dax_ptepmdpud_fault-fix
++++ a/drivers/dax/device.c
+@@ -216,7 +216,7 @@ static vm_fault_t __dev_dax_pud_fault(st
+ }
+ #else
+ static vm_fault_t __dev_dax_pud_fault(struct dev_dax *dev_dax,
+-				struct vm_fault *vmf, pfn_t *pfn)
++				struct vm_fault *vmf)
+ {
+ 	return VM_FAULT_FALLBACK;
+ }
+_

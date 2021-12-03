@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/inode.c~mmfs-split-dump_mapping-out-from-dump_page
 +++ a/fs/inode.c
-@@ -528,6 +528,55 @@ void __remove_inode_hash(struct inode *i
+@@ -526,6 +526,55 @@ void __remove_inode_hash(struct inode *i
  }
  EXPORT_SYMBOL(__remove_inode_hash);
  
@@ -78,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
 --- a/include/linux/fs.h~mmfs-split-dump_mapping-out-from-dump_page
 +++ a/include/linux/fs.h
-@@ -3153,6 +3153,7 @@ extern void unlock_new_inode(struct inod
+@@ -3152,6 +3152,7 @@ extern void unlock_new_inode(struct inod
  extern void discard_new_inode(struct inode *);
  extern unsigned int get_next_ino(void);
  extern void evict_inodes(struct super_block *sb);

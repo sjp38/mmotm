@@ -1,0 +1,24 @@
+From: Luis Chamberlain <mcgrof@kernel.org>
+Subject: sysctl-add-and-use-base-directory-declarer-and-registration-helper-fix
+
+null-terminate the ctl_table arrays
+
+Link: https://lkml.kernel.org/r/YafJY3rXDYnjK/gs@bombadil.infradead.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/sysctl.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/include/linux/sysctl.h~sysctl-add-and-use-base-directory-declarer-and-registration-helper-fix
++++ a/include/linux/sysctl.h
+@@ -201,6 +201,7 @@ static struct ctl_table _name##_base_tab
+ 		.mode		= 0555,					\
+ 		.child		= _table,				\
+ 	},								\
++	{ },								\
+ }
+ 
+ extern int __register_sysctl_base(struct ctl_table *base_table);
+_

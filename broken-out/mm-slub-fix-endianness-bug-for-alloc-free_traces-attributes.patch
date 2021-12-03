@@ -21,7 +21,7 @@ Link: https://lkml.kernel.org/r/20211126171848.17534-1-gerald.schaefer@linux.ibm
 Fixes: 64dd68497be7 ("mm: slub: move sysfs slab alloc/free interfaces to debugfs")
 Signed-off-by: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 Reported-by: Steffen Maier <maier@linux.ibm.com>
-Cc: : Vlastimil Babka <vbabka@suse.cz>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Faiyaz Mohammed <faiyazm@codeaurora.org>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Christoph Lameter <cl@linux.com>

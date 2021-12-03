@@ -23,8 +23,8 @@ Link: https://lkml.kernel.org/r/20211126145015.15862-2-sj@kernel.org
 Signed-off-by: SeongJae Park <sj@kernel.org>
 Suggested-by: Andrew Morton <akpm@linux-foundation.org>
 Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Oleksandr Natalenko <oleksandr@natalenko.name>
 Cc: John Stultz <john.stultz@linaro.org>
-Cc: Oleksandr Natalenko <oleksandr@natalenko.name>
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

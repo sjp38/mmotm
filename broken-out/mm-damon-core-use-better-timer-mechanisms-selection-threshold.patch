@@ -1,0 +1,40 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon/core: use better timer mechanisms selection threshold
+
+Patch series "mm/damon: Trivial fixups and improvements".
+
+This patchset contains trivial fixups and improvements for DAMON and its
+kunit/kselftest tests.
+
+
+This patch (of 11):
+
+DAMON is using hrtimer if requested sleep time is <=100ms, while the
+suggested threshold[1] is <=20ms.  This commit applies the threshold.
+
+[1] Documentation/timers/timers-howto.rst
+
+Link: https://lkml.kernel.org/r/20211201150440.1088-2-sj@kernel.org
+Fixes: ee801b7dd7822 ("mm/damon/schemes: activate schemes based on a watermarks mechanism")
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Brendan Higgins <brendanhiggins@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/core.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/damon/core.c~mm-damon-core-use-better-timer-mechanisms-selection-threshold
++++ a/mm/damon/core.c
+@@ -980,7 +980,8 @@ static unsigned long damos_wmark_wait_us
+ 
+ static void kdamond_usleep(unsigned long usecs)
+ {
+-	if (usecs > 100 * 1000)
++	/* See Documentation/timers/timers-howto.rst for the thresholds */
++	if (usecs > 20 * USEC_PER_MSEC)
+ 		schedule_timeout_idle(usecs_to_jiffies(usecs));
+ 	else
+ 		usleep_idle_range(usecs, usecs + 1);
+_

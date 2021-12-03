@@ -1,0 +1,33 @@
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: firmware_loader-move-firmware-sysctl-to-its-own-files-fix-3
+
+akpm sucks
+
+Link: https://lkml.kernel.org/r/20211201160626.401d828d@canb.auug.org.au
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/base/firmware_loader/fallback_table.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/base/firmware_loader/fallback_table.c~firmware_loader-move-firmware-sysctl-to-its-own-files-fix-3
++++ a/drivers/base/firmware_loader/fallback_table.c
+@@ -57,13 +57,13 @@ int register_firmware_config_sysctl(void
+ 		return -ENOMEM;
+ 	return 0;
+ }
+-EXPORT_SYMBOL_NS_GPL(register_firmware_config_sysctl);
++EXPORT_SYMBOL_NS_GPL(register_firmware_config_sysctl, FIRMWARE_LOADER_PRIVATE);
+ 
+ void unregister_firmware_config_sysctl(void)
+ {
+ 	unregister_sysctl_table(firmware_config_sysct_table_header);
+ 	firmware_config_sysct_table_header = NULL;
+ }
+-EXPORT_SYMBOL_NS_GPL(unregister_firmware_config_sysctl);
++EXPORT_SYMBOL_NS_GPL(unregister_firmware_config_sysctl, FIRMWARE_LOADER_PRIVATE);
+ 
+ #endif /* CONFIG_SYSCTL */
+_

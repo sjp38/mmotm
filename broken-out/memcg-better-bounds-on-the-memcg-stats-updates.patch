@@ -76,7 +76,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /**
-@@ -807,7 +813,7 @@ void __count_memcg_events(struct mem_cgr
+@@ -789,7 +795,7 @@ void __count_memcg_events(struct mem_cgr
  		return;
  
  	__this_cpu_add(memcg->vmstats_percpu->events[idx], count);

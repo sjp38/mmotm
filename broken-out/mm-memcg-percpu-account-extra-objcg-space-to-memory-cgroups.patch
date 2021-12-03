@@ -7,7 +7,7 @@ too.
 
 Link: https://lkml.kernel.org/r/20211126040606.97836-1-zhengqi.arch@bytedance.com
 Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
-Cc: Dennis Zhou <dennis@kernel.org>
+Acked-by: Dennis Zhou <dennis@kernel.org>
 Cc: Tejun Heo <tj@kernel.org>
 Cc: Christoph Lameter <cl@linux.com>
 Cc: Muchun Song <songmuchun@bytedance.com>

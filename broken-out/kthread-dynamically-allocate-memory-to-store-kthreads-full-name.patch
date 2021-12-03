@@ -59,9 +59,11 @@ displayed via /proc/[pid]/comm:
     jbd2/nvme0n1p2-8
 
 Link: https://lkml.kernel.org/r/20211120112850.46047-1-laoar.shao@gmail.com
+Signed-off-by: Yafang Shao <laoar.shao@gmail.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Petr Mladek <pmladek@suse.com>
 Suggested-by: Petr Mladek <pmladek@suse.com>
 Suggested-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Yafang Shao <laoar.shao@gmail.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 Cc: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>
 Cc: Alexei Starovoitov <alexei.starovoitov@gmail.com>
@@ -70,11 +72,8 @@ Cc: Michal Miroslaw <mirq-linux@rere.qmqm.pl>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Matthew Wilcox <willy@infradead.org>
-Cc: David Hildenbrand <david@redhat.com>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Kees Cook <keescook@chromium.org>
-Cc: Petr Mladek <pmladek@suse.com>
-
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

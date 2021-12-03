@@ -1,0 +1,34 @@
+From: Nathan Chancellor <nathan@kernel.org>
+Subject: btrfs: use generic Kconfig option for 256kB page size limit
+
+Use the newly introduced CONFIG_PAGE_SIZE_LESS_THAN_256KB to describe the
+dependency introduced by commit b05fbcc36be1 ("btrfs: disable build on
+platforms having page size 256K").
+
+Link: https://lkml.kernel.org/r/20211129230141.228085-3-nathan@kernel.org
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+Acked-by: David Sterba <dsterba@suse.com>
+Cc: Chris Mason <clm@fb.com>
+Cc: Josef Bacik <josef@toxicpanda.com>
+Cc: kernel test robot <lkp@intel.com>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/btrfs/Kconfig |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/fs/btrfs/Kconfig~btrfs-use-generic-kconfig-option-for-256kb-page-size-limit
++++ a/fs/btrfs/Kconfig
+@@ -18,8 +18,7 @@ config BTRFS_FS
+ 	select RAID6_PQ
+ 	select XOR_BLOCKS
+ 	select SRCU
+-	depends on !PPC_256K_PAGES	# powerpc
+-	depends on !PAGE_SIZE_256KB	# hexagon
++	depends on PAGE_SIZE_LESS_THAN_256KB
+ 
+ 	help
+ 	  Btrfs is a general purpose copy-on-write filesystem with extents,
+_

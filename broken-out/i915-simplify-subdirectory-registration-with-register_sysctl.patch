@@ -99,6 +99,7 @@ header =
 Generated-by: Coccinelle SmPL
 Link: https://lkml.kernel.org/r/20211123202422.819032-3-mcgrof@kernel.org
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+Acked-by: Jani Nikula <jani.nikula@intel.com>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Amir Goldstein <amir73il@gmail.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
@@ -111,7 +112,6 @@ Cc: David Airlie <airlied@linux.ie>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Iurii Zaikin <yzaikin@google.com>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>
 Cc: Jan Kara <jack@suse.cz>
 Cc: Joel Becker <jlbec@evilplan.org>
 Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
@@ -132,6 +132,15 @@ Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
 Cc: Stephen Kitt <steve@sk2.org>
 Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Cc: Xiaoming Ni <nixiaoming@huawei.com>
+Cc: Douglas Gilbert <dgilbert@interlog.com>
+Cc: James E.J. Bottomley <jejb@linux.ibm.com>
+Cc: Jani Nikula <jani.nikula@linux.intel.com>
+Cc: John Ogness <john.ogness@linutronix.de>
+Cc: Martin K. Petersen <martin.petersen@oracle.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Cc: Suren Baghdasaryan <surenb@google.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

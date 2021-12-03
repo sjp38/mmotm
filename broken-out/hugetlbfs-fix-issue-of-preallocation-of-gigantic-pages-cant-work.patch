@@ -9,7 +9,7 @@ always return without doing allocation.  Fix this by adding more check.
 Link: https://lkml.kernel.org/r/20211129133803.15653-1-yaozhenguo1@gmail.com
 Fixes: b5389086ad7b ("hugetlbfs: extend the definition of hugepages parameter to support node allocation")
 Signed-off-by: Zhenguo Yao <yaozhenguo1@gmail.com>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Maxim Levitsky <mlevitsk@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

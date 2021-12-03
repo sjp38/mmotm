@@ -1,0 +1,71 @@
+From: Xin Hao <xhao@linux.alibaba.com>
+Subject: mm/damon: move damon_rand() definition into damon.h
+
+damon_rand() is called in three files:damon/core.c, damon/ paddr.c,
+damon/vaddr.c, i think there is no need to redefine this twice, So move it
+to damon.h will be a good choice.
+
+Link: https://lkml.kernel.org/r/20211202075859.51341-1-xhao@linux.alibaba.com
+Signed-off-by: Xin Hao <xhao@linux.alibaba.com>
+Reviewed-by: SeongJae Park <sj@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/damon.h   |    4 ++++
+ mm/damon/core.c         |    4 ----
+ mm/damon/prmtv-common.h |    4 ----
+ 3 files changed, 4 insertions(+), 8 deletions(-)
+
+--- a/include/linux/damon.h~mm-damon-move-damon_rand-definition-into-damonh
++++ a/include/linux/damon.h
+@@ -11,12 +11,16 @@
+ #include <linux/mutex.h>
+ #include <linux/time64.h>
+ #include <linux/types.h>
++#include <linux/random.h>
+ 
+ /* Minimal region size.  Every damon_region is aligned by this. */
+ #define DAMON_MIN_REGION	PAGE_SIZE
+ /* Max priority score for DAMON-based operation schemes */
+ #define DAMOS_MAX_SCORE		(99)
+ 
++/* Get a random number in [l, r) */
++#define damon_rand(l, r) (l + prandom_u32_max(r - l))
++
+ /**
+  * struct damon_addr_range - Represents an address region of [@start, @end).
+  * @start:	Start address of the region (inclusive).
+--- a/mm/damon/core.c~mm-damon-move-damon_rand-definition-into-damonh
++++ a/mm/damon/core.c
+@@ -11,7 +11,6 @@
+ #include <linux/delay.h>
+ #include <linux/kthread.h>
+ #include <linux/mm.h>
+-#include <linux/random.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ 
+@@ -23,9 +22,6 @@
+ #define DAMON_MIN_REGION 1
+ #endif
+ 
+-/* Get a random number in [l, r) */
+-#define damon_rand(l, r) (l + prandom_u32_max(r - l))
+-
+ static DEFINE_MUTEX(damon_lock);
+ static int nr_running_ctxs;
+ 
+--- a/mm/damon/prmtv-common.h~mm-damon-move-damon_rand-definition-into-damonh
++++ a/mm/damon/prmtv-common.h
+@@ -6,10 +6,6 @@
+  */
+ 
+ #include <linux/damon.h>
+-#include <linux/random.h>
+-
+-/* Get a random number in [l, r) */
+-#define damon_rand(l, r) (l + prandom_u32_max(r - l))
+ 
+ struct page *damon_get_page(unsigned long pfn);
+ 
+_

@@ -1,0 +1,59 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-rmap-fix-potential-batched-tlb-flush-race-fix
+
+tweak comments
+
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: "Huang, Ying" <ying.huang@intel.com>
+Cc: Marco Elver <elver@google.com>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Nadav Amit <namit@vmware.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Yu Zhao <yuzhao@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+--- a/mm/rmap.c~mm-rmap-fix-potential-batched-tlb-flush-race-fix
++++ a/mm/rmap.c
+@@ -622,8 +622,8 @@ void try_to_unmap_flush_dirty(void)
+ }
+ 
+ /*
+- * The 0-14 bit of mm->tlb_flush_batched records pending generations,
+- * and the 16-30 bit records flushed generations.
++ * Bits 0-14 of mm->tlb_flush_batched record pending generations.
++ * Bits 16-30 of mm->tlb_flush_batched bit record flushed generations.
+  */
+ #define TLB_FLUSH_BATCH_FLUSHED_SHIFT	16
+ #define TLB_FLUSH_BATCH_PENDING_MASK			\
+@@ -648,9 +648,9 @@ static void set_tlb_ubc_flush_pending(st
+ retry:
+ 	if ((batch & TLB_FLUSH_BATCH_PENDING_MASK) > TLB_FLUSH_BATCH_PENDING_LARGE) {
+ 		/*
+-		 * To avoid ""pending"" to catch up with ""flushed""
+-		 * because of overflow.  Reset "pending" and "flushed"
+-		 * to be "1" and "0" if "pending" becomes large.
++		 * Prevent `pending' from catching up with `flushed' because of
++		 * overflow.  Reset `pending' and `flushed' to be 1 and 0 if
++		 * `pending' becomes large.
+ 		 */
+ 		nbatch = atomic_cmpxchg(&mm->tlb_flush_batched, batch, 1);
+ 		if (nbatch != batch) {
+@@ -713,9 +713,8 @@ void flush_tlb_batched_pending(struct mm
+ 	if (pending != flushed) {
+ 		flush_tlb_mm(mm);
+ 		/*
+-		 * If the new TLB flushing is pended during flushing,
+-		 * leave mm->tlb_flush_batched as is, to avoid to lose
+-		 * flushing.
++		 * If the new TLB flushing is pending during flushing, leave
++		 * mm->tlb_flush_batched as is, to avoid losing flushing.
+ 		 */
+ 		atomic_cmpxchg(&mm->tlb_flush_batched, batch,
+ 			       pending | (pending << TLB_FLUSH_BATCH_FLUSHED_SHIFT));
+_

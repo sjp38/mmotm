@@ -12,7 +12,7 @@ Link: https://lkml.kernel.org/r/20211126145015.15862-3-sj@kernel.org
 Fixes: 2224d8485492 ("mm: introduce Data Access MONitor (DAMON)")
 Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
 Signed-off-by: SeongJae Park <sj@kernel.org>
-Cc: Oleksandr Natalenko <oleksandr@natalenko.name>
+Tested-by: Oleksandr Natalenko <oleksandr@natalenko.name>
 Cc: John Stultz <john.stultz@linaro.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: <stable@vger.kernel.org>

@@ -55,7 +55,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * We now locate it in /proc/cpu/alignment instead.
 --- a/fs/proc/proc_sysctl.c~kernel-sysctlc-rename-sysctl_init-to-sysctl_init_bases
 +++ a/fs/proc/proc_sysctl.c
-@@ -1419,7 +1419,7 @@ EXPORT_SYMBOL(register_sysctl);
+@@ -1420,7 +1420,7 @@ EXPORT_SYMBOL(register_sysctl);
   * Context: Can only be called after your respective sysctl base path has been
   * registered. So for instance, most base directories are registered early on
   * init before init levels are processed through proc_sys_init() and
@@ -64,7 +64,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   */
  void __init __register_sysctl_init(const char *path, struct ctl_table *table,
  				 const char *table_name)
-@@ -1768,7 +1768,7 @@ int __init proc_sys_init(void)
+@@ -1769,7 +1769,7 @@ int __init proc_sys_init(void)
  	proc_sys_root->proc_dir_ops = &proc_sys_dir_file_operations;
  	proc_sys_root->nlink = 0;
  

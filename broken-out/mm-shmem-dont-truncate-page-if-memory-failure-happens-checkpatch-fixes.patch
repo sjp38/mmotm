@@ -1,0 +1,47 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-shmem-dont-truncate-page-if-memory-failure-happens-checkpatch-fixes
+
+WARNING: Possible unwrapped commit description (prefer a maximum 75 chars per line)
+#20: 
+ slight different implementation from what Ajay Garg <ajaygargnsit@gmail.com>
+
+WARNING: suspect code indent for conditional statements (16, 23)
+#148: FILE: mm/shmem.c:3129:
++		if (!page)
++		       return ERR_PTR(-ECHILD);
+
+WARNING: Statements should start on a tabstop
+#149: FILE: mm/shmem.c:3130:
++		       return ERR_PTR(-ECHILD);
+
+total: 0 errors, 3 warnings, 150 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+./patches/mm-shmem-dont-truncate-page-if-memory-failure-happens.patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
+Please run checkpatch prior to sending patches
+
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/shmem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/shmem.c~mm-shmem-dont-truncate-page-if-memory-failure-happens-checkpatch-fixes
++++ a/mm/shmem.c
+@@ -3127,7 +3127,7 @@ static const char *shmem_get_link(struct
+ 		if (error)
+ 			return ERR_PTR(error);
+ 		if (!page)
+-		       return ERR_PTR(-ECHILD);
++			return ERR_PTR(-ECHILD);
+ 		if (PageHWPoison(page)) {
+ 			unlock_page(page);
+ 			put_page(page);
+_

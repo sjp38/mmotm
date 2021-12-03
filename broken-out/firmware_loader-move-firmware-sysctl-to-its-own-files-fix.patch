@@ -1,0 +1,43 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: firmware_loader-move-firmware-sysctl-to-its-own-files-fix
+
+export register_firmware_config_sysctl and unregister_firmware_config_sysctl to
+modules
+
+ERROR: modpost: "register_firmware_config_sysctl" [drivers/base/firmware_loader/firmware_class.ko] undefined!
+ERROR: modpost: "unregister_firmware_config_sysctl" [drivers/base/firmware_loader/firmware_class.ko] undefined!
+
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/base/firmware_loader/fallback_table.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/drivers/base/firmware_loader/fallback_table.c~firmware_loader-move-firmware-sysctl-to-its-own-files-fix
++++ a/drivers/base/firmware_loader/fallback_table.c
+@@ -4,6 +4,7 @@
+ #include <linux/kconfig.h>
+ #include <linux/list.h>
+ #include <linux/slab.h>
++#include <linux/module.h>
+ #include <linux/security.h>
+ #include <linux/highmem.h>
+ #include <linux/umh.h>
+@@ -56,10 +57,13 @@ int register_firmware_config_sysctl(void
+ 		return -ENOMEM;
+ 	return 0;
+ }
++EXPORT_SYMBOL(register_firmware_config_sysctl);
+ 
+ void unregister_firmware_config_sysctl(void)
+ {
+ 	unregister_sysctl_table(firmware_config_sysct_table_header);
+ 	firmware_config_sysct_table_header = NULL;
+ }
++EXPORT_SYMBOL(unregister_firmware_config_sysctl);
++
+ #endif /* CONFIG_SYSCTL */
+_

@@ -24,7 +24,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/arch/arm64/include/asm/uaccess.h~arm64-add-support-for-sub-page-faults-user-probing
 +++ a/arch/arm64/include/asm/uaccess.h
-@@ -445,4 +445,37 @@ static inline int __copy_from_user_flush
+@@ -479,4 +479,37 @@ static inline int __copy_from_user_flush
  }
  #endif
  

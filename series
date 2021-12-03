@@ -33,6 +33,18 @@ filemap-remove-pagehwpoison-check-from-next_uptodate_page.patch
 timers-implement-usleep_idle_range.patch
 mm-damon-core-fix-fake-load-reports-due-to-uninterruptible-sleeps.patch
 #
+mm-damon-core-use-better-timer-mechanisms-selection-threshold.patch
+mm-damon-dbgfs-remove-an-unnecessary-error-message.patch
+mm-damon-core-remove-unnecessary-error-messages.patch
+mm-damon-vaddr-remove-an-unnecessary-warning-message.patch
+mm-damon-vaddr-test-split-a-test-function-having-1024-bytes-frame-size.patch
+mm-damon-vaddr-test-remove-unnecessary-variables.patch
+selftests-damon-skip-test-if-damon-is-running.patch
+selftests-damon-test-damon-enabling-with-empty-target_ids-case.patch
+selftests-damon-test-wrong-damos-condition-ranges-input.patch
+selftests-damon-test-debugfs-file-reads-writes-with-huge-count.patch
+selftests-damon-split-test-cases.patch
+#
 #mm/slub
 mm-slub-fix-endianness-bug-for-alloc-free_traces-attributes.patch
 #
@@ -387,8 +399,6 @@ mm-defer-kmemleak-object-creation-of-module_alloc.patch
 mm-defer-kmemleak-object-creation-of-module_alloc-v4.patch
 #
 #mm/dax
-#memory-failure-fetch-compound_head-after-pgmap_pfn_valid.patch+N: TBU
-memory-failure-fetch-compound_head-after-pgmap_pfn_valid.patch
 mm-page_alloc-split-prep_compound_page-into-head-and-tail-subparts.patch
 mm-page_alloc-refactor-memmap_init_zone_device-page-init.patch
 mm-memremap-add-zone_device-support-for-compound-pages.patch
@@ -397,7 +407,8 @@ device-dax-use-struct_size.patch
 device-dax-ensure-dev_dax-pgmap-is-valid-for-dynamic-devices.patch
 device-dax-factor-out-page-mapping-initialization.patch
 device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud.patch
-device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud-fix.patch
+device-dax-remove-pfn-from-__dev_dax_ptepmdpud_fault.patch
+device-dax-remove-pfn-from-__dev_dax_ptepmdpud_fault-fix.patch
 device-dax-compound-devmap-support.patch
 #
 #mm/kasan
@@ -413,6 +424,7 @@ mmfs-split-dump_mapping-out-from-dump_page.patch
 tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling.patch
 tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling-fix.patch
 tools-vm-page_owner_sortc-support-sorting-by-stack-trace.patch
+#tools-vm-page_owner_sortc-add-switch-between-culling-by-stacktrace-and-txt.patch: https://lkml.kernel.org/r/f0a8099b-3c60-3e34-078a-be3c1280ca61@gmail.com
 tools-vm-page_owner_sortc-add-switch-between-culling-by-stacktrace-and-txt.patch
 #
 #mm/pagecache
@@ -424,6 +436,7 @@ gup-avoid-multiple-user-access-locking-unlocking-in-fault_in_read-writeable.patc
 #mm/swap
 #mm/shmem
 mm-shmem-dont-truncate-page-if-memory-failure-happens.patch
+mm-shmem-dont-truncate-page-if-memory-failure-happens-checkpatch-fixes.patch
 #
 #mm/frontswap
 mm-mempool-use-non-atomic-__set_bit-when-possible.patch
@@ -451,7 +464,7 @@ mm-add-a-field-to-store-names-for-private-anonymous-memory-fix.patch
 mm-add-anonymous-vma-name-refcounting.patch
 #
 mm-ptep_clear-page-table-helper.patch
-#mm-page-table-check.patch: https://lkml.kernel.org/r/6d82e674-76dc-f3b0-2e53-a92eeb249eff@gmail.com
+#mm-page-table-check.patch: https://lkml.kernel.org/r/6d82e674-76dc-f3b0-2e53-a92eeb249eff@gmail.com TBU?
 mm-page-table-check.patch
 mm-page-table-check-fix.patch
 x86-mm-add-x86_64-support-for-page-table-check.patch
@@ -524,6 +537,10 @@ vmscan-make-drop_slab_node-static.patch
 #mm/ras
 #mm/compaction
 #mm/mempolicy
+mm-mempolicy-use-policy_node-helper-with-mpol_preferred_many.patch
+mm-mempolicy-add-set_mempolicy_home_node-syscall.patch
+mm-mempolicy-wire-up-syscall-set_mempolicy_home_node.patch
+#
 #mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt.patch: bloat!
 mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt.patch
 mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix.patch
@@ -559,6 +576,9 @@ mm-migrate-add-more-comments-for-selecting-target-node-randomly.patch
 #mm/autonuma
 #mm/psi
 #mm/ksm
+#mm-ksm-fix-use-after-free-kasan-report-in-ksm_might_need_to_copy.patch: acks?
+mm-ksm-fix-use-after-free-kasan-report-in-ksm_might_need_to_copy.patch
+#
 #mm/page-poison
 mm-hwpoison-mf_mutex-for-soft-offline-and-unpoison.patch
 mm-hwpoison-remove-mf_msg_buddy_2nd-and-mf_msg_poisoned_huge.patch
@@ -579,6 +599,10 @@ mm-memcg-percpu-account-extra-objcg-space-to-memory-cgroups-fix.patch
 #mm/rmap
 #mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch: bloat!
 mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch
+#
+#mm-rmap-fix-potential-batched-tlb-flush-race.patch: acks? TBU
+mm-rmap-fix-potential-batched-tlb-flush-race.patch
+mm-rmap-fix-potential-batched-tlb-flush-race-fix.patch
 #
 #mm/zswap
 #mm/zsmalloc
@@ -625,6 +649,8 @@ mm-damon-vaddr-remove-swap_ranges-and-replace-it-with-swap.patch
 #
 mm-damon-schemes-add-the-validity-judgment-of-thresholds.patch
 #
+mm-damon-move-damon_rand-definition-into-damonh.patch
+#
 # mmend
 #
 #NEXT_PATCHES_END mm
@@ -662,6 +688,7 @@ proc-vmcore-dont-fake-reading-zeroes-on-surprise-vmcore_cb-unregistration.patch
 #
 proc-make-the-proc_create-stubs-static-inlines.patch
 proc-make-the-proc_create-stubs-static-inlines-fix.patch
+proc-make-the-proc_create-stubs-static-inlines-fix2.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sysctl
@@ -684,6 +711,7 @@ proc-sysctl-make-protected_-world-readable.patch
 fs-exec-replace-strlcpy-with-strscpy_pad-in-__set_task_comm.patch
 fs-exec-replace-strncpy-with-strscpy_pad-in-__get_task_comm.patch
 drivers-infiniband-replace-open-coded-string-copy-with-get_task_comm.patch
+#fs-binfmt_elf-replace-open-coded-string-copy-with-get_task_comm.patch: TBU?
 fs-binfmt_elf-replace-open-coded-string-copy-with-get_task_comm.patch
 samples-bpf-test_overhead_kprobe_kern-replace-bpf_probe_read_kernel-with-bpf_probe_read_kernel_str-to-get-task-comm.patch
 tools-bpf-bpftool-skeleton-replace-bpf_probe_read_kernel-with-bpf_probe_read_kernel_str-to-get-task-comm.patch
@@ -716,6 +744,8 @@ kthread-dynamically-allocate-memory-to-store-kthreads-full-name.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START lib
 kstrtox-uninline-everything.patch
+#
+list-introduce-list_is_head-helper-and-re-use-it-in-listh.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitmap
@@ -758,6 +788,9 @@ const_structscheckpatch-add-frequently-used-ops-structs.patch
 #NEXT_PATCHES_START epoll
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START binfmt
+#fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch: acks?
+fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch
+#
 #elf-fix-overflow-in-total-mapping-size-calculation.patch: scary https://lkml.kernel.org/r/202110051929.37279B6B4A@keescook
 elf-fix-overflow-in-total-mapping-size-calculation.patch
 #
@@ -1025,6 +1058,10 @@ delayacct-cleanup-flags-in-struct-task_delay_info-and-functions-use-it.patch
 #NEXT_PATCHES_START kconfig
 configs-introduce-debugconfig-for-ci-like-setup.patch
 #
+arch-kconfig-split-page_size_less_than_256kb-from-page_size_less_than_64kb.patch
+btrfs-use-generic-kconfig-option-for-256kb-page-size-limit.patch
+lib-kconfigdebug-make-test_kmod-depend-on-page_size_less_than_256kb.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kcov
 #NEXT_PATCHES_END
@@ -1138,6 +1175,9 @@ cdrom-simplify-subdirectory-registration-with-register_sysctl.patch
 eventpoll-simplify-sysctl-declaration-with-register_sysctl.patch
 #
 firmware_loader-move-firmware-sysctl-to-its-own-files.patch
+firmware_loader-move-firmware-sysctl-to-its-own-files-fix.patch
+firmware_loader-move-firmware-sysctl-to-its-own-files-fix-fix.patch
+firmware_loader-move-firmware-sysctl-to-its-own-files-fix-3.patch
 random-move-the-random-sysctl-declarations-to-its-own-file.patch
 sysctl-add-helper-to-register-a-sysctl-mount-point.patch
 sysctl-add-helper-to-register-a-sysctl-mount-point-fix.patch
@@ -1158,6 +1198,7 @@ fs-move-fs-execc-sysctls-into-its-own-file.patch
 fs-move-pipe-sysctls-to-is-own-file.patch
 #
 sysctl-add-and-use-base-directory-declarer-and-registration-helper.patch
+sysctl-add-and-use-base-directory-declarer-and-registration-helper-fix.patch
 fs-move-namespace-sysctls-and-declare-fs-base-directory.patch
 kernel-sysctlc-rename-sysctl_init-to-sysctl_init_bases.patch
 printk-fix-build-warning-when-config_printk=n.patch
@@ -1167,6 +1208,7 @@ kprobe-move-sysctl_kprobes_optimization-to-kprobesc.patch
 #proc
 fs-proc-store-pde-data-into-inode-i_private.patch
 proc-remove-pde_data-completely.patch
+proc-remove-pde_data-completely-fix.patch
 #
 #fs-proc-store-pde-data-into-inode-i_private.patch+N: TBU
 #fs-proc-remove-pde_data.patch: regrep
@@ -1178,6 +1220,7 @@ lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fix.pa
 lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fix-2.patch
 lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fixup3.patch
 #
+lib-stackdepot-always-do-filter_irq_stacks-in-stack_depot_save.patch
 #
 #NEXT_PATCHES_END
 # maybe-merge-one-day
@@ -1224,3 +1267,15 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]fs-proc-use-define_proc_show_attribute-to-simplify-the-code.patch
 #[to-be-updated]kasan-distinguish-kasan-report-from-generic-bug.patch
 #[obsolete]linux-next-git-rejects.patch
+#[failures]mm-shmem-dont-truncate-page-if-memory-failure-happens.patch
+#[to-be-updated]memory-failure-fetch-compound_head-after-pgmap_pfn_valid.patch
+#[to-be-updated]mm-page_alloc-split-prep_compound_page-into-head-and-tail-subparts.patch
+#[to-be-updated]mm-page_alloc-refactor-memmap_init_zone_device-page-init.patch
+#[to-be-updated]mm-memremap-add-zone_device-support-for-compound-pages.patch
+#[to-be-updated]device-dax-use-align-for-determining-pgoff.patch
+#[to-be-updated]device-dax-use-struct_size.patch
+#[to-be-updated]device-dax-ensure-dev_dax-pgmap-is-valid-for-dynamic-devices.patch
+#[to-be-updated]device-dax-factor-out-page-mapping-initialization.patch
+#[to-be-updated]device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud.patch
+#[to-be-updated]device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud-fix.patch
+#[to-be-updated]device-dax-compound-devmap-support.patch

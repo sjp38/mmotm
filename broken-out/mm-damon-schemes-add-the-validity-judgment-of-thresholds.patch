@@ -24,9 +24,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/damon/dbgfs.c~mm-damon-schemes-add-the-validity-judgment-of-thresholds
 +++ a/mm/damon/dbgfs.c
-@@ -215,6 +215,13 @@ static struct damos **str_to_schemes(con
+@@ -213,6 +213,13 @@ static struct damos **str_to_schemes(con
+ 		if (!damos_action_valid(action))
  			goto fail;
- 		}
  
 +		if (min_sz > max_sz || min_nr_a > max_nr_a || min_age > max_age)
 +			goto fail;
