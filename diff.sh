@@ -51,6 +51,8 @@ do
 	esac
 done
 
+bindir=$(dirname "$0")
+
 if [ "$from" = "" ] && [ "$to" = "" ]
 then
 	to=$(git log --oneline -- broken-out/ | head -n 1 | awk '{print $1}')
@@ -62,7 +64,6 @@ diff_output=$(git diff "$from".."$to" --name-status -- broken-out/)
 dropped=$(echo "$diff_output" | grep '^D' | awk -F'broken-out/' '{print $2}')
 added=$(echo "$diff_output" | grep '^A' | awk -F'broken-out/' '{print $2}')
 modified=$(echo "$diff_output" | grep '^M' | awk -F'broken-out/' '{print $2}')
-to_date=$(git show -s --format=%ci "$to")
 
 echo "Dropped"
 echo "-------"
@@ -80,4 +81,4 @@ echo
 echo "$modified"
 echo
 
-$(dirname "$0")/__diff_brief.sh "$from" "$to"
+"$bindir"/__diff_brief.sh "$from" "$to"
