@@ -1,0 +1,35 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: proc-make-the-proc_create-stubs-static-inlines-fix2-fix
+
+fix build
+
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: kernel test robot <lkp@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/sparc/kernel/led.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/arch/sparc/kernel/led.c~proc-make-the-proc_create-stubs-static-inlines-fix2-fix
++++ a/arch/sparc/kernel/led.c
+@@ -114,8 +114,6 @@ static const struct proc_ops led_proc_op
+ };
+ #endif
+ 
+-static struct proc_dir_entry *led;
+-
+ #define LED_VERSION	"0.1"
+ 
+ static int __init led_init(void)
+@@ -123,8 +121,7 @@ static int __init led_init(void)
+ 	timer_setup(&led_blink_timer, led_blink, 0);
+ 
+ #ifdef CONFIG_PROC_FS
+-	led = proc_create("led", 0, NULL, &led_proc_ops);
+-	if (!led)
++	if (!proc_create("led", 0, NULL, &led_proc_ops))
+ 		return -ENOMEM;
+ #endif
+ 	printk(KERN_INFO
+_

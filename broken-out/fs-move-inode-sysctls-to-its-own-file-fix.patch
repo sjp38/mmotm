@@ -1,0 +1,49 @@
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: fs/inode: avoid unused-variable warning
+
+Now that 'inodes_stat' is marked 'static', it causes a harmless warning
+whenever it is unused:
+
+fs/inode.c:73:29: error: 'inodes_stat' defined but not used [-Werror=unused-variable]
+   73 | static struct inodes_stat_t inodes_stat;
+
+Move it into the #ifdef that guards its only references.
+
+Link: https://lkml.kernel.org/r/20211203190123.874239-1-arnd@kernel.org
+Fixes: 245314851782 ("fs: move inode sysctls to its own file")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/inode.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- a/fs/inode.c~fs-move-inode-sysctls-to-its-own-file-fix
++++ a/fs/inode.c
+@@ -67,11 +67,6 @@ const struct address_space_operations em
+ };
+ EXPORT_SYMBOL(empty_aops);
+ 
+-/*
+- * Statistics gathering..
+- */
+-static struct inodes_stat_t inodes_stat;
+-
+ static DEFINE_PER_CPU(unsigned long, nr_inodes);
+ static DEFINE_PER_CPU(unsigned long, nr_unused);
+ 
+@@ -106,6 +101,11 @@ long get_nr_dirty_inodes(void)
+  * Handle nr_inode sysctl
+  */
+ #ifdef CONFIG_SYSCTL
++/*
++ * Statistics gathering..
++ */
++static struct inodes_stat_t inodes_stat;
++
+ static int proc_nr_inodes(struct ctl_table *table, int write, void *buffer,
+ 			  size_t *lenp, loff_t *ppos)
+ {
+_

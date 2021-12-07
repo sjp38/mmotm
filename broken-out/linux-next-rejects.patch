@@ -1,0 +1,21 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next-rejects
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/zsmalloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/zsmalloc.c~linux-next-rejects
++++ a/mm/zsmalloc.c
+@@ -893,7 +893,7 @@ static void reset_page(struct page *page
+ 	ClearPagePrivate(page);
+ 	set_page_private(page, 0);
+ 	page_mapcount_reset(page);
+-	page->freelist = NULL;
++	page->index = 0;
+ }
+ 
+ static int trylock_zspage(struct zspage *zspage)
+_

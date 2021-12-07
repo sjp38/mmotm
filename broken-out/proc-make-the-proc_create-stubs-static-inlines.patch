@@ -1,5 +1,5 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: proc: Make the proc_create[_data]() stubs static inlines
+Subject: proc: make the proc_create[_data]() stubs static inlines
 
 Change the proc_create[_data]() stubs which are used when CONFIG_PROC_FS
 is not set from #defines to a static inline stubs.

@@ -1,0 +1,187 @@
+GIT f80ef9e49fdfbfbc4197711230098b90e6b05a7e
+
+diff --git a/Documentation/admin-guide/blockdev/drbd/figures.rst b/Documentation/admin-guide/blockdev/drbd/figures.rst
+index bd9a4901fe46..9f73253ea353 100644
+--- a/Documentation/admin-guide/blockdev/drbd/figures.rst
++++ b/Documentation/admin-guide/blockdev/drbd/figures.rst
+@@ -25,6 +25,6 @@ Sub graphs of DRBD's state transitions
+     :alt:   disk-states-8.dot
+     :align: center
+ 
+-.. kernel-figure:: node-states-8.dot
+-    :alt:   node-states-8.dot
++.. kernel-figure:: peer-states-8.dot
++    :alt:   peer-states-8.dot
+     :align: center
+diff --git a/Documentation/admin-guide/blockdev/drbd/node-states-8.dot b/Documentation/admin-guide/blockdev/drbd/node-states-8.dot
+deleted file mode 100644
+index bfa54e1f8016..000000000000
+--- a/Documentation/admin-guide/blockdev/drbd/node-states-8.dot
++++ /dev/null
+@@ -1,13 +0,0 @@
+-digraph node_states {
+-	Secondary -> Primary           [ label = "ioctl_set_state()" ]
+-	Primary   -> Secondary 	       [ label = "ioctl_set_state()" ]
+-}
+-
+-digraph peer_states {
+-	Secondary -> Primary           [ label = "recv state packet" ]
+-	Primary   -> Secondary 	       [ label = "recv state packet" ]
+-	Primary   -> Unknown 	       [ label = "connection lost" ]
+-	Secondary  -> Unknown  	       [ label = "connection lost" ]
+-	Unknown   -> Primary           [ label = "connected" ]
+-	Unknown   -> Secondary         [ label = "connected" ]
+-}
+diff --git a/Documentation/admin-guide/blockdev/drbd/peer-states-8.dot b/Documentation/admin-guide/blockdev/drbd/peer-states-8.dot
+new file mode 100644
+index 000000000000..6dc3954954d6
+--- /dev/null
++++ b/Documentation/admin-guide/blockdev/drbd/peer-states-8.dot
+@@ -0,0 +1,8 @@
++digraph peer_states {
++	Secondary -> Primary           [ label = "recv state packet" ]
++	Primary   -> Secondary 	       [ label = "recv state packet" ]
++	Primary   -> Unknown 	       [ label = "connection lost" ]
++	Secondary  -> Unknown  	       [ label = "connection lost" ]
++	Unknown   -> Primary           [ label = "connected" ]
++	Unknown   -> Secondary         [ label = "connected" ]
++}
+diff --git a/Documentation/conf.py b/Documentation/conf.py
+index 17f7cee56987..76e5eb5cb62b 100644
+--- a/Documentation/conf.py
++++ b/Documentation/conf.py
+@@ -249,11 +249,16 @@ except ImportError:
+ 
+ html_static_path = ['sphinx-static']
+ 
+-html_context = {
+-    'css_files': [
+-        '_static/theme_overrides.css',
+-    ],
+-}
++html_css_files = [
++    'theme_overrides.css',
++]
++
++if major <= 1 and minor < 8:
++    html_context = {
++        'css_files': [
++            '_static/theme_overrides.css',
++        ],
++    }
+ 
+ # Add any extra paths that contain custom files (such as robots.txt or
+ # .htaccess) here, relative to this directory. These files are copied
+diff --git a/Documentation/devicetree/bindings/spi/spi-rockchip.yaml b/Documentation/devicetree/bindings/spi/spi-rockchip.yaml
+index 7f987e79337c..52a78a2e362e 100644
+--- a/Documentation/devicetree/bindings/spi/spi-rockchip.yaml
++++ b/Documentation/devicetree/bindings/spi/spi-rockchip.yaml
+@@ -33,6 +33,7 @@ properties:
+               - rockchip,rk3328-spi
+               - rockchip,rk3368-spi
+               - rockchip,rk3399-spi
++              - rockchip,rk3568-spi
+               - rockchip,rv1126-spi
+           - const: rockchip,rk3066-spi
+ 
+diff --git a/Documentation/process/changes.rst b/Documentation/process/changes.rst
+index b398b8576417..cf908d79666e 100644
+--- a/Documentation/process/changes.rst
++++ b/Documentation/process/changes.rst
+@@ -35,6 +35,7 @@ GNU make               3.81             make --version
+ binutils               2.23             ld -v
+ flex                   2.5.35           flex --version
+ bison                  2.0              bison --version
++pahole                 1.16             pahole --version
+ util-linux             2.10o            fdformat --version
+ kmod                   13               depmod -V
+ e2fsprogs              1.41.4           e2fsck -V
+@@ -108,6 +109,16 @@ Bison
+ Since Linux 4.16, the build system generates parsers
+ during build.  This requires bison 2.0 or later.
+ 
++pahole:
++-------
++
++Since Linux 5.2, if CONFIG_DEBUG_INFO_BTF is selected, the build system
++generates BTF (BPF Type Format) from DWARF in vmlinux, a bit later from kernel
++modules as well.  This requires pahole v1.16 or later.
++
++It is found in the 'dwarves' or 'pahole' distro packages or from
++https://fedorapeople.org/~acme/dwarves/.
++
+ Perl
+ ----
+ 
+diff --git a/Documentation/process/submitting-patches.rst b/Documentation/process/submitting-patches.rst
+index da085d63af9b..6b3aaed66fba 100644
+--- a/Documentation/process/submitting-patches.rst
++++ b/Documentation/process/submitting-patches.rst
+@@ -14,7 +14,8 @@ works, see Documentation/process/development-process.rst. Also, read
+ Documentation/process/submit-checklist.rst
+ for a list of items to check before submitting code.  If you are submitting
+ a driver, also read Documentation/process/submitting-drivers.rst; for device
+-tree binding patches, read Documentation/process/submitting-patches.rst.
++tree binding patches, read
++Documentation/devicetree/bindings/submitting-patches.rst.
+ 
+ This documentation assumes that you're using ``git`` to prepare your patches.
+ If you're unfamiliar with ``git``, you would be well-advised to learn how to
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 7399327d1eff..5c2ccb85f2ef 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1932,6 +1932,7 @@ config EFI
+ 	depends on ACPI
+ 	select UCS2_STRING
+ 	select EFI_RUNTIME_WRAPPERS
++	select ARCH_USE_MEMREMAP_PROT
+ 	help
+ 	  This enables the kernel to use EFI runtime services that are
+ 	  available (such as the EFI variable services).
+diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
+index b15ebfe40a73..b0b848d6933a 100644
+--- a/arch/x86/platform/efi/quirks.c
++++ b/arch/x86/platform/efi/quirks.c
+@@ -277,7 +277,8 @@ void __init efi_arch_mem_reserve(phys_addr_t addr, u64 size)
+ 		return;
+ 	}
+ 
+-	new = early_memremap(data.phys_map, data.size);
++	new = early_memremap_prot(data.phys_map, data.size,
++				  pgprot_val(pgprot_encrypted(FIXMAP_PAGE_NORMAL)));
+ 	if (!new) {
+ 		pr_err("Failed to map new boot services memmap\n");
+ 		return;
+diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
+index bd7a73db2e66..54cf566616ae 100644
+--- a/include/linux/regulator/driver.h
++++ b/include/linux/regulator/driver.h
+@@ -499,7 +499,8 @@ struct regulator_irq_data {
+  *		best to shut-down regulator(s) or reboot the SOC if error
+  *		handling is repeatedly failing. If fatal_cnt is given the IRQ
+  *		handling is aborted if it fails for fatal_cnt times and die()
+- *		callback (if populated) or BUG() is called to try to prevent
++ *		callback (if populated) is called. If die() is not populated
++ *		poweroff for the system is attempted in order to prevent any
+  *		further damage.
+  * @reread_ms:	The time which is waited before attempting to re-read status
+  *		at the worker if IC reading fails. Immediate re-read is done
+@@ -516,11 +517,12 @@ struct regulator_irq_data {
+  * @data:	Driver private data pointer which will be passed as such to
+  *		the renable, map_event and die callbacks in regulator_irq_data.
+  * @die:	Protection callback. If IC status reading or recovery actions
+- *		fail fatal_cnt times this callback or BUG() is called. This
+- *		callback should implement a final protection attempt like
+- *		disabling the regulator. If protection succeeded this may
+- *		return 0. If anything else is returned the core assumes final
+- *		protection failed and calls BUG() as a last resort.
++ *		fail fatal_cnt times this callback is called or system is
++ *		powered off. This callback should implement a final protection
++ *		attempt like disabling the regulator. If protection succeeded
++ *		die() may return 0. If anything else is returned the core
++ *		assumes final protection failed and attempts to perform a
++ *		poweroff as a last resort.
+  * @map_event:	Driver callback to map IRQ status into regulator devices with
+  *		events / errors. NOTE: callback MUST initialize both the
+  *		errors and notifs for all rdevs which it signals having

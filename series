@@ -1,9 +1,7 @@
-#origin.patch
+origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
-#NEXT_PATCHES_END
-#NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/percpu
 #mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
 mm-fix-panic-in-__alloc_pages.patch
@@ -58,6 +56,10 @@ mm-memcg-relocate-mod_objcg_mlstate-get_obj_stock-and-put_obj_stock.patch
 #mm/hugetlb
 hugetlbfs-fix-issue-of-preallocation-of-gigantic-pages-cant-work.patch
 #
+#NEXT_PATCHES_END
+#NEXT_PATCHES_START mainline-later (next week, approximately)
+#mm/kfence
+kfence-fix-memory-leak-when-cat-kfence-objects.patch
 #
 #
 #
@@ -302,6 +304,9 @@ squashfs-provides-backing_dev_info-in-order-to-disable-read-ahead.patch
 #NEXT_PATCHES_START ocfs2
 ocfs2-use-bug_on-instead-of-if-condition-followed-by-bug.patch
 #
+ocfs2-clearly-handle-ocfs2_grab_pages_for_write-return-value.patch
+#
+#
 #
 #ocfs2-reflink-deadlock-when-clone-file-to-the-same-directory-simultaneously.patch: https://lkml.kernel.org/r/5821fd0f-2018-dc1b-a5c0-f948a7debff4@linux.alibaba.com
 ocfs2-reflink-deadlock-when-clone-file-to-the-same-directory-simultaneously.patch
@@ -427,6 +432,8 @@ tools-vm-page_owner_sortc-support-sorting-by-stack-trace.patch
 #tools-vm-page_owner_sortc-add-switch-between-culling-by-stacktrace-and-txt.patch: https://lkml.kernel.org/r/f0a8099b-3c60-3e34-078a-be3c1280ca61@gmail.com
 tools-vm-page_owner_sortc-add-switch-between-culling-by-stacktrace-and-txt.patch
 #
+tools-vm-page_owner_sortc-support-sorting-pid-and-time.patch
+#
 #mm/pagecache
 #mm/msync
 #mm/fadvise
@@ -446,6 +453,9 @@ mm-mempool-use-non-atomic-__set_bit-when-possible.patch
 mm-memcontrol-make-cgroup_memory_nokmem-static.patch
 #
 mm-page_counter-remove-an-incorrect-call-to-propagate_protected_usage.patch
+#
+#mm-add-group_oom_kill-memory-event.patch: acks TBU https://lkml.kernel.org/r/Yas2ro/NCDY+1n09@chrisdown.name
+mm-add-group_oom_kill-memory-event.patch
 #
 #memcg-better-bounds-on-the-memcg-stats-updates.patch: acks?
 memcg-better-bounds-on-the-memcg-stats-updates.patch
@@ -513,6 +523,7 @@ mm-drop-node-from-alloc_pages_vma.patch
 #mm/hugetlb
 hugetlb-add-hugetlbnuma_stat-file.patch
 hugetlb-add-hugetlbnuma_stat-file-fix.patch
+hugetlb-add-hugetlbnuma_stat-file-fix-2.patch
 #
 #mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch: more review?
 mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
@@ -567,10 +578,13 @@ mm-migrate-support-multiple-target-nodes-demotion.patch
 #
 mm-migrate-add-more-comments-for-selecting-target-node-randomly.patch
 #
+mm-migrate-move-node-demotion-code-to-near-its-user.patch
+#
 #mm/kmap
 #mm/thp
 #
 #mm/cma
+#
 #mm/readahead
 #mm/nommu
 #mm/autonuma
@@ -651,6 +665,8 @@ mm-damon-schemes-add-the-validity-judgment-of-thresholds.patch
 #
 mm-damon-move-damon_rand-definition-into-damonh.patch
 #
+mm-damon-modify-damon_rand-macro-to-static-inline-function.patch
+#
 # mmend
 #
 #NEXT_PATCHES_END mm
@@ -689,6 +705,7 @@ proc-vmcore-dont-fake-reading-zeroes-on-surprise-vmcore_cb-unregistration.patch
 proc-make-the-proc_create-stubs-static-inlines.patch
 proc-make-the-proc_create-stubs-static-inlines-fix.patch
 proc-make-the-proc_create-stubs-static-inlines-fix2.patch
+proc-make-the-proc_create-stubs-static-inlines-fix2-fix.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sysctl
@@ -788,8 +805,7 @@ const_structscheckpatch-add-frequently-used-ops-structs.patch
 #NEXT_PATCHES_START epoll
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START binfmt
-#fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch: acks?
-fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch
+#fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch: acks? TBU
 #
 #elf-fix-overflow-in-total-mapping-size-calculation.patch: scary https://lkml.kernel.org/r/202110051929.37279B6B4A@keescook
 elf-fix-overflow-in-total-mapping-size-calculation.patch
@@ -1038,6 +1054,7 @@ delayacct-fix-incomplete-disable-operation-when-switch-enable-to-disable.patch
 #
 delayacct-cleanup-flags-in-struct-task_delay_info-and-functions-use-it.patch
 #
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mutex
 #NEXT_PATCHES_END
@@ -1088,6 +1105,8 @@ lib-kconfigdebug-make-test_kmod-depend-on-page_size_less_than_256kb.patch
 #NEXT_PATCHES_START unaligned
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START ubsan
+ubsan-remove-config_ubsan_object_size.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START cramfs
 #NEXT_PATCHES_END
@@ -1143,6 +1162,7 @@ lib-kconfigdebug-make-test_kmod-depend-on-page_size_less_than_256kb.patch
 #NEXT_PATCHES_END
 # next
 linux-next.patch
+linux-next-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-urgent
@@ -1190,6 +1210,8 @@ sysctl-share-unsigned-long-const-values.patch
 fs-move-inode-sysctls-to-its-own-file.patch
 fs-move-fs-stat-sysctls-to-file_tablec.patch
 fs-move-dcache-sysctls-to-its-own-file.patch
+fs-move-inode-sysctls-to-its-own-file-fix.patch
+fs-move-dcache-sysctls-to-its-own-file-fix-2.patch
 sysctl-move-maxolduid-as-a-sysctl-specific-const.patch
 fs-move-shared-sysctls-to-fs-sysctlsc.patch
 fs-move-locking-sysctls-where-they-are-used.patch
@@ -1209,6 +1231,7 @@ kprobe-move-sysctl_kprobes_optimization-to-kprobesc.patch
 fs-proc-store-pde-data-into-inode-i_private.patch
 proc-remove-pde_data-completely.patch
 proc-remove-pde_data-completely-fix.patch
+proc-remove-pde_data-completely-fix-fix.patch
 #
 #fs-proc-store-pde-data-into-inode-i_private.patch+N: TBU
 #fs-proc-remove-pde_data.patch: regrep
@@ -1279,3 +1302,6 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud.patch
 #[to-be-updated]device-dax-set-mapping-prior-to-vmf_insert_pfn_pmdpud-fix.patch
 #[to-be-updated]device-dax-compound-devmap-support.patch
+#[failures]delayacct-track-delays-from-memory-compact.patch
+#[obsolete]linux-next-git-rejects.patch
+#[nacked]fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch

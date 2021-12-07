@@ -1,0 +1,45 @@
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: fs/dcache: avoid unused-function warning
+
+Now that 'dentry_stat' is marked 'static', we can run into this warning:
+
+fs/dcache.c:128:29: error: 'dentry_stat' defined but not used [-Werror=unused-variable]
+  128 | static struct dentry_stat_t dentry_stat = {
+
+Hide it in the same #ifdef as its only references.
+
+Link: https://lkml.kernel.org/r/20211203190123.874239-2-arnd@kernel.org
+Fixes: f0eea17ca8da ("fs: move dcache sysctls to its own file")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/dcache.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+--- a/fs/dcache.c~fs-move-dcache-sysctls-to-its-own-file-fix-2
++++ a/fs/dcache.c
+@@ -124,16 +124,15 @@ struct dentry_stat_t {
+ 	long dummy;		/* Reserved for future use */
+ };
+ 
+-/* Statistics gathering. */
+-static struct dentry_stat_t dentry_stat = {
+-	.age_limit = 45,
+-};
+-
+ static DEFINE_PER_CPU(long, nr_dentry);
+ static DEFINE_PER_CPU(long, nr_dentry_unused);
+ static DEFINE_PER_CPU(long, nr_dentry_negative);
+ 
+ #if defined(CONFIG_SYSCTL) && defined(CONFIG_PROC_FS)
++/* Statistics gathering. */
++static struct dentry_stat_t dentry_stat = {
++	.age_limit = 45,
++};
+ 
+ /*
+  * Here we resort to our own counters instead of using generic per-cpu counters
+_
