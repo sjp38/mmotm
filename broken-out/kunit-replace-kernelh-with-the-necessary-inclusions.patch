@@ -1,0 +1,29 @@
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: kunit: replace kernel.h with the necessary inclusions
+
+When kernel.h is used in the headers it adds a lot into dependency hell,
+especially when there are circular dependencies are involved.
+
+Replace kernel.h inclusion with the list of what is really being used.
+
+Link: https://lkml.kernel.org/r/20211213204441.56204-1-andriy.shevchenko@linux.intel.com
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Brendan Higgins <brendanhiggins@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/kunit/assert.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/kunit/assert.h~kunit-replace-kernelh-with-the-necessary-inclusions
++++ a/include/kunit/assert.h
+@@ -10,7 +10,7 @@
+ #define _KUNIT_ASSERT_H
+ 
+ #include <linux/err.h>
+-#include <linux/kernel.h>
++#include <linux/printk.h>
+ 
+ struct kunit;
+ struct string_stream;
+_

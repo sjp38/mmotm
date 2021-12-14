@@ -1,0 +1,31 @@
+From: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Subject: tools/vm/page_owner_sort.c: delete invalid duplicate code
+
+I noticed that there is two invalid lines of duplicate code.  It's better
+to delete it.
+
+Link: https://lkml.kernel.org/r/20211213095743.3630-1-caoyixuan2019@email.szu.edu.cn
+Signed-off-by: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Sean Anderson <seanga2@gmail.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Yinan Zhang <zhangyinan2019@email.szu.edu.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-delete-invalid-duplicate-code
++++ a/tools/vm/page_owner_sort.c
+@@ -227,8 +227,6 @@ static void add_list(char *buf, int len)
+ 	list[list_size].pid = get_pid(buf);
+ 	list[list_size].ts_nsec = get_ts_nsec(buf);
+ 	list[list_size].free_ts_nsec = get_free_ts_nsec(buf);
+-	memcpy(list[list_size].txt, buf, len);
+-	list[list_size].txt[len] = 0;
+ 	list_size++;
+ 	if (list_size % 1000 == 0) {
+ 		printf("loaded %d\r", list_size);
+_

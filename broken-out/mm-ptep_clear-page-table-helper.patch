@@ -1,36 +1,6 @@
 From: Pasha Tatashin <pasha.tatashin@soleen.com>
 Subject: mm: ptep_clear() page table helper
 
-Patch series "page table check".
-
-Ensure that some memory corruptions are prevented by checking at the time
-of insertion of entries into user page tables that there is no illegal
-sharing.
-
-We have recently found a problem [1] that existed in kernel since 4.14. 
-The problem was caused by broken page ref count and led to memory leaking
-from one process into another.  The problem was accidentally detected by
-studying a dump of one process and noticing that one page contains memory
-that should not belong to this process.
-
-There are some other page->_refcount related problems that were recently
-fixed: [2], [3] which potentially could also lead to illegal sharing.
-
-In addition to hardening refcount [4] itself, this work is an attempt to
-prevent this class of memory corruption issues.
-
-It uses a simple state machine that is independent from regular MM logic
-to check for illegal sharing at time pages are inserted and removed from
-page tables.
-
-[1] https://lore.kernel.org/all/xr9335nxwc5y.fsf@gthelen2.svl.corp.google.com
-[2] https://lore.kernel.org/all/1582661774-30925-2-git-send-email-akaher@vmware.com
-[3] https://lore.kernel.org/all/20210622021423.154662-3-mike.kravetz@oracle.com
-[4] https://lore.kernel.org/all/20211026173822.502506-1-pasha.tatashin@soleen.com
-
-
-This patch (of 3):
-
 We have ptep_get_and_clear() and ptep_get_and_clear_full() helpers to
 clear PTE from user page tables, but there is no variant for simple clear
 of a present PTE from user page tables without using a low level
@@ -40,26 +10,27 @@ Add a new ptep_clear() that can be used in common code to clear PTEs from
 page table.  We will need this call later in order to add a hook for page
 table check.
 
-Link: https://lkml.kernel.org/r/20211123214814.3756047-1-pasha.tatashin@soleen.com
-Link: https://lkml.kernel.org/r/20211123214814.3756047-2-pasha.tatashin@soleen.com
+Link: https://lkml.kernel.org/r/20211204182314.1470076-3-pasha.tatashin@soleen.com
 Signed-off-by: Pasha Tatashin <pasha.tatashin@soleen.com>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Paul Turner <pjt@google.com>
-Cc: Wei Xu <weixugc@google.com>
-Cc: Greg Thelen <gthelen@google.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Will Deacon <will@kernel.org>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Masahiro Yamada <masahiroy@kernel.org>
-Cc: Sami Tolvanen <samitolvanen@google.com>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Frederic Weisbecker <frederic@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Frederic Weisbecker <frederic@kernel.org>
+Cc: Greg Thelen <gthelen@google.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jiri Slaby <jirislaby@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Paul Turner <pjt@google.com>
+Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Sami Tolvanen <samitolvanen@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Wei Xu <weixugc@google.com>
+Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

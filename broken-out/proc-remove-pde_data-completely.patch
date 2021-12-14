@@ -251,7 +251,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	const struct bond_opt_value *optval;
  	struct slave *curr, *primary;
  	int i;
-@@ -173,7 +173,7 @@ static void bond_info_show_master(struct
+@@ -175,7 +175,7 @@ static void bond_info_show_master(struct
  static void bond_info_show_slave(struct seq_file *seq,
  				 const struct slave *slave)
  {
@@ -634,7 +634,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/drivers/platform/x86/thinkpad_acpi.c~proc-remove-pde_data-completely
 +++ a/drivers/platform/x86/thinkpad_acpi.c
-@@ -881,14 +881,14 @@ static int dispatch_proc_show(struct seq
+@@ -880,14 +880,14 @@ static int dispatch_proc_show(struct seq
  
  static int dispatch_proc_open(struct inode *inode, struct file *file)
  {

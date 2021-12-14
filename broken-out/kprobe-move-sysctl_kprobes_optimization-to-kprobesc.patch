@@ -40,7 +40,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kprobes.h~kprobe-move-sysctl_kprobes_optimization-to-kprobesc
 +++ a/include/linux/kprobes.h
-@@ -346,12 +346,6 @@ extern void opt_pre_handler(struct kprob
+@@ -348,12 +348,6 @@ extern void opt_pre_handler(struct kprob
  
  DEFINE_INSN_CACHE_OPS(optinsn);
  
@@ -105,7 +105,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* CONFIG_SYSCTL */
  
  /* Put a breakpoint for a probe. */
-@@ -2581,6 +2602,7 @@ static int __init init_kprobes(void)
+@@ -2584,6 +2605,7 @@ static int __init init_kprobes(void)
  		err = register_module_notifier(&kprobe_module_nb);
  
  	kprobes_initialized = (err == 0);

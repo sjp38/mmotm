@@ -182,7 +182,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 --- a/mm/memory.c~delayacct-support-swapin-delay-accounting-for-swapping-without-blkio
 +++ a/mm/memory.c
-@@ -3507,7 +3507,6 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3508,7 +3508,6 @@ vm_fault_t do_swap_page(struct vm_fault
  	if (unlikely(!si))
  		goto out;
  
@@ -190,7 +190,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	page = lookup_swap_cache(entry, vma, vmf->address);
  	swapcache = page;
  
-@@ -3555,7 +3554,6 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3556,7 +3555,6 @@ vm_fault_t do_swap_page(struct vm_fault
  					vmf->address, &vmf->ptl);
  			if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
  				ret = VM_FAULT_OOM;
@@ -198,7 +198,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			goto unlock;
  		}
  
-@@ -3569,13 +3567,11 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3570,13 +3568,11 @@ vm_fault_t do_swap_page(struct vm_fault
  		 * owner processes (which may be unknown at hwpoison time)
  		 */
  		ret = VM_FAULT_HWPOISON;

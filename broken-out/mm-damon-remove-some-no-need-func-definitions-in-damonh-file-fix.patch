@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return !(r->ar.end <= re->start || re->end <= r->ar.start);
  }
-@@ -633,8 +634,9 @@ static int damon_va_apply_scheme(struct
+@@ -632,8 +633,9 @@ static int damon_va_apply_scheme(struct
  	return damos_madvise(t, r, madv_action);
  }
  

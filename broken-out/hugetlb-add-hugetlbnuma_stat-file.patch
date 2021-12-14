@@ -93,7 +93,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
    hugetlb.32MB.rsvd.limit_in_bytes
 --- a/Documentation/admin-guide/cgroup-v2.rst~hugetlb-add-hugetlbnuma_stat-file
 +++ a/Documentation/admin-guide/cgroup-v2.rst
-@@ -2260,6 +2260,11 @@ HugeTLB Interface Files
+@@ -2264,6 +2264,11 @@ HugeTLB Interface Files
  	are local to the cgroup i.e. not hierarchical. The file modified event
  	generated on this file reflects only the local events.
  

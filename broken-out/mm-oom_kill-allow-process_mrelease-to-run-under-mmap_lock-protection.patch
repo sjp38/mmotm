@@ -7,28 +7,28 @@ exit_mmap from destrying pagetables while __oom_reap_task_mm is walking
 the VMA tree.  The change prevents process_mrelease from calling the last
 mmput, which can lead to waiting for IO completion in exit_aio.
 
-Link: https://lkml.kernel.org/r/20211124235906.14437-2-surenb@google.com
-Fixes: 337546e83fc7 ("mm/oom_kill.c: prevent a race between process_mrelease and exit_mmap")
+Link: https://lkml.kernel.org/r/20211209191325.3069345-3-surenb@google.com
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Roman Gushchin <guro@fb.com>
-Cc: Rik van Riel <riel@surriel.com>
-Cc: Minchan Kim <minchan@kernel.org>
-Cc: Kirill Shutemov <kirill@shutemov.name>
+Acked-by: Michal Hocko <mhocko@suse.com>
 Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Christian Brauner <christian@brauner.io>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Jann Horn <jannh@google.com>
-Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Christian Brauner <christian@brauner.io>
 Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: David Rientjes <rientjes@google.com>
 Cc: Florian Weimer <fweimer@redhat.com>
 Cc: Jan Engelhardt <jengelh@inai.de>
+Cc: Jann Horn <jannh@google.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Tim Murray <timmurray@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
@@ -38,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/oom_kill.c~mm-oom_kill-allow-process_mrelease-to-run-under-mmap_lock-protection
 +++ a/mm/oom_kill.c
-@@ -1169,15 +1169,15 @@ SYSCALL_DEFINE2(process_mrelease, int, p
+@@ -1182,15 +1182,15 @@ SYSCALL_DEFINE2(process_mrelease, int, p
  		goto put_task;
  	}
  
@@ -63,7 +63,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  	task_unlock(p);
  
-@@ -1188,13 +1188,16 @@ SYSCALL_DEFINE2(process_mrelease, int, p
+@@ -1201,13 +1201,16 @@ SYSCALL_DEFINE2(process_mrelease, int, p
  		ret = -EINTR;
  		goto drop_mm;
  	}

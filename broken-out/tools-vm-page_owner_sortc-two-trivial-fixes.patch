@@ -1,0 +1,36 @@
+From: Shenghong Han <hanshenghong2019@email.szu.edu.cn>
+Subject: tools/vm/page_owner_sort.c: two trivial fixes
+
+1) There is an unused variable. It's better to delete it.
+2) One case is missing in the usage().
+
+Link: https://lkml.kernel.org/r/20211213164518.2461-1-hanshenghong2019@email.szu.edu.cn
+Signed-off-by: Shenghong Han <hanshenghong2019@email.szu.edu.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-two-trivial-fixes
++++ a/tools/vm/page_owner_sort.c
+@@ -41,8 +41,6 @@ static struct block_list *list;
+ static int list_size;
+ static int max_size;
+ 
+-struct block_list *block_head;
+-
+ int read_block(char *buf, int buf_size, FILE *fin)
+ {
+ 	char *curr = buf, *const buf_end = buf + buf_size;
+@@ -249,7 +247,8 @@ static void usage(void)
+ 		"-p	Sort by pid.\n"
+ 		"-a	Sort by memory allocate time.\n"
+ 		"-r	Sort by memory release time.\n"
+-		"-c	cull by comparing stacktrace instead of total block.\n"
++		"-c	Cull by comparing stacktrace instead of total block.\n"
++		"-f	Filter out the information of blocks whose memory has not been released.\n"
+ 	);
+ }
+ 
+_

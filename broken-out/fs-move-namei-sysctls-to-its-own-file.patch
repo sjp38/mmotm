@@ -108,7 +108,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * may_follow_link - Check symlink following for unsafe situations
 --- a/include/linux/fs.h~fs-move-namei-sysctls-to-its-own-file
 +++ a/include/linux/fs.h
-@@ -80,7 +80,6 @@ extern void __init files_maxfiles_init(v
+@@ -81,7 +81,6 @@ extern void __init files_maxfiles_init(v
  
  extern unsigned long get_max_files(void);
  extern unsigned int sysctl_nr_open;

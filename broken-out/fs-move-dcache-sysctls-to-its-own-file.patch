@@ -114,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * give reasonable cacheline footprint with larger lines without the
 --- a/include/linux/fs.h~fs-move-dcache-sysctls-to-its-own-file
 +++ a/include/linux/fs.h
-@@ -3590,8 +3590,6 @@ ssize_t simple_attr_write(struct file *f
+@@ -3531,8 +3531,6 @@ ssize_t simple_attr_write(struct file *f
  			  size_t len, loff_t *ppos);
  
  struct ctl_table;

@@ -116,6 +116,7 @@ be killed.
 
 Link: https://lkml.kernel.org/r/20211118054426.4123-1-Kuan-Ying.Lee@mediatek.com
 Signed-off-by: Kuan-Ying Lee <Kuan-Ying.Lee@mediatek.com>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Doug Berger <opendmb@gmail.com>
 Cc: Mel Gorman <mgorman@techsingularity.net>
 Cc: Peter Zijlstra <peterz@infradead.org>

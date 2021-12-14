@@ -224,7 +224,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return nd;
  }
  
-@@ -2345,6 +2422,8 @@ bool __mpol_equal(struct mempolicy *a, s
+@@ -2344,6 +2421,8 @@ bool __mpol_equal(struct mempolicy *a, s
  		return false;
  	if (a->flags != b->flags)
  		return false;

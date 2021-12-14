@@ -1,0 +1,40 @@
+From: chiminghao <chi.minghao@zte.com.cn>
+Subject: mm/truncate.c: remove unneeded variable
+
+Return value directly instead of taking this in another redundant
+variable.
+
+Link: https://lkml.kernel.org/r/20211207083222.401594-1-chi.minghao@zte.com.cn
+Signed-off-by: chiminghao <chi.minghao@zte.com.cn>
+Reported-by: Zeal Robot <zealci@zte.com.cm>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Pankaj Gupta <pankaj.gupta@ionos.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/truncate.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/mm/truncate.c~mm-remove-unneeded-variable
++++ a/mm/truncate.c
+@@ -205,7 +205,6 @@ static void truncate_cleanup_page(struct
+ static int
+ invalidate_complete_page(struct address_space *mapping, struct page *page)
+ {
+-	int ret;
+ 
+ 	if (page->mapping != mapping)
+ 		return 0;
+@@ -213,9 +212,7 @@ invalidate_complete_page(struct address_
+ 	if (page_has_private(page) && !try_to_release_page(page, 0))
+ 		return 0;
+ 
+-	ret = remove_mapping(mapping, page);
+-
+-	return ret;
++	return remove_mapping(mapping, page);
+ }
+ 
+ int truncate_inode_page(struct address_space *mapping, struct page *page)
+_

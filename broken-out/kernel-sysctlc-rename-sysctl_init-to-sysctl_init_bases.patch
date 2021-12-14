@@ -75,7 +75,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  struct sysctl_alias {
 --- a/include/linux/sysctl.h~kernel-sysctlc-rename-sysctl_init-to-sysctl_init_bases
 +++ a/include/linux/sysctl.h
-@@ -227,7 +227,7 @@ struct ctl_table_header *register_sysctl
+@@ -228,7 +228,7 @@ struct ctl_table_header *register_sysctl
  
  void unregister_sysctl_table(struct ctl_table_header * table);
  

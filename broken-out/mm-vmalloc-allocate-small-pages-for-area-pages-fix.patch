@@ -1,0 +1,34 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-vmalloc-allocate-small-pages-for-area-pages-fix
+
+tweak code layout
+
+Cc: Xu Yu <xuyu@linux.alibaba.com>
+Cc: Uladzislau Rezki <uladzislau.rezki@sony.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- a/mm/vmalloc.c~mm-vmalloc-allocate-small-pages-for-area-pages-fix
++++ a/mm/vmalloc.c
+@@ -2927,12 +2927,14 @@ static void *__vmalloc_area_node(struct
+ 	unsigned long addr = (unsigned long)area->addr;
+ 	unsigned long size = get_vm_area_size(area);
+ 	unsigned long array_size;
+-	unsigned int nr_small_pages = size >> PAGE_SHIFT;
+-	unsigned int max_small_pages = ALIGN(size, 1UL << page_shift) >> PAGE_SHIFT;
++	unsigned int nr_small_pages, max_small_pages;
+ 	unsigned int page_order;
+ 	unsigned int flags;
+ 	int ret;
+ 
++	nr_small_pages = size >> PAGE_SHIFT;
++	max_small_pages = ALIGN(size, 1UL << page_shift) >> PAGE_SHIFT;
++
+ 	array_size = (unsigned long)max_small_pages * sizeof(struct page *);
+ 	gfp_mask |= __GFP_NOWARN;
+ 	if (!(gfp_mask & (GFP_DMA | GFP_DMA32)))
+_

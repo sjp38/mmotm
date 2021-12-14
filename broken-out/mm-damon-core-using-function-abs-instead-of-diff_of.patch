@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/damon/core.c~mm-damon-core-using-function-abs-instead-of-diff_of
 +++ a/mm/damon/core.c
-@@ -757,8 +757,6 @@ static void damon_merge_two_regions(stru
+@@ -750,8 +750,6 @@ static void damon_merge_two_regions(stru
  	damon_destroy_region(r, t);
  }
  
@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Merge adjacent regions having similar access frequencies
   *
-@@ -772,13 +770,13 @@ static void damon_merge_regions_of(struc
+@@ -765,13 +763,13 @@ static void damon_merge_regions_of(struc
  	struct damon_region *r, *prev = NULL, *next;
  
  	damon_for_each_region_safe(r, next, t) {

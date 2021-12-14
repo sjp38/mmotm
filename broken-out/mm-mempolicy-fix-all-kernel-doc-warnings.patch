@@ -1,0 +1,46 @@
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: mm/mempolicy: fix all kernel-doc warnings
+
+Fix kernel-doc warnings in mempolicy.c:
+
+mempolicy.c:139: warning: No description found for return value of 'numa_map_to_online_node'
+mempolicy.c:2165: warning: Excess function parameter 'node' description in 'alloc_pages_vma'
+mempolicy.c:2973: warning: No description found for return value of 'mpol_parse_str'
+
+Link: https://lkml.kernel.org/r/20211213233216.5477-1-rdunlap@infradead.org
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mempolicy.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/mempolicy.c~mm-mempolicy-fix-all-kernel-doc-warnings
++++ a/mm/mempolicy.c
+@@ -134,6 +134,8 @@ static struct mempolicy preferred_node_p
+  * @node: Node id to start the search
+  *
+  * Lookup the next closest node by distance if @nid is not online.
++ *
++ * Return: this @node if it is online, otherwise the closest node by distance
+  */
+ int numa_map_to_online_node(int node)
+ {
+@@ -2150,7 +2152,6 @@ static struct page *alloc_pages_preferre
+  * @order: Order of the GFP allocation.
+  * @vma: Pointer to VMA or NULL if not available.
+  * @addr: Virtual address of the allocation.  Must be inside @vma.
+- * @node: Which node to prefer for allocation (modulo policy).
+  * @hugepage: For hugepages try only the preferred node if possible.
+  *
+  * Allocate a page for a specific address in @vma, using the appropriate
+@@ -2966,7 +2967,7 @@ static const char * const policy_modes[]
+  * Format of input:
+  *	<mode>[=<flags>][:<nodelist>]
+  *
+- * On success, returns 0, else 1
++ * Return: %0 on success, else %1
+  */
+ int mpol_parse_str(char *str, struct mempolicy **mpol)
+ {
+_

@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		page = alloc_pages_preferred_many(gfp, order, node, pol);
  		mpol_cond_put(pol);
  		goto out;
-@@ -2188,7 +2189,7 @@ struct page *alloc_pages(gfp_t gfp, unsi
+@@ -2187,7 +2188,7 @@ struct page *alloc_pages(gfp_t gfp, unsi
  		page = alloc_page_interleave(gfp, order, interleave_nodes(pol));
  	else if (pol->mode == MPOL_PREFERRED_MANY)
  		page = alloc_pages_preferred_many(gfp, order,

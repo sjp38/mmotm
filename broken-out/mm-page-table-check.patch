@@ -18,7 +18,7 @@ Page table check allows to protect and debug cases where "struct page"
 metadata became corrupted for some reason.  For example, when refcnt or
 mapcount become invalid.
 
-Link: https://lkml.kernel.org/r/20211123214814.3756047-3-pasha.tatashin@soleen.com
+Link: https://lkml.kernel.org/r/20211204182314.1470076-4-pasha.tatashin@soleen.com
 Signed-off-by: Pasha Tatashin <pasha.tatashin@soleen.com>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
@@ -27,12 +27,14 @@ Cc: Frederic Weisbecker <frederic@kernel.org>
 Cc: Greg Thelen <gthelen@google.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jiri Slaby <jirislaby@kernel.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Kees Cook <keescook@chromium.org>
 Cc: Masahiro Yamada <masahiroy@kernel.org>
 Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Paul Turner <pjt@google.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
 Cc: Sami Tolvanen <samitolvanen@google.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Wei Xu <weixugc@google.com>
@@ -41,7 +43,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
  Documentation/vm/index.rst            |    1 
- Documentation/vm/page_table_check.rst |   56 +++++
+ Documentation/vm/page_table_check.rst |   56 ++++
  MAINTAINERS                           |    9 
  arch/Kconfig                          |    3 
  include/linux/page_table_check.h      |  147 +++++++++++++
@@ -49,8 +51,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  mm/Makefile                           |    1 
  mm/page_alloc.c                       |    4 
  mm/page_ext.c                         |    4 
- mm/page_table_check.c                 |  261 ++++++++++++++++++++++++
- 10 files changed, 510 insertions(+)
+ mm/page_table_check.c                 |  270 ++++++++++++++++++++++++
+ 10 files changed, 519 insertions(+)
 
 --- a/arch/Kconfig~mm-page-table-check
 +++ a/arch/Kconfig
@@ -321,7 +323,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	  If unsure say "n".
 +
 +config PAGE_TABLE_CHECK_ENFORCED
-+	bool "Enforce the page table checking by defauled"
++	bool "Enforce the page table checking by default"
 +	depends on PAGE_TABLE_CHECK
 +	help
 +	  Always enable page table checking.  By default the page table checking
@@ -400,7 +402,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  unsigned long page_ext_size = sizeof(struct page_ext);
 --- /dev/null
 +++ a/mm/page_table_check.c
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,270 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
 +/*
@@ -421,7 +423,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +static bool __page_table_check_enabled __initdata =
 +				IS_ENABLED(CONFIG_PAGE_TABLE_CHECK_ENFORCED);
 +
-+DEFINE_STATIC_KEY_TRUE_RO(page_table_check_disabled);
++DEFINE_STATIC_KEY_TRUE(page_table_check_disabled);
++EXPORT_SYMBOL(page_table_check_disabled);
 +
 +static int __init early_page_table_check_param(char *buf)
 +{
@@ -430,6 +433,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +	if (strcmp(buf, "on") == 0)
 +		__page_table_check_enabled = true;
++	else if (strcmp(buf, "off") == 0)
++		__page_table_check_enabled = false;
 +
 +	return 0;
 +}
@@ -482,7 +487,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 + * verify that it is of correct type and counters do not become negative.
 + */
 +static void page_table_check_clear(struct mm_struct *mm, unsigned long addr,
-+				   unsigned long pfn, unsigned int pgcnt)
++				   unsigned long pfn, unsigned long pgcnt)
 +{
 +	struct page_ext *page_ext;
 +	struct page *page;
@@ -575,6 +580,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				       PAGE_SIZE >> PAGE_SHIFT);
 +	}
 +}
++EXPORT_SYMBOL(__page_table_check_pte_clear);
 +
 +void __page_table_check_pmd_clear(struct mm_struct *mm, unsigned long addr,
 +				  pmd_t pmd)
@@ -587,6 +593,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				       PMD_PAGE_SIZE >> PAGE_SHIFT);
 +	}
 +}
++EXPORT_SYMBOL(__page_table_check_pmd_clear);
 +
 +void __page_table_check_pud_clear(struct mm_struct *mm, unsigned long addr,
 +				  pud_t pud)
@@ -599,6 +606,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				       PUD_PAGE_SIZE >> PAGE_SHIFT);
 +	}
 +}
++EXPORT_SYMBOL(__page_table_check_pud_clear);
 +
 +void __page_table_check_pte_set(struct mm_struct *mm, unsigned long addr,
 +				pte_t *ptep, pte_t pte)
@@ -620,6 +628,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				     pte_write(pte));
 +	}
 +}
++EXPORT_SYMBOL(__page_table_check_pte_set);
 +
 +void __page_table_check_pmd_set(struct mm_struct *mm, unsigned long addr,
 +				pmd_t *pmdp, pmd_t pmd)
@@ -641,6 +650,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				     pmd_write(pmd));
 +	}
 +}
++EXPORT_SYMBOL(__page_table_check_pmd_set);
 +
 +void __page_table_check_pud_set(struct mm_struct *mm, unsigned long addr,
 +				pud_t *pudp, pud_t pud)
@@ -662,4 +672,5 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +				     pud_write(pud));
 +	}
 +}
++EXPORT_SYMBOL(__page_table_check_pud_set);
 _

@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  obj-$(CONFIG_USERFAULTFD)	+= userfaultfd.o
 --- a/fs/namespace.c~fs-move-namespace-sysctls-and-declare-fs-base-directory
 +++ a/fs/namespace.c
-@@ -36,7 +36,7 @@
+@@ -37,7 +37,7 @@
  #include "internal.h"
  
  /* Maximum number of mounts in a mount namespace */
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static unsigned int m_hash_mask __read_mostly;
  static unsigned int m_hash_shift __read_mostly;
-@@ -4612,3 +4612,25 @@ const struct proc_ns_operations mntns_op
+@@ -4637,3 +4637,25 @@ const struct proc_ns_operations mntns_op
  	.install	= mntns_install,
  	.owner		= mntns_owner,
  };

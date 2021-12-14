@@ -1,0 +1,87 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon: convert macro functions to static inline functions
+
+Patch series "mm/damon: Misc cleanups".
+
+This patchset contains miscellaneous cleanups for DAMON's macro
+functions and documentation.
+
+
+This patch (of 6):
+
+This commit converts macro functions in DAMON to static inline functions,
+for better type checking, code documentation, etc[1].
+
+[1] https://lore.kernel.org/linux-mm/20211202151213.6ec830863342220da4141bc5@linux-foundation.org/
+
+Link: https://lkml.kernel.org/r/20211209131806.19317-1-sj@kernel.org
+Link: https://lkml.kernel.org/r/20211209131806.19317-2-sj@kernel.org
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/damon.h |   18 ++++++++++++------
+ mm/damon/core.c       |    5 ++++-
+ mm/damon/vaddr.c      |    6 ++++--
+ 3 files changed, 20 insertions(+), 9 deletions(-)
+
+--- a/include/linux/damon.h~mm-damon-convert-macro-functions-to-static-inline-functions
++++ a/include/linux/damon.h
+@@ -399,14 +399,20 @@ struct damon_ctx {
+ 	struct list_head schemes;
+ };
+ 
+-#define damon_next_region(r) \
+-	(container_of(r->list.next, struct damon_region, list))
++static inline struct damon_region *damon_next_region(struct damon_region *r)
++{
++	return container_of(r->list.next, struct damon_region, list);
++}
+ 
+-#define damon_prev_region(r) \
+-	(container_of(r->list.prev, struct damon_region, list))
++static inline struct damon_region *damon_prev_region(struct damon_region *r)
++{
++	return container_of(r->list.prev, struct damon_region, list);
++}
+ 
+-#define damon_last_region(t) \
+-	(list_last_entry(&t->regions_list, struct damon_region, list))
++static inline struct damon_region *damon_last_region(struct damon_target *t)
++{
++	return list_last_entry(&t->regions_list, struct damon_region, list);
++}
+ 
+ #define damon_for_each_region(r, t) \
+ 	list_for_each_entry(r, &t->regions_list, list)
+--- a/mm/damon/core.c~mm-damon-convert-macro-functions-to-static-inline-functions
++++ a/mm/damon/core.c
+@@ -729,7 +729,10 @@ static void kdamond_apply_schemes(struct
+ 	}
+ }
+ 
+-#define sz_damon_region(r) (r->ar.end - r->ar.start)
++static inline unsigned long sz_damon_region(struct damon_region *r)
++{
++	return r->ar.end - r->ar.start;
++}
+ 
+ /*
+  * Merge two adjacent regions into one region
+--- a/mm/damon/vaddr.c~mm-damon-convert-macro-functions-to-static-inline-functions
++++ a/mm/damon/vaddr.c
+@@ -25,8 +25,10 @@
+  * 't->id' should be the pointer to the relevant 'struct pid' having reference
+  * count.  Caller must put the returned task, unless it is NULL.
+  */
+-#define damon_get_task_struct(t) \
+-	(get_pid_task((struct pid *)t->id, PIDTYPE_PID))
++static inline struct task_struct *damon_get_task_struct(struct damon_target *t)
++{
++	return get_pid_task((struct pid *)t->id, PIDTYPE_PID);
++}
+ 
+ /*
+  * Get the mm_struct of the given target
+_

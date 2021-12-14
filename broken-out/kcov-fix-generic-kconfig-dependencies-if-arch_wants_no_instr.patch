@@ -1,0 +1,71 @@
+From: Marco Elver <elver@google.com>
+Subject: kcov: fix generic Kconfig dependencies if ARCH_WANTS_NO_INSTR
+
+Until recent versions of GCC and Clang, it was not possible to disable
+KCOV instrumentation via a function attribute. The relevant function
+attribute was introduced in 540540d06e9d9 ("kcov: add
+__no_sanitize_coverage to fix noinstr for all architectures").
+
+x86 was the first architecture to want a working noinstr, and at the
+time no compiler support for the attribute existed yet. Therefore,
+0f1441b44e823 ("objtool: Fix noinstr vs KCOV") introduced the ability to
+NOP __sanitizer_cov_*() calls in .noinstr.text.
+
+However, this doesn't work for other architectures like arm64 and s390
+that want a working noinstr per ARCH_WANTS_NO_INSTR.
+
+At the time of 0f1441b44e823, we didn't yet have ARCH_WANTS_NO_INSTR,
+but now we can move the Kconfig dependency checks to the generic KCOV
+option. KCOV will be available if:
+
+	- architecture does not care about noinstr, OR
+	- we have objtool support (like on x86), OR
+	- GCC is 12.0 or newer, OR
+	- Clang is 13.0 or newer.
+
+Link: https://lkml.kernel.org/r/20211201152604.3984495-1-elver@google.com
+Signed-off-by: Marco Elver <elver@google.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/Kconfig  |    2 +-
+ lib/Kconfig.debug |    2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+--- a/arch/x86/Kconfig~kcov-fix-generic-kconfig-dependencies-if-arch_wants_no_instr
++++ a/arch/x86/Kconfig
+@@ -78,7 +78,7 @@ config X86
+ 	select ARCH_HAS_FILTER_PGPROT
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+-	select ARCH_HAS_KCOV			if X86_64 && STACK_VALIDATION
++	select ARCH_HAS_KCOV			if X86_64
+ 	select ARCH_HAS_MEM_ENCRYPT
+ 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+ 	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
+--- a/lib/Kconfig.debug~kcov-fix-generic-kconfig-dependencies-if-arch_wants_no_instr
++++ a/lib/Kconfig.debug
+@@ -1985,6 +1985,8 @@ config KCOV
+ 	bool "Code coverage for fuzzing"
+ 	depends on ARCH_HAS_KCOV
+ 	depends on CC_HAS_SANCOV_TRACE_PC || GCC_PLUGINS
++	depends on !ARCH_WANTS_NO_INSTR || STACK_VALIDATION || \
++		   GCC_VERSION >= 120000 || CLANG_VERSION >= 130000
+ 	select DEBUG_FS
+ 	select GCC_PLUGIN_SANCOV if !CC_HAS_SANCOV_TRACE_PC
+ 	help
+_

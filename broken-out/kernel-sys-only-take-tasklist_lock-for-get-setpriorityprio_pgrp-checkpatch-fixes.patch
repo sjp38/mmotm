@@ -1,0 +1,50 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: kernel-sys-only-take-tasklist_lock-for-get-setpriorityprio_pgrp-checkpatch-fixes
+
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+
+WARNING: A patch subject line should describe the change not the tool that found it
+#2: 
+Subject: kernel-sys-only-take-tasklist_lock-for-get-setpriorityprio_pgrp-checkpatch-fixes
+
+WARNING: Commit log lines starting with '#' are dropped by git as comments
+#5: 
+#102: FILE: kernel/sys.c:321:
+
+WARNING: Possible unwrapped commit description (prefer a maximum 75 chars per line)
+#13: 
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+total: 0 errors, 3 warnings, 8 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+./patches/kernel-sys-only-take-tasklist_lock-for-get-setpriorityprio_pgrp-checkpatch-fixes.patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
+Please run checkpatch prior to sending patches
+
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/sys.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/kernel/sys.c~kernel-sys-only-take-tasklist_lock-for-get-setpriorityprio_pgrp-checkpatch-fixes
++++ a/kernel/sys.c
+@@ -318,7 +318,7 @@ SYSCALL_DEFINE2(getpriority, int, which,
+ 			if (!user)
+ 				goto out_unlock;	/* No processes for this user */
+ 		}
+-	        for_each_process_thread(g, p) {
++		for_each_process_thread(g, p) {
+ 			if (uid_eq(task_uid(p), uid) && task_pid_vnr(p)) {
+ 				niceval = nice_to_rlimit(task_nice(p));
+ 				if (niceval > retval)
+_

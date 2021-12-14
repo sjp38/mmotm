@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static struct file *__alloc_file(int flags, const struct cred *cred)
 --- a/include/linux/fs.h~fs-move-fs-stat-sysctls-to-file_tablec
 +++ a/include/linux/fs.h
-@@ -78,7 +78,6 @@ extern void __init inode_init_early(void
+@@ -79,7 +79,6 @@ extern void __init inode_init_early(void
  extern void __init files_init(void);
  extern void __init files_maxfiles_init(void);
  
@@ -117,7 +117,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern unsigned long get_max_files(void);
  extern unsigned int sysctl_nr_open;
  extern int leases_enable, lease_break_time;
-@@ -3591,8 +3590,6 @@ ssize_t simple_attr_write(struct file *f
+@@ -3532,8 +3531,6 @@ ssize_t simple_attr_write(struct file *f
  			  size_t len, loff_t *ppos);
  
  struct ctl_table;

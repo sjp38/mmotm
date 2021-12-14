@@ -85,7 +85,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * The global file_lock_list is only used for displaying /proc/locks, so we
 --- a/include/linux/fs.h~fs-move-locking-sysctls-where-they-are-used
 +++ a/include/linux/fs.h
-@@ -81,10 +81,6 @@ extern void __init files_maxfiles_init(v
+@@ -82,10 +82,6 @@ extern void __init files_maxfiles_init(v
  extern unsigned long get_max_files(void);
  extern unsigned int sysctl_nr_open;
  extern int leases_enable, lease_break_time;

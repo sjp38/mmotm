@@ -16,7 +16,7 @@ Link: https://lkml.kernel.org/r/20211203065647.2819707-1-keescook@chromium.org
 Fixes: e45f4726bcad ("hugetlb: add hugetlb.*.numa_stat file")
 Signed-off-by: Kees Cook <keescook@chromium.org>
 Reviewed-by: Muchun Song <songmuchun@bytedance.com>
-Cc: Mina Almasry <almasrymina@google.com>
+Reviewed-by: Mina Almasry <almasrymina@google.com>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

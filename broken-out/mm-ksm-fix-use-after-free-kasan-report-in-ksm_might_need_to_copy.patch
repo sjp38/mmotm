@@ -82,7 +82,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/ksm.c~mm-ksm-fix-use-after-free-kasan-report-in-ksm_might_need_to_copy
 +++ a/mm/ksm.c
-@@ -2575,8 +2575,8 @@ struct page *ksm_might_need_to_copy(stru
+@@ -2576,8 +2576,8 @@ struct page *ksm_might_need_to_copy(stru
  			return page;	/* no need to copy it */
  	} else if (!anon_vma) {
  		return page;		/* no need to copy it */

@@ -1,0 +1,25 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: drivers/infiniband/sw/rxe/rxe_qp.c: fix for "hash.h: remove unused define directive"
+
+hash_32_generic() becomes hash_32()
+
+Cc: Isabella Basso <isabbasso@riseup.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/infiniband/sw/rxe/rxe_qp.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/drivers/infiniband/sw/rxe/rxe_qp.c~hashh-remove-unused-define-directive-fix
++++ a/drivers/infiniband/sw/rxe/rxe_qp.c
+@@ -217,8 +217,7 @@ static int rxe_qp_init_req(struct rxe_de
+ 	 * the port number must be in the Dynamic Ports range
+ 	 * (0xc000 - 0xffff).
+ 	 */
+-	qp->src_port = RXE_ROCE_V2_SPORT +
+-		(hash_32_generic(qp_num(qp), 14) & 0x3fff);
++	qp->src_port = RXE_ROCE_V2_SPORT + (hash_32(qp_num(qp), 14) & 0x3fff);
+ 	qp->sq.max_wr		= init->cap.max_send_wr;
+ 
+ 	/* These caps are limited by rxe_qp_chk_cap() done by the caller */
+_

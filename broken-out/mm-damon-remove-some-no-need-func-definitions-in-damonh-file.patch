@@ -144,7 +144,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		struct damon_region *r, struct damos *scheme)
  {
  	int madv_action;
-@@ -633,7 +633,7 @@ int damon_va_apply_scheme(struct damon_c
+@@ -632,7 +632,7 @@ int damon_va_apply_scheme(struct damon_c
  	return damos_madvise(t, r, madv_action);
  }
  
