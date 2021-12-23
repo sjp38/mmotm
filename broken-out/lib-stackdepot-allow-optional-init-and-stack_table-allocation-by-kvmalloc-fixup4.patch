@@ -1,0 +1,37 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: lib/stackdepot: allow optional init and stack_table allocation by kvmalloc() - fixup4
+
+Due to 4e66934eaadc ("lib: add reference counting tracking
+infrastructure") landing recently to net-next adding a new stack depot
+user in lib/ref_tracker.c we need to add an appropriate call to
+stack_depot_init() there as well.
+
+Link: https://lkml.kernel.org/r/45c1b738-1a2f-5b5f-2f6d-86fab206d01c@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Reviewed-by: Eric Dumazet <edumazet@google.com>
+Cc: Jiri Slab <jirislaby@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/ref_tracker.h |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/include/linux/ref_tracker.h~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fixup4
++++ a/include/linux/ref_tracker.h
+@@ -4,6 +4,7 @@
+ #include <linux/refcount.h>
+ #include <linux/types.h>
+ #include <linux/spinlock.h>
++#include <linux/stackdepot.h>
+ 
+ struct ref_tracker;
+ 
+@@ -26,6 +27,7 @@ static inline void ref_tracker_dir_init(
+ 	spin_lock_init(&dir->lock);
+ 	dir->quarantine_avail = quarantine_count;
+ 	refcount_set(&dir->untracked, 1);
++	stack_depot_init();
+ }
+ 
+ void ref_tracker_dir_exit(struct ref_tracker_dir *dir);
+_

@@ -1,0 +1,23 @@
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: mm/vmalloc: alloc GFP_NO{FS,IO} for vmalloc fix
+
+Link: https://lkml.kernel.org/r/20211217232641.0148710c@canb.auug.org.au
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/vmalloc.c~mm-vmalloc-alloc-gfp_nofsio-for-vmalloc-fix
++++ a/mm/vmalloc.c
+@@ -39,6 +39,7 @@
+ #include <linux/pgtable.h>
+ #include <linux/uaccess.h>
+ #include <linux/hugetlb.h>
++#include <linux/sched/mm.h>
+ #include <asm/tlbflush.h>
+ #include <asm/shmparam.h>
+ 
+_

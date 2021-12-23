@@ -45,7 +45,6 @@ Cc: Joseph Qi <joseph.qi@linux.alibaba.com>
 Cc: Julia Lawall <julia.lawall@inria.fr>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Mark Fasheh <mark@fasheh.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Phillip Potter <phil@philpotter.co.uk>
 Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
 Cc: Douglas Gilbert <dgilbert@interlog.com>
@@ -105,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 --- a/include/linux/dnotify.h~dnotify-move-dnotify-sysctl-to-dnotifyc
 +++ a/include/linux/dnotify.h
 @@ -29,7 +29,6 @@ struct dnotify_struct {
- 			    FS_CREATE | FS_DN_RENAME |\
+ 			    FS_CREATE | FS_RENAME |\
  			    FS_MOVED_FROM | FS_MOVED_TO)
  
 -extern int dir_notify_enable;

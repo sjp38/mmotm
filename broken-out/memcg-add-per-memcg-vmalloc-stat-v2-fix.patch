@@ -1,0 +1,28 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: memcg-add-per-memcg-vmalloc-stat-v2-fix
+
+remove cast, per Muchun
+
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Roman Gushchin <guro@fb.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/vmalloc.c~memcg-add-per-memcg-vmalloc-stat-v2-fix
++++ a/mm/vmalloc.c
+@@ -2627,7 +2627,7 @@ static void __vunmap(const void *addr, i
+ 		int i;
+ 
+ 		mod_memcg_page_state(area->pages[0], MEMCG_VMALLOC,
+-				     -(int)area->nr_pages);
++				     -area->nr_pages);
+ 
+ 		for (i = 0; i < area->nr_pages; i += 1U << page_order) {
+ 			struct page *page = area->pages[i];
+_

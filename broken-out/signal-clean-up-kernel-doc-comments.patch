@@ -1,0 +1,53 @@
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: signal: clean up kernel-doc comments
+
+Fix kernel-doc warnings in kernel/signal.c:
+
+kernel/signal.c:1830: warning: Function parameter or member 'force_coredump' not described in 'force_sig_seccomp'
+kernel/signal.c:2873: warning: missing initial short description on line:
+ * signal_delivered -
+
+Also add a closing parenthesis to the comments in signal_delivered().
+
+Link: https://lkml.kernel.org/r/20211222031027.29694-1-rdunlap@infradead.org
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Marco Elver <elver@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/signal.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/kernel/signal.c~signal-clean-up-kernel-doc-comments
++++ a/kernel/signal.c
+@@ -1820,6 +1820,7 @@ int force_sig_perf(void __user *addr, u3
+  * force_sig_seccomp - signals the task to allow in-process syscall emulation
+  * @syscall: syscall number to send to userland
+  * @reason: filter-supplied reason code to send to userland (via si_errno)
++ * @force_coredump: true to trigger a coredump
+  *
+  * Forces a SIGSYS with a code of SYS_SECCOMP and related sigsys info.
+  */
+@@ -2863,13 +2864,13 @@ out:
+ }
+ 
+ /**
+- * signal_delivered - 
++ * signal_delivered - called after signal delivery to update blocked signals
+  * @ksig:		kernel signal struct
+  * @stepping:		nonzero if debugger single-step or block-step in use
+  *
+  * This function should be called when a signal has successfully been
+  * delivered. It updates the blocked signals accordingly (@ksig->ka.sa.sa_mask
+- * is always blocked, and the signal itself is blocked unless %SA_NODEFER
++ * is always blocked), and the signal itself is blocked unless %SA_NODEFER
+  * is set in @ksig->ka.sa.sa_flags.  Tracing is notified.
+  */
+ static void signal_delivered(struct ksignal *ksig, int stepping)
+_

@@ -1,0 +1,30 @@
+From: Thibaut Sautereau <thibaut.sautereau@ssi.gouv.fr>
+Subject: mm/page_alloc: fix __alloc_size attribute for alloc_pages_exact_nid
+
+The second parameter of alloc_pages_exact_nid is the one indicating the
+size of memory pointed by the returned pointer.
+
+Link: https://lkml.kernel.org/r/YbjEgwhn4bGblp//@coeus
+Fixes: abd58f38dfb4 ("mm/page_alloc: add __alloc_size attributes for better bounds checking")
+Signed-off-by: Thibaut Sautereau <thibaut.sautereau@ssi.gouv.fr>
+Acked-by: Kees Cook <keescook@chromium.org>
+Cc: Daniel Micay <danielmicay@gmail.com>
+Cc: Levente Polyak <levente@leventepolyak.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/gfp.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/gfp.h~mm-page_alloc-fix-__alloc_size-attribute-for-alloc_pages_exact_nid
++++ a/include/linux/gfp.h
+@@ -624,7 +624,7 @@ extern unsigned long get_zeroed_page(gfp
+ 
+ void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
+ void free_pages_exact(void *virt, size_t size);
+-__meminit void *alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask) __alloc_size(1);
++__meminit void *alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask) __alloc_size(2);
+ 
+ #define __get_free_page(gfp_mask) \
+ 		__get_free_pages((gfp_mask), 0)
+_

@@ -1,0 +1,39 @@
+From: Shakeel Butt <shakeelb@google.com>
+Subject: memcg-add-per-memcg-vmalloc-stat-v2
+
+page_memcg() within rcu lock, per Muchun
+
+Link: https://lkml.kernel.org/r/20211222052457.1960701-1-shakeelb@google.com
+Signed-off-by: Shakeel Butt <shakeelb@google.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Roman Gushchin <guro@fb.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/memcontrol.h |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+--- a/include/linux/memcontrol.h~memcg-add-per-memcg-vmalloc-stat-v2
++++ a/include/linux/memcontrol.h
+@@ -996,10 +996,16 @@ static inline void mod_memcg_state(struc
+ static inline void mod_memcg_page_state(struct page *page,
+ 					int idx, int val)
+ {
+-	struct mem_cgroup *memcg = page_memcg(page);
++	struct mem_cgroup *memcg;
+ 
+-	if (!mem_cgroup_disabled() && memcg)
++	if (mem_cgroup_disabled())
++		return;
++
++	rcu_read_lock();
++	memcg = page_memcg(page);
++	if (memcg)
+ 		mod_memcg_state(memcg, idx, val);
++	rcu_read_unlock();
+ }
+ 
+ static inline unsigned long memcg_page_state(struct mem_cgroup *memcg, int idx)
+_

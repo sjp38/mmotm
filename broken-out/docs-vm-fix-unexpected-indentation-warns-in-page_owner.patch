@@ -1,0 +1,44 @@
+From: Shuah Khan <skhan@linuxfoundation.org>
+Subject: Documentation/vm/page_owner.rst: fix unexpected indentation warns
+
+Fix Unexpected indentation warns in page_owner:
+
+Documentation/vm/page_owner.rst:92: WARNING: Unexpected indentation.
+Documentation/vm/page_owner.rst:96: WARNING: Unexpected indentation.
+Documentation/vm/page_owner.rst:107: WARNING: Unexpected indentation.
+
+Link: https://lkml.kernel.org/r/20211215001929.47866-1-skhan@linuxfoundation.org
+Signed-off-by: Shuah Khan <skhan@linuxfoundation.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/vm/page_owner.rst |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/Documentation/vm/page_owner.rst~docs-vm-fix-unexpected-indentation-warns-in-page_owner
++++ a/Documentation/vm/page_owner.rst
+@@ -89,11 +89,11 @@ Usage
+ 
+ 	Page allocated via order XXX, ...
+ 	PFN XXX ...
+-	 // Detailed stack
++	// Detailed stack
+ 
+ 	Page allocated via order XXX, ...
+ 	PFN XXX ...
+-	 // Detailed stack
++	// Detailed stack
+ 
+    The ``page_owner_sort`` tool ignores ``PFN`` rows, puts the remaining rows
+    in buf, uses regexp to extract the page order value, counts the times
+@@ -104,7 +104,7 @@ Usage
+ 
+ 	XXX times, XXX pages:
+ 	Page allocated via order XXX, ...
+-	 // Detailed stack
++	// Detailed stack
+ 
+    By default, ``page_owner_sort`` is sorted according to the times of buf.
+    If you want to sort by the page nums of buf, use the ``-m`` parameter.
+_

@@ -25,8 +25,11 @@ sufficient to ensure the page has a reference.  Reworking
 migration_entry_wait() to hold the ptl until the wait setup is complete
 means the extra page reference is no longer needed.
 
+[apopple@nvidia.com: v5]
+  Link: https://lkml.kernel.org/r/20211213033848.1973946-1-apopple@nvidia.com
 Link: https://lkml.kernel.org/r/20211118020754.954425-1-apopple@nvidia.com
 Signed-off-by: Alistair Popple <apopple@nvidia.com>
+Acked-by: David Hildenbrand <david@redhat.com>
 Cc: David Howells <dhowells@redhat.com>
 Cc: Hugh Dickins <hughd@google.com>
 Cc: Jason Gunthorpe <jgg@nvidia.com>
@@ -34,14 +37,13 @@ Cc: Jerome Glisse <jglisse@redhat.com>
 Cc: John Hubbard <jhubbard@nvidia.com>
 Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
 Cc: Ralph Campbell <rcampbell@nvidia.com>
-Cc: David Hildenbrand <david@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
  include/linux/migrate.h |    2 
- mm/filemap.c            |   88 ++++++++++++++++++++++++++++++++++++++
- mm/migrate.c            |   33 +-------------
- 3 files changed, 94 insertions(+), 29 deletions(-)
+ mm/filemap.c            |   91 ++++++++++++++++++++++++++++++++++++++
+ mm/migrate.c            |   38 +--------------
+ 3 files changed, 97 insertions(+), 34 deletions(-)
 
 --- a/include/linux/migrate.h~mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref
 +++ a/include/linux/migrate.h
@@ -49,14 +51,22 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				  struct page *newpage, struct page *page);
  extern int migrate_page_move_mapping(struct address_space *mapping,
  		struct page *newpage, struct page *page, int extra_count);
-+void migration_entry_wait_on_locked(struct folio *folio, pte_t *ptep,
++void migration_entry_wait_on_locked(swp_entry_t entry, pte_t *ptep,
 +				spinlock_t *ptl);
  void folio_migrate_flags(struct folio *newfolio, struct folio *folio);
  void folio_migrate_copy(struct folio *newfolio, struct folio *folio);
  int folio_migrate_mapping(struct address_space *mapping,
 --- a/mm/filemap.c~mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref
 +++ a/mm/filemap.c
-@@ -41,6 +41,7 @@
+@@ -21,6 +21,7 @@
+ #include <linux/gfp.h>
+ #include <linux/mm.h>
+ #include <linux/swap.h>
++#include <linux/swapops.h>
+ #include <linux/mman.h>
+ #include <linux/pagemap.h>
+ #include <linux/file.h>
+@@ -41,6 +42,7 @@
  #include <linux/psi.h>
  #include <linux/ramfs.h>
  #include <linux/page_idle.h>
@@ -64,15 +74,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <asm/pgalloc.h>
  #include <asm/tlbflush.h>
  #include "internal.h"
-@@ -1426,6 +1427,93 @@ repeat:
+@@ -1388,6 +1390,95 @@ repeat:
  	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
  }
  
 +#ifdef CONFIG_MIGRATION
 +/**
 + * migration_entry_wait_on_locked - Wait for a migration entry to be removed
-+ * @folio: folio referenced by the migration entry.
-+ * @ptep: mapped pte pointer. This function will return with the ptep unmapped.
++ * @entry: migration swap entry.
++ * @ptep: mapped pte pointer. Will return with the ptep unmapped. Only required
++ *        for pte entries, pass NULL for pmd entries.
 + * @ptl: already locked ptl. This function will drop the lock.
 + *
 + * Wait for a migration entry referencing the given page to be removed. This is
@@ -83,10 +94,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 + *
 + * Returns after unmapping and unlocking the pte/ptl with pte_unmap_unlock().
 + *
-+ * This follows the same logic as wait_on_page_bit_common() so see the comments
++ * This follows the same logic as folio_wait_bit_common() so see the comments
 + * there.
 + */
-+void migration_entry_wait_on_locked(struct folio *folio, pte_t *ptep,
++void migration_entry_wait_on_locked(swp_entry_t entry, pte_t *ptep,
 +				spinlock_t *ptl)
 +{
 +	struct wait_page_queue wait_page;
@@ -95,6 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	bool delayacct = false;
 +	unsigned long pflags;
 +	wait_queue_head_t *q;
++	struct folio *folio = page_folio(pfn_swap_entry_to_page(entry));
 +
 +	q = folio_waitqueue(folio);
 +	if (!folio_test_uptodate(folio) && folio_test_workingset(folio)) {
@@ -160,36 +172,52 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	folio_wait_bit_common(folio, bit_nr, TASK_UNINTERRUPTIBLE, SHARED);
 --- a/mm/migrate.c~mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref
 +++ a/mm/migrate.c
-@@ -305,15 +305,7 @@ void __migration_entry_wait(struct mm_st
- 	page = pfn_swap_entry_to_page(entry);
- 	page = compound_head(page);
+@@ -291,7 +291,6 @@ void __migration_entry_wait(struct mm_st
+ {
+ 	pte_t pte;
+ 	swp_entry_t entry;
+-	struct folio *folio;
  
+ 	spin_lock(ptl);
+ 	pte = *ptep;
+@@ -302,17 +301,7 @@ void __migration_entry_wait(struct mm_st
+ 	if (!is_migration_entry(entry))
+ 		goto out;
+ 
+-	folio = page_folio(pfn_swap_entry_to_page(entry));
+-
 -	/*
 -	 * Once page cache replacement of page migration started, page_count
--	 * is zero; but we must not call put_and_wait_on_page_locked() without
--	 * a ref. Use get_page_unless_zero(), and just fault again if it fails.
+-	 * is zero; but we must not call folio_put_wait_locked() without
+-	 * a ref. Use folio_try_get(), and just fault again if it fails.
 -	 */
--	if (!get_page_unless_zero(page))
+-	if (!folio_try_get(folio))
 -		goto out;
 -	pte_unmap_unlock(ptep, ptl);
--	put_and_wait_on_page_locked(page, TASK_UNINTERRUPTIBLE);
-+	migration_entry_wait_on_locked(page_folio(page), ptep, ptl);
+-	folio_put_wait_locked(folio, TASK_UNINTERRUPTIBLE);
++	migration_entry_wait_on_locked(entry, ptep, ptl);
  	return;
  out:
  	pte_unmap_unlock(ptep, ptl);
-@@ -344,10 +336,7 @@ void pmd_migration_entry_wait(struct mm_
+@@ -337,16 +326,11 @@ void migration_entry_wait_huge(struct vm
+ void pmd_migration_entry_wait(struct mm_struct *mm, pmd_t *pmd)
+ {
+ 	spinlock_t *ptl;
+-	struct folio *folio;
+ 
+ 	ptl = pmd_lock(mm, pmd);
  	if (!is_pmd_migration_entry(*pmd))
  		goto unlock;
- 	page = pfn_swap_entry_to_page(pmd_to_swp_entry(*pmd));
--	if (!get_page_unless_zero(page))
+-	folio = page_folio(pfn_swap_entry_to_page(pmd_to_swp_entry(*pmd)));
+-	if (!folio_try_get(folio))
 -		goto unlock;
 -	spin_unlock(ptl);
--	put_and_wait_on_page_locked(page, TASK_UNINTERRUPTIBLE);
-+	migration_entry_wait_on_locked(page_folio(page), NULL, ptl);
+-	folio_put_wait_locked(folio, TASK_UNINTERRUPTIBLE);
++	migration_entry_wait_on_locked(pmd_to_swp_entry(*pmd), NULL, ptl);
  	return;
  unlock:
  	spin_unlock(ptl);
-@@ -2514,22 +2503,8 @@ static bool migrate_vma_check_page(struc
+@@ -2431,22 +2415,8 @@ static bool migrate_vma_check_page(struc
  		return false;
  
  	/* Page from ZONE_DEVICE have one extra reference */

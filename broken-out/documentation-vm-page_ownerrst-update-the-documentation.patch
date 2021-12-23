@@ -1,0 +1,56 @@
+From: Shenghong Han <hanshenghong2019@email.szu.edu.cn>
+Subject: Documentation/vm/page_owner.rst: update the documentation
+
+Update the documentation of ``page_owner``.
+
+Link: https://lkml.kernel.org/r/20211214134736.2569-1-hanshenghong2019@email.szu.edu.cn
+Signed-off-by: Shenghong Han <hanshenghong2019@email.szu.edu.cn>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Liam Mark <lmark@codeaurora.org>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Cc: Xiaoming Ni <nixiaoming@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/vm/page_owner.rst |   21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+
+--- a/Documentation/vm/page_owner.rst~documentation-vm-page_ownerrst-update-the-documentation
++++ a/Documentation/vm/page_owner.rst
+@@ -97,7 +97,7 @@ Usage
+ 
+    The ``page_owner_sort`` tool ignores ``PFN`` rows, puts the remaining rows
+    in buf, uses regexp to extract the page order value, counts the times
+-   and pages of buf, and finally sorts them according to the times.
++   and pages of buf, and finally sorts them according to the parameter(s).
+ 
+    See the result about who allocated each page
+    in the ``sorted_page_owner.txt``. General output:
+@@ -108,3 +108,22 @@ Usage
+ 
+    By default, ``page_owner_sort`` is sorted according to the times of buf.
+    If you want to sort by the pages nums of buf, use the ``-m`` parameter.
++   The detail parameters are shown as follows:
++
++   fundamental function:
++
++	Sort:
++		-a		Sort by memory allocate time.
++		-m		Sort by total memory.
++		-p		Sort by pid.
++		-r		Sort by memory release time.
++		-s		Sort by the stack trace.
++		-t		Sort by times (default).
++
++   additional function:
++
++	Cull:
++		-c		Cull by comparing stacktrace instead of total block.
++
++	Filter:
++		-f		Filter out the information of blocks whose memory has not been released.
+_

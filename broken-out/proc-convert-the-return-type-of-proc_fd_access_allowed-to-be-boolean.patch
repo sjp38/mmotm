@@ -1,0 +1,32 @@
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+Subject: proc: convert the return type of proc_fd_access_allowed() to be boolean
+
+Convert return type of proc_fd_access_allowed() and the 'allowed' in it to
+be boolean since the return type of ptrace_may_access() is boolean.
+
+Link: https://lkml.kernel.org/r/20211219024404.29779-1-zhengqi.arch@bytedance.com
+Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/base.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/fs/proc/base.c~proc-convert-the-return-type-of-proc_fd_access_allowed-to-be-boolean
++++ a/fs/proc/base.c
+@@ -670,10 +670,10 @@ static int proc_pid_syscall(struct seq_f
+ /************************************************************************/
+ 
+ /* permission checks */
+-static int proc_fd_access_allowed(struct inode *inode)
++static bool proc_fd_access_allowed(struct inode *inode)
+ {
+ 	struct task_struct *task;
+-	int allowed = 0;
++	bool allowed = false;
+ 	/* Allow access to a task's file descriptors if it is us or we
+ 	 * may use ptrace attach to the process and find out that
+ 	 * information.
+_

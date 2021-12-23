@@ -4,8 +4,11 @@ Subject: linux-next-rejects
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/zsmalloc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/kthread.h |    2 +-
+ kernel/kthread.c        |    4 ++--
+ mm/memremap.c           |    2 +-
+ mm/zsmalloc.c           |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
 --- a/mm/zsmalloc.c~linux-next-rejects
 +++ a/mm/zsmalloc.c
@@ -18,4 +21,46 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static int trylock_zspage(struct zspage *zspage)
+--- a/include/linux/kthread.h~linux-next-rejects
++++ a/include/linux/kthread.h
+@@ -34,7 +34,7 @@ struct task_struct *kthread_create_on_cp
+ 					  const char *namefmt);
+ 
+ void get_kthread_comm(char *buf, size_t buf_size, struct task_struct *tsk);
+-void set_kthread_struct(struct task_struct *p);
++bool set_kthread_struct(struct task_struct *p);
+ 
+ void kthread_set_per_cpu(struct task_struct *k, int cpu);
+ bool kthread_is_per_cpu(struct task_struct *k);
+--- a/kernel/kthread.c~linux-next-rejects
++++ a/kernel/kthread.c
+@@ -136,8 +136,7 @@ void free_kthread_struct(struct task_str
+ 	struct kthread *kthread;
+ 
+ 	/*
+-	 * Can be NULL if this kthread was created by kernel_thread()
+-	 * or if kmalloc() in kthread() failed.
++	 * Can be NULL if kmalloc() in set_kthread_struct() failed.
+ 	 */
+ 	kthread = to_kthread(k);
+ 	if (!kthread)
+@@ -146,6 +145,7 @@ void free_kthread_struct(struct task_str
+ #ifdef CONFIG_BLK_CGROUP
+ 	WARN_ON_ONCE(kthread->blkcg_css);
+ #endif
++	k->set_child_tid = (__force void __user *)NULL;
+ 	kfree(kthread->full_name);
+ 	kfree(kthread);
+ }
+--- a/mm/memremap.c~linux-next-rejects
++++ a/mm/memremap.c
+@@ -298,7 +298,7 @@ static int pagemap_range(struct dev_page
+ 	memmap_init_zone_device(&NODE_DATA(nid)->node_zones[ZONE_DEVICE],
+ 				PHYS_PFN(range->start),
+ 				PHYS_PFN(range_len(range)), pgmap);
+-	percpu_ref_get_many(pgmap->ref, pfn_len(pgmap, range_id));
++	percpu_ref_get_many(&pgmap->ref, pfn_len(pgmap, range_id));
+ 	return 0;
+ 
+ err_add_memory:
 _

@@ -1,0 +1,33 @@
+From: Colin Ian King <colin.i.king@gmail.com>
+Subject: kernel/sysctl.c: remove unused variable ten_thousand
+
+The const variable ten_thousand is not used, it is redundant and can be
+removed.
+
+Cleans up clang warning:
+kernel/sysctl.c:99:18: warning: unused variable 'ten_thousand' [-Wunused-const-variable]
+static const int ten_thousand = 10000;
+
+Link: https://lkml.kernel.org/r/20211221184501.574670-1-colin.i.king@gmail.com
+Fixes: c26da54dc8ca ("printk: move printk sysctl to printk/sysctl.c")
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+Acked-by: Luis Chamberlain <mcgrof@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/sysctl.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/kernel/sysctl.c~kernel-sysctlc-remove-unused-variable-ten_thousand
++++ a/kernel/sysctl.c
+@@ -95,9 +95,6 @@
+ 
+ /* Constants used for minimum and  maximum */
+ 
+-#ifdef CONFIG_PRINTK
+-static const int ten_thousand = 10000;
+-#endif
+ #ifdef CONFIG_PERF_EVENTS
+ static const int six_hundred_forty_kb = 640 * 1024;
+ #endif
+_

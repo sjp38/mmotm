@@ -1,0 +1,42 @@
+From: Christian König <christian.koenig@amd.com>
+Subject: mm/dmapool.c: revert "make dma pool to use kmalloc_node"
+
+This reverts commit 2618c60b8b5836 ("dma: make dma pool to use
+kmalloc_node").
+
+While working myself into the dmapool code I've found this little odd
+kmalloc_node().
+
+What basically happens here is that we allocate the housekeeping structure
+on the numa node where the device is attached to.  Since the device is
+never doing DMA to or from that memory this doesn't seem to make sense at
+all.
+
+So while this doesn't seem to cause much harm it's probably cleaner to
+revert the change for consistency.
+
+Link: https://lkml.kernel.org/r/20211221110724.97664-1-christian.koenig@amd.com
+Signed-off-by: Christian König <christian.koenig@amd.com>
+Cc: Yinghai Lu <yinghai.lu@sun.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/dmapool.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/dmapool.c~dma-revert-make-dma-pool-to-use-kmalloc_node
++++ a/mm/dmapool.c
+@@ -152,7 +152,7 @@ struct dma_pool *dma_pool_create(const c
+ 	else if ((boundary < size) || (boundary & (boundary - 1)))
+ 		return NULL;
+ 
+-	retval = kmalloc_node(sizeof(*retval), GFP_KERNEL, dev_to_node(dev));
++	retval = kmalloc(sizeof(*retval), GFP_KERNEL);
+ 	if (!retval)
+ 		return retval;
+ 
+_

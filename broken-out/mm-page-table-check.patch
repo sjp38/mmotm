@@ -18,7 +18,7 @@ Page table check allows to protect and debug cases where "struct page"
 metadata became corrupted for some reason.  For example, when refcnt or
 mapcount become invalid.
 
-Link: https://lkml.kernel.org/r/20211204182314.1470076-4-pasha.tatashin@soleen.com
+Link: https://lkml.kernel.org/r/20211221154650.1047963-4-pasha.tatashin@soleen.com
 Signed-off-by: Pasha Tatashin <pasha.tatashin@soleen.com>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
@@ -26,6 +26,7 @@ Cc: David Rientjes <rientjes@google.com>
 Cc: Frederic Weisbecker <frederic@kernel.org>
 Cc: Greg Thelen <gthelen@google.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Hugh Dickins <hughd@google.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Jiri Slaby <jirislaby@kernel.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
@@ -34,7 +35,7 @@ Cc: Masahiro Yamada <masahiroy@kernel.org>
 Cc: Mike Rapoport <rppt@kernel.org>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Paul Turner <pjt@google.com>
-Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Sami Tolvanen <samitolvanen@google.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Wei Xu <weixugc@google.com>
@@ -99,11 +100,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +In case of detected corruption, the kernel is crashed. There is a small
 +performance and memory overhead associated with the page table check. Therefore,
-+it is disabled by default, but can be optionally be enabled on systems where
-+the extra hardening outweighs the performance costs. Also, because page table
-+check is synchronous, it can help with debugging double map memory corruption
-+issues, by crashing kernel at the time wrong mapping occurs instead of later
-+which is often the case with memory corruptions bugs.
++it is disabled by default, but can be optionally enabled on systems where the
++extra hardening outweighs the performance costs. Also, because page table check
++is synchronous, it can help with debugging double map memory corruption issues,
++by crashing kernel at the time wrong mapping occurs instead of later which is
++often the case with memory corruptions bugs.
 +
 +Double mapping detection logic
 +==============================
@@ -287,7 +288,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +#endif /* __LINUX_PAGE_TABLE_CHECK_H */
 --- a/MAINTAINERS~mm-page-table-check
 +++ a/MAINTAINERS
-@@ -14387,6 +14387,15 @@ F:	include/net/page_pool.h
+@@ -14386,6 +14386,15 @@ F:	include/net/page_pool.h
  F:	include/trace/events/page_pool.h
  F:	net/core/page_pool.c
  

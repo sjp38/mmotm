@@ -1,0 +1,68 @@
+From: Ting Liu <liuting.0x7c00@bytedance.com>
+Subject: mm: make some vars and functions static or __init
+
+"page_idle_ops" as a global var, but its scope of use within this
+document.  So it should be static.
+
+"page_ext_ops" is a var used in the kernel initial phase.  And other
+functions are aslo used in the kernel initial phase.  So they should be
+__init or __initdata to reclaim memory.
+
+Link: https://lkml.kernel.org/r/20211217095023.67293-1-liuting.0x7c00@bytedance.com
+Signed-off-by: Ting Liu <liuting.0x7c00@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/page_idle.h |    1 -
+ mm/page_ext.c             |    4 ++--
+ mm/page_owner.c           |    4 ++--
+ 3 files changed, 4 insertions(+), 5 deletions(-)
+
+--- a/include/linux/page_idle.h~mm-make-some-vars-and-functions-static-or-__init
++++ a/include/linux/page_idle.h
+@@ -13,7 +13,6 @@
+  * If there is not enough space to store Idle and Young bits in page flags, use
+  * page ext flags instead.
+  */
+-extern struct page_ext_operations page_idle_ops;
+ 
+ static inline bool folio_test_young(struct folio *folio)
+ {
+--- a/mm/page_ext.c~mm-make-some-vars-and-functions-static-or-__init
++++ a/mm/page_ext.c
+@@ -64,12 +64,12 @@ static bool need_page_idle(void)
+ {
+ 	return true;
+ }
+-struct page_ext_operations page_idle_ops = {
++static struct page_ext_operations page_idle_ops __initdata = {
+ 	.need = need_page_idle,
+ };
+ #endif
+ 
+-static struct page_ext_operations *page_ext_ops[] = {
++static struct page_ext_operations *page_ext_ops[] __initdata = {
+ #ifdef CONFIG_PAGE_OWNER
+ 	&page_owner_ops,
+ #endif
+--- a/mm/page_owner.c~mm-make-some-vars-and-functions-static-or-__init
++++ a/mm/page_owner.c
+@@ -46,7 +46,7 @@ static int __init early_page_owner_param
+ }
+ early_param("page_owner", early_page_owner_param);
+ 
+-static bool need_page_owner(void)
++static __init bool need_page_owner(void)
+ {
+ 	return page_owner_enabled;
+ }
+@@ -75,7 +75,7 @@ static noinline void register_early_stac
+ 	early_handle = create_dummy_stack();
+ }
+ 
+-static void init_page_owner(void)
++static __init void init_page_owner(void)
+ {
+ 	if (!page_owner_enabled)
+ 		return;
+_

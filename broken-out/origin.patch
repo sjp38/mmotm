@@ -1,0 +1,1695 @@
+GIT bc491fb12513e79702c6f936c838f792b5389129
+
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 9725c546a0d4..fc34332c8d9a 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2413,8 +2413,12 @@
+ 			Default is 1 (enabled)
+ 
+ 	kvm-intel.emulate_invalid_guest_state=
+-			[KVM,Intel] Enable emulation of invalid guest states
+-			Default is 0 (disabled)
++			[KVM,Intel] Disable emulation of invalid guest state.
++			Ignored if kvm-intel.enable_unrestricted_guest=1, as
++			guest state is never invalid for unrestricted guests.
++			This param doesn't apply to nested guests (L2), as KVM
++			never emulates invalid L2 guest state.
++			Default is 1 (enabled)
+ 
+ 	kvm-intel.flexpriority=
+ 			[KVM,Intel] Disable FlexPriority feature (TPR shadow).
+diff --git a/Documentation/devicetree/bindings/regulator/samsung,s5m8767.yaml b/Documentation/devicetree/bindings/regulator/samsung,s5m8767.yaml
+index 80a63d47790a..c98929a213e9 100644
+--- a/Documentation/devicetree/bindings/regulator/samsung,s5m8767.yaml
++++ b/Documentation/devicetree/bindings/regulator/samsung,s5m8767.yaml
+@@ -51,6 +51,19 @@ patternProperties:
+     description:
+       Properties for single BUCK regulator.
+ 
++    properties:
++      op_mode:
++        $ref: /schemas/types.yaml#/definitions/uint32
++        enum: [0, 1, 2, 3]
++        default: 1
++        description: |
++          Describes the different operating modes of the regulator with power
++          mode change in SOC. The different possible values are:
++            0 - always off mode
++            1 - on in normal mode
++            2 - low power mode
++            3 - suspend mode
++
+     required:
+       - regulator-name
+ 
+@@ -63,6 +76,18 @@ patternProperties:
+       Properties for single BUCK regulator.
+ 
+     properties:
++      op_mode:
++        $ref: /schemas/types.yaml#/definitions/uint32
++        enum: [0, 1, 2, 3]
++        default: 1
++        description: |
++          Describes the different operating modes of the regulator with power
++          mode change in SOC. The different possible values are:
++            0 - always off mode
++            1 - on in normal mode
++            2 - low power mode
++            3 - suspend mode
++
+       s5m8767,pmic-ext-control-gpios:
+         maxItems: 1
+         description: |
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index b2188da09c73..011dc32fdb4d 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -85,11 +85,6 @@ config MMU
+ config STACK_GROWSUP
+ 	def_bool y
+ 
+-config ARCH_DEFCONFIG
+-	string
+-	default "arch/parisc/configs/generic-32bit_defconfig" if !64BIT
+-	default "arch/parisc/configs/generic-64bit_defconfig" if 64BIT
+-
+ config GENERIC_LOCKBREAK
+ 	bool
+ 	default y
+diff --git a/arch/parisc/include/asm/futex.h b/arch/parisc/include/asm/futex.h
+index 70cf8f0a7617..9cd4dd6e63ad 100644
+--- a/arch/parisc/include/asm/futex.h
++++ b/arch/parisc/include/asm/futex.h
+@@ -14,7 +14,7 @@ static inline void
+ _futex_spin_lock(u32 __user *uaddr)
+ {
+ 	extern u32 lws_lock_start[];
+-	long index = ((long)uaddr & 0x3f8) >> 1;
++	long index = ((long)uaddr & 0x7f8) >> 1;
+ 	arch_spinlock_t *s = (arch_spinlock_t *)&lws_lock_start[index];
+ 	preempt_disable();
+ 	arch_spin_lock(s);
+@@ -24,7 +24,7 @@ static inline void
+ _futex_spin_unlock(u32 __user *uaddr)
+ {
+ 	extern u32 lws_lock_start[];
+-	long index = ((long)uaddr & 0x3f8) >> 1;
++	long index = ((long)uaddr & 0x7f8) >> 1;
+ 	arch_spinlock_t *s = (arch_spinlock_t *)&lws_lock_start[index];
+ 	arch_spin_unlock(s);
+ 	preempt_enable();
+diff --git a/arch/parisc/kernel/syscall.S b/arch/parisc/kernel/syscall.S
+index d2497b339d13..65c88ca7a7ac 100644
+--- a/arch/parisc/kernel/syscall.S
++++ b/arch/parisc/kernel/syscall.S
+@@ -472,7 +472,7 @@ lws_start:
+ 	extrd,u	%r1,PSW_W_BIT,1,%r1
+ 	/* sp must be aligned on 4, so deposit the W bit setting into
+ 	 * the bottom of sp temporarily */
+-	or,ev	%r1,%r30,%r30
++	or,od	%r1,%r30,%r30
+ 
+ 	/* Clip LWS number to a 32-bit value for 32-bit processes */
+ 	depdi	0, 31, 32, %r20
+diff --git a/arch/parisc/kernel/traps.c b/arch/parisc/kernel/traps.c
+index b11fb26ce299..892b7fc8f3c4 100644
+--- a/arch/parisc/kernel/traps.c
++++ b/arch/parisc/kernel/traps.c
+@@ -730,6 +730,8 @@ void notrace handle_interruption(int code, struct pt_regs *regs)
+ 			}
+ 			mmap_read_unlock(current->mm);
+ 		}
++		/* CPU could not fetch instruction, so clear stale IIR value. */
++		regs->iir = 0xbaadf00d;
+ 		fallthrough;
+ 	case 27: 
+ 		/* Data memory protection ID trap */
+diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
+index cefe1d81e2e8..9e50da3ed01a 100644
+--- a/arch/x86/include/asm/kvm-x86-ops.h
++++ b/arch/x86/include/asm/kvm-x86-ops.h
+@@ -47,6 +47,7 @@ KVM_X86_OP(set_dr7)
+ KVM_X86_OP(cache_reg)
+ KVM_X86_OP(get_rflags)
+ KVM_X86_OP(set_rflags)
++KVM_X86_OP(get_if_flag)
+ KVM_X86_OP(tlb_flush_all)
+ KVM_X86_OP(tlb_flush_current)
+ KVM_X86_OP_NULL(tlb_remote_flush)
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 2164b9f4c7b0..555f4de47ef2 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1349,6 +1349,7 @@ struct kvm_x86_ops {
+ 	void (*cache_reg)(struct kvm_vcpu *vcpu, enum kvm_reg reg);
+ 	unsigned long (*get_rflags)(struct kvm_vcpu *vcpu);
+ 	void (*set_rflags)(struct kvm_vcpu *vcpu, unsigned long rflags);
++	bool (*get_if_flag)(struct kvm_vcpu *vcpu);
+ 
+ 	void (*tlb_flush_all)(struct kvm_vcpu *vcpu);
+ 	void (*tlb_flush_current)(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/mmu/tdp_iter.c b/arch/x86/kvm/mmu/tdp_iter.c
+index b3ed302c1a35..caa96c270b95 100644
+--- a/arch/x86/kvm/mmu/tdp_iter.c
++++ b/arch/x86/kvm/mmu/tdp_iter.c
+@@ -26,6 +26,7 @@ static gfn_t round_gfn_for_level(gfn_t gfn, int level)
+  */
+ void tdp_iter_restart(struct tdp_iter *iter)
+ {
++	iter->yielded = false;
+ 	iter->yielded_gfn = iter->next_last_level_gfn;
+ 	iter->level = iter->root_level;
+ 
+@@ -160,6 +161,11 @@ static bool try_step_up(struct tdp_iter *iter)
+  */
+ void tdp_iter_next(struct tdp_iter *iter)
+ {
++	if (iter->yielded) {
++		tdp_iter_restart(iter);
++		return;
++	}
++
+ 	if (try_step_down(iter))
+ 		return;
+ 
+diff --git a/arch/x86/kvm/mmu/tdp_iter.h b/arch/x86/kvm/mmu/tdp_iter.h
+index b1748b988d3a..e19cabbcb65c 100644
+--- a/arch/x86/kvm/mmu/tdp_iter.h
++++ b/arch/x86/kvm/mmu/tdp_iter.h
+@@ -45,6 +45,12 @@ struct tdp_iter {
+ 	 * iterator walks off the end of the paging structure.
+ 	 */
+ 	bool valid;
++	/*
++	 * True if KVM dropped mmu_lock and yielded in the middle of a walk, in
++	 * which case tdp_iter_next() needs to restart the walk at the root
++	 * level instead of advancing to the next entry.
++	 */
++	bool yielded;
+ };
+ 
+ /*
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 1db8496259ad..1beb4ca90560 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -502,6 +502,8 @@ static inline bool tdp_mmu_set_spte_atomic(struct kvm *kvm,
+ 					   struct tdp_iter *iter,
+ 					   u64 new_spte)
+ {
++	WARN_ON_ONCE(iter->yielded);
++
+ 	lockdep_assert_held_read(&kvm->mmu_lock);
+ 
+ 	/*
+@@ -575,6 +577,8 @@ static inline void __tdp_mmu_set_spte(struct kvm *kvm, struct tdp_iter *iter,
+ 				      u64 new_spte, bool record_acc_track,
+ 				      bool record_dirty_log)
+ {
++	WARN_ON_ONCE(iter->yielded);
++
+ 	lockdep_assert_held_write(&kvm->mmu_lock);
+ 
+ 	/*
+@@ -640,18 +644,19 @@ static inline void tdp_mmu_set_spte_no_dirty_log(struct kvm *kvm,
+  * If this function should yield and flush is set, it will perform a remote
+  * TLB flush before yielding.
+  *
+- * If this function yields, it will also reset the tdp_iter's walk over the
+- * paging structure and the calling function should skip to the next
+- * iteration to allow the iterator to continue its traversal from the
+- * paging structure root.
++ * If this function yields, iter->yielded is set and the caller must skip to
++ * the next iteration, where tdp_iter_next() will reset the tdp_iter's walk
++ * over the paging structures to allow the iterator to continue its traversal
++ * from the paging structure root.
+  *
+- * Return true if this function yielded and the iterator's traversal was reset.
+- * Return false if a yield was not needed.
++ * Returns true if this function yielded.
+  */
+-static inline bool tdp_mmu_iter_cond_resched(struct kvm *kvm,
+-					     struct tdp_iter *iter, bool flush,
+-					     bool shared)
++static inline bool __must_check tdp_mmu_iter_cond_resched(struct kvm *kvm,
++							  struct tdp_iter *iter,
++							  bool flush, bool shared)
+ {
++	WARN_ON(iter->yielded);
++
+ 	/* Ensure forward progress has been made before yielding. */
+ 	if (iter->next_last_level_gfn == iter->yielded_gfn)
+ 		return false;
+@@ -671,12 +676,10 @@ static inline bool tdp_mmu_iter_cond_resched(struct kvm *kvm,
+ 
+ 		WARN_ON(iter->gfn > iter->next_last_level_gfn);
+ 
+-		tdp_iter_restart(iter);
+-
+-		return true;
++		iter->yielded = true;
+ 	}
+ 
+-	return false;
++	return iter->yielded;
+ }
+ 
+ /*
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index d0f68d11ec70..5151efa424ac 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -1585,6 +1585,15 @@ static void svm_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
+ 	to_svm(vcpu)->vmcb->save.rflags = rflags;
+ }
+ 
++static bool svm_get_if_flag(struct kvm_vcpu *vcpu)
++{
++	struct vmcb *vmcb = to_svm(vcpu)->vmcb;
++
++	return sev_es_guest(vcpu->kvm)
++		? vmcb->control.int_state & SVM_GUEST_INTERRUPT_MASK
++		: kvm_get_rflags(vcpu) & X86_EFLAGS_IF;
++}
++
+ static void svm_cache_reg(struct kvm_vcpu *vcpu, enum kvm_reg reg)
+ {
+ 	switch (reg) {
+@@ -3568,14 +3577,7 @@ bool svm_interrupt_blocked(struct kvm_vcpu *vcpu)
+ 	if (!gif_set(svm))
+ 		return true;
+ 
+-	if (sev_es_guest(vcpu->kvm)) {
+-		/*
+-		 * SEV-ES guests to not expose RFLAGS. Use the VMCB interrupt mask
+-		 * bit to determine the state of the IF flag.
+-		 */
+-		if (!(vmcb->control.int_state & SVM_GUEST_INTERRUPT_MASK))
+-			return true;
+-	} else if (is_guest_mode(vcpu)) {
++	if (is_guest_mode(vcpu)) {
+ 		/* As long as interrupts are being delivered...  */
+ 		if ((svm->nested.ctl.int_ctl & V_INTR_MASKING_MASK)
+ 		    ? !(svm->vmcb01.ptr->save.rflags & X86_EFLAGS_IF)
+@@ -3586,7 +3588,7 @@ bool svm_interrupt_blocked(struct kvm_vcpu *vcpu)
+ 		if (nested_exit_on_intr(svm))
+ 			return false;
+ 	} else {
+-		if (!(kvm_get_rflags(vcpu) & X86_EFLAGS_IF))
++		if (!svm_get_if_flag(vcpu))
+ 			return true;
+ 	}
+ 
+@@ -4621,6 +4623,7 @@ static struct kvm_x86_ops svm_x86_ops __initdata = {
+ 	.cache_reg = svm_cache_reg,
+ 	.get_rflags = svm_get_rflags,
+ 	.set_rflags = svm_set_rflags,
++	.get_if_flag = svm_get_if_flag,
+ 
+ 	.tlb_flush_all = svm_flush_tlb,
+ 	.tlb_flush_current = svm_flush_tlb,
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index 5aadad3e7367..0dbf94eb954f 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -1363,6 +1363,11 @@ void vmx_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
+ 		vmx->emulation_required = vmx_emulation_required(vcpu);
+ }
+ 
++static bool vmx_get_if_flag(struct kvm_vcpu *vcpu)
++{
++	return vmx_get_rflags(vcpu) & X86_EFLAGS_IF;
++}
++
+ u32 vmx_get_interrupt_shadow(struct kvm_vcpu *vcpu)
+ {
+ 	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
+@@ -3959,8 +3964,7 @@ static int vmx_deliver_posted_interrupt(struct kvm_vcpu *vcpu, int vector)
+ 	if (pi_test_and_set_on(&vmx->pi_desc))
+ 		return 0;
+ 
+-	if (vcpu != kvm_get_running_vcpu() &&
+-	    !kvm_vcpu_trigger_posted_interrupt(vcpu, false))
++	if (!kvm_vcpu_trigger_posted_interrupt(vcpu, false))
+ 		kvm_vcpu_kick(vcpu);
+ 
+ 	return 0;
+@@ -5877,18 +5881,14 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
+ 		vmx_flush_pml_buffer(vcpu);
+ 
+ 	/*
+-	 * We should never reach this point with a pending nested VM-Enter, and
+-	 * more specifically emulation of L2 due to invalid guest state (see
+-	 * below) should never happen as that means we incorrectly allowed a
+-	 * nested VM-Enter with an invalid vmcs12.
++	 * KVM should never reach this point with a pending nested VM-Enter.
++	 * More specifically, short-circuiting VM-Entry to emulate L2 due to
++	 * invalid guest state should never happen as that means KVM knowingly
++	 * allowed a nested VM-Enter with an invalid vmcs12.  More below.
+ 	 */
+ 	if (KVM_BUG_ON(vmx->nested.nested_run_pending, vcpu->kvm))
+ 		return -EIO;
+ 
+-	/* If guest state is invalid, start emulating */
+-	if (vmx->emulation_required)
+-		return handle_invalid_guest_state(vcpu);
+-
+ 	if (is_guest_mode(vcpu)) {
+ 		/*
+ 		 * PML is never enabled when running L2, bail immediately if a
+@@ -5910,10 +5910,30 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
+ 		 */
+ 		nested_mark_vmcs12_pages_dirty(vcpu);
+ 
++		/*
++		 * Synthesize a triple fault if L2 state is invalid.  In normal
++		 * operation, nested VM-Enter rejects any attempt to enter L2
++		 * with invalid state.  However, those checks are skipped if
++		 * state is being stuffed via RSM or KVM_SET_NESTED_STATE.  If
++		 * L2 state is invalid, it means either L1 modified SMRAM state
++		 * or userspace provided bad state.  Synthesize TRIPLE_FAULT as
++		 * doing so is architecturally allowed in the RSM case, and is
++		 * the least awful solution for the userspace case without
++		 * risking false positives.
++		 */
++		if (vmx->emulation_required) {
++			nested_vmx_vmexit(vcpu, EXIT_REASON_TRIPLE_FAULT, 0, 0);
++			return 1;
++		}
++
+ 		if (nested_vmx_reflect_vmexit(vcpu))
+ 			return 1;
+ 	}
+ 
++	/* If guest state is invalid, start emulating.  L2 is handled above. */
++	if (vmx->emulation_required)
++		return handle_invalid_guest_state(vcpu);
++
+ 	if (exit_reason.failed_vmentry) {
+ 		dump_vmcs(vcpu);
+ 		vcpu->run->exit_reason = KVM_EXIT_FAIL_ENTRY;
+@@ -6608,9 +6628,7 @@ static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
+ 	 * consistency check VM-Exit due to invalid guest state and bail.
+ 	 */
+ 	if (unlikely(vmx->emulation_required)) {
+-
+-		/* We don't emulate invalid state of a nested guest */
+-		vmx->fail = is_guest_mode(vcpu);
++		vmx->fail = 0;
+ 
+ 		vmx->exit_reason.full = EXIT_REASON_INVALID_STATE;
+ 		vmx->exit_reason.failed_vmentry = 1;
+@@ -7579,6 +7597,7 @@ static struct kvm_x86_ops vmx_x86_ops __initdata = {
+ 	.cache_reg = vmx_cache_reg,
+ 	.get_rflags = vmx_get_rflags,
+ 	.set_rflags = vmx_set_rflags,
++	.get_if_flag = vmx_get_if_flag,
+ 
+ 	.tlb_flush_all = vmx_flush_tlb_all,
+ 	.tlb_flush_current = vmx_flush_tlb_current,
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 9a2972fdae82..e50e97ac4408 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1331,7 +1331,7 @@ static const u32 msrs_to_save_all[] = {
+ 	MSR_IA32_UMWAIT_CONTROL,
+ 
+ 	MSR_ARCH_PERFMON_FIXED_CTR0, MSR_ARCH_PERFMON_FIXED_CTR1,
+-	MSR_ARCH_PERFMON_FIXED_CTR0 + 2, MSR_ARCH_PERFMON_FIXED_CTR0 + 3,
++	MSR_ARCH_PERFMON_FIXED_CTR0 + 2,
+ 	MSR_CORE_PERF_FIXED_CTR_CTRL, MSR_CORE_PERF_GLOBAL_STATUS,
+ 	MSR_CORE_PERF_GLOBAL_CTRL, MSR_CORE_PERF_GLOBAL_OVF_CTRL,
+ 	MSR_ARCH_PERFMON_PERFCTR0, MSR_ARCH_PERFMON_PERFCTR1,
+@@ -9001,14 +9001,7 @@ static void post_kvm_run_save(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *kvm_run = vcpu->run;
+ 
+-	/*
+-	 * if_flag is obsolete and useless, so do not bother
+-	 * setting it for SEV-ES guests.  Userspace can just
+-	 * use kvm_run->ready_for_interrupt_injection.
+-	 */
+-	kvm_run->if_flag = !vcpu->arch.guest_state_protected
+-		&& (kvm_get_rflags(vcpu) & X86_EFLAGS_IF) != 0;
+-
++	kvm_run->if_flag = static_call(kvm_x86_get_if_flag)(vcpu);
+ 	kvm_run->cr8 = kvm_get_cr8(vcpu);
+ 	kvm_run->apic_base = kvm_get_apic_base(vcpu);
+ 
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index f4d0c555de29..04ea92cbd9cf 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1902,7 +1902,7 @@ int dpm_prepare(pm_message_t state)
+ 	device_block_probing();
+ 
+ 	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_list)) {
++	while (!list_empty(&dpm_list) && !error) {
+ 		struct device *dev = to_device(dpm_list.next);
+ 
+ 		get_device(dev);
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index 8e3983e456f3..286cf1afad78 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -1512,9 +1512,12 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+ 	unsigned long flags;
+ 	struct blkfront_ring_info *rinfo = (struct blkfront_ring_info *)dev_id;
+ 	struct blkfront_info *info = rinfo->dev_info;
++	unsigned int eoiflag = XEN_EOI_FLAG_SPURIOUS;
+ 
+-	if (unlikely(info->connected != BLKIF_STATE_CONNECTED))
++	if (unlikely(info->connected != BLKIF_STATE_CONNECTED)) {
++		xen_irq_lateeoi(irq, XEN_EOI_FLAG_SPURIOUS);
+ 		return IRQ_HANDLED;
++	}
+ 
+ 	spin_lock_irqsave(&rinfo->ring_lock, flags);
+  again:
+@@ -1530,6 +1533,8 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+ 		unsigned long id;
+ 		unsigned int op;
+ 
++		eoiflag = 0;
++
+ 		RING_COPY_RESPONSE(&rinfo->ring, i, &bret);
+ 		id = bret.id;
+ 
+@@ -1646,6 +1651,8 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+ 
+ 	spin_unlock_irqrestore(&rinfo->ring_lock, flags);
+ 
++	xen_irq_lateeoi(irq, eoiflag);
++
+ 	return IRQ_HANDLED;
+ 
+  err:
+@@ -1653,6 +1660,8 @@ static irqreturn_t blkif_interrupt(int irq, void *dev_id)
+ 
+ 	spin_unlock_irqrestore(&rinfo->ring_lock, flags);
+ 
++	/* No EOI in order to avoid further interrupts. */
++
+ 	pr_alert("%s disabled for further use\n", info->gd->disk_name);
+ 	return IRQ_HANDLED;
+ }
+@@ -1692,8 +1701,8 @@ static int setup_blkring(struct xenbus_device *dev,
+ 	if (err)
+ 		goto fail;
+ 
+-	err = bind_evtchn_to_irqhandler(rinfo->evtchn, blkif_interrupt, 0,
+-					"blkif", rinfo);
++	err = bind_evtchn_to_irqhandler_lateeoi(rinfo->evtchn, blkif_interrupt,
++						0, "blkif", rinfo);
+ 	if (err <= 0) {
+ 		xenbus_dev_fatal(dev, err,
+ 				 "bind_evtchn_to_irqhandler failed");
+diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
+index c837d5416e0e..c59265146e9c 100644
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -3031,7 +3031,7 @@ cleanup_bmc_device(struct kref *ref)
+ 	 * with removing the device attributes while reading a device
+ 	 * attribute.
+ 	 */
+-	schedule_work(&bmc->remove_work);
++	queue_work(remove_work_wq, &bmc->remove_work);
+ }
+ 
+ /*
+@@ -5392,22 +5392,27 @@ static int ipmi_init_msghandler(void)
+ 	if (initialized)
+ 		goto out;
+ 
+-	init_srcu_struct(&ipmi_interfaces_srcu);
+-
+-	timer_setup(&ipmi_timer, ipmi_timeout, 0);
+-	mod_timer(&ipmi_timer, jiffies + IPMI_TIMEOUT_JIFFIES);
+-
+-	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
++	rv = init_srcu_struct(&ipmi_interfaces_srcu);
++	if (rv)
++		goto out;
+ 
+ 	remove_work_wq = create_singlethread_workqueue("ipmi-msghandler-remove-wq");
+ 	if (!remove_work_wq) {
+ 		pr_err("unable to create ipmi-msghandler-remove-wq workqueue");
+ 		rv = -ENOMEM;
+-		goto out;
++		goto out_wq;
+ 	}
+ 
++	timer_setup(&ipmi_timer, ipmi_timeout, 0);
++	mod_timer(&ipmi_timer, jiffies + IPMI_TIMEOUT_JIFFIES);
++
++	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
++
+ 	initialized = true;
+ 
++out_wq:
++	if (rv)
++		cleanup_srcu_struct(&ipmi_interfaces_srcu);
+ out:
+ 	mutex_unlock(&ipmi_interfaces_mutex);
+ 	return rv;
+diff --git a/drivers/char/ipmi/ipmi_ssif.c b/drivers/char/ipmi/ipmi_ssif.c
+index 0c62e578749e..48aab77abebf 100644
+--- a/drivers/char/ipmi/ipmi_ssif.c
++++ b/drivers/char/ipmi/ipmi_ssif.c
+@@ -1659,6 +1659,9 @@ static int ssif_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		}
+ 	}
+ 
++	ssif_info->client = client;
++	i2c_set_clientdata(client, ssif_info);
++
+ 	rv = ssif_check_and_remove(client, ssif_info);
+ 	/* If rv is 0 and addr source is not SI_ACPI, continue probing */
+ 	if (!rv && ssif_info->addr_source == SI_ACPI) {
+@@ -1679,9 +1682,6 @@ static int ssif_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 		ipmi_addr_src_to_str(ssif_info->addr_source),
+ 		client->addr, client->adapter->name, slave_addr);
+ 
+-	ssif_info->client = client;
+-	i2c_set_clientdata(client, ssif_info);
+-
+ 	/* Now check for system interface capabilities */
+ 	msg[0] = IPMI_NETFN_APP_REQUEST << 2;
+ 	msg[1] = IPMI_GET_SYSTEM_INTERFACE_CAPABILITIES_CMD;
+@@ -1881,6 +1881,7 @@ static int ssif_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 
+ 		dev_err(&ssif_info->client->dev,
+ 			"Unable to start IPMI SSIF: %d\n", rv);
++		i2c_set_clientdata(client, NULL);
+ 		kfree(ssif_info);
+ 	}
+ 	kfree(resp);
+diff --git a/drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c b/drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c
+index fa768f10635f..fd29861526d6 100644
+--- a/drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c
++++ b/drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c
+@@ -211,6 +211,12 @@ static u32 uof_get_ae_mask(u32 obj_num)
+ 	return adf_4xxx_fw_config[obj_num].ae_mask;
+ }
+ 
++static u32 get_vf2pf_sources(void __iomem *pmisc_addr)
++{
++	/* For the moment do not report vf2pf sources */
++	return 0;
++}
++
+ void adf_init_hw_data_4xxx(struct adf_hw_device_data *hw_data)
+ {
+ 	hw_data->dev_class = &adf_4xxx_class;
+@@ -254,6 +260,7 @@ void adf_init_hw_data_4xxx(struct adf_hw_device_data *hw_data)
+ 	hw_data->set_msix_rttable = set_msix_default_rttable;
+ 	hw_data->set_ssm_wdtimer = adf_gen4_set_ssm_wdtimer;
+ 	hw_data->enable_pfvf_comms = pfvf_comms_disabled;
++	hw_data->get_vf2pf_sources = get_vf2pf_sources;
+ 	hw_data->disable_iov = adf_disable_sriov;
+ 	hw_data->min_iov_compat_ver = ADF_PFVF_COMPAT_THIS_VERSION;
+ 
+diff --git a/drivers/hid/hid-holtek-mouse.c b/drivers/hid/hid-holtek-mouse.c
+index b7172c48ef9f..7c907939bfae 100644
+--- a/drivers/hid/hid-holtek-mouse.c
++++ b/drivers/hid/hid-holtek-mouse.c
+@@ -65,8 +65,23 @@ static __u8 *holtek_mouse_report_fixup(struct hid_device *hdev, __u8 *rdesc,
+ static int holtek_mouse_probe(struct hid_device *hdev,
+ 			      const struct hid_device_id *id)
+ {
++	int ret;
++
+ 	if (!hid_is_usb(hdev))
+ 		return -EINVAL;
++
++	ret = hid_parse(hdev);
++	if (ret) {
++		hid_err(hdev, "hid parse failed: %d\n", ret);
++		return ret;
++	}
++
++	ret = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
++	if (ret) {
++		hid_err(hdev, "hw start failed: %d\n", ret);
++		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/hid/hid-vivaldi.c b/drivers/hid/hid-vivaldi.c
+index cd7ada48b1d9..72957a9f7117 100644
+--- a/drivers/hid/hid-vivaldi.c
++++ b/drivers/hid/hid-vivaldi.c
+@@ -57,6 +57,9 @@ static int vivaldi_probe(struct hid_device *hdev,
+ 	int ret;
+ 
+ 	drvdata = devm_kzalloc(&hdev->dev, sizeof(*drvdata), GFP_KERNEL);
++	if (!drvdata)
++		return -ENOMEM;
++
+ 	hid_set_drvdata(hdev, drvdata);
+ 
+ 	ret = hid_parse(hdev);
+diff --git a/drivers/infiniband/hw/hns/hns_roce_hw_v2.c b/drivers/infiniband/hw/hns/hns_roce_hw_v2.c
+index bbfa1332dedc..eb0defa80d0d 100644
+--- a/drivers/infiniband/hw/hns/hns_roce_hw_v2.c
++++ b/drivers/infiniband/hw/hns/hns_roce_hw_v2.c
+@@ -1594,11 +1594,17 @@ static int hns_roce_config_global_param(struct hns_roce_dev *hr_dev)
+ {
+ 	struct hns_roce_cmq_desc desc;
+ 	struct hns_roce_cmq_req *req = (struct hns_roce_cmq_req *)desc.data;
++	u32 clock_cycles_of_1us;
+ 
+ 	hns_roce_cmq_setup_basic_desc(&desc, HNS_ROCE_OPC_CFG_GLOBAL_PARAM,
+ 				      false);
+ 
+-	hr_reg_write(req, CFG_GLOBAL_PARAM_1US_CYCLES, 0x3e8);
++	if (hr_dev->pci_dev->revision == PCI_REVISION_ID_HIP08)
++		clock_cycles_of_1us = HNS_ROCE_1NS_CFG;
++	else
++		clock_cycles_of_1us = HNS_ROCE_1US_CFG;
++
++	hr_reg_write(req, CFG_GLOBAL_PARAM_1US_CYCLES, clock_cycles_of_1us);
+ 	hr_reg_write(req, CFG_GLOBAL_PARAM_UDP_PORT, ROCE_V2_UDP_DPORT);
+ 
+ 	return hns_roce_cmq_send(hr_dev, &desc, 1);
+@@ -4802,6 +4808,30 @@ static int hns_roce_v2_set_abs_fields(struct ib_qp *ibqp,
+ 	return ret;
+ }
+ 
++static bool check_qp_timeout_cfg_range(struct hns_roce_dev *hr_dev, u8 *timeout)
++{
++#define QP_ACK_TIMEOUT_MAX_HIP08 20
++#define QP_ACK_TIMEOUT_OFFSET 10
++#define QP_ACK_TIMEOUT_MAX 31
++
++	if (hr_dev->pci_dev->revision == PCI_REVISION_ID_HIP08) {
++		if (*timeout > QP_ACK_TIMEOUT_MAX_HIP08) {
++			ibdev_warn(&hr_dev->ib_dev,
++				   "Local ACK timeout shall be 0 to 20.\n");
++			return false;
++		}
++		*timeout += QP_ACK_TIMEOUT_OFFSET;
++	} else if (hr_dev->pci_dev->revision > PCI_REVISION_ID_HIP08) {
++		if (*timeout > QP_ACK_TIMEOUT_MAX) {
++			ibdev_warn(&hr_dev->ib_dev,
++				   "Local ACK timeout shall be 0 to 31.\n");
++			return false;
++		}
++	}
++
++	return true;
++}
++
+ static int hns_roce_v2_set_opt_fields(struct ib_qp *ibqp,
+ 				      const struct ib_qp_attr *attr,
+ 				      int attr_mask,
+@@ -4811,6 +4841,7 @@ static int hns_roce_v2_set_opt_fields(struct ib_qp *ibqp,
+ 	struct hns_roce_dev *hr_dev = to_hr_dev(ibqp->device);
+ 	struct hns_roce_qp *hr_qp = to_hr_qp(ibqp);
+ 	int ret = 0;
++	u8 timeout;
+ 
+ 	if (attr_mask & IB_QP_AV) {
+ 		ret = hns_roce_v2_set_path(ibqp, attr, attr_mask, context,
+@@ -4820,12 +4851,10 @@ static int hns_roce_v2_set_opt_fields(struct ib_qp *ibqp,
+ 	}
+ 
+ 	if (attr_mask & IB_QP_TIMEOUT) {
+-		if (attr->timeout < 31) {
+-			hr_reg_write(context, QPC_AT, attr->timeout);
++		timeout = attr->timeout;
++		if (check_qp_timeout_cfg_range(hr_dev, &timeout)) {
++			hr_reg_write(context, QPC_AT, timeout);
+ 			hr_reg_clear(qpc_mask, QPC_AT);
+-		} else {
+-			ibdev_warn(&hr_dev->ib_dev,
+-				   "Local ACK timeout shall be 0 to 30.\n");
+ 		}
+ 	}
+ 
+@@ -4882,7 +4911,9 @@ static int hns_roce_v2_set_opt_fields(struct ib_qp *ibqp,
+ 		set_access_flags(hr_qp, context, qpc_mask, attr, attr_mask);
+ 
+ 	if (attr_mask & IB_QP_MIN_RNR_TIMER) {
+-		hr_reg_write(context, QPC_MIN_RNR_TIME, attr->min_rnr_timer);
++		hr_reg_write(context, QPC_MIN_RNR_TIME,
++			    hr_dev->pci_dev->revision == PCI_REVISION_ID_HIP08 ?
++			    HNS_ROCE_RNR_TIMER_10NS : attr->min_rnr_timer);
+ 		hr_reg_clear(qpc_mask, QPC_MIN_RNR_TIME);
+ 	}
+ 
+@@ -5499,6 +5530,16 @@ static int hns_roce_v2_modify_cq(struct ib_cq *cq, u16 cq_count, u16 cq_period)
+ 
+ 	hr_reg_write(cq_context, CQC_CQ_MAX_CNT, cq_count);
+ 	hr_reg_clear(cqc_mask, CQC_CQ_MAX_CNT);
++
++	if (hr_dev->pci_dev->revision == PCI_REVISION_ID_HIP08) {
++		if (cq_period * HNS_ROCE_CLOCK_ADJUST > USHRT_MAX) {
++			dev_info(hr_dev->dev,
++				 "cq_period(%u) reached the upper limit, adjusted to 65.\n",
++				 cq_period);
++			cq_period = HNS_ROCE_MAX_CQ_PERIOD;
++		}
++		cq_period *= HNS_ROCE_CLOCK_ADJUST;
++	}
+ 	hr_reg_write(cq_context, CQC_CQ_PERIOD, cq_period);
+ 	hr_reg_clear(cqc_mask, CQC_CQ_PERIOD);
+ 
+@@ -5894,6 +5935,15 @@ static int config_eqc(struct hns_roce_dev *hr_dev, struct hns_roce_eq *eq,
+ 	hr_reg_write(eqc, EQC_EQ_PROD_INDX, HNS_ROCE_EQ_INIT_PROD_IDX);
+ 	hr_reg_write(eqc, EQC_EQ_MAX_CNT, eq->eq_max_cnt);
+ 
++	if (hr_dev->pci_dev->revision == PCI_REVISION_ID_HIP08) {
++		if (eq->eq_period * HNS_ROCE_CLOCK_ADJUST > USHRT_MAX) {
++			dev_info(hr_dev->dev, "eq_period(%u) reached the upper limit, adjusted to 65.\n",
++				 eq->eq_period);
++			eq->eq_period = HNS_ROCE_MAX_EQ_PERIOD;
++		}
++		eq->eq_period *= HNS_ROCE_CLOCK_ADJUST;
++	}
++
+ 	hr_reg_write(eqc, EQC_EQ_PERIOD, eq->eq_period);
+ 	hr_reg_write(eqc, EQC_EQE_REPORT_TIMER, HNS_ROCE_EQ_INIT_REPORT_TIMER);
+ 	hr_reg_write(eqc, EQC_EQE_BA_L, bt_ba >> 3);
+diff --git a/drivers/infiniband/hw/hns/hns_roce_hw_v2.h b/drivers/infiniband/hw/hns/hns_roce_hw_v2.h
+index 4d904d5e82be..35c61da7ba15 100644
+--- a/drivers/infiniband/hw/hns/hns_roce_hw_v2.h
++++ b/drivers/infiniband/hw/hns/hns_roce_hw_v2.h
+@@ -1444,6 +1444,14 @@ struct hns_roce_dip {
+ 	struct list_head node;	/* all dips are on a list */
+ };
+ 
++/* only for RNR timeout issue of HIP08 */
++#define HNS_ROCE_CLOCK_ADJUST 1000
++#define HNS_ROCE_MAX_CQ_PERIOD 65
++#define HNS_ROCE_MAX_EQ_PERIOD 65
++#define HNS_ROCE_RNR_TIMER_10NS 1
++#define HNS_ROCE_1US_CFG 999
++#define HNS_ROCE_1NS_CFG 0
++
+ #define HNS_ROCE_AEQ_DEFAULT_BURST_NUM	0x0
+ #define HNS_ROCE_AEQ_DEFAULT_INTERVAL	0x0
+ #define HNS_ROCE_CEQ_DEFAULT_BURST_NUM	0x0
+diff --git a/drivers/infiniband/hw/hns/hns_roce_srq.c b/drivers/infiniband/hw/hns/hns_roce_srq.c
+index 6eee9deadd12..e64ef6903fb4 100644
+--- a/drivers/infiniband/hw/hns/hns_roce_srq.c
++++ b/drivers/infiniband/hw/hns/hns_roce_srq.c
+@@ -259,7 +259,7 @@ static int alloc_srq_wrid(struct hns_roce_dev *hr_dev, struct hns_roce_srq *srq)
+ 
+ static void free_srq_wrid(struct hns_roce_srq *srq)
+ {
+-	kfree(srq->wrid);
++	kvfree(srq->wrid);
+ 	srq->wrid = NULL;
+ }
+ 
+diff --git a/drivers/infiniband/hw/qib/qib_user_sdma.c b/drivers/infiniband/hw/qib/qib_user_sdma.c
+index ac11943a5ddb..bf2f30d67949 100644
+--- a/drivers/infiniband/hw/qib/qib_user_sdma.c
++++ b/drivers/infiniband/hw/qib/qib_user_sdma.c
+@@ -941,7 +941,7 @@ static int qib_user_sdma_queue_pkts(const struct qib_devdata *dd,
+ 					       &addrlimit) ||
+ 			    addrlimit > type_max(typeof(pkt->addrlimit))) {
+ 				ret = -EINVAL;
+-				goto free_pbc;
++				goto free_pkt;
+ 			}
+ 			pkt->addrlimit = addrlimit;
+ 
+diff --git a/drivers/net/xen-netback/common.h b/drivers/net/xen-netback/common.h
+index 4a16d6e33c09..d9dea4829c86 100644
+--- a/drivers/net/xen-netback/common.h
++++ b/drivers/net/xen-netback/common.h
+@@ -203,6 +203,7 @@ struct xenvif_queue { /* Per-queue data for xenvif */
+ 	unsigned int rx_queue_max;
+ 	unsigned int rx_queue_len;
+ 	unsigned long last_rx_time;
++	unsigned int rx_slots_needed;
+ 	bool stalled;
+ 
+ 	struct xenvif_copy_state rx_copy;
+diff --git a/drivers/net/xen-netback/rx.c b/drivers/net/xen-netback/rx.c
+index accc991d153f..dbac4c03d21a 100644
+--- a/drivers/net/xen-netback/rx.c
++++ b/drivers/net/xen-netback/rx.c
+@@ -33,28 +33,36 @@
+ #include <xen/xen.h>
+ #include <xen/events.h>
+ 
+-static bool xenvif_rx_ring_slots_available(struct xenvif_queue *queue)
++/*
++ * Update the needed ring page slots for the first SKB queued.
++ * Note that any call sequence outside the RX thread calling this function
++ * needs to wake up the RX thread via a call of xenvif_kick_thread()
++ * afterwards in order to avoid a race with putting the thread to sleep.
++ */
++static void xenvif_update_needed_slots(struct xenvif_queue *queue,
++				       const struct sk_buff *skb)
+ {
+-	RING_IDX prod, cons;
+-	struct sk_buff *skb;
+-	int needed;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&queue->rx_queue.lock, flags);
++	unsigned int needed = 0;
+ 
+-	skb = skb_peek(&queue->rx_queue);
+-	if (!skb) {
+-		spin_unlock_irqrestore(&queue->rx_queue.lock, flags);
+-		return false;
++	if (skb) {
++		needed = DIV_ROUND_UP(skb->len, XEN_PAGE_SIZE);
++		if (skb_is_gso(skb))
++			needed++;
++		if (skb->sw_hash)
++			needed++;
+ 	}
+ 
+-	needed = DIV_ROUND_UP(skb->len, XEN_PAGE_SIZE);
+-	if (skb_is_gso(skb))
+-		needed++;
+-	if (skb->sw_hash)
+-		needed++;
++	WRITE_ONCE(queue->rx_slots_needed, needed);
++}
+ 
+-	spin_unlock_irqrestore(&queue->rx_queue.lock, flags);
++static bool xenvif_rx_ring_slots_available(struct xenvif_queue *queue)
++{
++	RING_IDX prod, cons;
++	unsigned int needed;
++
++	needed = READ_ONCE(queue->rx_slots_needed);
++	if (!needed)
++		return false;
+ 
+ 	do {
+ 		prod = queue->rx.sring->req_prod;
+@@ -80,13 +88,19 @@ void xenvif_rx_queue_tail(struct xenvif_queue *queue, struct sk_buff *skb)
+ 
+ 	spin_lock_irqsave(&queue->rx_queue.lock, flags);
+ 
+-	__skb_queue_tail(&queue->rx_queue, skb);
+-
+-	queue->rx_queue_len += skb->len;
+-	if (queue->rx_queue_len > queue->rx_queue_max) {
++	if (queue->rx_queue_len >= queue->rx_queue_max) {
+ 		struct net_device *dev = queue->vif->dev;
+ 
+ 		netif_tx_stop_queue(netdev_get_tx_queue(dev, queue->id));
++		kfree_skb(skb);
++		queue->vif->dev->stats.rx_dropped++;
++	} else {
++		if (skb_queue_empty(&queue->rx_queue))
++			xenvif_update_needed_slots(queue, skb);
++
++		__skb_queue_tail(&queue->rx_queue, skb);
++
++		queue->rx_queue_len += skb->len;
+ 	}
+ 
+ 	spin_unlock_irqrestore(&queue->rx_queue.lock, flags);
+@@ -100,6 +114,8 @@ static struct sk_buff *xenvif_rx_dequeue(struct xenvif_queue *queue)
+ 
+ 	skb = __skb_dequeue(&queue->rx_queue);
+ 	if (skb) {
++		xenvif_update_needed_slots(queue, skb_peek(&queue->rx_queue));
++
+ 		queue->rx_queue_len -= skb->len;
+ 		if (queue->rx_queue_len < queue->rx_queue_max) {
+ 			struct netdev_queue *txq;
+@@ -134,6 +150,7 @@ static void xenvif_rx_queue_drop_expired(struct xenvif_queue *queue)
+ 			break;
+ 		xenvif_rx_dequeue(queue);
+ 		kfree_skb(skb);
++		queue->vif->dev->stats.rx_dropped++;
+ 	}
+ }
+ 
+@@ -487,27 +504,31 @@ void xenvif_rx_action(struct xenvif_queue *queue)
+ 	xenvif_rx_copy_flush(queue);
+ }
+ 
+-static bool xenvif_rx_queue_stalled(struct xenvif_queue *queue)
++static RING_IDX xenvif_rx_queue_slots(const struct xenvif_queue *queue)
+ {
+ 	RING_IDX prod, cons;
+ 
+ 	prod = queue->rx.sring->req_prod;
+ 	cons = queue->rx.req_cons;
+ 
++	return prod - cons;
++}
++
++static bool xenvif_rx_queue_stalled(const struct xenvif_queue *queue)
++{
++	unsigned int needed = READ_ONCE(queue->rx_slots_needed);
++
+ 	return !queue->stalled &&
+-		prod - cons < 1 &&
++		xenvif_rx_queue_slots(queue) < needed &&
+ 		time_after(jiffies,
+ 			   queue->last_rx_time + queue->vif->stall_timeout);
+ }
+ 
+ static bool xenvif_rx_queue_ready(struct xenvif_queue *queue)
+ {
+-	RING_IDX prod, cons;
+-
+-	prod = queue->rx.sring->req_prod;
+-	cons = queue->rx.req_cons;
++	unsigned int needed = READ_ONCE(queue->rx_slots_needed);
+ 
+-	return queue->stalled && prod - cons >= 1;
++	return queue->stalled && xenvif_rx_queue_slots(queue) >= needed;
+ }
+ 
+ bool xenvif_have_rx_work(struct xenvif_queue *queue, bool test_kthread)
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index 911f43986a8c..d514d96027a6 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -148,6 +148,9 @@ struct netfront_queue {
+ 	grant_ref_t gref_rx_head;
+ 	grant_ref_t grant_rx_ref[NET_RX_RING_SIZE];
+ 
++	unsigned int rx_rsp_unconsumed;
++	spinlock_t rx_cons_lock;
++
+ 	struct page_pool *page_pool;
+ 	struct xdp_rxq_info xdp_rxq;
+ };
+@@ -376,12 +379,13 @@ static int xennet_open(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-static void xennet_tx_buf_gc(struct netfront_queue *queue)
++static bool xennet_tx_buf_gc(struct netfront_queue *queue)
+ {
+ 	RING_IDX cons, prod;
+ 	unsigned short id;
+ 	struct sk_buff *skb;
+ 	bool more_to_do;
++	bool work_done = false;
+ 	const struct device *dev = &queue->info->netdev->dev;
+ 
+ 	BUG_ON(!netif_carrier_ok(queue->info->netdev));
+@@ -398,6 +402,8 @@ static void xennet_tx_buf_gc(struct netfront_queue *queue)
+ 		for (cons = queue->tx.rsp_cons; cons != prod; cons++) {
+ 			struct xen_netif_tx_response txrsp;
+ 
++			work_done = true;
++
+ 			RING_COPY_RESPONSE(&queue->tx, cons, &txrsp);
+ 			if (txrsp.status == XEN_NETIF_RSP_NULL)
+ 				continue;
+@@ -441,11 +447,13 @@ static void xennet_tx_buf_gc(struct netfront_queue *queue)
+ 
+ 	xennet_maybe_wake_tx(queue);
+ 
+-	return;
++	return work_done;
+ 
+  err:
+ 	queue->info->broken = true;
+ 	dev_alert(dev, "Disabled for further use\n");
++
++	return work_done;
+ }
+ 
+ struct xennet_gnttab_make_txreq {
+@@ -834,6 +842,16 @@ static int xennet_close(struct net_device *dev)
+ 	return 0;
+ }
+ 
++static void xennet_set_rx_rsp_cons(struct netfront_queue *queue, RING_IDX val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&queue->rx_cons_lock, flags);
++	queue->rx.rsp_cons = val;
++	queue->rx_rsp_unconsumed = RING_HAS_UNCONSUMED_RESPONSES(&queue->rx);
++	spin_unlock_irqrestore(&queue->rx_cons_lock, flags);
++}
++
+ static void xennet_move_rx_slot(struct netfront_queue *queue, struct sk_buff *skb,
+ 				grant_ref_t ref)
+ {
+@@ -885,7 +903,7 @@ static int xennet_get_extras(struct netfront_queue *queue,
+ 		xennet_move_rx_slot(queue, skb, ref);
+ 	} while (extra.flags & XEN_NETIF_EXTRA_FLAG_MORE);
+ 
+-	queue->rx.rsp_cons = cons;
++	xennet_set_rx_rsp_cons(queue, cons);
+ 	return err;
+ }
+ 
+@@ -1039,7 +1057,7 @@ static int xennet_get_responses(struct netfront_queue *queue,
+ 	}
+ 
+ 	if (unlikely(err))
+-		queue->rx.rsp_cons = cons + slots;
++		xennet_set_rx_rsp_cons(queue, cons + slots);
+ 
+ 	return err;
+ }
+@@ -1093,7 +1111,8 @@ static int xennet_fill_frags(struct netfront_queue *queue,
+ 			__pskb_pull_tail(skb, pull_to - skb_headlen(skb));
+ 		}
+ 		if (unlikely(skb_shinfo(skb)->nr_frags >= MAX_SKB_FRAGS)) {
+-			queue->rx.rsp_cons = ++cons + skb_queue_len(list);
++			xennet_set_rx_rsp_cons(queue,
++					       ++cons + skb_queue_len(list));
+ 			kfree_skb(nskb);
+ 			return -ENOENT;
+ 		}
+@@ -1106,7 +1125,7 @@ static int xennet_fill_frags(struct netfront_queue *queue,
+ 		kfree_skb(nskb);
+ 	}
+ 
+-	queue->rx.rsp_cons = cons;
++	xennet_set_rx_rsp_cons(queue, cons);
+ 
+ 	return 0;
+ }
+@@ -1229,7 +1248,9 @@ static int xennet_poll(struct napi_struct *napi, int budget)
+ 
+ 			if (unlikely(xennet_set_skb_gso(skb, gso))) {
+ 				__skb_queue_head(&tmpq, skb);
+-				queue->rx.rsp_cons += skb_queue_len(&tmpq);
++				xennet_set_rx_rsp_cons(queue,
++						       queue->rx.rsp_cons +
++						       skb_queue_len(&tmpq));
+ 				goto err;
+ 			}
+ 		}
+@@ -1253,7 +1274,8 @@ static int xennet_poll(struct napi_struct *napi, int budget)
+ 
+ 		__skb_queue_tail(&rxq, skb);
+ 
+-		i = ++queue->rx.rsp_cons;
++		i = queue->rx.rsp_cons + 1;
++		xennet_set_rx_rsp_cons(queue, i);
+ 		work_done++;
+ 	}
+ 	if (need_xdp_flush)
+@@ -1417,40 +1439,79 @@ static int xennet_set_features(struct net_device *dev,
+ 	return 0;
+ }
+ 
+-static irqreturn_t xennet_tx_interrupt(int irq, void *dev_id)
++static bool xennet_handle_tx(struct netfront_queue *queue, unsigned int *eoi)
+ {
+-	struct netfront_queue *queue = dev_id;
+ 	unsigned long flags;
+ 
+-	if (queue->info->broken)
+-		return IRQ_HANDLED;
++	if (unlikely(queue->info->broken))
++		return false;
+ 
+ 	spin_lock_irqsave(&queue->tx_lock, flags);
+-	xennet_tx_buf_gc(queue);
++	if (xennet_tx_buf_gc(queue))
++		*eoi = 0;
+ 	spin_unlock_irqrestore(&queue->tx_lock, flags);
+ 
++	return true;
++}
++
++static irqreturn_t xennet_tx_interrupt(int irq, void *dev_id)
++{
++	unsigned int eoiflag = XEN_EOI_FLAG_SPURIOUS;
++
++	if (likely(xennet_handle_tx(dev_id, &eoiflag)))
++		xen_irq_lateeoi(irq, eoiflag);
++
+ 	return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t xennet_rx_interrupt(int irq, void *dev_id)
++static bool xennet_handle_rx(struct netfront_queue *queue, unsigned int *eoi)
+ {
+-	struct netfront_queue *queue = dev_id;
+-	struct net_device *dev = queue->info->netdev;
++	unsigned int work_queued;
++	unsigned long flags;
+ 
+-	if (queue->info->broken)
+-		return IRQ_HANDLED;
++	if (unlikely(queue->info->broken))
++		return false;
++
++	spin_lock_irqsave(&queue->rx_cons_lock, flags);
++	work_queued = RING_HAS_UNCONSUMED_RESPONSES(&queue->rx);
++	if (work_queued > queue->rx_rsp_unconsumed) {
++		queue->rx_rsp_unconsumed = work_queued;
++		*eoi = 0;
++	} else if (unlikely(work_queued < queue->rx_rsp_unconsumed)) {
++		const struct device *dev = &queue->info->netdev->dev;
++
++		spin_unlock_irqrestore(&queue->rx_cons_lock, flags);
++		dev_alert(dev, "RX producer index going backwards\n");
++		dev_alert(dev, "Disabled for further use\n");
++		queue->info->broken = true;
++		return false;
++	}
++	spin_unlock_irqrestore(&queue->rx_cons_lock, flags);
+ 
+-	if (likely(netif_carrier_ok(dev) &&
+-		   RING_HAS_UNCONSUMED_RESPONSES(&queue->rx)))
++	if (likely(netif_carrier_ok(queue->info->netdev) && work_queued))
+ 		napi_schedule(&queue->napi);
+ 
++	return true;
++}
++
++static irqreturn_t xennet_rx_interrupt(int irq, void *dev_id)
++{
++	unsigned int eoiflag = XEN_EOI_FLAG_SPURIOUS;
++
++	if (likely(xennet_handle_rx(dev_id, &eoiflag)))
++		xen_irq_lateeoi(irq, eoiflag);
++
+ 	return IRQ_HANDLED;
+ }
+ 
+ static irqreturn_t xennet_interrupt(int irq, void *dev_id)
+ {
+-	xennet_tx_interrupt(irq, dev_id);
+-	xennet_rx_interrupt(irq, dev_id);
++	unsigned int eoiflag = XEN_EOI_FLAG_SPURIOUS;
++
++	if (xennet_handle_tx(dev_id, &eoiflag) &&
++	    xennet_handle_rx(dev_id, &eoiflag))
++		xen_irq_lateeoi(irq, eoiflag);
++
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -1768,9 +1829,10 @@ static int setup_netfront_single(struct netfront_queue *queue)
+ 	if (err < 0)
+ 		goto fail;
+ 
+-	err = bind_evtchn_to_irqhandler(queue->tx_evtchn,
+-					xennet_interrupt,
+-					0, queue->info->netdev->name, queue);
++	err = bind_evtchn_to_irqhandler_lateeoi(queue->tx_evtchn,
++						xennet_interrupt, 0,
++						queue->info->netdev->name,
++						queue);
+ 	if (err < 0)
+ 		goto bind_fail;
+ 	queue->rx_evtchn = queue->tx_evtchn;
+@@ -1798,18 +1860,18 @@ static int setup_netfront_split(struct netfront_queue *queue)
+ 
+ 	snprintf(queue->tx_irq_name, sizeof(queue->tx_irq_name),
+ 		 "%s-tx", queue->name);
+-	err = bind_evtchn_to_irqhandler(queue->tx_evtchn,
+-					xennet_tx_interrupt,
+-					0, queue->tx_irq_name, queue);
++	err = bind_evtchn_to_irqhandler_lateeoi(queue->tx_evtchn,
++						xennet_tx_interrupt, 0,
++						queue->tx_irq_name, queue);
+ 	if (err < 0)
+ 		goto bind_tx_fail;
+ 	queue->tx_irq = err;
+ 
+ 	snprintf(queue->rx_irq_name, sizeof(queue->rx_irq_name),
+ 		 "%s-rx", queue->name);
+-	err = bind_evtchn_to_irqhandler(queue->rx_evtchn,
+-					xennet_rx_interrupt,
+-					0, queue->rx_irq_name, queue);
++	err = bind_evtchn_to_irqhandler_lateeoi(queue->rx_evtchn,
++						xennet_rx_interrupt, 0,
++						queue->rx_irq_name, queue);
+ 	if (err < 0)
+ 		goto bind_rx_fail;
+ 	queue->rx_irq = err;
+@@ -1911,6 +1973,7 @@ static int xennet_init_queue(struct netfront_queue *queue)
+ 
+ 	spin_lock_init(&queue->tx_lock);
+ 	spin_lock_init(&queue->rx_lock);
++	spin_lock_init(&queue->rx_cons_lock);
+ 
+ 	timer_setup(&queue->rx_refill_timer, rx_refill_timeout, 0);
+ 
+diff --git a/drivers/spi/spi-armada-3700.c b/drivers/spi/spi-armada-3700.c
+index 46feafe4e201..d8cc4b270644 100644
+--- a/drivers/spi/spi-armada-3700.c
++++ b/drivers/spi/spi-armada-3700.c
+@@ -901,7 +901,7 @@ static int a3700_spi_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ error_clk:
+-	clk_disable_unprepare(spi->clk);
++	clk_unprepare(spi->clk);
+ error:
+ 	spi_master_put(master);
+ out:
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index 71e0dd2c0ce5..ebaf7500f48f 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -37,6 +37,8 @@ struct xencons_info {
+ 	struct xenbus_device *xbdev;
+ 	struct xencons_interface *intf;
+ 	unsigned int evtchn;
++	XENCONS_RING_IDX out_cons;
++	unsigned int out_cons_same;
+ 	struct hvc_struct *hvc;
+ 	int irq;
+ 	int vtermno;
+@@ -138,6 +140,8 @@ static int domU_read_console(uint32_t vtermno, char *buf, int len)
+ 	XENCONS_RING_IDX cons, prod;
+ 	int recv = 0;
+ 	struct xencons_info *xencons = vtermno_to_xencons(vtermno);
++	unsigned int eoiflag = 0;
++
+ 	if (xencons == NULL)
+ 		return -EINVAL;
+ 	intf = xencons->intf;
+@@ -157,7 +161,27 @@ static int domU_read_console(uint32_t vtermno, char *buf, int len)
+ 	mb();			/* read ring before consuming */
+ 	intf->in_cons = cons;
+ 
+-	notify_daemon(xencons);
++	/*
++	 * When to mark interrupt having been spurious:
++	 * - there was no new data to be read, and
++	 * - the backend did not consume some output bytes, and
++	 * - the previous round with no read data didn't see consumed bytes
++	 *   (we might have a race with an interrupt being in flight while
++	 *   updating xencons->out_cons, so account for that by allowing one
++	 *   round without any visible reason)
++	 */
++	if (intf->out_cons != xencons->out_cons) {
++		xencons->out_cons = intf->out_cons;
++		xencons->out_cons_same = 0;
++	}
++	if (recv) {
++		notify_daemon(xencons);
++	} else if (xencons->out_cons_same++ > 1) {
++		eoiflag = XEN_EOI_FLAG_SPURIOUS;
++	}
++
++	xen_irq_lateeoi(xencons->irq, eoiflag);
++
+ 	return recv;
+ }
+ 
+@@ -386,7 +410,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
+ 	if (ret)
+ 		return ret;
+ 	info->evtchn = evtchn;
+-	irq = bind_evtchn_to_irq(evtchn);
++	irq = bind_interdomain_evtchn_to_irq_lateeoi(dev, evtchn);
+ 	if (irq < 0)
+ 		return irq;
+ 	info->irq = irq;
+@@ -551,7 +575,7 @@ static int __init xen_hvc_init(void)
+ 			return r;
+ 
+ 		info = vtermno_to_xencons(HVC_COOKIE);
+-		info->irq = bind_evtchn_to_irq(info->evtchn);
++		info->irq = bind_evtchn_to_irq_lateeoi(info->evtchn);
+ 	}
+ 	if (info->irq < 0)
+ 		info->irq = 0; /* NO_IRQ */
+diff --git a/drivers/xen/events/events_base.c b/drivers/xen/events/events_base.c
+index a78704ae3618..46d9295d9a6e 100644
+--- a/drivers/xen/events/events_base.c
++++ b/drivers/xen/events/events_base.c
+@@ -1251,6 +1251,12 @@ int bind_evtchn_to_irq(evtchn_port_t evtchn)
+ }
+ EXPORT_SYMBOL_GPL(bind_evtchn_to_irq);
+ 
++int bind_evtchn_to_irq_lateeoi(evtchn_port_t evtchn)
++{
++	return bind_evtchn_to_irq_chip(evtchn, &xen_lateeoi_chip, NULL);
++}
++EXPORT_SYMBOL_GPL(bind_evtchn_to_irq_lateeoi);
++
+ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
+ {
+ 	struct evtchn_bind_ipi bind_ipi;
+diff --git a/fs/nfsd/nfs3proc.c b/fs/nfsd/nfs3proc.c
+index 4418517f6f12..15dac36ca852 100644
+--- a/fs/nfsd/nfs3proc.c
++++ b/fs/nfsd/nfs3proc.c
+@@ -438,22 +438,19 @@ nfsd3_proc_link(struct svc_rqst *rqstp)
+ 
+ static void nfsd3_init_dirlist_pages(struct svc_rqst *rqstp,
+ 				     struct nfsd3_readdirres *resp,
+-				     int count)
++				     u32 count)
+ {
+ 	struct xdr_buf *buf = &resp->dirlist;
+ 	struct xdr_stream *xdr = &resp->xdr;
+ 
+-	count = min_t(u32, count, svc_max_payload(rqstp));
++	count = clamp(count, (u32)(XDR_UNIT * 2), svc_max_payload(rqstp));
+ 
+ 	memset(buf, 0, sizeof(*buf));
+ 
+ 	/* Reserve room for the NULL ptr & eof flag (-2 words) */
+ 	buf->buflen = count - XDR_UNIT * 2;
+ 	buf->pages = rqstp->rq_next_page;
+-	while (count > 0) {
+-		rqstp->rq_next_page++;
+-		count -= PAGE_SIZE;
+-	}
++	rqstp->rq_next_page += (buf->buflen + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 
+ 	/* This is xdr_init_encode(), but it assumes that
+ 	 * the head kvec has already been consumed. */
+@@ -462,7 +459,7 @@ static void nfsd3_init_dirlist_pages(struct svc_rqst *rqstp,
+ 	xdr->page_ptr = buf->pages;
+ 	xdr->iov = NULL;
+ 	xdr->p = page_address(*buf->pages);
+-	xdr->end = xdr->p + (PAGE_SIZE >> 2);
++	xdr->end = (void *)xdr->p + min_t(u32, buf->buflen, PAGE_SIZE);
+ 	xdr->rqst = NULL;
+ }
+ 
+diff --git a/fs/nfsd/nfsproc.c b/fs/nfsd/nfsproc.c
+index eea5b59b6a6c..de282f3273c5 100644
+--- a/fs/nfsd/nfsproc.c
++++ b/fs/nfsd/nfsproc.c
+@@ -556,17 +556,17 @@ nfsd_proc_rmdir(struct svc_rqst *rqstp)
+ 
+ static void nfsd_init_dirlist_pages(struct svc_rqst *rqstp,
+ 				    struct nfsd_readdirres *resp,
+-				    int count)
++				    u32 count)
+ {
+ 	struct xdr_buf *buf = &resp->dirlist;
+ 	struct xdr_stream *xdr = &resp->xdr;
+ 
+-	count = min_t(u32, count, PAGE_SIZE);
++	count = clamp(count, (u32)(XDR_UNIT * 2), svc_max_payload(rqstp));
+ 
+ 	memset(buf, 0, sizeof(*buf));
+ 
+ 	/* Reserve room for the NULL ptr & eof flag (-2 words) */
+-	buf->buflen = count - sizeof(__be32) * 2;
++	buf->buflen = count - XDR_UNIT * 2;
+ 	buf->pages = rqstp->rq_next_page;
+ 	rqstp->rq_next_page++;
+ 
+@@ -577,7 +577,7 @@ static void nfsd_init_dirlist_pages(struct svc_rqst *rqstp,
+ 	xdr->page_ptr = buf->pages;
+ 	xdr->iov = NULL;
+ 	xdr->p = page_address(*buf->pages);
+-	xdr->end = xdr->p + (PAGE_SIZE >> 2);
++	xdr->end = (void *)xdr->p + min_t(u32, buf->buflen, PAGE_SIZE);
+ 	xdr->rqst = NULL;
+ }
+ 
+diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+index 8adcf1fa8096..9dc7cb239d21 100644
+--- a/include/linux/memblock.h
++++ b/include/linux/memblock.h
+@@ -405,8 +405,8 @@ phys_addr_t memblock_alloc_range_nid(phys_addr_t size,
+ 				      phys_addr_t end, int nid, bool exact_nid);
+ phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid);
+ 
+-static inline phys_addr_t memblock_phys_alloc(phys_addr_t size,
+-					      phys_addr_t align)
++static __always_inline phys_addr_t memblock_phys_alloc(phys_addr_t size,
++						       phys_addr_t align)
+ {
+ 	return memblock_phys_alloc_range(size, align, 0,
+ 					 MEMBLOCK_ALLOC_ACCESSIBLE);
+diff --git a/include/xen/events.h b/include/xen/events.h
+index c204262d9fc2..344081e71584 100644
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -17,6 +17,7 @@ struct xenbus_device;
+ unsigned xen_evtchn_nr_channels(void);
+ 
+ int bind_evtchn_to_irq(evtchn_port_t evtchn);
++int bind_evtchn_to_irq_lateeoi(evtchn_port_t evtchn);
+ int bind_evtchn_to_irqhandler(evtchn_port_t evtchn,
+ 			      irq_handler_t handler,
+ 			      unsigned long irqflags, const char *devname,
+diff --git a/security/tomoyo/util.c b/security/tomoyo/util.c
+index 1da2e3722b12..6799b1122c9d 100644
+--- a/security/tomoyo/util.c
++++ b/security/tomoyo/util.c
+@@ -1051,10 +1051,11 @@ bool tomoyo_domain_quota_is_ok(struct tomoyo_request_info *r)
+ 		return false;
+ 	if (!domain)
+ 		return true;
++	if (READ_ONCE(domain->flags[TOMOYO_DIF_QUOTA_WARNED]))
++		return false;
+ 	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list,
+ 				srcu_read_lock_held(&tomoyo_ss)) {
+ 		u16 perm;
+-		u8 i;
+ 
+ 		if (ptr->is_deleted)
+ 			continue;
+@@ -1065,23 +1066,23 @@ bool tomoyo_domain_quota_is_ok(struct tomoyo_request_info *r)
+ 		 */
+ 		switch (ptr->type) {
+ 		case TOMOYO_TYPE_PATH_ACL:
+-			data_race(perm = container_of(ptr, struct tomoyo_path_acl, head)->perm);
++			perm = data_race(container_of(ptr, struct tomoyo_path_acl, head)->perm);
+ 			break;
+ 		case TOMOYO_TYPE_PATH2_ACL:
+-			data_race(perm = container_of(ptr, struct tomoyo_path2_acl, head)->perm);
++			perm = data_race(container_of(ptr, struct tomoyo_path2_acl, head)->perm);
+ 			break;
+ 		case TOMOYO_TYPE_PATH_NUMBER_ACL:
+-			data_race(perm = container_of(ptr, struct tomoyo_path_number_acl, head)
++			perm = data_race(container_of(ptr, struct tomoyo_path_number_acl, head)
+ 				  ->perm);
+ 			break;
+ 		case TOMOYO_TYPE_MKDEV_ACL:
+-			data_race(perm = container_of(ptr, struct tomoyo_mkdev_acl, head)->perm);
++			perm = data_race(container_of(ptr, struct tomoyo_mkdev_acl, head)->perm);
+ 			break;
+ 		case TOMOYO_TYPE_INET_ACL:
+-			data_race(perm = container_of(ptr, struct tomoyo_inet_acl, head)->perm);
++			perm = data_race(container_of(ptr, struct tomoyo_inet_acl, head)->perm);
+ 			break;
+ 		case TOMOYO_TYPE_UNIX_ACL:
+-			data_race(perm = container_of(ptr, struct tomoyo_unix_acl, head)->perm);
++			perm = data_race(container_of(ptr, struct tomoyo_unix_acl, head)->perm);
+ 			break;
+ 		case TOMOYO_TYPE_MANUAL_TASK_ACL:
+ 			perm = 0;
+@@ -1089,21 +1090,17 @@ bool tomoyo_domain_quota_is_ok(struct tomoyo_request_info *r)
+ 		default:
+ 			perm = 1;
+ 		}
+-		for (i = 0; i < 16; i++)
+-			if (perm & (1 << i))
+-				count++;
++		count += hweight16(perm);
+ 	}
+ 	if (count < tomoyo_profile(domain->ns, domain->profile)->
+ 	    pref[TOMOYO_PREF_MAX_LEARNING_ENTRY])
+ 		return true;
+-	if (!domain->flags[TOMOYO_DIF_QUOTA_WARNED]) {
+-		domain->flags[TOMOYO_DIF_QUOTA_WARNED] = true;
+-		/* r->granted = false; */
+-		tomoyo_write_log(r, "%s", tomoyo_dif[TOMOYO_DIF_QUOTA_WARNED]);
++	WRITE_ONCE(domain->flags[TOMOYO_DIF_QUOTA_WARNED], true);
++	/* r->granted = false; */
++	tomoyo_write_log(r, "%s", tomoyo_dif[TOMOYO_DIF_QUOTA_WARNED]);
+ #ifndef CONFIG_SECURITY_TOMOYO_INSECURE_BUILTIN_SETTING
+-		pr_warn("WARNING: Domain '%s' has too many ACLs to hold. Stopped learning mode.\n",
+-			domain->domainname->name);
++	pr_warn("WARNING: Domain '%s' has too many ACLs to hold. Stopped learning mode.\n",
++		domain->domainname->name);
+ #endif
+-	}
+ 	return false;
+ }
+diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
+index 00814c0f87a6..3cb5ac5da087 100644
+--- a/tools/testing/selftests/kvm/.gitignore
++++ b/tools/testing/selftests/kvm/.gitignore
+@@ -35,6 +35,7 @@
+ /x86_64/vmx_apic_access_test
+ /x86_64/vmx_close_while_nested_test
+ /x86_64/vmx_dirty_log_test
++/x86_64/vmx_invalid_nested_guest_state
+ /x86_64/vmx_preemption_timer_test
+ /x86_64/vmx_set_nested_state_test
+ /x86_64/vmx_tsc_adjust_test
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index f307c9f61981..17342b575e85 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -64,6 +64,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/userspace_msr_exit_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_apic_access_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_close_while_nested_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_dirty_log_test
++TEST_GEN_PROGS_x86_64 += x86_64/vmx_invalid_nested_guest_state
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_set_nested_state_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_tsc_adjust_test
+ TEST_GEN_PROGS_x86_64 += x86_64/vmx_nested_tsc_scaling_test
+diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
+index da2b702da71a..2d62edc49d67 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util.h
++++ b/tools/testing/selftests/kvm/include/kvm_util.h
+@@ -71,15 +71,6 @@ enum vm_guest_mode {
+ 
+ #endif
+ 
+-#if defined(__x86_64__)
+-unsigned long vm_compute_max_gfn(struct kvm_vm *vm);
+-#else
+-static inline unsigned long vm_compute_max_gfn(struct kvm_vm *vm)
+-{
+-	return ((1ULL << vm->pa_bits) >> vm->page_shift) - 1;
+-}
+-#endif
+-
+ #define MIN_PAGE_SIZE		(1U << MIN_PAGE_SHIFT)
+ #define PTES_PER_MIN_PAGE	ptes_per_page(MIN_PAGE_SIZE)
+ 
+@@ -330,6 +321,7 @@ bool vm_is_unrestricted_guest(struct kvm_vm *vm);
+ 
+ unsigned int vm_get_page_size(struct kvm_vm *vm);
+ unsigned int vm_get_page_shift(struct kvm_vm *vm);
++unsigned long vm_compute_max_gfn(struct kvm_vm *vm);
+ uint64_t vm_get_max_gfn(struct kvm_vm *vm);
+ int vm_get_fd(struct kvm_vm *vm);
+ 
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index daf6fdb217a7..53d2b5d04b82 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -2328,6 +2328,11 @@ unsigned int vm_get_page_shift(struct kvm_vm *vm)
+ 	return vm->page_shift;
+ }
+ 
++unsigned long __attribute__((weak)) vm_compute_max_gfn(struct kvm_vm *vm)
++{
++	return ((1ULL << vm->pa_bits) >> vm->page_shift) - 1;
++}
++
+ uint64_t vm_get_max_gfn(struct kvm_vm *vm)
+ {
+ 	return vm->max_gfn;
+diff --git a/tools/testing/selftests/kvm/x86_64/vmx_invalid_nested_guest_state.c b/tools/testing/selftests/kvm/x86_64/vmx_invalid_nested_guest_state.c
+new file mode 100644
+index 000000000000..489fbed4ca6f
+--- /dev/null
++++ b/tools/testing/selftests/kvm/x86_64/vmx_invalid_nested_guest_state.c
+@@ -0,0 +1,105 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#include "test_util.h"
++#include "kvm_util.h"
++#include "processor.h"
++#include "vmx.h"
++
++#include <string.h>
++#include <sys/ioctl.h>
++
++#include "kselftest.h"
++
++#define VCPU_ID	0
++#define ARBITRARY_IO_PORT 0x2000
++
++static struct kvm_vm *vm;
++
++static void l2_guest_code(void)
++{
++	/*
++	 * Generate an exit to L0 userspace, i.e. main(), via I/O to an
++	 * arbitrary port.
++	 */
++	asm volatile("inb %%dx, %%al"
++		     : : [port] "d" (ARBITRARY_IO_PORT) : "rax");
++}
++
++static void l1_guest_code(struct vmx_pages *vmx_pages)
++{
++#define L2_GUEST_STACK_SIZE 64
++	unsigned long l2_guest_stack[L2_GUEST_STACK_SIZE];
++
++	GUEST_ASSERT(prepare_for_vmx_operation(vmx_pages));
++	GUEST_ASSERT(load_vmcs(vmx_pages));
++
++	/* Prepare the VMCS for L2 execution. */
++	prepare_vmcs(vmx_pages, l2_guest_code,
++		     &l2_guest_stack[L2_GUEST_STACK_SIZE]);
++
++	/*
++	 * L2 must be run without unrestricted guest, verify that the selftests
++	 * library hasn't enabled it.  Because KVM selftests jump directly to
++	 * 64-bit mode, unrestricted guest support isn't required.
++	 */
++	GUEST_ASSERT(!(vmreadz(CPU_BASED_VM_EXEC_CONTROL) & CPU_BASED_ACTIVATE_SECONDARY_CONTROLS) ||
++		     !(vmreadz(SECONDARY_VM_EXEC_CONTROL) & SECONDARY_EXEC_UNRESTRICTED_GUEST));
++
++	GUEST_ASSERT(!vmlaunch());
++
++	/* L2 should triple fault after main() stuffs invalid guest state. */
++	GUEST_ASSERT(vmreadz(VM_EXIT_REASON) == EXIT_REASON_TRIPLE_FAULT);
++	GUEST_DONE();
++}
++
++int main(int argc, char *argv[])
++{
++	vm_vaddr_t vmx_pages_gva;
++	struct kvm_sregs sregs;
++	struct kvm_run *run;
++	struct ucall uc;
++
++	nested_vmx_check_supported();
++
++	vm = vm_create_default(VCPU_ID, 0, (void *) l1_guest_code);
++
++	/* Allocate VMX pages and shared descriptors (vmx_pages). */
++	vcpu_alloc_vmx(vm, &vmx_pages_gva);
++	vcpu_args_set(vm, VCPU_ID, 1, vmx_pages_gva);
++
++	vcpu_run(vm, VCPU_ID);
++
++	run = vcpu_state(vm, VCPU_ID);
++
++	/*
++	 * The first exit to L0 userspace should be an I/O access from L2.
++	 * Running L1 should launch L2 without triggering an exit to userspace.
++	 */
++	TEST_ASSERT(run->exit_reason == KVM_EXIT_IO,
++		    "Expected KVM_EXIT_IO, got: %u (%s)\n",
++		    run->exit_reason, exit_reason_str(run->exit_reason));
++
++	TEST_ASSERT(run->io.port == ARBITRARY_IO_PORT,
++		    "Expected IN from port %d from L2, got port %d",
++		    ARBITRARY_IO_PORT, run->io.port);
++
++	/*
++	 * Stuff invalid guest state for L2 by making TR unusuable.  The next
++	 * KVM_RUN should induce a TRIPLE_FAULT in L2 as KVM doesn't support
++	 * emulating invalid guest state for L2.
++	 */
++	memset(&sregs, 0, sizeof(sregs));
++	vcpu_sregs_get(vm, VCPU_ID, &sregs);
++	sregs.tr.unusable = 1;
++	vcpu_sregs_set(vm, VCPU_ID, &sregs);
++
++	vcpu_run(vm, VCPU_ID);
++
++	switch (get_ucall(vm, VCPU_ID, &uc)) {
++	case UCALL_DONE:
++		break;
++	case UCALL_ABORT:
++		TEST_FAIL("%s", (const char *)uc.args[0]);
++	default:
++		TEST_FAIL("Unexpected ucall: %lu", uc.cmd);
++	}
++}

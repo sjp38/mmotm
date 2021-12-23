@@ -1,0 +1,45 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: documentation-vm-page_ownerrst-update-the-documentation-fix
+
+small grammatical tweaks
+
+Cc: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Liam Mark <lmark@codeaurora.org>
+Cc: Shenghong Han <hanshenghong2019@email.szu.edu.cn>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Xiaoming Ni <nixiaoming@huawei.com>
+Cc: Zhang Shengju <zhangshengju@cmss.chinamobile.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/vm/page_owner.rst |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/Documentation/vm/page_owner.rst~documentation-vm-page_ownerrst-update-the-documentation-fix
++++ a/Documentation/vm/page_owner.rst
+@@ -107,17 +107,17 @@ Usage
+ 	 // Detailed stack
+ 
+    By default, ``page_owner_sort`` is sorted according to the times of buf.
+-   If you want to sort by the pages nums of buf, use the ``-m`` parameter.
+-   The detail parameters are shown as follows:
++   If you want to sort by the page nums of buf, use the ``-m`` parameter.
++   The detailed parameters are:
+ 
+    fundamental function:
+ 
+ 	Sort:
+-		-a		Sort by memory allocate time.
++		-a		Sort by memory allocation time.
+ 		-m		Sort by total memory.
+ 		-p		Sort by pid.
+ 		-r		Sort by memory release time.
+-		-s		Sort by the stack trace.
++		-s		Sort by stack trace.
+ 		-t		Sort by times (default).
+ 
+    additional function:
+_

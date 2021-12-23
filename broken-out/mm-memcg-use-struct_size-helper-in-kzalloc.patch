@@ -1,0 +1,40 @@
+From: Wang Weiyang <wangweiyang2@huawei.com>
+Subject: mm/memcg: use struct_size() helper in kzalloc()
+
+Make use of the struct_size() helper instead of an open-coded version, in
+order to avoid any potential type mistakes or integer overflows that, in
+the worst scenario, could lead to heap overflows.
+
+Link: https://github.com/KSPP/linux/issues/160
+Link: https://lkml.kernel.org/r/20211216022024.127375-1-wangweiyang2@huawei.com
+Signed-off-by: Wang Weiyang <wangweiyang2@huawei.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+--- a/mm/memcontrol.c~mm-memcg-use-struct_size-helper-in-kzalloc
++++ a/mm/memcontrol.c
+@@ -5122,15 +5122,11 @@ static void mem_cgroup_free(struct mem_c
+ static struct mem_cgroup *mem_cgroup_alloc(void)
+ {
+ 	struct mem_cgroup *memcg;
+-	unsigned int size;
+ 	int node;
+ 	int __maybe_unused i;
+ 	long error = -ENOMEM;
+ 
+-	size = sizeof(struct mem_cgroup);
+-	size += nr_node_ids * sizeof(struct mem_cgroup_per_node *);
+-
+-	memcg = kzalloc(size, GFP_KERNEL);
++	memcg = kzalloc(struct_size(memcg, nodeinfo, nr_node_ids), GFP_KERNEL);
+ 	if (!memcg)
+ 		return ERR_PTR(error);
+ 
+_

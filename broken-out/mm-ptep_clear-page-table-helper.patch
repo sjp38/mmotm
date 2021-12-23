@@ -10,7 +10,7 @@ Add a new ptep_clear() that can be used in common code to clear PTEs from
 page table.  We will need this call later in order to add a hook for page
 table check.
 
-Link: https://lkml.kernel.org/r/20211204182314.1470076-3-pasha.tatashin@soleen.com
+Link: https://lkml.kernel.org/r/20211221154650.1047963-3-pasha.tatashin@soleen.com
 Signed-off-by: Pasha Tatashin <pasha.tatashin@soleen.com>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
@@ -18,6 +18,7 @@ Cc: David Rientjes <rientjes@google.com>
 Cc: Frederic Weisbecker <frederic@kernel.org>
 Cc: Greg Thelen <gthelen@google.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Hugh Dickins <hughd@google.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Jiri Slaby <jirislaby@kernel.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
@@ -26,7 +27,7 @@ Cc: Masahiro Yamada <masahiroy@kernel.org>
 Cc: Mike Rapoport <rppt@kernel.org>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Paul Turner <pjt@google.com>
-Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Sami Tolvanen <samitolvanen@google.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Wei Xu <weixugc@google.com>

@@ -204,16 +204,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static const struct proc_ops acpi_system_wakeup_device_proc_ops = {
 --- a/drivers/hwmon/dell-smm-hwmon.c~proc-remove-pde_data-completely
 +++ a/drivers/hwmon/dell-smm-hwmon.c
-@@ -550,7 +550,7 @@ i8k_ioctl_unlocked(struct file *fp, stru
+@@ -451,7 +451,7 @@ static int i8k_get_power_status(void)
  
  static long i8k_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
  {
 -	struct dell_smm_data *data = PDE_DATA(file_inode(fp));
 +	struct dell_smm_data *data = pde_data(file_inode(fp));
- 	long ret;
- 
- 	mutex_lock(&data->i8k_mutex);
-@@ -607,7 +607,7 @@ static int i8k_proc_show(struct seq_file
+ 	int __user *argp = (int __user *)arg;
+ 	int speed, err;
+ 	int val = 0;
+@@ -585,7 +585,7 @@ static int i8k_proc_show(struct seq_file
  
  static int i8k_open_fs(struct inode *inode, struct file *file)
  {
@@ -906,7 +906,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/fs/proc/proc_net.c~proc-remove-pde_data-completely
 +++ a/fs/proc/proc_net.c
-@@ -125,7 +125,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_data);
+@@ -138,7 +138,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_data);
   * @parent: The parent directory in which to create.
   * @ops: The seq_file ops with which to read the file.
   * @write: The write method with which to 'modify' the file.
@@ -915,7 +915,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *
   * Create a network namespaced proc file in the @parent directory with the
   * specified @name and @mode that allows reading of a file that displays a
-@@ -140,7 +140,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_data);
+@@ -153,7 +153,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_data);
   * modified by the @write function.  @write should return 0 on success.
   *
   * The @data value is accessible from the @show and @write functions by calling
@@ -924,7 +924,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * calling seq_file_net() on the seq_file struct.
   */
  struct proc_dir_entry *proc_create_net_data_write(const char *name, umode_t mode,
-@@ -217,7 +217,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_single
+@@ -230,7 +230,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_single
   * @parent: The parent directory in which to create.
   * @show: The seqfile show method with which to read the file.
   * @write: The write method with which to 'modify' the file.
@@ -933,7 +933,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *
   * Create a network-namespaced proc file in the @parent directory with the
   * specified @name and @mode that allows reading of a file that displays a
-@@ -232,7 +232,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_single
+@@ -245,7 +245,7 @@ EXPORT_SYMBOL_GPL(proc_create_net_single
   * modified by the @write function.  @write should return 0 on success.
   *
   * The @data value is accessible from the @show and @write functions by calling
@@ -1120,7 +1120,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct net *net = m->private;
 --- a/net/core/neighbour.c~proc-remove-pde_data-completely
 +++ a/net/core/neighbour.c
-@@ -3365,7 +3365,7 @@ EXPORT_SYMBOL(neigh_seq_stop);
+@@ -3364,7 +3364,7 @@ EXPORT_SYMBOL(neigh_seq_stop);
  
  static void *neigh_stat_seq_start(struct seq_file *seq, loff_t *pos)
  {
@@ -1129,7 +1129,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int cpu;
  
  	if (*pos == 0)
-@@ -3382,7 +3382,7 @@ static void *neigh_stat_seq_start(struct
+@@ -3381,7 +3381,7 @@ static void *neigh_stat_seq_start(struct
  
  static void *neigh_stat_seq_next(struct seq_file *seq, void *v, loff_t *pos)
  {
@@ -1138,7 +1138,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int cpu;
  
  	for (cpu = *pos; cpu < nr_cpu_ids; ++cpu) {
-@@ -3402,7 +3402,7 @@ static void neigh_stat_seq_stop(struct s
+@@ -3401,7 +3401,7 @@ static void neigh_stat_seq_stop(struct s
  
  static int neigh_stat_seq_show(struct seq_file *seq, void *v)
  {
@@ -1149,7 +1149,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (v == SEQ_START_TOKEN) {
 --- a/net/core/pktgen.c~proc-remove-pde_data-completely
 +++ a/net/core/pktgen.c
-@@ -545,7 +545,7 @@ static ssize_t pgctrl_write(struct file
+@@ -546,7 +546,7 @@ static ssize_t pgctrl_write(struct file
  
  static int pgctrl_open(struct inode *inode, struct file *file)
  {
@@ -1158,7 +1158,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static const struct proc_ops pktgen_proc_ops = {
-@@ -1810,7 +1810,7 @@ static ssize_t pktgen_if_write(struct fi
+@@ -1811,7 +1811,7 @@ static ssize_t pktgen_if_write(struct fi
  
  static int pktgen_if_open(struct inode *inode, struct file *file)
  {
@@ -1167,7 +1167,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static const struct proc_ops pktgen_if_proc_ops = {
-@@ -1947,7 +1947,7 @@ out:
+@@ -1948,7 +1948,7 @@ out:
  
  static int pktgen_thread_open(struct inode *inode, struct file *file)
  {
@@ -1256,7 +1256,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/net/ipv4/udp.c~proc-remove-pde_data-completely
 +++ a/net/ipv4/udp.c
-@@ -2952,7 +2952,7 @@ static struct sock *udp_get_first(struct
+@@ -2953,7 +2953,7 @@ static struct sock *udp_get_first(struct
  	if (state->bpf_seq_afinfo)
  		afinfo = state->bpf_seq_afinfo;
  	else
@@ -1265,7 +1265,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for (state->bucket = start; state->bucket <= afinfo->udp_table->mask;
  	     ++state->bucket) {
-@@ -2985,7 +2985,7 @@ static struct sock *udp_get_next(struct
+@@ -2986,7 +2986,7 @@ static struct sock *udp_get_next(struct
  	if (state->bpf_seq_afinfo)
  		afinfo = state->bpf_seq_afinfo;
  	else
@@ -1274,7 +1274,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	do {
  		sk = sk_next(sk);
-@@ -3042,7 +3042,7 @@ void udp_seq_stop(struct seq_file *seq,
+@@ -3043,7 +3043,7 @@ void udp_seq_stop(struct seq_file *seq,
  	if (state->bpf_seq_afinfo)
  		afinfo = state->bpf_seq_afinfo;
  	else
