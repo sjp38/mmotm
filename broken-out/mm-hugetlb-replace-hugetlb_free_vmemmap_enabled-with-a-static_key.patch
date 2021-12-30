@@ -122,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	vmemmap_pages = (nr_pages * sizeof(struct page)) >> PAGE_SHIFT;
 --- a/mm/memory_hotplug.c~mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key
 +++ a/mm/memory_hotplug.c
-@@ -1326,7 +1326,7 @@ bool mhp_supports_memmap_on_memory(unsig
+@@ -1327,7 +1327,7 @@ bool mhp_supports_memmap_on_memory(unsig
  	 *       populate a single PMD.
  	 */
  	return memmap_on_memory &&

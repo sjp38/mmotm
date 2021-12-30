@@ -139,7 +139,6 @@ Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Julia Lawall <julia.lawall@inria.fr>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Antti Palosaari <crope@iki.fi>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: Benjamin LaHaise <bcrl@kvack.org>
 Cc: Paul Turner <pjt@google.com>

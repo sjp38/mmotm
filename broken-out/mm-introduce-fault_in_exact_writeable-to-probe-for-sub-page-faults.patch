@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/include/linux/pagemap.h~mm-introduce-fault_in_exact_writeable-to-probe-for-sub-page-faults
 +++ a/include/linux/pagemap.h
-@@ -926,6 +926,7 @@ void folio_add_wait_queue(struct folio *
+@@ -925,6 +925,7 @@ void folio_add_wait_queue(struct folio *
   * Fault in userspace address range.
   */
  size_t fault_in_writeable(char __user *uaddr, size_t size);
@@ -151,7 +151,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline __must_check unsigned long
 --- a/mm/gup.c~mm-introduce-fault_in_exact_writeable-to-probe-for-sub-page-faults
 +++ a/mm/gup.c
-@@ -1694,6 +1694,25 @@ out:
+@@ -1699,6 +1699,25 @@ out:
  }
  EXPORT_SYMBOL(fault_in_writeable);
  

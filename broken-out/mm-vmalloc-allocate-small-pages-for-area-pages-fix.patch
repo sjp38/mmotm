@@ -14,7 +14,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-allocate-small-pages-for-area-pages-fix
 +++ a/mm/vmalloc.c
-@@ -2927,12 +2927,14 @@ static void *__vmalloc_area_node(struct
+@@ -2932,12 +2932,14 @@ static void *__vmalloc_area_node(struct
  	unsigned long addr = (unsigned long)area->addr;
  	unsigned long size = get_vm_area_size(area);
  	unsigned long array_size;

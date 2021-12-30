@@ -17,7 +17,6 @@ Cc: Iurii Zaikin <yzaikin@google.com>
 Cc: Kees Cook <keescook@chromium.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
 Cc: Stephen Kitt <steve@sk2.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
@@ -127,7 +126,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * that are useful for post-mortem analysis are included in every core dump.
 --- a/fs/exec.c~fs-coredump-move-coredump-sysctls-into-its-own-file
 +++ a/fs/exec.c
-@@ -2101,20 +2101,6 @@ COMPAT_SYSCALL_DEFINE5(execveat, int, fd
+@@ -2103,20 +2103,6 @@ COMPAT_SYSCALL_DEFINE5(execveat, int, fd
  
  #ifdef CONFIG_SYSCTL
  
@@ -148,7 +147,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static int proc_dointvec_minmax_coredump(struct ctl_table *table, int write,
  		void *buffer, size_t *lenp, loff_t *ppos)
  {
-@@ -2138,50 +2124,9 @@ static struct ctl_table fs_exec_sysctls[
+@@ -2140,50 +2126,9 @@ static struct ctl_table fs_exec_sysctls[
  	{ }
  };
  

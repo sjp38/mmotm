@@ -175,7 +175,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM|__GFP_IO|__GFP_FS))
 --- a/mm/memcontrol.c~mm-discard-__gfp_atomic
 +++ a/mm/memcontrol.c
-@@ -2574,7 +2574,7 @@ retry:
+@@ -2575,7 +2575,7 @@ retry:
  	 * put the burden of reclaim on regular allocation requests
  	 * and let these go through as privileged allocations.
  	 */

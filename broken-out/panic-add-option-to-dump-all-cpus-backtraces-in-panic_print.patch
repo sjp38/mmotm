@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/Documentation/admin-guide/kernel-parameters.txt~panic-add-option-to-dump-all-cpus-backtraces-in-panic_print
 +++ a/Documentation/admin-guide/kernel-parameters.txt
-@@ -3704,6 +3704,7 @@
+@@ -3708,6 +3708,7 @@
  			bit 3: print locks info if CONFIG_LOCKDEP is on
  			bit 4: print ftrace buffer
  			bit 5: print all printk messages in buffer

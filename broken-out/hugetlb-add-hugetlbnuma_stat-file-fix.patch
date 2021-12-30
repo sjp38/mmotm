@@ -1,5 +1,5 @@
 From: Colin Ian King <colin.i.king@googlemail.com>
-Subject: hugetlb: Fix spelling mistake "hierarichal" -> "hierarchical"
+Subject: hugetlb: fix spelling mistake "hierarichal" -> "hierarchical"
 
 There is a spelling mistake in a literal string and a comment. Fix them.
 

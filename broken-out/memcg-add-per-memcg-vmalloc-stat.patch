@@ -1,11 +1,11 @@
 From: Shakeel Butt <shakeelb@google.com>
 Subject: memcg: add per-memcg vmalloc stat
 
-The kvmalloc* allocation functions can fallback to vmalloc allocations
-and more often on long running machines. In addition the kernel does
-have __GFP_ACCOUNT kvmalloc* calls. So, often on long running machines,
-the memory.stat does not tell the complete picture which type of memory
-is charged to the memcg. So add a per-memcg vmalloc stat.
+The kvmalloc* allocation functions can fallback to vmalloc allocations and
+more often on long running machines.  In addition the kernel does have
+__GFP_ACCOUNT kvmalloc* calls.  So, often on long running machines, the
+memory.stat does not tell the complete picture which type of memory is
+charged to the memcg.  So add a per-memcg vmalloc stat.
 
 Link: https://lkml.kernel.org/r/20211221215336.1922823-1-shakeelb@google.com
 Signed-off-by: Shakeel Butt <shakeelb@google.com>

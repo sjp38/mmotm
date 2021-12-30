@@ -21,7 +21,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/Documentation/vm/index.rst~docs-vm-add-vmalloced-kernel-stacks-document
 +++ a/Documentation/vm/index.rst
-@@ -37,5 +37,6 @@ algorithms.  If you are looking for advi
+@@ -36,5 +36,6 @@ algorithms.  If you are looking for advi
     split_page_table_lock
     transhuge
     unevictable-lru

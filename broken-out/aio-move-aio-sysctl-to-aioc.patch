@@ -45,7 +45,6 @@ Cc: Joseph Qi <joseph.qi@linux.alibaba.com>
 Cc: Julia Lawall <julia.lawall@inria.fr>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Mark Fasheh <mark@fasheh.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Phillip Potter <phil@philpotter.co.uk>
 Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
 Cc: Douglas Gilbert <dgilbert@interlog.com>
@@ -67,7 +66,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/aio.c~aio-move-aio-sysctl-to-aioc
 +++ a/fs/aio.c
-@@ -219,9 +219,35 @@ struct aio_kiocb {
+@@ -220,9 +220,35 @@ struct aio_kiocb {
  
  /*------ sysctl variables----*/
  static DEFINE_SPINLOCK(aio_nr_lock);
@@ -105,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static struct kmem_cache	*kiocb_cachep;
  static struct kmem_cache	*kioctx_cachep;
-@@ -274,6 +300,7 @@ static int __init aio_setup(void)
+@@ -275,6 +301,7 @@ static int __init aio_setup(void)
  
  	kiocb_cachep = KMEM_CACHE(aio_kiocb, SLAB_HWCACHE_ALIGN|SLAB_PANIC);
  	kioctx_cachep = KMEM_CACHE(kioctx,SLAB_HWCACHE_ALIGN|SLAB_PANIC);

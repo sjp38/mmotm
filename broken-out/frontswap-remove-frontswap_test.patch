@@ -1,0 +1,68 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: frontswap: remove frontswap_test
+
+frontswap_test is unused now, remove it.
+
+Link: https://lkml.kernel.org/r/20211224062246.1258487-10-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Juergen Gross <jgross@suse.com>
+Cc: Dan Streetman <ddstreet@ieee.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Konrad Rzeszutek Wilk <Konrad.wilk@oracle.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Seth Jennings <sjenning@redhat.com>
+Cc: Vitaly Wool <vitaly.wool@konsulko.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/frontswap.h |   11 -----------
+ mm/frontswap.c            |    2 +-
+ 2 files changed, 1 insertion(+), 12 deletions(-)
+
+--- a/include/linux/frontswap.h~frontswap-remove-frontswap_test
++++ a/include/linux/frontswap.h
+@@ -18,7 +18,6 @@ struct frontswap_ops {
+ 
+ extern void frontswap_register_ops(struct frontswap_ops *ops);
+ 
+-extern bool __frontswap_test(struct swap_info_struct *, pgoff_t);
+ extern void frontswap_init(unsigned type, unsigned long *map);
+ extern int __frontswap_store(struct page *page);
+ extern int __frontswap_load(struct page *page);
+@@ -33,11 +32,6 @@ static inline bool frontswap_enabled(voi
+ 	return static_branch_unlikely(&frontswap_enabled_key);
+ }
+ 
+-static inline bool frontswap_test(struct swap_info_struct *sis, pgoff_t offset)
+-{
+-	return __frontswap_test(sis, offset);
+-}
+-
+ static inline void frontswap_map_set(struct swap_info_struct *p,
+ 				     unsigned long *map)
+ {
+@@ -55,11 +49,6 @@ static inline bool frontswap_enabled(voi
+ {
+ 	return false;
+ }
+-
+-static inline bool frontswap_test(struct swap_info_struct *sis, pgoff_t offset)
+-{
+-	return false;
+-}
+ 
+ static inline void frontswap_map_set(struct swap_info_struct *p,
+ 				     unsigned long *map)
+--- a/mm/frontswap.c~frontswap-remove-frontswap_test
++++ a/mm/frontswap.c
+@@ -179,7 +179,7 @@ void frontswap_init(unsigned type, unsig
+ 		ops->init(type);
+ }
+ 
+-bool __frontswap_test(struct swap_info_struct *sis,
++static bool __frontswap_test(struct swap_info_struct *sis,
+ 				pgoff_t offset)
+ {
+ 	if (sis->frontswap_map)
+_

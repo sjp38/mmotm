@@ -61,7 +61,6 @@ Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Brendan Higgins <brendanhiggins@google.com>
 Cc: Daniel Latypov <dlatypov@google.com>
 Cc: Shuah Khan <skhan@linuxfoundation.org>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Rodrigo Siqueira <rodrigosiqueiramelo@gmail.com>
 Cc: kernel test robot <lkp@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

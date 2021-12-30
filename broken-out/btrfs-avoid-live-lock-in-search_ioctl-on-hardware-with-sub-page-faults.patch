@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/btrfs/ioctl.c~btrfs-avoid-live-lock-in-search_ioctl-on-hardware-with-sub-page-faults
 +++ a/fs/btrfs/ioctl.c
-@@ -2223,7 +2223,8 @@ static noinline int search_ioctl(struct
+@@ -2225,7 +2225,8 @@ static noinline int search_ioctl(struct
  
  	while (1) {
  		ret = -EFAULT;

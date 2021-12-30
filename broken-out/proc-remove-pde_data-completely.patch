@@ -1245,7 +1245,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 --- a/net/ipv4/tcp_ipv4.c~proc-remove-pde_data-completely
 +++ a/net/ipv4/tcp_ipv4.c
-@@ -2991,7 +2991,7 @@ static unsigned short seq_file_family(co
+@@ -2994,7 +2994,7 @@ static unsigned short seq_file_family(co
  #endif
  
  	/* Iterated from proc fs */

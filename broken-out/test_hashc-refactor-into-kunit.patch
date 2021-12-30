@@ -20,7 +20,6 @@ Signed-off-by: Isabella Basso <isabbasso@riseup.net>
 Cc: Brendan Higgins <brendanhiggins@google.com>
 Cc: Daniel Latypov <dlatypov@google.com>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Rodrigo Siqueira <rodrigosiqueiramelo@gmail.com>
 Cc: Shuah Khan <skhan@linuxfoundation.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
@@ -33,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/Kconfig.debug~test_hashc-refactor-into-kunit
 +++ a/lib/Kconfig.debug
-@@ -2212,15 +2212,6 @@ config TEST_RHASHTABLE
+@@ -2213,15 +2213,6 @@ config TEST_RHASHTABLE
  
  	  If unsure, say N.
  
@@ -49,7 +48,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  config TEST_SIPHASH
  	tristate "Perform selftest on siphash functions"
  	help
-@@ -2369,6 +2360,25 @@ config BITFIELD_KUNIT
+@@ -2370,6 +2361,25 @@ config BITFIELD_KUNIT
  
  	  If unsure, say N.
  

@@ -59,7 +59,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	case DAMOS_PAGEOUT:
 --- a/mm/damon/vaddr.c~mm-damon-remove-some-no-need-func-definitions-in-damonh-file-fix
 +++ a/mm/damon/vaddr.c
-@@ -291,7 +291,8 @@ static void damon_va_init(struct damon_c
+@@ -292,7 +292,8 @@ static void damon_va_init(struct damon_c
   *
   * Returns true if it is.
   */
@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return !(r->ar.end <= re->start || re->end <= r->ar.start);
  }
-@@ -632,8 +633,9 @@ static int damon_va_apply_scheme(struct
+@@ -633,8 +634,9 @@ static int damon_va_apply_scheme(struct
  	return damos_madvise(t, r, madv_action);
  }
  

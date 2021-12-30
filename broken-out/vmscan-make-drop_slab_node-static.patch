@@ -17,7 +17,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/mm.h~vmscan-make-drop_slab_node-static
 +++ a/include/linux/mm.h
-@@ -3126,7 +3126,6 @@ int drop_caches_sysctl_handler(struct ct
+@@ -3122,7 +3122,6 @@ int drop_caches_sysctl_handler(struct ct
  #endif
  
  void drop_slab(void);

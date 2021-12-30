@@ -10,8 +10,8 @@ The rest of the changes are induced by the above and may not be split.
 
 Link: https://lkml.kernel.org/r/20211209123823.20425-1-andriy.shevchenko@linux.intel.com
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Arend van Spriel <arend.vanspriel@broadcom.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Acked-by: Arend van Spriel <arend.vanspriel@broadcom.com>	[brcmfmac]
+Acked-by: Kalle Valo <kvalo@kernel.org>
 Cc: Arend van Spriel <aspriel@gmail.com>
 Cc: Franky Lin <franky.lin@broadcom.com>
 Cc: Hante Meuleman <hante.meuleman@broadcom.com>

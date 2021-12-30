@@ -1,0 +1,70 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: frontswap: remove frontswap_curr_pages
+
+frontswap_curr_pages is never called, so remove it.
+
+Link: https://lkml.kernel.org/r/20211224062246.1258487-6-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Juergen Gross <jgross@suse.com>
+Cc: Dan Streetman <ddstreet@ieee.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Konrad Rzeszutek Wilk <Konrad.wilk@oracle.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Seth Jennings <sjenning@redhat.com>
+Cc: Vitaly Wool <vitaly.wool@konsulko.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/frontswap.h |    1 -
+ mm/frontswap.c            |   28 ----------------------------
+ 2 files changed, 29 deletions(-)
+
+--- a/include/linux/frontswap.h~frontswap-remove-frontswap_curr_pages
++++ a/include/linux/frontswap.h
+@@ -24,7 +24,6 @@ struct frontswap_ops {
+ };
+ 
+ extern void frontswap_register_ops(struct frontswap_ops *ops);
+-extern unsigned long frontswap_curr_pages(void);
+ 
+ extern bool __frontswap_test(struct swap_info_struct *, pgoff_t);
+ extern void __frontswap_init(unsigned type, unsigned long *map);
+--- a/mm/frontswap.c~frontswap-remove-frontswap_curr_pages
++++ a/mm/frontswap.c
+@@ -330,34 +330,6 @@ void __frontswap_invalidate_area(unsigne
+ }
+ EXPORT_SYMBOL(__frontswap_invalidate_area);
+ 
+-static unsigned long __frontswap_curr_pages(void)
+-{
+-	unsigned long totalpages = 0;
+-	struct swap_info_struct *si = NULL;
+-
+-	assert_spin_locked(&swap_lock);
+-	plist_for_each_entry(si, &swap_active_head, list)
+-		totalpages += atomic_read(&si->frontswap_pages);
+-	return totalpages;
+-}
+-
+-/*
+- * Count and return the number of frontswap pages across all
+- * swap devices.  This is exported so that backend drivers can
+- * determine current usage without reading debugfs.
+- */
+-unsigned long frontswap_curr_pages(void)
+-{
+-	unsigned long totalpages = 0;
+-
+-	spin_lock(&swap_lock);
+-	totalpages = __frontswap_curr_pages();
+-	spin_unlock(&swap_lock);
+-
+-	return totalpages;
+-}
+-EXPORT_SYMBOL(frontswap_curr_pages);
+-
+ static int __init init_frontswap(void)
+ {
+ #ifdef CONFIG_DEBUG_FS
+_

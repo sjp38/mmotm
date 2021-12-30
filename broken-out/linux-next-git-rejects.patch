@@ -4,23 +4,23 @@ Subject: linux-next-git-rejects
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c |    5 -----
- 1 file changed, 5 deletions(-)
+ drivers/platform/x86/intel/Kconfig |    3 ---
+ 1 file changed, 3 deletions(-)
 
---- a/drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c~linux-next-git-rejects
-+++ a/drivers/crypto/qat/qat_4xxx/adf_4xxx_hw_data.c
-@@ -253,13 +253,8 @@ void adf_init_hw_data_4xxx(struct adf_hw
- 	hw_data->uof_get_ae_mask = uof_get_ae_mask;
- 	hw_data->set_msix_rttable = set_msix_default_rttable;
- 	hw_data->set_ssm_wdtimer = adf_gen4_set_ssm_wdtimer;
--<<<<<<< HEAD
--	hw_data->enable_pfvf_comms = pfvf_comms_disabled;
--	hw_data->get_vf2pf_sources = get_vf2pf_sources;
--=======
- 	hw_data->pfvf_ops.enable_comms = adf_pfvf_comms_disabled;
- 	hw_data->pfvf_ops.get_vf2pf_sources = get_vf2pf_sources;
-->>>>>>> linux-next/akpm-base
- 	hw_data->disable_iov = adf_disable_sriov;
+--- a/drivers/platform/x86/intel/Kconfig~linux-next-git-rejects
++++ a/drivers/platform/x86/intel/Kconfig
+@@ -170,8 +170,6 @@ config INTEL_UNCORE_FREQ_CONTROL
  
- 	adf_gen4_init_hw_csr_ops(&hw_data->csr_ops);
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called intel-uncore-frequency.
+-<<<<<<< HEAD
+-=======
+ 
+ config INTEL_VSEC
+ 	tristate "Intel Vendor Specific Extended Capabilities Driver"
+@@ -183,4 +181,3 @@ config INTEL_VSEC
+ 
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called intel_vsec.
+->>>>>>> linux-next/akpm-base
 _

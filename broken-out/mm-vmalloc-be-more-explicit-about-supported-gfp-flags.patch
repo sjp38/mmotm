@@ -24,7 +24,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-be-more-explicit-about-supported-gfp-flags
 +++ a/mm/vmalloc.c
-@@ -3021,12 +3021,14 @@ fail:
+@@ -3027,12 +3027,14 @@ fail:
   *
   * Allocate enough pages to cover @size from the page level
   * allocator with @gfp_mask flags. Please note that the full set of gfp

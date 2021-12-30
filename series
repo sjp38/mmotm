@@ -2,51 +2,26 @@ origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
-#mm/percpu
-#mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
-mm-fix-panic-in-__alloc_pages.patch
-#
-#mm/kfence
-kfence-fix-memory-leak-when-cat-kfence-objects.patch
-#
+#NEXT_PATCHES_END
+#NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/oom-kill
 #mm-oom_kill-wake-futex-waiters-before-annihilating-victim-shared-mutex.patch: acks? check review
 mm-oom_kill-wake-futex-waiters-before-annihilating-victim-shared-mutex.patch
 #
-#mm/mempolicy
-mm-mempolicy-fix-thp-allocations-escaping-mempolicy-restrictions.patch
-#
-#core-kernel
-kernel-crash_core-suppress-unknown-crashkernel-parameter-warning.patch
-#
-#MAINTAINERS
-maintainers-mark-more-list-instances-as-moderated.patch
-#
-#mm/memory-failure
-mm-hwpoison-fix-condition-in-free-hugetlb-page-path.patch
-mm-hwpoison-fix-condition-in-free-hugetlb-page-path-fix.patch
-#
-#mm/pagemap
-mm-delete-unsafe-bug-from-page_cache_add_speculative.patch
-#
 #mm/pagealloc
-mm-page_alloc-fix-__alloc_size-attribute-for-alloc_pages_exact_nid.patch
+#mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
+mm-fix-panic-in-__alloc_pages.patch
 #
-#mm/damon
-mm-damon-dbgfs-protect-targets-destructions-with-kdamond_lock.patch
-#
-#NEXT_PATCHES_END
-#NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/shmem
 #shmem-fix-a-race-between-shmem_unused_huge_shrink-and-shmem_evict_inode.patch: hold for Hugh
 shmem-fix-a-race-between-shmem_unused_huge_shrink-and-shmem_evict_inode.patch
 shmem-fix-a-race-between-shmem_unused_huge_shrink-and-shmem_evict_inode-checkpatch-fixes.patch
 #
-#mm/memory-failure
-mm-hwpoison-clear-mf_count_increased-before-retrying-get_any_page.patch
-#
 #mm/userfaultfd
 userfaultfd-selftests-fix-hugetlb-area-allocations.patch
+#
+#mm/damon
+mm-damon-dbgfs-fix-struct-pid-leaks-in-dbgfs_target_ids_write.patch
 #
 #
 #
@@ -293,6 +268,10 @@ ocfs2-use-bug_on-instead-of-if-condition-followed-by-bug.patch
 #
 ocfs2-clearly-handle-ocfs2_grab_pages_for_write-return-value.patch
 #
+ocfs2-use-default_groups-in-kobj_type.patch
+#
+ocfs2-remove-redundant-assignment-to-pointer-root_bh.patch
+#
 #
 #
 #ocfs2-reflink-deadlock-when-clone-file-to-the-same-directory-simultaneously.patch: https://lkml.kernel.org/r/5821fd0f-2018-dc1b-a5c0-f948a7debff4@linux.alibaba.com
@@ -465,6 +444,7 @@ memcg-better-bounds-on-the-memcg-stats-updates.patch
 #
 mm-memcg-use-struct_size-helper-in-kzalloc.patch
 #
+#memcg-add-per-memcg-vmalloc-stat.patch: TBU? https://lkml.kernel.org/r/YcmaA9BS/DSB/iER@dhcp22.suse.cz
 memcg-add-per-memcg-vmalloc-stat.patch
 memcg-add-per-memcg-vmalloc-stat-v2.patch
 memcg-add-per-memcg-vmalloc-stat-v2-fix.patch
@@ -548,6 +528,11 @@ gfp-further-document-gfp_dma32.patch
 #
 mm-page_alloc-modify-the-comment-section-for-alloc_contig_pages.patch
 #
+mm_zone-add-function-to-check-if-managed-dma-zone-exists.patch
+dma-pool-create-dma-atomic-pool-only-if-dma-zone-has-managed-pages.patch
+mm-page_allocc-do-not-warn-allocation-failure-on-zone-dma-if-no-managed-pages.patch
+mm-page_allocc-do-not-warn-allocation-failure-on-zone-dma-if-no-managed-pages-fix.patch
+#
 #mm/memory-failure
 #mm/hugetlb
 hugetlb-add-hugetlbnuma_stat-file.patch
@@ -563,14 +548,19 @@ mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap
 #
 mm-hugepages-make-memory-size-variable-in-hugepage-mremap-selftest.patch
 #
+mm-vmstat-add-events-for-thp-max_ptes_-exceeds.patch
+#
 #mm/userfaultfd
 selftests-uffd-allow-eintr-eagain.patch
 #
 #mm/vmscan
 vmscan-make-drop_slab_node-static.patch
 #
+#mm-vmscan-reduce-throttling-due-to-a-failure-to-make-progress.patch: -stable?
 mm-vmscan-reduce-throttling-due-to-a-failure-to-make-progress.patch
 mm-vmscan-reduce-throttling-due-to-a-failure-to-make-progress-fix.patch
+#
+mm-page_isolation-unset-migratetype-directly-for-non-buddy-page.patch
 #
 #mm/tools
 #mm/proc
@@ -597,6 +587,8 @@ mm-mempolicy-fix-all-kernel-doc-warnings.patch
 #oom_kill-oom_score_adj-broken-for-processes-with-small-memory-usage.patch: acks? https://lkml.kernel.org/r/YPEW3H+W/uiRYIfn@dhcp22.suse.cz
 #
 #mm/hugetlbfs
+hugetlbfs-fix-off-by-one-error-in-hugetlb_vmdelete_list.patch
+#
 #mm/migration
 mm-migrate-fix-the-return-value-of-migrate_pages.patch
 mm-migrate-correct-the-hugetlb-migration-stats.patch
@@ -721,6 +713,13 @@ mm-damon-dbgfs-support-all-damos-stats.patch
 docs-admin-guide-mm-damon-usage-update-for-schemes-statistics.patch
 #
 mm-damon-add-access-checking-for-hugetlb-pages.patch
+#
+mm-damon-move-the-implementation-of-damon_insert_region-to-damonh.patch
+#
+mm-damon-dbgfs-remove-a-unnecessary-variable.patch
+mm-damon-vaddr-use-pr_debug-for-damon_va_three_regions-failure-logging.patch
+mm-damon-vaddr-hide-kernel-pointer-from-damon_va_three_regions-failure-log.patch
+mm-damon-hide-kernel-pointer-from-tracepoint-event.patch
 #
 # mmend
 #
@@ -963,6 +962,8 @@ init-mainc-silence-some-wunused-parameter-warnings.patch
 #NEXT_PATCHES_START codafs
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START nilfs2
+nilfs2-remove-redundant-pointer-sbufs.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START hfs
 hfsplus-use-struct_group_attr-for-memcpy-region.patch
@@ -999,8 +1000,6 @@ fat-use-io_schedule_timeout-instead-of-congestion_wait.patch
 #NEXT_PATCHES_START trace
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START signals
-signal-clean-up-kernel-doc-comments.patch
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START pgrp
 #NEXT_PATCHES_END
@@ -1114,6 +1113,7 @@ panic-remove-oops_id.patch
 #
 docs-sysctl-kernel-add-missing-bit-to-panic_print.patch
 panic-add-option-to-dump-all-cpus-backtraces-in-panic_print.patch
+#panic-allow-printing-extra-panic-information-on-kdump.patch: check review
 panic-allow-printing-extra-panic-information-on-kdump.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START parport
@@ -1242,10 +1242,14 @@ ubsan-remove-config_ubsan_object_size.patch
 #NEXT_PATCHES_START inittmpfs
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START ipc
+#ipc-sem-do-not-sleep-with-a-spin-lock-held.patch: acks?
+ipc-sem-do-not-sleep-with-a-spin-lock-held.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START scatterlist
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START seccomp
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START splice
 #NEXT_PATCHES_END
@@ -1270,10 +1274,12 @@ linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-urgent
+fs-f2fs-datac-fix-mess.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-resolution
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START post-linux-next
+#
 #
 #mm/migration
 mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref.patch
@@ -1320,6 +1326,7 @@ fs-move-dcache-sysctls-to-its-own-file.patch
 fs-move-inode-sysctls-to-its-own-file-fix.patch
 fs-move-dcache-sysctls-to-its-own-file-fix-2.patch
 sysctl-move-maxolduid-as-a-sysctl-specific-const.patch
+sysctl-move-maxolduid-as-a-sysctl-specific-const-fix.patch
 fs-move-shared-sysctls-to-fs-sysctlsc.patch
 fs-move-locking-sysctls-where-they-are-used.patch
 fs-move-namei-sysctls-to-its-own-file.patch
@@ -1356,6 +1363,20 @@ lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fixup3
 lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc-fixup4.patch
 #
 lib-stackdepot-always-do-filter_irq_stacks-in-stack_depot_save.patch
+#
+mm-remove-cleancache.patch
+frontswap-remove-frontswap_writethrough.patch
+frontswap-remove-frontswap_tmem_exclusive_gets.patch
+frontswap-remove-frontswap_shrink.patch
+frontswap-remove-frontswap_curr_pages.patch
+frontswap-simplify-frontswap_init.patch
+frontswap-remove-the-frontswap-exports.patch
+mm-simplify-try_to_unuse.patch
+frontswap-remove-frontswap_test.patch
+frontswap-simplify-frontswap_register_ops.patch
+mm-mark-swap_lock-and-swap_active_head-static.patch
+frontswap-remove-support-for-multiple-ops.patch
+mm-hide-the-frontswap-kconfig-symbol.patch
 #
 #NEXT_PATCHES_END
 # maybe-merge-one-day
@@ -1435,3 +1456,14 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]mm-page-table-check.patch
 #[to-be-updated]x86-mm-add-x86_64-support-for-page-table-check.patch
 #[folded-merged]mm-migratec-rework-migration_entry_wait-to-not-take-a-pageref-v5.patch
+#[folded-merged]mm-hwpoison-fix-condition-in-free-hugetlb-page-path-fix.patch
+#[merged]kfence-fix-memory-leak-when-cat-kfence-objects.patch
+#[merged]mm-mempolicy-fix-thp-allocations-escaping-mempolicy-restrictions.patch
+#[merged]kernel-crash_core-suppress-unknown-crashkernel-parameter-warning.patch
+#[merged]maintainers-mark-more-list-instances-as-moderated.patch
+#[merged]mm-hwpoison-fix-condition-in-free-hugetlb-page-path.patch
+#[merged]mm-delete-unsafe-bug-from-page_cache_add_speculative.patch
+#[merged]mm-page_alloc-fix-__alloc_size-attribute-for-alloc_pages_exact_nid.patch
+#[merged]mm-damon-dbgfs-protect-targets-destructions-with-kdamond_lock.patch
+#[merged]mm-hwpoison-clear-mf_count_increased-before-retrying-get_any_page.patch
+#[merged]signal-clean-up-kernel-doc-comments.patch

@@ -154,7 +154,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 * they are included in the randomized portion of task_struct.
 --- a/lib/Kconfig.debug~info-task-hung-in-generic_file_write_iter
 +++ a/lib/Kconfig.debug
-@@ -1783,6 +1783,12 @@ config IO_STRICT_DEVMEM
+@@ -1784,6 +1784,12 @@ config IO_STRICT_DEVMEM
  
  menu "$(SRCARCH) Debugging"
  

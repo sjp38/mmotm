@@ -10,6 +10,7 @@ mmput, which can lead to waiting for IO completion in exit_aio.
 Link: https://lkml.kernel.org/r/20211209191325.3069345-3-surenb@google.com
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 Cc: Andrea Arcangeli <aarcange@redhat.com>
 Cc: Andy Lutomirski <luto@kernel.org>
 Cc: Christian Brauner <christian@brauner.io>
@@ -23,7 +24,6 @@ Cc: Jann Horn <jannh@google.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Kirill A. Shutemov <kirill@shutemov.name>
 Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Minchan Kim <minchan@kernel.org>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Rik van Riel <riel@surriel.com>

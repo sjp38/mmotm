@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/mm.h~mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap
 +++ a/include/linux/mm.h
-@@ -3143,10 +3143,12 @@ static inline void print_vma_addr(char *
+@@ -3139,10 +3139,12 @@ static inline void print_vma_addr(char *
  }
  #endif
  

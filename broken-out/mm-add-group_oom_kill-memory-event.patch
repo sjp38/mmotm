@@ -26,10 +26,10 @@ Reviewed-by: Roman Gushchin <guro@fb.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Acked-by: Chris Down <chris@chrisdown.name>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
 Cc: Tejun Heo <tj@kernel.org>
 Cc: Zefan Li <lizefan.x@bytedance.com>
 Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
 Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
 Cc: Muchun Song <songmuchun@bytedance.com>

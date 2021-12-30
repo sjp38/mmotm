@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	switch (scheme->action) {
 --- a/mm/damon/vaddr.c~mm-damon-remove-some-no-need-func-definitions-in-damonh-file
 +++ a/mm/damon/vaddr.c
-@@ -271,7 +271,7 @@ static void __damon_va_init_regions(stru
+@@ -272,7 +272,7 @@ static void __damon_va_init_regions(stru
  }
  
  /* Initialize '->regions_list' of every target (task) */
@@ -108,7 +108,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct damon_target *t;
  
-@@ -355,7 +355,7 @@ static void damon_va_apply_three_regions
+@@ -356,7 +356,7 @@ static void damon_va_apply_three_regions
  /*
   * Update regions for current memory mappings
   */
@@ -117,7 +117,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct damon_addr_range three_regions[3];
  	struct damon_target *t;
-@@ -417,7 +417,7 @@ static void __damon_va_prepare_access_ch
+@@ -418,7 +418,7 @@ static void __damon_va_prepare_access_ch
  	damon_va_mkold(mm, r->sampling_addr);
  }
  
@@ -126,7 +126,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct damon_target *t;
  	struct mm_struct *mm;
-@@ -538,7 +538,7 @@ static void __damon_va_check_access(stru
+@@ -539,7 +539,7 @@ static void __damon_va_check_access(stru
  	last_addr = r->sampling_addr;
  }
  
@@ -135,7 +135,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct damon_target *t;
  	struct mm_struct *mm;
-@@ -602,7 +602,7 @@ out:
+@@ -603,7 +603,7 @@ out:
  }
  #endif	/* CONFIG_ADVISE_SYSCALLS */
  
@@ -144,7 +144,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		struct damon_region *r, struct damos *scheme)
  {
  	int madv_action;
-@@ -632,7 +632,7 @@ int damon_va_apply_scheme(struct damon_c
+@@ -633,7 +633,7 @@ int damon_va_apply_scheme(struct damon_c
  	return damos_madvise(t, r, madv_action);
  }
  

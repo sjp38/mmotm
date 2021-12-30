@@ -41,7 +41,6 @@ Cc: Kees Cook <keescook@chromium.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Mark Fasheh <mark@fasheh.com>
 Cc: Martin K. Petersen <martin.petersen@oracle.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Paul Turner <pjt@google.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Petr Mladek <pmladek@suse.com>
@@ -66,7 +65,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/drivers/char/random.c~random-move-the-random-sysctl-declarations-to-its-own-file
 +++ a/drivers/char/random.c
-@@ -2088,8 +2088,7 @@ static int proc_do_entropy(struct ctl_ta
+@@ -2093,8 +2093,7 @@ static int proc_do_entropy(struct ctl_ta
  }
  
  static int sysctl_poolsize = INPUT_POOL_WORDS * 32;
@@ -76,7 +75,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	{
  		.procname	= "poolsize",
  		.data		= &sysctl_poolsize,
-@@ -2151,6 +2150,17 @@ struct ctl_table random_table[] = {
+@@ -2156,6 +2155,17 @@ struct ctl_table random_table[] = {
  #endif
  	{ }
  };

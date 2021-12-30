@@ -24,7 +24,6 @@ Cc: "J. Bruce Fields" <bfields@fieldses.org>
 Cc: Jeff Layton <jlayton@kernel.org>
 Cc: Kees Cook <keescook@chromium.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Stephen Kitt <steve@sk2.org>
 Cc: Xiaoming Ni <nixiaoming@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

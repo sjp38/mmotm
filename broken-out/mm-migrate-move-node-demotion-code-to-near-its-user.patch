@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/migrate.c~mm-migrate-move-node-demotion-code-to-near-its-user
 +++ a/mm/migrate.c
-@@ -1083,139 +1083,6 @@ out:
+@@ -1093,139 +1093,6 @@ out:
  	return rc;
  }
  
@@ -169,7 +169,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Obtain the lock on page, remove all ptes and migrate the page
   * to the newly allocated page in newpage.
-@@ -3035,6 +2902,138 @@ void migrate_vma_finalize(struct migrate
+@@ -3059,6 +2926,138 @@ void migrate_vma_finalize(struct migrate
  EXPORT_SYMBOL(migrate_vma_finalize);
  #endif /* CONFIG_DEVICE_PRIVATE */
  

@@ -1,0 +1,45 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-page_allocc-do-not-warn-allocation-failure-on-zone-dma-if-no-managed-pages-fix
+
+fix warning
+
+mm/page_alloc.c: In function 'warn_alloc':
+mm/page_alloc.c:4224:26: warning: suggest parentheses around '&&' within '||' [-Wparentheses]
+ 4224 |   (gfp_mask & __GFP_DMA) && !has_managed_dma())
+      |   ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: David Laight <David.Laight@ACULAB.COM>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Hyeonggon Yoo <42.hyeyoo@gmail.com>
+Cc: John Donnelly  <john.p.donnelly@oracle.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Pekka Enberg <penberg@kernel.org>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/page_alloc.c~mm-page_allocc-do-not-warn-allocation-failure-on-zone-dma-if-no-managed-pages-fix
++++ a/mm/page_alloc.c
+@@ -4218,8 +4218,9 @@ void warn_alloc(gfp_t gfp_mask, nodemask
+ 	va_list args;
+ 	static DEFINE_RATELIMIT_STATE(nopage_rs, 10*HZ, 1);
+ 
+-	if ((gfp_mask & __GFP_NOWARN) || !__ratelimit(&nopage_rs) ||
+-		(gfp_mask & __GFP_DMA) && !has_managed_dma())
++	if ((gfp_mask & __GFP_NOWARN) ||
++	     !__ratelimit(&nopage_rs) ||
++	     ((gfp_mask & __GFP_DMA) && !has_managed_dma()))
+ 		return;
+ 
+ 	va_start(args, fmt);
+_

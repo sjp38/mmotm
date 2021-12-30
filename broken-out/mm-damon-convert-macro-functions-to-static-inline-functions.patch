@@ -71,7 +71,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * Merge two adjacent regions into one region
 --- a/mm/damon/vaddr.c~mm-damon-convert-macro-functions-to-static-inline-functions
 +++ a/mm/damon/vaddr.c
-@@ -25,8 +25,10 @@
+@@ -26,8 +26,10 @@
   * 't->id' should be the pointer to the relevant 'struct pid' having reference
   * count.  Caller must put the returned task, unless it is NULL.
   */

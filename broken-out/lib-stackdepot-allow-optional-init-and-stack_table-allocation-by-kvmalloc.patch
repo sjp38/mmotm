@@ -234,7 +234,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline u32 hash_stack(unsigned long *entries, unsigned int size)
 --- a/mm/page_owner.c~lib-stackdepot-allow-optional-init-and-stack_table-allocation-by-kvmalloc
 +++ a/mm/page_owner.c
-@@ -80,6 +80,8 @@ static void init_page_owner(void)
+@@ -80,6 +80,8 @@ static __init void init_page_owner(void)
  	if (!page_owner_enabled)
  		return;
  

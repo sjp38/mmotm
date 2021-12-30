@@ -8,10 +8,11 @@ Also - small nit: it makes better sense to
 s/group_oom_kill/oom_group_kill/g in the patch title.
 
 Link: https://lkml.kernel.org/r/20211213162511.2492267-1-schatzberg.dan@gmail.com
+Signed-off-by: Dan Schatzberg <schatzberg.dan@gmail.com>
 Reviewed-by: Roman Gushchin <guro@fb.com>
 Acked-by: Chris Down <chris@chrisdown.name>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-Signed-off-by: Dan Schatzberg <schatzberg.dan@gmail.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

@@ -8,18 +8,18 @@ minutes before stalling.  In Mike and Darrick's cases, a small memcg
 environment stalled excessively even though the system had enough memory
 overall.
 
-Commit 69392a403f49 ("mm/vmscan: throttle reclaim when no progress is bei=
-ng made") introduced the problem although commit a19594ca4a8b ("mm/vmscan:
-increase the timeout if page reclaim is not making progress") made it
-worse.  Systems at or near an OOM state that cannot be recovered must
-reach OOM quickly and memcg should kill tasks if a memcg is near OOM.
+Commit 69392a403f49 ("mm/vmscan: throttle reclaim when no progress is
+being made") introduced the problem although commit a19594ca4a8b
+("mm/vmscan: increase the timeout if page reclaim is not making progress")
+made it worse.  Systems at or near an OOM state that cannot be recovered
+must reach OOM quickly and memcg should kill tasks if a memcg is near OOM.
 
 To address this, only stall for the first zone in the zonelist, reduce the
 timeout to 1 tick for VMSCAN_THROTTLE_NOPROGRESS and only stall if the
 scan control nr_reclaimed is 0, kswapd is still active and there were
 excessive pages pending for writeback.  If kswapd has stopped reclaiming
-d= ue to excessive failures, do not stall at all so that OOM triggers
-relativel= y quickly.  Similarly, if an LRU is simply congested, only
+due to excessive failures, do not stall at all so that OOM triggers
+relatively quickly.  Similarly, if an LRU is simply congested, only
 lightly throttle similar to NOPROGRESS.
 
 Alexey's original case was the most straight forward
@@ -46,6 +46,7 @@ Reported-by: kernel test robot <lkp@intel.com>
 Reported-and-tested-by: Alexey Avramov <hakavlad@inbox.lv>
 Reported-and-tested-by: Mike Galbraith <efault@gmx.de>
 Reported-and-tested-by: Darrick J. Wong <djwong@kernel.org>
+Tested-by: Hugh Dickins <hughd@google.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Rik van Riel <riel@surriel.com>

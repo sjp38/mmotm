@@ -43,7 +43,6 @@ Cc: James E.J. Bottomley <jejb@linux.ibm.com>
 Cc: Martin K. Petersen <martin.petersen@oracle.com>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Antti Palosaari <crope@iki.fi>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Amir Goldstein <amir73il@gmail.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: Arnd Bergmann <arnd@arndb.de>

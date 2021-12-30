@@ -30,7 +30,6 @@ Cc: Kees Cook <keescook@chromium.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Mark Fasheh <mark@fasheh.com>
 Cc: Martin K. Petersen <martin.petersen@oracle.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Paul Turner <pjt@google.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Petr Mladek <pmladek@suse.com>
@@ -78,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* CONFIG_SYSCTL */
  
  /*
-@@ -1685,6 +1692,7 @@ static int __init fanotify_user_setup(vo
+@@ -1743,6 +1750,7 @@ static int __init fanotify_user_setup(vo
  	init_user_ns.ucount_max[UCOUNT_FANOTIFY_GROUPS] =
  					FANOTIFY_DEFAULT_MAX_GROUPS;
  	init_user_ns.ucount_max[UCOUNT_FANOTIFY_MARKS] = max_marks;

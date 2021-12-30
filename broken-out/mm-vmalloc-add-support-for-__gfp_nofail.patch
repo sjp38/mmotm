@@ -35,7 +35,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-add-support-for-__gfp_nofail
 +++ a/mm/vmalloc.c
-@@ -2844,6 +2844,8 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+@@ -2849,6 +2849,8 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
  	 * more permissive.
  	 */
  	if (!order) {
@@ -44,7 +44,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		while (nr_allocated < nr_pages) {
  			unsigned int nr, nr_pages_request;
  
-@@ -2861,12 +2863,12 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
+@@ -2866,12 +2868,12 @@ vm_area_alloc_pages(gfp_t gfp, int nid,
  			 * but mempolcy want to alloc memory by interleaving.
  			 */
  			if (IS_ENABLED(CONFIG_NUMA) && nid == NUMA_NO_NODE)
@@ -59,7 +59,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  							nr_pages_request,
  							pages + nr_allocated);
  
-@@ -2921,6 +2923,7 @@ static void *__vmalloc_area_node(struct
+@@ -2926,6 +2928,7 @@ static void *__vmalloc_area_node(struct
  {
  	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
  	const gfp_t orig_gfp_mask = gfp_mask;
@@ -67,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long addr = (unsigned long)area->addr;
  	unsigned long size = get_vm_area_size(area);
  	unsigned long array_size;
-@@ -2978,8 +2981,12 @@ static void *__vmalloc_area_node(struct
+@@ -2984,8 +2987,12 @@ static void *__vmalloc_area_node(struct
  	else if ((gfp_mask & (__GFP_FS | __GFP_IO)) == 0)
  		flags = memalloc_noio_save();
  
@@ -81,7 +81,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if ((gfp_mask & (__GFP_FS | __GFP_IO)) == __GFP_IO)
  		memalloc_nofs_restore(flags);
-@@ -3074,9 +3081,14 @@ again:
+@@ -3080,9 +3087,14 @@ again:
  				  VM_UNINITIALIZED | vm_flags, start, end, node,
  				  gfp_mask, caller);
  	if (!area) {

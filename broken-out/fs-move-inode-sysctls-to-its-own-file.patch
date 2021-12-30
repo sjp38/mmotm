@@ -37,7 +37,6 @@ Cc: Eric Biederman <ebiederm@xmission.com>
 Cc: Stephen Kitt <steve@sk2.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Antti Palosaari <crope@iki.fi>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: Jeff Layton <jlayton@kernel.org>
 Cc: "J. Bruce Fields" <bfields@fieldses.org>

@@ -5,7 +5,7 @@ With NEED_PER_CPU_PAGE_FIRST_CHUNK enabled, we need a function to populate
 pte, this patch adds a generic pcpu populate pte function,
 pcpu_populate_pte(), which is marked __weak and used on most
 architectures, but it is overridden on x86, which has its own
-implemention.
+implementation.
 
 Link: https://lkml.kernel.org/r/20211216112359.103822-5-wangkefeng.wang@huawei.com
 Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>

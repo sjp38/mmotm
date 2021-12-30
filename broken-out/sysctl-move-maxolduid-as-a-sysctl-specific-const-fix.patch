@@ -1,0 +1,36 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: sysctl-move-maxolduid-as-a-sysctl-specific-const-fix
+
+fix sysctl_vals[], per Mickaël.
+
+Cc: Mickaël Salaün <mic@digikonet>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Antti Palosaari <crope@iki.fi>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Iurii Zaikin <yzaikin@google.com>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Lukas Middendorf <kernel@tuxforce.de>
+Cc: Stephen Kitt <steve@sk2.org>
+Cc: Xiaoming Ni <nixiaoming@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/proc_sysctl.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/proc/proc_sysctl.c~sysctl-move-maxolduid-as-a-sysctl-specific-const-fix
++++ a/fs/proc/proc_sysctl.c
+@@ -26,7 +26,7 @@ static const struct file_operations proc
+ static const struct inode_operations proc_sys_dir_operations;
+ 
+ /* shared constants to be used in various sysctls */
+-const int sysctl_vals[] = { -1, 0, 1, 2, 4, 100, 200, 1000, 65535, INT_MAX };
++const int sysctl_vals[] = { -1, 0, 1, 2, 4, 100, 200, 1000, 3000, INT_MAX, 65535 };
+ EXPORT_SYMBOL(sysctl_vals);
+ 
+ const unsigned long sysctl_long_vals[] = { 0, 1, LONG_MAX };
+_

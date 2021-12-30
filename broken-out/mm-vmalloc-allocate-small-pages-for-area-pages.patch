@@ -38,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern void vfree(const void *addr);
 --- a/mm/vmalloc.c~mm-vmalloc-allocate-small-pages-for-area-pages
 +++ a/mm/vmalloc.c
-@@ -2928,19 +2928,20 @@ static void *__vmalloc_area_node(struct
+@@ -2933,19 +2933,20 @@ static void *__vmalloc_area_node(struct
  	unsigned long size = get_vm_area_size(area);
  	unsigned long array_size;
  	unsigned int nr_small_pages = size >> PAGE_SHIFT;
@@ -62,7 +62,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	} else {
  		area->pages = kmalloc_node(array_size, nested_gfp, node);
  	}
-@@ -3147,6 +3148,14 @@ void *__vmalloc_node(unsigned long size,
+@@ -3153,6 +3154,14 @@ void *__vmalloc_node(unsigned long size,
  	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
  				gfp_mask, PAGE_KERNEL, 0, node, caller);
  }

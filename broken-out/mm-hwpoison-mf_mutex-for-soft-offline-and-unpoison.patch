@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory-failure.c~mm-hwpoison-mf_mutex-for-soft-offline-and-unpoison
 +++ a/mm/memory-failure.c
-@@ -1507,14 +1507,6 @@ static int memory_failure_hugetlb(unsign
+@@ -1502,14 +1502,6 @@ static int memory_failure_hugetlb(unsign
  	lock_page(head);
  	page_flags = head->flags;
  
@@ -66,7 +66,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
  	 * TODO: hwpoison for pud-sized hugetlb doesn't work right now, so
  	 * simply disable it. In order to make it work properly, we need
-@@ -1628,6 +1620,8 @@ out:
+@@ -1623,6 +1615,8 @@ out:
  	return rc;
  }
  
@@ -75,7 +75,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
   * memory_failure - Handle memory failure of a page.
   * @pfn: Page Number of the corrupted page
-@@ -1654,7 +1648,6 @@ int memory_failure(unsigned long pfn, in
+@@ -1649,7 +1643,6 @@ int memory_failure(unsigned long pfn, in
  	int res = 0;
  	unsigned long page_flags;
  	bool retry = true;
@@ -83,7 +83,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!sysctl_memory_failure_recovery)
  		panic("Memory failure on page %lx", pfn);
-@@ -1788,16 +1781,6 @@ try_again:
+@@ -1783,16 +1776,6 @@ try_again:
  	 */
  	page_flags = p->flags;
  
@@ -100,7 +100,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (hwpoison_filter(p)) {
  		if (TestClearPageHWPoison(p))
  			num_poisoned_pages_dec();
-@@ -1978,6 +1961,7 @@ int unpoison_memory(unsigned long pfn)
+@@ -1973,6 +1956,7 @@ int unpoison_memory(unsigned long pfn)
  	struct page *page;
  	struct page *p;
  	int freeit = 0;
@@ -108,7 +108,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long flags = 0;
  	static DEFINE_RATELIMIT_STATE(unpoison_rs, DEFAULT_RATELIMIT_INTERVAL,
  					DEFAULT_RATELIMIT_BURST);
-@@ -1988,39 +1972,30 @@ int unpoison_memory(unsigned long pfn)
+@@ -1983,39 +1967,30 @@ int unpoison_memory(unsigned long pfn)
  	p = pfn_to_page(pfn);
  	page = compound_head(p);
  
@@ -154,7 +154,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	if (!get_hwpoison_page(p, flags)) {
-@@ -2028,29 +2003,23 @@ int unpoison_memory(unsigned long pfn)
+@@ -2023,29 +1998,23 @@ int unpoison_memory(unsigned long pfn)
  			num_poisoned_pages_dec();
  		unpoison_pr_info("Unpoison: Software-unpoisoned free page %#lx\n",
  				 pfn, &unpoison_rs);
@@ -188,7 +188,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  EXPORT_SYMBOL(unpoison_memory);
  
-@@ -2231,9 +2200,12 @@ int soft_offline_page(unsigned long pfn,
+@@ -2226,9 +2195,12 @@ int soft_offline_page(unsigned long pfn,
  		return -EIO;
  	}
  
@@ -201,7 +201,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return 0;
  	}
  
-@@ -2251,5 +2223,7 @@ retry:
+@@ -2247,5 +2219,7 @@ retry:
  		}
  	}
  

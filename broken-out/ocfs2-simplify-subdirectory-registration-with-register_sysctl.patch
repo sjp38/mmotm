@@ -120,7 +120,6 @@ Cc: Julia Lawall <julia.lawall@inria.fr>
 Cc: Kees Cook <keescook@chromium.org>
 Cc: Lukas Middendorf <kernel@tuxforce.de>
 Cc: Mark Fasheh <mark@fasheh.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Paul Turner <pjt@google.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Petr Mladek <pmladek@suse.com>

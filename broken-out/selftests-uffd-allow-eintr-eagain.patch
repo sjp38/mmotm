@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/tools/testing/selftests/vm/userfaultfd.c~selftests-uffd-allow-eintr-eagain
 +++ a/tools/testing/selftests/vm/userfaultfd.c
-@@ -644,7 +644,7 @@ static int uffd_read_msg(int ufd, struct
+@@ -648,7 +648,7 @@ static int uffd_read_msg(int ufd, struct
  
  	if (ret != sizeof(*msg)) {
  		if (ret < 0) {
@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				return 1;
  			err("blocking read error");
  		} else {
-@@ -720,8 +720,11 @@ static void *uffd_poll_thread(void *arg)
+@@ -724,8 +724,11 @@ static void *uffd_poll_thread(void *arg)
  
  	for (;;) {
  		ret = poll(pollfd, 2, -1);

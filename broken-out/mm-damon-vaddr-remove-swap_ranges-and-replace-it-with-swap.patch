@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/damon/vaddr.c~mm-damon-vaddr-remove-swap_ranges-and-replace-it-with-swap
 +++ a/mm/damon/vaddr.c
-@@ -97,16 +97,6 @@ static unsigned long sz_range(struct dam
+@@ -98,16 +98,6 @@ static unsigned long sz_range(struct dam
  	return r->end - r->start;
  }
  
@@ -33,7 +33,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Find three regions separated by two biggest unmapped regions
   *
-@@ -145,9 +135,9 @@ static int __damon_va_three_regions(stru
+@@ -146,9 +136,9 @@ static int __damon_va_three_regions(stru
  		gap.start = last_vma->vm_end;
  		gap.end = vma->vm_start;
  		if (sz_range(&gap) > sz_range(&second_gap)) {
@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		}
  next:
  		last_vma = vma;
-@@ -158,7 +148,7 @@ next:
+@@ -159,7 +149,7 @@ next:
  
  	/* Sort the two biggest gaps by address */
  	if (first_gap.start > second_gap.start)

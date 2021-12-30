@@ -41,7 +41,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/migrate.c~mm-migrate-fix-the-return-value-of-migrate_pages
 +++ a/mm/migrate.c
-@@ -1422,7 +1422,7 @@ static inline int try_split_thp(struct p
+@@ -1421,7 +1421,7 @@ static inline int try_split_thp(struct p
   * @mode:		The migration mode that specifies the constraints for
   *			page migration, if any.
   * @reason:		The reason for page migration.
@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *			the caller passes a non-NULL pointer.
   *
   * The function returns after 10 attempts or if no pages are movable any more
-@@ -1430,7 +1430,9 @@ static inline int try_split_thp(struct p
+@@ -1429,7 +1429,9 @@ static inline int try_split_thp(struct p
   * It is caller's responsibility to call putback_movable_pages() to return pages
   * to the LRU or free list only if ret != 0.
   *
@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   */
  int migrate_pages(struct list_head *from, new_page_t get_new_page,
  		free_page_t put_new_page, unsigned long private,
-@@ -1439,6 +1441,7 @@ int migrate_pages(struct list_head *from
+@@ -1438,6 +1440,7 @@ int migrate_pages(struct list_head *from
  	int retry = 1;
  	int thp_retry = 1;
  	int nr_failed = 0;
@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int nr_succeeded = 0;
  	int nr_thp_succeeded = 0;
  	int nr_thp_failed = 0;
-@@ -1450,13 +1453,16 @@ int migrate_pages(struct list_head *from
+@@ -1449,13 +1452,16 @@ int migrate_pages(struct list_head *from
  	int swapwrite = current->flags & PF_SWAPWRITE;
  	int rc, nr_subpages;
  	LIST_HEAD(ret_pages);
@@ -86,7 +86,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	for (pass = 0; pass < 10 && (retry || thp_retry); pass++) {
  		retry = 0;
  		thp_retry = 0;
-@@ -1505,18 +1511,20 @@ retry:
+@@ -1504,18 +1510,20 @@ retry:
  			case -ENOSYS:
  				/* THP migration is unsupported */
  				if (is_thp) {
@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				break;
  			case -ENOMEM:
  				/*
-@@ -1525,16 +1533,19 @@ retry:
+@@ -1524,16 +1532,19 @@ retry:
  				 * THP NUMA faulting doesn't split THP to retry.
  				 */
  				if (is_thp && !nosplit) {
@@ -135,7 +135,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				goto out;
  			case -EAGAIN:
  				if (is_thp) {
-@@ -1560,17 +1571,37 @@ retry:
+@@ -1559,17 +1570,37 @@ retry:
  				 */
  				if (is_thp) {
  					nr_thp_failed++;
@@ -177,7 +177,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  out:
  	/*
  	 * Put the permanent failure page back to migration list, they
-@@ -1579,11 +1610,11 @@ out:
+@@ -1578,11 +1609,11 @@ out:
  	list_splice(&ret_pages, from);
  
  	count_vm_events(PGMIGRATE_SUCCESS, nr_succeeded);

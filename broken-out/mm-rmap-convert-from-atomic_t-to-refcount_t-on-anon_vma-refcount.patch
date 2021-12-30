@@ -115,7 +115,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		/*
  		 * Oops, we held the last refcount, release the lock
  		 * and bail -- can't simply use put_anon_vma() because
-@@ -2228,7 +2228,7 @@ void __put_anon_vma(struct anon_vma *ano
+@@ -2239,7 +2239,7 @@ void __put_anon_vma(struct anon_vma *ano
  	struct anon_vma *root = anon_vma->root;
  
  	anon_vma_free(anon_vma);

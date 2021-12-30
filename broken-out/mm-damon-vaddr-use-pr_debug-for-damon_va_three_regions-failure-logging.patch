@@ -1,0 +1,28 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon/vaddr: use pr_debug() for damon_va_three_regions() failure logging
+
+Failure of 'damon_va_three_regions()' is logged using 'pr_err()'.  But,
+the function can fail in legal situations.  To avoid making users be
+surprised and to keep the kernel clean, this commit makes the log to be
+printed using 'pr_debug()'.
+
+Link: https://lkml.kernel.org/r/20211229131016.23641-3-sj@kernel.org
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/vaddr.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/damon/vaddr.c~mm-damon-vaddr-use-pr_debug-for-damon_va_three_regions-failure-logging
++++ a/mm/damon/vaddr.c
+@@ -238,7 +238,7 @@ static void __damon_va_init_regions(stru
+ 	int i;
+ 
+ 	if (damon_va_three_regions(t, regions)) {
+-		pr_err("Failed to get three regions of target %lu\n", t->id);
++		pr_debug("Failed to get three regions of target %lu\n", t->id);
+ 		return;
+ 	}
+ 
+_
