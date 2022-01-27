@@ -1,0 +1,55 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, arm64: reset pointer tags of vmapped stacks
+
+Once tag-based KASAN modes start tagging vmalloc() allocations, kernel
+stacks start getting tagged if CONFIG_VMAP_STACK is enabled.
+
+Reset the tag of kernel stack pointers after allocation in
+arch_alloc_vmap_stack().
+
+For SW_TAGS KASAN, when CONFIG_KASAN_STACK is enabled, the instrumentation
+can't handle the SP register being tagged.
+
+For HW_TAGS KASAN, there's no instrumentation-related issues.  However,
+the impact of having a tagged SP register needs to be properly evaluated,
+so keep it non-tagged for now.
+
+Note, that the memory for the stack allocation still gets tagged to catch
+vmalloc-into-stack out-of-bounds accesses.
+
+Link: https://lkml.kernel.org/r/698c5ab21743c796d46c15d075b9481825973e34.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arm64/include/asm/vmap_stack.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/arch/arm64/include/asm/vmap_stack.h~kasan-arm64-reset-pointer-tags-of-vmapped-stacks
++++ a/arch/arm64/include/asm/vmap_stack.h
+@@ -17,10 +17,13 @@
+  */
+ static inline unsigned long *arch_alloc_vmap_stack(size_t stack_size, int node)
+ {
++	void *p;
++
+ 	BUILD_BUG_ON(!IS_ENABLED(CONFIG_VMAP_STACK));
+ 
+-	return __vmalloc_node(stack_size, THREAD_ALIGN, THREADINFO_GFP, node,
++	p = __vmalloc_node(stack_size, THREAD_ALIGN, THREADINFO_GFP, node,
+ 			__builtin_return_address(0));
++	return kasan_reset_tag(p);
+ }
+ 
+ #endif /* __ASM_VMAP_STACK_H */
+_

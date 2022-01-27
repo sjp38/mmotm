@@ -1,0 +1,51 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: define KASAN_VMALLOC_INVALID for SW_TAGS
+
+In preparation for adding vmalloc support to SW_TAGS KASAN, provide a
+KASAN_VMALLOC_INVALID definition for it.
+
+HW_TAGS KASAN won't be using this value, as it falls back onto page_alloc
+for poisoning freed vmalloc() memory.
+
+Link: https://lkml.kernel.org/r/1daaaafeb148a7ae8285265edc97d7ca07b6a07d.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/kasan.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/kasan/kasan.h~kasan-define-kasan_vmalloc_invalid-for-sw_tags
++++ a/mm/kasan/kasan.h
+@@ -71,18 +71,19 @@ static inline bool kasan_sync_fault_poss
+ #define KASAN_PAGE_REDZONE      0xFE  /* redzone for kmalloc_large allocations */
+ #define KASAN_KMALLOC_REDZONE   0xFC  /* redzone inside slub object */
+ #define KASAN_KMALLOC_FREE      0xFB  /* object was freed (kmem_cache_free/kfree) */
++#define KASAN_VMALLOC_INVALID   0xF8  /* unallocated space in vmapped page */
+ #else
+ #define KASAN_FREE_PAGE         KASAN_TAG_INVALID
+ #define KASAN_PAGE_REDZONE      KASAN_TAG_INVALID
+ #define KASAN_KMALLOC_REDZONE   KASAN_TAG_INVALID
+ #define KASAN_KMALLOC_FREE      KASAN_TAG_INVALID
++#define KASAN_VMALLOC_INVALID   KASAN_TAG_INVALID /* only for SW_TAGS */
+ #endif
+ 
+ #ifdef CONFIG_KASAN_GENERIC
+ 
+ #define KASAN_KMALLOC_FREETRACK 0xFA  /* object was freed and has free track set */
+ #define KASAN_GLOBAL_REDZONE    0xF9  /* redzone for global variable */
+-#define KASAN_VMALLOC_INVALID   0xF8  /* unallocated space in vmapped page */
+ 
+ /*
+  * Stack redzone shadow values
+_

@@ -1,0 +1,58 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: clean up metadata byte definitions
+
+Most of the metadata byte values are only used for Generic KASAN.
+
+Remove KASAN_KMALLOC_FREETRACK definition for !CONFIG_KASAN_GENERIC case,
+and put it along with other metadata values for the Generic mode under a
+corresponding ifdef.
+
+Link: https://lkml.kernel.org/r/ac11d6e9e007c95e472e8fdd22efb6074ef3c6d8.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/kasan.h |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- a/mm/kasan/kasan.h~kasan-clean-up-metadata-byte-definitions
++++ a/mm/kasan/kasan.h
+@@ -71,15 +71,16 @@ static inline bool kasan_sync_fault_poss
+ #define KASAN_PAGE_REDZONE      0xFE  /* redzone for kmalloc_large allocations */
+ #define KASAN_KMALLOC_REDZONE   0xFC  /* redzone inside slub object */
+ #define KASAN_KMALLOC_FREE      0xFB  /* object was freed (kmem_cache_free/kfree) */
+-#define KASAN_KMALLOC_FREETRACK 0xFA  /* object was freed and has free track set */
+ #else
+ #define KASAN_FREE_PAGE         KASAN_TAG_INVALID
+ #define KASAN_PAGE_REDZONE      KASAN_TAG_INVALID
+ #define KASAN_KMALLOC_REDZONE   KASAN_TAG_INVALID
+ #define KASAN_KMALLOC_FREE      KASAN_TAG_INVALID
+-#define KASAN_KMALLOC_FREETRACK KASAN_TAG_INVALID
+ #endif
+ 
++#ifdef CONFIG_KASAN_GENERIC
++
++#define KASAN_KMALLOC_FREETRACK 0xFA  /* object was freed and has free track set */
+ #define KASAN_GLOBAL_REDZONE    0xF9  /* redzone for global variable */
+ #define KASAN_VMALLOC_INVALID   0xF8  /* unallocated space in vmapped page */
+ 
+@@ -110,6 +111,8 @@ static inline bool kasan_sync_fault_poss
+ #define KASAN_ABI_VERSION 1
+ #endif
+ 
++#endif /* CONFIG_KASAN_GENERIC */
++
+ /* Metadata layout customization. */
+ #define META_BYTES_PER_BLOCK 1
+ #define META_BLOCKS_PER_ROW 16
+_

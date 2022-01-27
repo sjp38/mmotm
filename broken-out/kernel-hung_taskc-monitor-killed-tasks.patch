@@ -54,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/sched.h~kernel-hung_taskc-monitor-killed-tasks
 +++ a/include/linux/sched.h
-@@ -1060,6 +1060,7 @@ struct task_struct {
+@@ -1069,6 +1069,7 @@ struct task_struct {
  #ifdef CONFIG_DETECT_HUNG_TASK
  	unsigned long			last_switch_count;
  	unsigned long			last_switch_time;

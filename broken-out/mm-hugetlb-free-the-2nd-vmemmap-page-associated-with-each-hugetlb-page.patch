@@ -165,7 +165,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/Documentation/admin-guide/kernel-parameters.txt~mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page
 +++ a/Documentation/admin-guide/kernel-parameters.txt
-@@ -1616,7 +1616,7 @@
+@@ -1625,7 +1625,7 @@
  			[KNL] Reguires CONFIG_HUGETLB_PAGE_FREE_VMEMMAP
  			enabled.
  			Allows heavy hugetlb users to free up some more
@@ -176,7 +176,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			on:  enable the feature
 --- a/include/linux/page-flags.h~mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page
 +++ a/include/linux/page-flags.h
-@@ -193,13 +193,69 @@ enum pageflags {
+@@ -190,13 +190,69 @@ enum pageflags {
  
  #ifndef __GENERATING_BOUNDS_H
  
@@ -247,7 +247,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  #define compound_head(page)	((typeof(page))_compound_head(page))
-@@ -234,12 +290,13 @@ static inline unsigned long _compound_he
+@@ -231,12 +287,13 @@ static inline unsigned long _compound_he
  
  static __always_inline int PageTail(struct page *page)
  {
@@ -263,7 +263,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  #define	PAGE_POISON_PATTERN	-1l
-@@ -684,7 +741,20 @@ static inline bool test_set_page_writeba
+@@ -695,7 +752,20 @@ static inline bool test_set_page_writeba
  	return set_page_writeback(page);
  }
  

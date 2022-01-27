@@ -1,0 +1,55 @@
+From: Hao Lee <haolee.swjtu@gmail.com>
+Subject: proc: alloc PATH_MAX bytes for /proc/${pid}/fd/ symlinks
+
+It's not a standard approach that use __get_free_page() to alloc path
+buffer directly.  We'd better use kmalloc and PATH_MAX.
+
+	PAGE_SIZE is different on different archs. An unlinked file
+	with very long canonical pathname will readlink differently
+	because "(deleted)" eats into a buffer.	--adobriyan
+
+Link: https://lkml.kernel.org/r/Ye1fCxyZZ0I5lgOL@localhost.localdomain
+Signed-off-by: Hao Lee <haolee.swjtu@gmail.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: James Morris <jamorris@linux.microsoft.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/base.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- a/fs/proc/base.c~proc-alloc-path_max-bytes-for-proc-pid-fd-symlinks
++++ a/fs/proc/base.c
+@@ -1764,25 +1764,25 @@ out:
+ 
+ static int do_proc_readlink(struct path *path, char __user *buffer, int buflen)
+ {
+-	char *tmp = (char *)__get_free_page(GFP_KERNEL);
++	char *tmp = (char *)kmalloc(PATH_MAX, GFP_KERNEL);
+ 	char *pathname;
+ 	int len;
+ 
+ 	if (!tmp)
+ 		return -ENOMEM;
+ 
+-	pathname = d_path(path, tmp, PAGE_SIZE);
++	pathname = d_path(path, tmp, PATH_MAX);
+ 	len = PTR_ERR(pathname);
+ 	if (IS_ERR(pathname))
+ 		goto out;
+-	len = tmp + PAGE_SIZE - 1 - pathname;
++	len = tmp + PATH_MAX - 1 - pathname;
+ 
+ 	if (len > buflen)
+ 		len = buflen;
+ 	if (copy_to_user(buffer, pathname, len))
+ 		len = -EFAULT;
+  out:
+-	free_page((unsigned long)tmp);
++	kfree(tmp);
+ 	return len;
+ }
+ 
+_

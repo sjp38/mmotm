@@ -94,7 +94,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  }
  
-@@ -3191,6 +3222,11 @@ EXPORT_SYMBOL(sync_dirty_buffer);
+@@ -3192,6 +3223,11 @@ EXPORT_SYMBOL(sync_dirty_buffer);
   */
  static inline int buffer_busy(struct buffer_head *bh)
  {
@@ -106,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return atomic_read(&bh->b_count) |
  		(bh->b_state & ((1 << BH_Dirty) | (1 << BH_Lock)));
  }
-@@ -3229,11 +3265,18 @@ int try_to_free_buffers(struct page *pag
+@@ -3230,11 +3266,18 @@ int try_to_free_buffers(struct page *pag
  	int ret = 0;
  
  	BUG_ON(!PageLocked(page));
@@ -126,7 +126,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		goto out;
  	}
  
-@@ -3257,6 +3300,9 @@ int try_to_free_buffers(struct page *pag
+@@ -3258,6 +3301,9 @@ int try_to_free_buffers(struct page *pag
  	if (ret)
  		cancel_dirty_page(page);
  	spin_unlock(&mapping->private_lock);
@@ -138,7 +138,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		struct buffer_head *bh = buffers_to_free;
 --- a/include/linux/sched.h~info-task-hung-in-generic_file_write_iter
 +++ a/include/linux/sched.h
-@@ -1484,6 +1484,13 @@ struct task_struct {
+@@ -1496,6 +1496,13 @@ struct task_struct {
  	struct callback_head		l1d_flush_kill;
  #endif
  
@@ -154,7 +154,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 * they are included in the randomized portion of task_struct.
 --- a/lib/Kconfig.debug~info-task-hung-in-generic_file_write_iter
 +++ a/lib/Kconfig.debug
-@@ -1784,6 +1784,12 @@ config IO_STRICT_DEVMEM
+@@ -1789,6 +1789,12 @@ config IO_STRICT_DEVMEM
  
  menu "$(SRCARCH) Debugging"
  

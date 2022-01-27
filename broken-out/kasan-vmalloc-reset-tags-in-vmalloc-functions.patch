@@ -1,0 +1,89 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, vmalloc: reset tags in vmalloc functions
+
+In preparation for adding vmalloc support to SW/HW_TAGS KASAN, reset
+pointer tags in functions that use pointer values in range checks.
+
+vread() is a special case here.  Despite the untagging of the addr pointer
+in its prologue, the accesses performed by vread() are checked.
+
+Instead of accessing the virtual mappings though addr directly, vread()
+recovers the physical address via page_address(vmalloc_to_page()) and
+acceses that.  And as page_address() recovers the pointer tag, the
+accesses get checked.
+
+Link: https://lkml.kernel.org/r/046003c5f683cacb0ba18e1079e9688bb3dca943.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+--- a/mm/vmalloc.c~kasan-vmalloc-reset-tags-in-vmalloc-functions
++++ a/mm/vmalloc.c
+@@ -74,7 +74,7 @@ static const bool vmap_allow_huge = fals
+ 
+ bool is_vmalloc_addr(const void *x)
+ {
+-	unsigned long addr = (unsigned long)x;
++	unsigned long addr = (unsigned long)kasan_reset_tag(x);
+ 
+ 	return addr >= VMALLOC_START && addr < VMALLOC_END;
+ }
+@@ -632,7 +632,7 @@ int is_vmalloc_or_module_addr(const void
+ 	 * just put it in the vmalloc space.
+ 	 */
+ #if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
+-	unsigned long addr = (unsigned long)x;
++	unsigned long addr = (unsigned long)kasan_reset_tag(x);
+ 	if (addr >= MODULES_VADDR && addr < MODULES_END)
+ 		return 1;
+ #endif
+@@ -806,6 +806,8 @@ static struct vmap_area *find_vmap_area_
+ 	struct vmap_area *va = NULL;
+ 	struct rb_node *n = vmap_area_root.rb_node;
+ 
++	addr = (unsigned long)kasan_reset_tag((void *)addr);
++
+ 	while (n) {
+ 		struct vmap_area *tmp;
+ 
+@@ -827,6 +829,8 @@ static struct vmap_area *__find_vmap_are
+ {
+ 	struct rb_node *n = vmap_area_root.rb_node;
+ 
++	addr = (unsigned long)kasan_reset_tag((void *)addr);
++
+ 	while (n) {
+ 		struct vmap_area *va;
+ 
+@@ -2145,7 +2149,7 @@ EXPORT_SYMBOL_GPL(vm_unmap_aliases);
+ void vm_unmap_ram(const void *mem, unsigned int count)
+ {
+ 	unsigned long size = (unsigned long)count << PAGE_SHIFT;
+-	unsigned long addr = (unsigned long)mem;
++	unsigned long addr = (unsigned long)kasan_reset_tag(mem);
+ 	struct vmap_area *va;
+ 
+ 	might_sleep();
+@@ -3404,6 +3408,8 @@ long vread(char *buf, char *addr, unsign
+ 	unsigned long buflen = count;
+ 	unsigned long n;
+ 
++	addr = kasan_reset_tag(addr);
++
+ 	/* Don't allow overflow */
+ 	if ((unsigned long) addr + count < count)
+ 		count = -(unsigned long) addr;
+_

@@ -1,0 +1,29 @@
+From: Ira Weiny <ira.weiny@intel.com>
+Subject: highmem-document-kunmap_local-v2
+
+updates per Christoph
+
+Link: https://lkml.kernel.org/r/20220124182138.816693-1-ira.weiny@intel.com
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/highmem-internal.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- a/include/linux/highmem-internal.h~highmem-document-kunmap_local-v2
++++ a/include/linux/highmem-internal.h
+@@ -250,9 +250,8 @@ do {								\
+  * kunmap_local - Unmap a page mapped via kmap_local_page().
+  * @__addr: An address within the page mapped
+  *
+- * __addr is often an address returned from kmap_local_page().  However,
+- * this address can be any address within the mapped page.  It does not need to
+- * be the exact address returned from kmap_local_page()
++ * @__addr can be any address within the mapped page.  Commonly it is the
++ * address return from kmap_local_page(), but it can also include offsets.
+  *
+  * Unmapping should be done in the reverse order of the mapping.  See
+  * kmap_local_page() for details.
+_

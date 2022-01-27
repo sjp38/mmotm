@@ -1,0 +1,44 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: only apply __GFP_ZEROTAGS when memory is zeroed
+
+__GFP_ZEROTAGS should only be effective if memory is being zeroed. 
+Currently, hardware tag-based KASAN violates this requirement.
+
+Fix by including an initialization check along with checking for
+__GFP_ZEROTAGS.
+
+Link: https://lkml.kernel.org/r/f4f4593f7f675262d29d07c1938db5bd0cd5e285.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/hw_tags.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/kasan/hw_tags.c~kasan-only-apply-__gfp_zerotags-when-memory-is-zeroed
++++ a/mm/kasan/hw_tags.c
+@@ -199,11 +199,12 @@ void kasan_alloc_pages(struct page *page
+ 	 * page_alloc.c.
+ 	 */
+ 	bool init = !want_init_on_free() && want_init_on_alloc(flags);
++	bool init_tags = init && (flags & __GFP_ZEROTAGS);
+ 
+ 	if (flags & __GFP_SKIP_KASAN_POISON)
+ 		SetPageSkipKASanPoison(page);
+ 
+-	if (flags & __GFP_ZEROTAGS) {
++	if (init_tags) {
+ 		int i;
+ 
+ 		for (i = 0; i != 1 << order; ++i)
+_

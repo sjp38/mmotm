@@ -1,0 +1,59 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: allow enabling KASAN_VMALLOC and SW/HW_TAGS
+
+Allow enabling CONFIG_KASAN_VMALLOC with SW_TAGS and HW_TAGS KASAN modes.
+
+Also adjust CONFIG_KASAN_VMALLOC description:
+
+- Mention HW_TAGS support.
+- Remove unneeded internal details: they have no place in Kconfig
+  description and are already explained in the documentation.
+
+Link: https://lkml.kernel.org/r/bfa0fdedfe25f65e5caa4e410f074ddbac7a0b59.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/Kconfig.kasan |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+--- a/lib/Kconfig.kasan~kasan-allow-enabling-kasan_vmalloc-and-sw-hw_tags
++++ a/lib/Kconfig.kasan
+@@ -178,17 +178,17 @@ config KASAN_TAGS_IDENTIFY
+ 	  memory consumption.
+ 
+ config KASAN_VMALLOC
+-	bool "Back mappings in vmalloc space with real shadow memory"
+-	depends on KASAN_GENERIC && HAVE_ARCH_KASAN_VMALLOC
++	bool "Check accesses to vmalloc allocations"
++	depends on HAVE_ARCH_KASAN_VMALLOC
+ 	help
+-	  By default, the shadow region for vmalloc space is the read-only
+-	  zero page. This means that KASAN cannot detect errors involving
+-	  vmalloc space.
++	  This mode makes KASAN check accesses to vmalloc allocations for
++	  validity.
+ 
+-	  Enabling this option will hook in to vmap/vmalloc and back those
+-	  mappings with real shadow memory allocated on demand. This allows
+-	  for KASAN to detect more sorts of errors (and to support vmapped
+-	  stacks), but at the cost of higher memory usage.
++	  With software KASAN modes, checking is done for all types of vmalloc
++	  allocations. Enabling this option leads to higher memory usage.
++
++	  With hardware tag-based KASAN, only VM_ALLOC mappings are checked.
++	  There is no additional memory usage.
+ 
+ config KASAN_KUNIT_TEST
+ 	tristate "KUnit-compatible tests of KASAN bug detection capabilities" if !KUNIT_ALL_TESTS
+_

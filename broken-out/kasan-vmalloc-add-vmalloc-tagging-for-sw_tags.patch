@@ -1,0 +1,143 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, vmalloc: add vmalloc tagging for SW_TAGS
+
+Add vmalloc tagging support to SW_TAGS KASAN.
+
+- __kasan_unpoison_vmalloc() now assigns a random pointer tag, poisons
+  the virtual mapping accordingly, and embeds the tag into the returned
+  pointer.
+
+- __get_vm_area_node() (used by vmalloc() and vmap()) and
+  pcpu_get_vm_areas() save the tagged pointer into vm_struct->addr
+  (note: not into vmap_area->addr). This requires putting
+  kasan_unpoison_vmalloc() after setup_vmalloc_vm[_locked]();
+  otherwise the latter will overwrite the tagged pointer.
+  The tagged pointer then is naturally propagateed to vmalloc()
+  and vmap().
+
+- vm_map_ram() returns the tagged pointer directly.
+
+As a result of this change, vm_struct->addr is now tagged.
+
+Enabling KASAN_VMALLOC with SW_TAGS is not yet allowed.
+
+Link: https://lkml.kernel.org/r/4a78f3c064ce905e9070c29733aca1dd254a74f1.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kasan.h |   16 ++++++++++------
+ mm/kasan/shadow.c     |    6 ++++--
+ mm/vmalloc.c          |   14 ++++++++------
+ 3 files changed, 22 insertions(+), 14 deletions(-)
+
+--- a/include/linux/kasan.h~kasan-vmalloc-add-vmalloc-tagging-for-sw_tags
++++ a/include/linux/kasan.h
+@@ -424,12 +424,13 @@ void kasan_release_vmalloc(unsigned long
+ 			   unsigned long free_region_start,
+ 			   unsigned long free_region_end);
+ 
+-void __kasan_unpoison_vmalloc(const void *start, unsigned long size);
+-static __always_inline void kasan_unpoison_vmalloc(const void *start,
+-						   unsigned long size)
++void *__kasan_unpoison_vmalloc(const void *start, unsigned long size);
++static __always_inline void *kasan_unpoison_vmalloc(const void *start,
++						    unsigned long size)
+ {
+ 	if (kasan_enabled())
+-		__kasan_unpoison_vmalloc(start, size);
++		return __kasan_unpoison_vmalloc(start, size);
++	return (void *)start;
+ }
+ 
+ void __kasan_poison_vmalloc(const void *start, unsigned long size);
+@@ -454,8 +455,11 @@ static inline void kasan_release_vmalloc
+ 					 unsigned long free_region_start,
+ 					 unsigned long free_region_end) { }
+ 
+-static inline void kasan_unpoison_vmalloc(const void *start, unsigned long size)
+-{ }
++static inline void *kasan_unpoison_vmalloc(const void *start,
++					   unsigned long size)
++{
++	return (void *)start;
++}
+ static inline void kasan_poison_vmalloc(const void *start, unsigned long size)
+ { }
+ 
+--- a/mm/kasan/shadow.c~kasan-vmalloc-add-vmalloc-tagging-for-sw_tags
++++ a/mm/kasan/shadow.c
+@@ -475,12 +475,14 @@ void kasan_release_vmalloc(unsigned long
+ 	}
+ }
+ 
+-void __kasan_unpoison_vmalloc(const void *start, unsigned long size)
++void *__kasan_unpoison_vmalloc(const void *start, unsigned long size)
+ {
+ 	if (!is_vmalloc_or_module_addr(start))
+-		return;
++		return (void *)start;
+ 
++	start = set_tag(start, kasan_random_tag());
+ 	kasan_unpoison(start, size, false);
++	return (void *)start;
+ }
+ 
+ /*
+--- a/mm/vmalloc.c~kasan-vmalloc-add-vmalloc-tagging-for-sw_tags
++++ a/mm/vmalloc.c
+@@ -2210,7 +2210,7 @@ void *vm_map_ram(struct page **pages, un
+ 		mem = (void *)addr;
+ 	}
+ 
+-	kasan_unpoison_vmalloc(mem, size);
++	mem = kasan_unpoison_vmalloc(mem, size);
+ 
+ 	if (vmap_pages_range(addr, addr + size, PAGE_KERNEL,
+ 				pages, PAGE_SHIFT) < 0) {
+@@ -2443,10 +2443,10 @@ static struct vm_struct *__get_vm_area_n
+ 		return NULL;
+ 	}
+ 
+-	kasan_unpoison_vmalloc((void *)va->va_start, requested_size);
+-
+ 	setup_vmalloc_vm(area, va, flags, caller);
+ 
++	area->addr = kasan_unpoison_vmalloc(area->addr, requested_size);
++
+ 	return area;
+ }
+ 
+@@ -3795,9 +3795,6 @@ retry:
+ 	for (area = 0; area < nr_vms; area++) {
+ 		if (kasan_populate_vmalloc(vas[area]->va_start, sizes[area]))
+ 			goto err_free_shadow;
+-
+-		kasan_unpoison_vmalloc((void *)vas[area]->va_start,
+-				       sizes[area]);
+ 	}
+ 
+ 	/* insert all vm's */
+@@ -3810,6 +3807,11 @@ retry:
+ 	}
+ 	spin_unlock(&vmap_area_lock);
+ 
++	/* mark allocated areas as accessible */
++	for (area = 0; area < nr_vms; area++)
++		vms[area]->addr = kasan_unpoison_vmalloc(vms[area]->addr,
++							 vms[area]->size);
++
+ 	kfree(vas);
+ 	return vms;
+ 
+_

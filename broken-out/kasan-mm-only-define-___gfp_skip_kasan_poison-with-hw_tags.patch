@@ -1,0 +1,78 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, mm: only define ___GFP_SKIP_KASAN_POISON with HW_TAGS
+
+Only define the ___GFP_SKIP_KASAN_POISON flag when CONFIG_KASAN_HW_TAGS is
+enabled.
+
+This patch it not useful by itself, but it prepares the code for additions
+of new KASAN-specific GFP patches.
+
+Link: https://lkml.kernel.org/r/44e5738a584c11801b2b8f1231898918efc8634a.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/gfp.h            |    8 +++++++-
+ include/trace/events/mmflags.h |   12 +++++++++---
+ 2 files changed, 16 insertions(+), 4 deletions(-)
+
+--- a/include/linux/gfp.h~kasan-mm-only-define-___gfp_skip_kasan_poison-with-hw_tags
++++ a/include/linux/gfp.h
+@@ -54,7 +54,11 @@ struct vm_area_struct;
+ #define ___GFP_THISNODE		0x200000u
+ #define ___GFP_ACCOUNT		0x400000u
+ #define ___GFP_ZEROTAGS		0x800000u
++#ifdef CONFIG_KASAN_HW_TAGS
+ #define ___GFP_SKIP_KASAN_POISON	0x1000000u
++#else
++#define ___GFP_SKIP_KASAN_POISON	0
++#endif
+ #ifdef CONFIG_LOCKDEP
+ #define ___GFP_NOLOCKDEP	0x2000000u
+ #else
+@@ -251,7 +255,9 @@ struct vm_area_struct;
+ #define __GFP_NOLOCKDEP ((__force gfp_t)___GFP_NOLOCKDEP)
+ 
+ /* Room for N __GFP_FOO bits */
+-#define __GFP_BITS_SHIFT (25 + IS_ENABLED(CONFIG_LOCKDEP))
++#define __GFP_BITS_SHIFT (24 +					\
++			  IS_ENABLED(CONFIG_KASAN_HW_TAGS) +	\
++			  IS_ENABLED(CONFIG_LOCKDEP))
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+ 
+ /**
+--- a/include/trace/events/mmflags.h~kasan-mm-only-define-___gfp_skip_kasan_poison-with-hw_tags
++++ a/include/trace/events/mmflags.h
+@@ -49,12 +49,18 @@
+ 	{(unsigned long)__GFP_RECLAIM,		"__GFP_RECLAIM"},	\
+ 	{(unsigned long)__GFP_DIRECT_RECLAIM,	"__GFP_DIRECT_RECLAIM"},\
+ 	{(unsigned long)__GFP_KSWAPD_RECLAIM,	"__GFP_KSWAPD_RECLAIM"},\
+-	{(unsigned long)__GFP_ZEROTAGS,		"__GFP_ZEROTAGS"},	\
+-	{(unsigned long)__GFP_SKIP_KASAN_POISON,"__GFP_SKIP_KASAN_POISON"}\
++	{(unsigned long)__GFP_ZEROTAGS,		"__GFP_ZEROTAGS"}	\
++
++#ifdef CONFIG_KASAN_HW_TAGS
++#define __def_gfpflag_names_kasan					      \
++	, {(unsigned long)__GFP_SKIP_KASAN_POISON, "__GFP_SKIP_KASAN_POISON"}
++#else
++#define __def_gfpflag_names_kasan
++#endif
+ 
+ #define show_gfp_flags(flags)						\
+ 	(flags) ? __print_flags(flags, "|",				\
+-	__def_gfpflag_names						\
++	__def_gfpflag_names __def_gfpflag_names_kasan			\
+ 	) : "none"
+ 
+ #ifdef CONFIG_MMU
+_

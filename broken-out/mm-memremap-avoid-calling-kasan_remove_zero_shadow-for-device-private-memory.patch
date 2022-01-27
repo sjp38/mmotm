@@ -1,0 +1,30 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memremap: avoid calling kasan_remove_zero_shadow() for device private memory
+
+For device private memory, we do not create a linear mapping for the
+memory because the device memory is un-accessible.  Thus we do not add
+kasan zero shadow for it.  So it's unnecessary to do
+kasan_remove_zero_shadow() for it.
+
+Link: https://lkml.kernel.org/r/20220126092602.1425-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memremap.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/memremap.c~mm-memremap-avoid-calling-kasan_remove_zero_shadow-for-device-private-memory
++++ a/mm/memremap.c
+@@ -302,7 +302,8 @@ static int pagemap_range(struct dev_page
+ 	return 0;
+ 
+ err_add_memory:
+-	kasan_remove_zero_shadow(__va(range->start), range_len(range));
++	if (!is_private)
++		kasan_remove_zero_shadow(__va(range->start), range_len(range));
+ err_kasan:
+ 	untrack_pfn(NULL, PHYS_PFN(range->start), range_len(range));
+ err_pfn_remap:
+_

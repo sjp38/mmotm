@@ -1,0 +1,49 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/highmem: remove unnecessary done label
+
+Remove unnecessary done label to simplify the code.
+
+Link: https://lkml.kernel.org/r/20220126092542.64659-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Acked-by: David Rientjes <rientjes@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/highmem.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+--- a/mm/highmem.c~mm-highmem-remove-unnecessary-done-label
++++ a/mm/highmem.c
+@@ -736,11 +736,11 @@ void *page_address(const struct page *pa
+ 		list_for_each_entry(pam, &pas->lh, list) {
+ 			if (pam->page == page) {
+ 				ret = pam->virtual;
+-				goto done;
++				break;
+ 			}
+ 		}
+ 	}
+-done:
++
+ 	spin_unlock_irqrestore(&pas->lock, flags);
+ 	return ret;
+ }
+@@ -773,13 +773,12 @@ void set_page_address(struct page *page,
+ 		list_for_each_entry(pam, &pas->lh, list) {
+ 			if (pam->page == page) {
+ 				list_del(&pam->list);
+-				spin_unlock_irqrestore(&pas->lock, flags);
+-				goto done;
++				break;
+ 			}
+ 		}
+ 		spin_unlock_irqrestore(&pas->lock, flags);
+ 	}
+-done:
++
+ 	return;
+ }
+ 
+_

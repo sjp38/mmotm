@@ -1,0 +1,27 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: include/linux/sysctl.h: fix register_sysctl_mount_point() return type
+
+The CONFIG_SYSCTL=n stub returns the wrong type.
+
+Fixes: ee9efac48a082 ("sysctl: add helper to register a sysctl mount point")
+Reported-by: kernel test robot <lkp@intel.com>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Tong Zhang <ztong0001@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/sysctl.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/sysctl.h~include-linux-sysctlh-fix-register_sysctl_mount_point-return-type
++++ a/include/linux/sysctl.h
+@@ -265,7 +265,7 @@ static inline struct ctl_table_header *r
+ 	return NULL;
+ }
+ 
+-static inline struct sysctl_header *register_sysctl_mount_point(const char *path)
++static inline struct ctl_table_header *register_sysctl_mount_point(const char *path)
+ {
+ 	return NULL;
+ }
+_

@@ -28,12 +28,12 @@ Cc: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/sysctl.c |    8 ++++----
+ fs/namei.c |    8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/kernel/sysctl.c~proc-sysctl-make-protected_-world-readable
-+++ a/kernel/sysctl.c
-@@ -3317,7 +3317,7 @@ static struct ctl_table fs_table[] = {
+--- a/fs/namei.c~proc-sysctl-make-protected_-world-readable
++++ a/fs/namei.c
+@@ -1031,7 +1031,7 @@ static struct ctl_table namei_sysctls[]
  		.procname	= "protected_symlinks",
  		.data		= &sysctl_protected_symlinks,
  		.maxlen		= sizeof(int),
@@ -42,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= SYSCTL_ONE,
-@@ -3326,7 +3326,7 @@ static struct ctl_table fs_table[] = {
+@@ -1040,7 +1040,7 @@ static struct ctl_table namei_sysctls[]
  		.procname	= "protected_hardlinks",
  		.data		= &sysctl_protected_hardlinks,
  		.maxlen		= sizeof(int),
@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
  		.extra2		= SYSCTL_ONE,
-@@ -3335,7 +3335,7 @@ static struct ctl_table fs_table[] = {
+@@ -1049,7 +1049,7 @@ static struct ctl_table namei_sysctls[]
  		.procname	= "protected_fifos",
  		.data		= &sysctl_protected_fifos,
  		.maxlen		= sizeof(int),
@@ -59,8 +59,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		.mode		= 0644,
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
- 		.extra2		= &two,
-@@ -3344,7 +3344,7 @@ static struct ctl_table fs_table[] = {
+ 		.extra2		= SYSCTL_TWO,
+@@ -1058,7 +1058,7 @@ static struct ctl_table namei_sysctls[]
  		.procname	= "protected_regular",
  		.data		= &sysctl_protected_regular,
  		.maxlen		= sizeof(int),
@@ -68,5 +68,5 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		.mode		= 0644,
  		.proc_handler	= proc_dointvec_minmax,
  		.extra1		= SYSCTL_ZERO,
- 		.extra2		= &two,
+ 		.extra2		= SYSCTL_TWO,
 _

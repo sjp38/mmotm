@@ -1,0 +1,118 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, vmalloc: unpoison VM_ALLOC pages after mapping
+
+Make KASAN unpoison vmalloc mappings after they have been mapped in when
+it's possible: for vmalloc() (indentified via VM_ALLOC) and vm_map_ram().
+
+The reasons for this are:
+
+- For vmalloc() and vm_map_ram(): pages don't get unpoisoned in case
+  mapping them fails.
+- For vmalloc(): HW_TAGS KASAN needs pages to be mapped to set tags via
+  kasan_unpoison_vmalloc().
+
+As a part of these changes, the return value of __vmalloc_node_range() is
+changed to area->addr.  This is a non-functional change, as
+__vmalloc_area_node() returns area->addr anyway.
+
+Link: https://lkml.kernel.org/r/fcb98980e6fcd3c4be6acdcb5d6110898ef28548.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |   30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
+
+--- a/mm/vmalloc.c~kasan-vmalloc-unpoison-vm_alloc-pages-after-mapping
++++ a/mm/vmalloc.c
+@@ -2210,14 +2210,15 @@ void *vm_map_ram(struct page **pages, un
+ 		mem = (void *)addr;
+ 	}
+ 
+-	mem = kasan_unpoison_vmalloc(mem, size);
+-
+ 	if (vmap_pages_range(addr, addr + size, PAGE_KERNEL,
+ 				pages, PAGE_SHIFT) < 0) {
+ 		vm_unmap_ram(mem, count);
+ 		return NULL;
+ 	}
+ 
++	/* Mark the pages as accessible, now that they are mapped. */
++	mem = kasan_unpoison_vmalloc(mem, size);
++
+ 	return mem;
+ }
+ EXPORT_SYMBOL(vm_map_ram);
+@@ -2445,7 +2446,14 @@ static struct vm_struct *__get_vm_area_n
+ 
+ 	setup_vmalloc_vm(area, va, flags, caller);
+ 
+-	area->addr = kasan_unpoison_vmalloc(area->addr, requested_size);
++	/*
++	 * Mark pages for non-VM_ALLOC mappings as accessible. Do it now as a
++	 * best-effort approach, as they can be mapped outside of vmalloc code.
++	 * For VM_ALLOC mappings, the pages are marked as accessible after
++	 * getting mapped in __vmalloc_node_range().
++	 */
++	if (!(flags & VM_ALLOC))
++		area->addr = kasan_unpoison_vmalloc(area->addr, requested_size);
+ 
+ 	return area;
+ }
+@@ -3055,7 +3063,7 @@ void *__vmalloc_node_range(unsigned long
+ 			const void *caller)
+ {
+ 	struct vm_struct *area;
+-	void *addr;
++	void *ret;
+ 	unsigned long real_size = size;
+ 	unsigned long real_align = align;
+ 	unsigned int shift = PAGE_SHIFT;
+@@ -3117,10 +3125,13 @@ again:
+ 		prot = arch_vmap_pgprot_tagged(prot);
+ 
+ 	/* Allocate physical pages and map them into vmalloc space. */
+-	addr = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
+-	if (!addr)
++	ret = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
++	if (!ret)
+ 		goto fail;
+ 
++	/* Mark the pages as accessible, now that they are mapped. */
++	area->addr = kasan_unpoison_vmalloc(area->addr, real_size);
++
+ 	/*
+ 	 * In this function, newly allocated vm_struct has VM_UNINITIALIZED
+ 	 * flag. It means that vm_struct is not fully initialized.
+@@ -3132,7 +3143,7 @@ again:
+ 	if (!(vm_flags & VM_DEFER_KMEMLEAK))
+ 		kmemleak_vmalloc(area, size, gfp_mask);
+ 
+-	return addr;
++	return area->addr;
+ 
+ fail:
+ 	if (shift > PAGE_SHIFT) {
+@@ -3816,7 +3827,10 @@ retry:
+ 	}
+ 	spin_unlock(&vmap_area_lock);
+ 
+-	/* mark allocated areas as accessible */
++	/*
++	 * Mark allocated areas as accessible. Do it now as a best-effort
++	 * approach, as they can be mapped outside of vmalloc code.
++	 */
+ 	for (area = 0; area < nr_vms; area++)
+ 		vms[area]->addr = kasan_unpoison_vmalloc(vms[area]->addr,
+ 							 vms[area]->size);
+_

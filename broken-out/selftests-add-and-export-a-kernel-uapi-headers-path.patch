@@ -1,0 +1,54 @@
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Subject: selftests: add and export a kernel uapi headers path
+
+Kernel uapi headers can be present at different paths depending upon how
+the build was invoked.  It becomes impossible for the tests to include the
+correct headers directory.  Set and export KHDR_INCLUDES variable to make
+it possible for sub make files to include the header files.
+
+Link: https://lkml.kernel.org/r/20220119101531.2850400-3-usama.anjum@collabora.com
+Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Andr Almeida <andrealmeid@collabora.com>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Mat Martineau <mathew.j.martineau@linux.intel.com>
+Cc: Matthieu Baerts <matthieu.baerts@tessares.net>
+Cc: Mickal Salan <mic@digikod.net>
+Cc: Minghao Chi <chi.minghao@zte.com.cn>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/Makefile |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/tools/testing/selftests/Makefile~selftests-add-and-export-a-kernel-uapi-headers-path
++++ a/tools/testing/selftests/Makefile
+@@ -129,8 +129,11 @@ ifneq ($(KBUILD_OUTPUT),)
+   # $(realpath ...) resolves symlinks
+   abs_objtree := $(realpath $(abs_objtree))
+   BUILD := $(abs_objtree)/kselftest
++  KHDR_INCLUDES := -I${abs_objtree}/usr/include
+ else
+   BUILD := $(CURDIR)
++  abs_srctree := $(shell cd $(top_srcdir) && pwd)
++  KHDR_INCLUDES := -I${abs_srctree}/usr/include
+   DEFAULT_INSTALL_HDR_PATH := 1
+ endif
+ 
+@@ -139,6 +142,7 @@ include $(top_srcdir)/scripts/subarch.in
+ ARCH           ?= $(SUBARCH)
+ export KSFT_KHDR_INSTALL_DONE := 1
+ export BUILD
++export KHDR_INCLUDES
+ 
+ # set default goal to all, so make without a target runs all, even when
+ # all isn't the first target in the file.
+_

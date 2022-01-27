@@ -1,0 +1,41 @@
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Subject: selftests: landlock: add the uapi headers include variable
+
+Out of tree build of this test fails if relative path of the output
+directory is specified.  Add the KHDR_INCLUDES to correctly reach the
+headers.
+
+Link: https://lkml.kernel.org/r/20220119101531.2850400-7-usama.anjum@collabora.com
+Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Andr Almeida <andrealmeid@collabora.com>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Mat Martineau <mathew.j.martineau@linux.intel.com>
+Cc: Matthieu Baerts <matthieu.baerts@tessares.net>
+Cc: Mickal Salan <mic@digikod.net>
+Cc: Minghao Chi <chi.minghao@zte.com.cn>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/landlock/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/tools/testing/selftests/landlock/Makefile~selftests-landlock-add-the-uapi-headers-include-variable
++++ a/tools/testing/selftests/landlock/Makefile
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+-CFLAGS += -Wall -O2
++CFLAGS += -Wall -O2 $(KHDR_INCLUDES)
+ 
+ src_test := $(wildcard *_test.c)
+ 
+_

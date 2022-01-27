@@ -1,0 +1,57 @@
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Subject: selftests: vm: remove dependecy from internal kernel macros
+
+The defination of swap() is used from kernel's internal header when this
+test is built in source tree.  The build fails when this test is built out
+of source tree as defination of swap() isn't found.  Selftests shouldn't
+depend on kernel's internal header files.  They can only depend on uapi
+header files.  Add the defination of swap() to fix the build error:
+
+	gcc -Wall  -I/linux_mainline2/build/usr/include -no-pie    userfaultfd.c -lrt -lpthread -o /linux_mainline2/build/kselftest/vm/userfaultfd
+	userfaultfd.c: In function `userfaultfd_stress':
+	userfaultfd.c:1530:3: warning: implicit declaration of function `swap'; did you mean `swab'? [-Wimplicit-function-declaration]
+	 1530 |   swap(area_src, area_dst);
+	      |   ^~~~
+	      |   swab
+	/usr/bin/ld: /tmp/cclUUH7V.o: in function `userfaultfd_stress':
+	userfaultfd.c:(.text+0x4d64): undefined reference to `swap'
+	/usr/bin/ld: userfaultfd.c:(.text+0x4d82): undefined reference to `swap'
+	collect2: error: ld returned 1 exit status
+
+Link: https://lkml.kernel.org/r/20220119101531.2850400-11-usama.anjum@collabora.com
+Fixes: 2c769ed7137a ("tools/testing/selftests/vm/userfaultfd.c: use swap() to make code cleaner")
+Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Reviewed-by: Alistair Popple <apopple@nvidia.com>
+Cc: Andr Almeida <andrealmeid@collabora.com>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Mat Martineau <mathew.j.martineau@linux.intel.com>
+Cc: Matthieu Baerts <matthieu.baerts@tessares.net>
+Cc: Mickal Salan <mic@digikod.net>
+Cc: Minghao Chi <chi.minghao@zte.com.cn>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/vm/userfaultfd.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/tools/testing/selftests/vm/userfaultfd.c~selftests-vm-remove-dependecy-from-internal-kernel-macros
++++ a/tools/testing/selftests/vm/userfaultfd.c
+@@ -119,6 +119,9 @@ struct uffd_stats {
+ 				 ~(unsigned long)(sizeof(unsigned long long) \
+ 						  -  1)))
+ 
++#define swap(a, b) \
++	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
++
+ const char *examples =
+     "# Run anonymous memory test on 100MiB region with 99999 bounces:\n"
+     "./userfaultfd anon 100 99999\n\n"
+_

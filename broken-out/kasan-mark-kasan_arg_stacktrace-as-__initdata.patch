@@ -1,0 +1,53 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: mark kasan_arg_stacktrace as __initdata
+
+As kasan_arg_stacktrace is only used in __init functions, mark it as
+__initdata instead of __ro_after_init to allow it be freed after boot.
+
+The other enums for KASAN args are used in kasan_init_hw_tags_cpu(), which
+is not marked as __init as a CPU can be hot-plugged after boot.  Clarify
+this in a comment.
+
+Link: https://lkml.kernel.org/r/7fa090865614f8e0c6c1265508efb1d429afaa50.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Suggested-by: Marco Elver <elver@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/hw_tags.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- a/mm/kasan/hw_tags.c~kasan-mark-kasan_arg_stacktrace-as-__initdata
++++ a/mm/kasan/hw_tags.c
+@@ -40,7 +40,7 @@ enum kasan_arg_stacktrace {
+ 
+ static enum kasan_arg kasan_arg __ro_after_init;
+ static enum kasan_arg_mode kasan_arg_mode __ro_after_init;
+-static enum kasan_arg_stacktrace kasan_arg_stacktrace __ro_after_init;
++static enum kasan_arg_stacktrace kasan_arg_stacktrace __initdata;
+ 
+ /* Whether KASAN is enabled at all. */
+ DEFINE_STATIC_KEY_FALSE(kasan_flag_enabled);
+@@ -116,7 +116,10 @@ static inline const char *kasan_mode_inf
+ 		return "sync";
+ }
+ 
+-/* kasan_init_hw_tags_cpu() is called for each CPU. */
++/*
++ * kasan_init_hw_tags_cpu() is called for each CPU.
++ * Not marked as __init as a CPU can be hot-plugged after boot.
++ */
+ void kasan_init_hw_tags_cpu(void)
+ {
+ 	/*
+_

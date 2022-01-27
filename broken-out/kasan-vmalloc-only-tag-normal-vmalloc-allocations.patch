@@ -1,0 +1,180 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, vmalloc: only tag normal vmalloc allocations
+
+The kernel can use to allocate executable memory.  The only supported way
+to do that is via __vmalloc_node_range() with the executable bit set in
+the prot argument.  (vmap() resets the bit via pgprot_nx()).
+
+Once tag-based KASAN modes start tagging vmalloc allocations, executing
+code from such allocations will lead to the PC register getting a tag,
+which is not tolerated by the kernel.
+
+Only tag the allocations for normal kernel pages.
+
+Link: https://lkml.kernel.org/r/fbfd9939a4dc375923c9a5c6b9e7ab05c26b8c6b.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kasan.h |    7 +++--
+ mm/kasan/hw_tags.c    |    7 +++++
+ mm/kasan/shadow.c     |    7 +++++
+ mm/vmalloc.c          |   49 +++++++++++++++++++++++-----------------
+ 4 files changed, 47 insertions(+), 23 deletions(-)
+
+--- a/include/linux/kasan.h~kasan-vmalloc-only-tag-normal-vmalloc-allocations
++++ a/include/linux/kasan.h
+@@ -27,9 +27,10 @@ struct kunit_kasan_expectation {
+ 
+ typedef unsigned int __bitwise kasan_vmalloc_flags_t;
+ 
+-#define KASAN_VMALLOC_NONE	0x00u
+-#define KASAN_VMALLOC_INIT	0x01u
+-#define KASAN_VMALLOC_VM_ALLOC	0x02u
++#define KASAN_VMALLOC_NONE		0x00u
++#define KASAN_VMALLOC_INIT		0x01u
++#define KASAN_VMALLOC_VM_ALLOC		0x02u
++#define KASAN_VMALLOC_PROT_NORMAL	0x04u
+ 
+ #if defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)
+ 
+--- a/mm/kasan/hw_tags.c~kasan-vmalloc-only-tag-normal-vmalloc-allocations
++++ a/mm/kasan/hw_tags.c
+@@ -247,6 +247,13 @@ void *__kasan_unpoison_vmalloc(const voi
+ 	if (!(flags & KASAN_VMALLOC_VM_ALLOC))
+ 		return (void *)start;
+ 
++	/*
++	 * Don't tag executable memory.
++	 * The kernel doesn't tolerate having the PC register tagged.
++	 */
++	if (!(flags & KASAN_VMALLOC_PROT_NORMAL))
++		return (void *)start;
++
+ 	tag = kasan_random_tag();
+ 	start = set_tag(start, tag);
+ 
+--- a/mm/kasan/shadow.c~kasan-vmalloc-only-tag-normal-vmalloc-allocations
++++ a/mm/kasan/shadow.c
+@@ -488,6 +488,13 @@ void *__kasan_unpoison_vmalloc(const voi
+ 	if (!is_vmalloc_or_module_addr(start))
+ 		return (void *)start;
+ 
++	/*
++	 * Don't tag executable memory.
++	 * The kernel doesn't tolerate having the PC register tagged.
++	 */
++	if (!(flags & KASAN_VMALLOC_PROT_NORMAL))
++		return (void *)start;
++
+ 	start = set_tag(start, kasan_random_tag());
+ 	kasan_unpoison(start, size, false);
+ 	return (void *)start;
+--- a/mm/vmalloc.c~kasan-vmalloc-only-tag-normal-vmalloc-allocations
++++ a/mm/vmalloc.c
+@@ -2221,7 +2221,7 @@ void *vm_map_ram(struct page **pages, un
+ 	 * With hardware tag-based KASAN, marking is skipped for
+ 	 * non-VM_ALLOC mappings, see __kasan_unpoison_vmalloc().
+ 	 */
+-	mem = kasan_unpoison_vmalloc(mem, size, KASAN_VMALLOC_NONE);
++	mem = kasan_unpoison_vmalloc(mem, size, KASAN_VMALLOC_PROT_NORMAL);
+ 
+ 	return mem;
+ }
+@@ -2460,7 +2460,7 @@ static struct vm_struct *__get_vm_area_n
+ 	 */
+ 	if (!(flags & VM_ALLOC))
+ 		area->addr = kasan_unpoison_vmalloc(area->addr, requested_size,
+-							KASAN_VMALLOC_NONE);
++						    KASAN_VMALLOC_PROT_NORMAL);
+ 
+ 	return area;
+ }
+@@ -3071,7 +3071,7 @@ void *__vmalloc_node_range(unsigned long
+ {
+ 	struct vm_struct *area;
+ 	void *ret;
+-	kasan_vmalloc_flags_t kasan_flags;
++	kasan_vmalloc_flags_t kasan_flags = KASAN_VMALLOC_NONE;
+ 	unsigned long real_size = size;
+ 	unsigned long real_align = align;
+ 	unsigned int shift = PAGE_SHIFT;
+@@ -3124,21 +3124,28 @@ again:
+ 		goto fail;
+ 	}
+ 
+-	/* Prepare arguments for __vmalloc_area_node(). */
+-	if (kasan_hw_tags_enabled() &&
+-	    pgprot_val(prot) == pgprot_val(PAGE_KERNEL)) {
+-		/*
+-		 * Modify protection bits to allow tagging.
+-		 * This must be done before mapping in __vmalloc_area_node().
+-		 */
+-		prot = arch_vmap_pgprot_tagged(prot);
++	/*
++	 * Prepare arguments for __vmalloc_area_node() and
++	 * kasan_unpoison_vmalloc().
++	 */
++	if (pgprot_val(prot) == pgprot_val(PAGE_KERNEL)) {
++		if (kasan_hw_tags_enabled()) {
++			/*
++			 * Modify protection bits to allow tagging.
++			 * This must be done before mapping.
++			 */
++			prot = arch_vmap_pgprot_tagged(prot);
+ 
+-		/*
+-		 * Skip page_alloc poisoning and zeroing for physical pages
+-		 * backing VM_ALLOC mapping. Memory is instead poisoned and
+-		 * zeroed by kasan_unpoison_vmalloc().
+-		 */
+-		gfp_mask |= __GFP_SKIP_KASAN_UNPOISON | __GFP_SKIP_ZERO;
++			/*
++			 * Skip page_alloc poisoning and zeroing for physical
++			 * pages backing VM_ALLOC mapping. Memory is instead
++			 * poisoned and zeroed by kasan_unpoison_vmalloc().
++			 */
++			gfp_mask |= __GFP_SKIP_KASAN_UNPOISON | __GFP_SKIP_ZERO;
++		}
++
++		/* Take note that the mapping is PAGE_KERNEL. */
++		kasan_flags |= KASAN_VMALLOC_PROT_NORMAL;
+ 	}
+ 
+ 	/* Allocate physical pages and map them into vmalloc space. */
+@@ -3152,10 +3159,13 @@ again:
+ 	 * (except for the should_skip_init() check) to make sure that memory
+ 	 * is initialized under the same conditions regardless of the enabled
+ 	 * KASAN mode.
++	 * Tag-based KASAN modes only assign tags to normal non-executable
++	 * allocations, see __kasan_unpoison_vmalloc().
+ 	 */
+-	kasan_flags = KASAN_VMALLOC_VM_ALLOC;
++	kasan_flags |= KASAN_VMALLOC_VM_ALLOC;
+ 	if (!want_init_on_free() && want_init_on_alloc(gfp_mask))
+ 		kasan_flags |= KASAN_VMALLOC_INIT;
++	/* KASAN_VMALLOC_PROT_NORMAL already set if required. */
+ 	area->addr = kasan_unpoison_vmalloc(area->addr, real_size, kasan_flags);
+ 
+ 	/*
+@@ -3861,8 +3871,7 @@ retry:
+ 	 */
+ 	for (area = 0; area < nr_vms; area++)
+ 		vms[area]->addr = kasan_unpoison_vmalloc(vms[area]->addr,
+-							 vms[area]->size,
+-							 KASAN_VMALLOC_NONE);
++				vms[area]->size, KASAN_VMALLOC_PROT_NORMAL);
+ 
+ 	kfree(vas);
+ 	return vms;
+_

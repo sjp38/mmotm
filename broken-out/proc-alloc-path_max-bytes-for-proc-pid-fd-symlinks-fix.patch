@@ -1,0 +1,29 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: proc-alloc-path_max-bytes-for-proc-pid-fd-symlinks-fix
+
+remove now-unneeded cast
+
+Reported-by: kernel test robot <lkp@intel.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: Hao Lee <haolee.swjtu@gmail.com>
+Cc: James Morris <jamorris@linux.microsoft.com>
+Cc: Kees Cook <keescook@chromium.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/base.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/proc/base.c~proc-alloc-path_max-bytes-for-proc-pid-fd-symlinks-fix
++++ a/fs/proc/base.c
+@@ -1764,7 +1764,7 @@ out:
+ 
+ static int do_proc_readlink(struct path *path, char __user *buffer, int buflen)
+ {
+-	char *tmp = (char *)kmalloc(PATH_MAX, GFP_KERNEL);
++	char *tmp = kmalloc(PATH_MAX, GFP_KERNEL);
+ 	char *pathname;
+ 	int len;
+ 
+_

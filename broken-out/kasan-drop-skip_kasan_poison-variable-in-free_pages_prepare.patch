@@ -1,0 +1,45 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: drop skip_kasan_poison variable in free_pages_prepare
+
+skip_kasan_poison is only used in a single place.  Call
+should_skip_kasan_poison() directly for simplicity.
+
+Link: https://lkml.kernel.org/r/1d33212e79bc9ef0b4d3863f903875823e89046f.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Suggested-by: Marco Elver <elver@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/page_alloc.c~kasan-drop-skip_kasan_poison-variable-in-free_pages_prepare
++++ a/mm/page_alloc.c
+@@ -1301,7 +1301,6 @@ static __always_inline bool free_pages_p
+ 			unsigned int order, bool check_free, fpi_t fpi_flags)
+ {
+ 	int bad = 0;
+-	bool skip_kasan_poison = should_skip_kasan_poison(page, fpi_flags);
+ 	bool init = want_init_on_free();
+ 
+ 	VM_BUG_ON_PAGE(PageTail(page), page);
+@@ -1375,7 +1374,7 @@ static __always_inline bool free_pages_p
+ 	 * With hardware tag-based KASAN, memory tags must be set before the
+ 	 * page becomes unavailable via debug_pagealloc or arch_free_page.
+ 	 */
+-	if (!skip_kasan_poison) {
++	if (!should_skip_kasan_poison(page, fpi_flags)) {
+ 		kasan_poison_pages(page, order, init);
+ 
+ 		/* Memory is already initialized if KASAN did it internally. */
+_

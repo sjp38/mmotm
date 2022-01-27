@@ -1,0 +1,45 @@
+From: Ira Weiny <ira.weiny@intel.com>
+Subject: highmem: document kunmap_local()
+
+Some users of kmap() add an offset to the kmap() address to be used
+during the mapping.
+
+When converting to kmap_local_page() the base address does not
+need to be stored because any address within the page can be used in
+kunmap_local().  However, this was not clear from the documentation and
+cause some questions.[1]
+
+Document that any address in the page can be used in kunmap_local() to
+clarify this for future users.
+
+[1] https://lore.kernel.org/lkml/20211213154543.GM3538886@iweiny-DESK2.sc.intel.com/
+
+Link: https://lkml.kernel.org/r/20220124013045.806718-1-ira.weiny@intel.com
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/highmem-internal.h |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+--- a/include/linux/highmem-internal.h~highmem-document-kunmap_local
++++ a/include/linux/highmem-internal.h
+@@ -246,6 +246,17 @@ do {								\
+ 	__kunmap_atomic(__addr);				\
+ } while (0)
+ 
++/**
++ * kunmap_local - Unmap a page mapped via kmap_local_page().
++ * @__addr: An address within the page mapped
++ *
++ * __addr is often an address returned from kmap_local_page().  However,
++ * this address can be any address within the mapped page.  It does not need to
++ * be the exact address returned from kmap_local_page()
++ *
++ * Unmapping should be done in the reverse order of the mapping.  See
++ * kmap_local_page() for details.
++ */
+ #define kunmap_local(__addr)					\
+ do {								\
+ 	BUILD_BUG_ON(__same_type((__addr), struct page *));	\
+_

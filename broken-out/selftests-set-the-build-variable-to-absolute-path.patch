@@ -1,0 +1,115 @@
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Subject: selftests: set the BUILD variable to absolute path
+
+Patch series "selftests: Fix separate output directory builds", v2.
+
+Build of several selftests fail if separate output directory is
+specified by the following methods:
+1) make -C tools/testing/selftests O=<build_dir>
+2) export KBUILD_OUTPUT="build_dir"; make -C tools/testing/selftests
+
+Build fails because of several reasons:
+1) The kernel headers aren't found.
+2) The path of output objects is wrong and hence unaccessible.
+
+These problems can be solved by:
+1) Including the correct path of uapi header files
+2) By setting the BUILD variable correctly inside Makefile
+
+Following different build scenarios have been tested after making these
+changes to verify that nothing gets broken with these changes:
+make -C tools/testing/selftests
+make -C tools/testing/selftests/futex
+make -C tools/testing/selftests/kvm
+make -C tools/testing/selftests/landlock
+make -C tools/testing/selftests/net
+make -C tools/testing/selftests/net/mptcp
+make -C tools/testing/selftests/vm
+make -C tools/testing/selftests O=build
+make -C tools/testing/selftests o=/opt/build
+export KBUILD_OUTPUT="/opt/build"; make -C tools/testing/selftests
+export KBUILD_OUTPUT="build"; make -C tools/testing/selftests
+cd <any_dir>; make -C <src_path>/tools/testing/selftests
+cd <any_dir>; make -C <src_path>/tools/testing/selftests O=build
+
+
+This patch (of 10):
+
+The build of kselftests fails if relative path is specified through
+KBUILD_OUTPUT or O=<path> method.  BUILD variable is used to determine the
+path of the output objects.  When make is run from other directories with
+relative paths, the exact path of the build objects is ambiguous and build
+fails.
+
+	make[1]: Entering directory '/home/usama/repos/kernel/linux_mainline2/tools/testing/selftests/alsa'
+	gcc     mixer-test.c -L/usr/lib/x86_64-linux-gnu -lasound  -o build/kselftest/alsa/mixer-test
+	/usr/bin/ld: cannot open output file build/kselftest/alsa/mixer-test
+
+Set the BUILD variable to the absolute path of the output directory.  Make
+the logic readable and easy to follow.  Use spaces instead of tabs for
+indentation as if with tab indentation is considered recipe in make.
+
+Link: https://lkml.kernel.org/r/20220119101531.2850400-1-usama.anjum@collabora.com
+Link: https://lkml.kernel.org/r/20220119101531.2850400-2-usama.anjum@collabora.com
+Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: Andr Almeida <andrealmeid@collabora.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Mickal Salan <mic@digikod.net>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Mat Martineau <mathew.j.martineau@linux.intel.com>
+Cc: Matthieu Baerts <matthieu.baerts@tessares.net>
+Cc: Minghao Chi <chi.minghao@zte.com.cn>
+Cc: Alistair Popple <apopple@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/Makefile |   26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
+
+--- a/tools/testing/selftests/Makefile~selftests-set-the-build-variable-to-absolute-path
++++ a/tools/testing/selftests/Makefile
+@@ -114,19 +114,27 @@ ifdef building_out_of_srctree
+ override LDFLAGS =
+ endif
+ 
+-ifneq ($(O),)
+-	BUILD := $(O)/kselftest
++top_srcdir ?= ../../..
++
++ifeq ("$(origin O)", "command line")
++  KBUILD_OUTPUT := $(O)
++endif
++
++ifneq ($(KBUILD_OUTPUT),)
++  # Make's built-in functions such as $(abspath ...), $(realpath ...) cannot
++  # expand a shell special character '~'. We use a somewhat tedious way here.
++  abs_objtree := $(shell cd $(top_srcdir) && mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) && pwd)
++  $(if $(abs_objtree),, \
++    $(error failed to create output directory "$(KBUILD_OUTPUT)"))
++  # $(realpath ...) resolves symlinks
++  abs_objtree := $(realpath $(abs_objtree))
++  BUILD := $(abs_objtree)/kselftest
+ else
+-	ifneq ($(KBUILD_OUTPUT),)
+-		BUILD := $(KBUILD_OUTPUT)/kselftest
+-	else
+-		BUILD := $(shell pwd)
+-		DEFAULT_INSTALL_HDR_PATH := 1
+-	endif
++  BUILD := $(CURDIR)
++  DEFAULT_INSTALL_HDR_PATH := 1
+ endif
+ 
+ # Prepare for headers install
+-top_srcdir ?= ../../..
+ include $(top_srcdir)/scripts/subarch.include
+ ARCH           ?= $(SUBARCH)
+ export KSFT_KHDR_INSTALL_DONE := 1
+_

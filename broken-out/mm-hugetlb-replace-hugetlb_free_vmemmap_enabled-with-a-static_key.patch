@@ -47,7 +47,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
 --- a/include/linux/page-flags.h~mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key
 +++ a/include/linux/page-flags.h
-@@ -194,7 +194,14 @@ enum pageflags {
+@@ -191,7 +191,14 @@ enum pageflags {
  #ifndef __GENERATING_BOUNDS_H
  
  #ifdef CONFIG_HUGETLB_PAGE_FREE_VMEMMAP
@@ -63,7 +63,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  /*
   * If the feature of freeing some vmemmap pages associated with each HugeTLB
-@@ -214,7 +221,7 @@ extern bool hugetlb_free_vmemmap_enabled
+@@ -211,7 +218,7 @@ extern bool hugetlb_free_vmemmap_enabled
   */
  static __always_inline const struct page *page_fixed_fake_head(const struct page *page)
  {
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return page;
  
  	/*
-@@ -242,6 +249,11 @@ static inline const struct page *page_fi
+@@ -239,6 +246,11 @@ static inline const struct page *page_fi
  {
  	return page;
  }

@@ -1,0 +1,86 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, arm64: don't tag executable vmalloc allocations
+
+Besides asking vmalloc memory to be executable via the prot argument of
+__vmalloc_node_range() (see the previous patch), the kernel can skip that
+bit and instead mark memory as executable via set_memory_x().
+
+Once tag-based KASAN modes start tagging vmalloc allocations, executing
+code from such allocations will lead to the PC register getting a tag,
+which is not tolerated by the kernel.
+
+Generic kernel code typically allocates memory via module_alloc() if it
+intends to mark memory as executable.  (On arm64 module_alloc() uses
+__vmalloc_node_range() without setting the executable bit).
+
+Thus, reset pointer tags of pointers returned from module_alloc().
+
+However, on arm64 there's an exception: the eBPF subsystem.  Instead of
+using module_alloc(), it uses vmalloc() (via bpf_jit_alloc_exec()) to
+allocate its JIT region.
+
+Thus, reset pointer tags of pointers returned from bpf_jit_alloc_exec().
+
+Resetting tags for these pointers results in untagged pointers being
+passed to set_memory_x().  This causes conflicts in arithmetic checks in
+change_memory_common(), as vm_struct->addr pointer returned by
+find_vm_area() is tagged.
+
+Reset pointer tag of find_vm_area(addr)->addr in change_memory_common().
+
+Link: https://lkml.kernel.org/r/b7b2595423340cd7d76b770e5d519acf3b72f0ab.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arm64/kernel/module.c    |    3 ++-
+ arch/arm64/mm/pageattr.c      |    2 +-
+ arch/arm64/net/bpf_jit_comp.c |    3 ++-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
+
+--- a/arch/arm64/kernel/module.c~kasan-arm64-dont-tag-executable-vmalloc-allocations
++++ a/arch/arm64/kernel/module.c
+@@ -63,7 +63,8 @@ void *module_alloc(unsigned long size)
+ 		return NULL;
+ 	}
+ 
+-	return p;
++	/* Memory is intended to be executable, reset the pointer tag. */
++	return kasan_reset_tag(p);
+ }
+ 
+ enum aarch64_reloc_op {
+--- a/arch/arm64/mm/pageattr.c~kasan-arm64-dont-tag-executable-vmalloc-allocations
++++ a/arch/arm64/mm/pageattr.c
+@@ -85,7 +85,7 @@ static int change_memory_common(unsigned
+ 	 */
+ 	area = find_vm_area((void *)addr);
+ 	if (!area ||
+-	    end > (unsigned long)area->addr + area->size ||
++	    end > (unsigned long)kasan_reset_tag(area->addr) + area->size ||
+ 	    !(area->flags & VM_ALLOC))
+ 		return -EINVAL;
+ 
+--- a/arch/arm64/net/bpf_jit_comp.c~kasan-arm64-dont-tag-executable-vmalloc-allocations
++++ a/arch/arm64/net/bpf_jit_comp.c
+@@ -1150,7 +1150,8 @@ u64 bpf_jit_alloc_exec_limit(void)
+ 
+ void *bpf_jit_alloc_exec(unsigned long size)
+ {
+-	return vmalloc(size);
++	/* Memory is intended to be executable, reset the pointer tag. */
++	return kasan_reset_tag(vmalloc(size));
+ }
+ 
+ void bpf_jit_free_exec(void *addr)
+_

@@ -1,0 +1,44 @@
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: sysctl: documentation: fix table format warning
+
+Fix malformed table warning in sysctl documentation:
+(don't use ':'s)
+
+Documentation/admin-guide/sysctl/kernel.rst:798: WARNING: Malformed table.
+Text in column margin in table line 7.
+
+=====  ============================================
+bit 0  print all tasks info
+bit 1  print system memory info
+bit 2  print timer info
+bit 3  print locks info if ``CONFIG_LOCKDEP`` is on
+bit 4  print ftrace buffer
+bit 5: print all printk messages in buffer
+bit 6: print all CPUs backtrace (if available in the arch)
+
+Link: https://lkml.kernel.org/r/20220109055635.6999-1-rdunlap@infradead.org
+Fixes: 934d51cad60c ("docs: sysctl/kernel: add missing bit to panic_print")
+Fixes: addc64999934 ("panic: add option to dump all CPUs backtraces in panic_print")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Reviewed-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/sysctl/kernel.rst |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/Documentation/admin-guide/sysctl/kernel.rst~sysctl-documentation-fix-table-format-warning
++++ a/Documentation/admin-guide/sysctl/kernel.rst
+@@ -795,8 +795,8 @@ bit 1  print system memory info
+ bit 2  print timer info
+ bit 3  print locks info if ``CONFIG_LOCKDEP`` is on
+ bit 4  print ftrace buffer
+-bit 5: print all printk messages in buffer
+-bit 6: print all CPUs backtrace (if available in the arch)
++bit 5  print all printk messages in buffer
++bit 6  print all CPUs backtrace (if available in the arch)
+ =====  ============================================
+ 
+ So for example to print tasks and memory info on panic, user can::
+_

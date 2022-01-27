@@ -305,6 +305,7 @@ Cc: Ponnuvel Palaniyappan <ponnuvel.palaniyappan@canonical.com>
 Cc: Minchan Kim <minchan@kernel.org>
 Cc: Huang Ying <ying.huang@intel.com>
 Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -314,7 +315,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/rmap.c~mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read
 +++ a/mm/rmap.c
-@@ -1570,7 +1570,18 @@ static bool try_to_unmap_one(struct page
+@@ -1599,7 +1599,18 @@ static bool try_to_unmap_one(struct page
  
  			/* MADV_FREE page check */
  			if (!PageSwapBacked(page)) {

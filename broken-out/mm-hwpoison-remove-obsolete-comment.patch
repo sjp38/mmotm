@@ -1,0 +1,33 @@
+From: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Subject: mm/memory-failure.c: remove obsolete comment
+
+With the introduction of mf_mutex, most of memory error handling process
+is mutually exclusive, so the in-line comment about subtlety about
+double-checking PageHWPoison is no more correct.  So remove it.
+
+Link: https://lkml.kernel.org/r/20220125025601.3054511-1-naoya.horiguchi@linux.dev
+Signed-off-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Suggested-by: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+--- a/mm/memory-failure.c~mm-hwpoison-remove-obsolete-comment
++++ a/mm/memory-failure.c
+@@ -2150,12 +2150,6 @@ static int __soft_offline_page(struct pa
+ 		.gfp_mask = GFP_USER | __GFP_MOVABLE | __GFP_RETRY_MAYFAIL,
+ 	};
+ 
+-	/*
+-	 * Check PageHWPoison again inside page lock because PageHWPoison
+-	 * is set by memory_failure() outside page lock. Note that
+-	 * memory_failure() also double-checks PageHWPoison inside page lock,
+-	 * so there's no race between soft_offline_page() and memory_failure().
+-	 */
+ 	lock_page(page);
+ 	if (!PageHuge(page))
+ 		wait_on_page_writeback(page);
+_

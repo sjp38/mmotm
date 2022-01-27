@@ -1,0 +1,48 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, vmalloc: drop outdated VM_KASAN comment
+
+The comment about VM_KASAN in include/linux/vmalloc.c is outdated. 
+VM_KASAN is currently only used to mark vm_areas allocated for kernel
+modules when CONFIG_KASAN_VMALLOC is disabled.
+
+Drop the comment.
+
+Link: https://lkml.kernel.org/r/780395afea83a147b3b5acc36cf2e38f7f8479f9.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/vmalloc.h |   11 -----------
+ 1 file changed, 11 deletions(-)
+
+--- a/include/linux/vmalloc.h~kasan-vmalloc-drop-outdated-vm_kasan-comment
++++ a/include/linux/vmalloc.h
+@@ -35,17 +35,6 @@ struct notifier_block;		/* in notifier.h
+ #define VM_DEFER_KMEMLEAK	0
+ #endif
+ 
+-/*
+- * VM_KASAN is used slightly differently depending on CONFIG_KASAN_VMALLOC.
+- *
+- * If IS_ENABLED(CONFIG_KASAN_VMALLOC), VM_KASAN is set on a vm_struct after
+- * shadow memory has been mapped. It's used to handle allocation errors so that
+- * we don't try to poison shadow on free if it was never allocated.
+- *
+- * Otherwise, VM_KASAN is set for kasan_module_alloc() allocations and used to
+- * determine which allocations need the module shadow freed.
+- */
+-
+ /* bits [20..32] reserved for arch specific ioremap internals */
+ 
+ /*
+_

@@ -1,0 +1,47 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: arm64: select KASAN_VMALLOC for SW/HW_TAGS modes
+
+Generic KASAN already selects KASAN_VMALLOC to allow VMAP_STACK to be
+selected unconditionally, see commit acc3042d62cb9 ("arm64: Kconfig:
+select KASAN_VMALLOC if KANSAN_GENERIC is enabled").
+
+The same change is needed for SW_TAGS KASAN.
+
+HW_TAGS KASAN does not require enabling KASAN_VMALLOC for VMAP_STACK, they
+already work together as is.  Still, selecting KASAN_VMALLOC still makes
+sense to make vmalloc() always protected.  In case any bugs in KASAN's
+vmalloc() support are discovered, the command line kasan.vmalloc flag can
+be used to disable vmalloc() checking.
+
+Select KASAN_VMALLOC for all KASAN modes for arm64.
+
+Link: https://lkml.kernel.org/r/99d6b3ebf57fc1930ff71f9a4a71eea19881b270.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arm64/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/arm64/Kconfig~arm64-select-kasan_vmalloc-for-sw-hw_tags-modes
++++ a/arch/arm64/Kconfig
+@@ -205,7 +205,7 @@ config ARM64
+ 	select IOMMU_DMA if IOMMU_SUPPORT
+ 	select IRQ_DOMAIN
+ 	select IRQ_FORCED_THREADING
+-	select KASAN_VMALLOC if KASAN_GENERIC
++	select KASAN_VMALLOC if KASAN
+ 	select MODULES_USE_ELF_RELA
+ 	select NEED_DMA_MAP_STATE
+ 	select NEED_SG_DMA_LENGTH
+_

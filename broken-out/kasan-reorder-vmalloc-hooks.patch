@@ -1,0 +1,134 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: reorder vmalloc hooks
+
+Group functions that [de]populate shadow memory for vmalloc.  Group
+functions that [un]poison memory for vmalloc.
+
+This patch does no functional changes but prepares KASAN code for adding
+vmalloc support to HW_TAGS KASAN.
+
+Link: https://lkml.kernel.org/r/aeef49eb249c206c4c9acce2437728068da74c28.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kasan.h |   20 ++++++++----------
+ mm/kasan/shadow.c     |   43 ++++++++++++++++++++--------------------
+ 2 files changed, 31 insertions(+), 32 deletions(-)
+
+--- a/include/linux/kasan.h~kasan-reorder-vmalloc-hooks
++++ a/include/linux/kasan.h
+@@ -418,34 +418,32 @@ static inline void kasan_init_hw_tags(vo
+ 
+ #ifdef CONFIG_KASAN_VMALLOC
+ 
++void kasan_populate_early_vm_area_shadow(void *start, unsigned long size);
+ int kasan_populate_vmalloc(unsigned long addr, unsigned long size);
+-void kasan_poison_vmalloc(const void *start, unsigned long size);
+-void kasan_unpoison_vmalloc(const void *start, unsigned long size);
+ void kasan_release_vmalloc(unsigned long start, unsigned long end,
+ 			   unsigned long free_region_start,
+ 			   unsigned long free_region_end);
+ 
+-void kasan_populate_early_vm_area_shadow(void *start, unsigned long size);
++void kasan_unpoison_vmalloc(const void *start, unsigned long size);
++void kasan_poison_vmalloc(const void *start, unsigned long size);
+ 
+ #else /* CONFIG_KASAN_VMALLOC */
+ 
++static inline void kasan_populate_early_vm_area_shadow(void *start,
++						       unsigned long size) { }
+ static inline int kasan_populate_vmalloc(unsigned long start,
+ 					unsigned long size)
+ {
+ 	return 0;
+ }
+-
+-static inline void kasan_poison_vmalloc(const void *start, unsigned long size)
+-{ }
+-static inline void kasan_unpoison_vmalloc(const void *start, unsigned long size)
+-{ }
+ static inline void kasan_release_vmalloc(unsigned long start,
+ 					 unsigned long end,
+ 					 unsigned long free_region_start,
+-					 unsigned long free_region_end) {}
++					 unsigned long free_region_end) { }
+ 
+-static inline void kasan_populate_early_vm_area_shadow(void *start,
+-						       unsigned long size)
++static inline void kasan_unpoison_vmalloc(const void *start, unsigned long size)
++{ }
++static inline void kasan_poison_vmalloc(const void *start, unsigned long size)
+ { }
+ 
+ #endif /* CONFIG_KASAN_VMALLOC */
+--- a/mm/kasan/shadow.c~kasan-reorder-vmalloc-hooks
++++ a/mm/kasan/shadow.c
+@@ -345,27 +345,6 @@ int kasan_populate_vmalloc(unsigned long
+ 	return 0;
+ }
+ 
+-/*
+- * Poison the shadow for a vmalloc region. Called as part of the
+- * freeing process at the time the region is freed.
+- */
+-void kasan_poison_vmalloc(const void *start, unsigned long size)
+-{
+-	if (!is_vmalloc_or_module_addr(start))
+-		return;
+-
+-	size = round_up(size, KASAN_GRANULE_SIZE);
+-	kasan_poison(start, size, KASAN_VMALLOC_INVALID, false);
+-}
+-
+-void kasan_unpoison_vmalloc(const void *start, unsigned long size)
+-{
+-	if (!is_vmalloc_or_module_addr(start))
+-		return;
+-
+-	kasan_unpoison(start, size, false);
+-}
+-
+ static int kasan_depopulate_vmalloc_pte(pte_t *ptep, unsigned long addr,
+ 					void *unused)
+ {
+@@ -496,6 +475,28 @@ void kasan_release_vmalloc(unsigned long
+ 	}
+ }
+ 
++
++void kasan_unpoison_vmalloc(const void *start, unsigned long size)
++{
++	if (!is_vmalloc_or_module_addr(start))
++		return;
++
++	kasan_unpoison(start, size, false);
++}
++
++/*
++ * Poison the shadow for a vmalloc region. Called as part of the
++ * freeing process at the time the region is freed.
++ */
++void kasan_poison_vmalloc(const void *start, unsigned long size)
++{
++	if (!is_vmalloc_or_module_addr(start))
++		return;
++
++	size = round_up(size, KASAN_GRANULE_SIZE);
++	kasan_poison(start, size, KASAN_VMALLOC_INVALID, false);
++}
++
+ #else /* CONFIG_KASAN_VMALLOC */
+ 
+ int kasan_alloc_module_shadow(void *addr, size_t size, gfp_t gfp_mask)
+_

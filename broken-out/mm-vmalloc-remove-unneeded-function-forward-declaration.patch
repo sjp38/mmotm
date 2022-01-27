@@ -1,0 +1,24 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/vmalloc: remove unneeded function forward declaration
+
+The forward declaration for lazy_max_pages() is unnecessary.  Remove it.
+
+Link: https://lkml.kernel.org/r/20220124133752.60663-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/mm/vmalloc.c~mm-vmalloc-remove-unneeded-function-forward-declaration
++++ a/mm/vmalloc.c
+@@ -792,7 +792,6 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vm
+ 
+ static void purge_vmap_area_lazy(void);
+ static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
+-static unsigned long lazy_max_pages(void);
+ 
+ static atomic_long_t nr_vmalloc_pages;
+ 
+_

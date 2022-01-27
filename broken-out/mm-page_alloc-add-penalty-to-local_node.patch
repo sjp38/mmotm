@@ -1,0 +1,98 @@
+From: Wei Yang <richard.weiyang@gmail.com>
+Subject: mm/page_alloc: add penalty to local_node
+
+Commit 54d032ced983 ("mm/page_alloc: use accumulated load when building
+node fallback list") fixed a bug on zonelist order.  This made me think
+about what would happen if we have a node system with the following
+distance matrix.
+
+   Node 0  1  2  3  4  5  6  7
+   ----------------------------
+   0    10 12 12 12 32 32 32 32
+   1    12 10 12 12 32 32 32 32
+   2    12 12 10 12 32 32 32 32
+   3    12 12 12 10 32 32 32 32
+   4    32 32 32 32 10 12 12 12
+   5    32 32 32 32 12 10 12 12
+   6    32 32 32 32 12 12 10 12
+   7    32 32 32 32 12 12 12 10
+
+Unfortunately for this case, the node fallback list gets built like this:
+
+   Node Fallback list
+   ---------------------
+    0:   0  1  2  3  4  5  6  7
+    1:   1  0  2  3  5  6  7  4
+    2:   2  3  0  1  6  7  4  5
+    3:   3  2  0  1  7  4  5  6
+    4:   4  5  6  7  0  1  2  3
+    5:   5  4  6  7  1  2  3  0
+    6:   6  7  4  5  2  3  0  1
+    7:   7  6  4  5  3  0  1  2
+
+We found the order in diagonal block is not expected.  The reason is we
+don't penaltize local node.
+
+After penalizing local node, the node fallback list gets built like this:
+
+   Node Fallback list
+   ---------------------
+   0:   0  1  2  3  4  5  6  7
+   1:   1  2  3  0  5  6  7  4
+   2:   2  3  0  1  6  7  4  5
+   3:   3  0  1  2  7  4  5  6
+   4:   4  5  6  7  0  1  2  3
+   5:   5  6  7  4  1  2  3  0
+   6:   6  7  4  5  2  3  0  1
+   7:   7  4  5  6  3  0  1  2
+
+Now the fallback list is in round-robin order.
+
+I am not very familiar with the node distance pattern, while I tried the
+following distance matrix.  Both of them works with this change.
+
+   Node 0  1  2  3
+   ----------------
+   0    10 10 10 10
+   1    10 10 10 10
+   2    10 10 10 10
+   3    10 10 10 10
+
+   Node 0  1  2  3  4  5  6  7
+   ----------------------------
+   0    10 10 10 10 32 32 32 32
+   1    10 10 10 10 32 32 32 32
+   2    10 10 10 10 32 32 32 32
+   3    10 10 10 10 32 32 32 32
+   4    32 32 32 32 10 10 10 10
+   5    32 32 32 32 10 10 10 10
+   6    32 32 32 32 10 10 10 10
+   7    32 32 32 32 10 10 10 10
+
+Link: https://lkml.kernel.org/r/20220123013537.20491-2-richard.weiyang@gmail.com
+Signed-off-by: Wei Yang <richard.weiyang@gmail.com>
+Cc: Krupa Ramakrishnan <krupa.ramakrishnan@amd.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: David Rientjes <rientjes@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/page_alloc.c~mm-page_alloc-add-penalty-to-local_node
++++ a/mm/page_alloc.c
+@@ -6334,8 +6334,9 @@ static void build_zonelists(pg_data_t *p
+ 		 * So adding penalty to the first node in same
+ 		 * distance group to make it round-robin.
+ 		 */
+-		if (node_distance(local_node, node) !=
+-		    node_distance(local_node, prev_node))
++		if ((node_distance(local_node, node) !=
++		    node_distance(local_node, prev_node)) ||
++		    node == local_node)
+ 			node_load[node] += nr_online_nodes;
+ 
+ 		node_order[nr_nodes++] = node;
+_

@@ -1,0 +1,58 @@
+From: Manfred Spraul <manfred@colorfullife.com>
+Subject: mm/util.c: make kvfree() safe for calling while holding spinlocks
+
+One codepath in find_alloc_undo() calls kvfree() while holding a spinlock.
+Since vfree() can sleep this is a bug.
+
+Previously, the code path used kfree(), and kfree() is safe to be called
+while holding a spinlock.
+
+Minghao proposed to fix this by updating find_alloc_undo().
+
+Alternate proposal to fix this: Instead of changing find_alloc_undo(),
+change kvfree() so that the same rules as for kfree() apply: Having
+different rules for kfree() and kvfree() just asks for bugs.
+
+Disadvantage: Releasing vmalloc'ed memory will be delayed a bit.
+
+Link: https://lkml.kernel.org/r/20211222194828.15320-1-manfred@colorfullife.com
+Link: https://lore.kernel.org/all/20211222081026.484058-1-chi.minghao@zte.com.cn/
+Fixes: fc37a3b8b438 ("[PATCH] ipc sem: use kvmalloc for sem_undo allocation")
+Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Reported-by: Minghao Chi <chi.minghao@zte.com.cn>
+Cc: Vasily Averin <vvs@virtuozzo.com>
+Cc: CGEL ZTE <cgel.zte@gmail.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Davidlohr Bueso <dbueso@suse.de>
+Cc: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Uladzislau Rezki <urezki@gmail.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: <1vier1@web.de>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/util.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/util.c~mm-utilc-make-kvfree-safe-for-calling-while-holding-spinlocks
++++ a/mm/util.c
+@@ -603,12 +603,12 @@ EXPORT_SYMBOL(kvmalloc_node);
+  * It is slightly more efficient to use kfree() or vfree() if you are certain
+  * that you know which one to use.
+  *
+- * Context: Either preemptible task context or not-NMI interrupt.
++ * Context: Any context except NMI interrupt.
+  */
+ void kvfree(const void *addr)
+ {
+ 	if (is_vmalloc_addr(addr))
+-		vfree(addr);
++		vfree_atomic(addr);
+ 	else
+ 		kfree(addr);
+ }
+_

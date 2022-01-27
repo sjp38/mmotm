@@ -1,0 +1,48 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, fork: reset pointer tags of vmapped stacks
+
+Once tag-based KASAN modes start tagging vmalloc() allocations, kernel
+stacks start getting tagged if CONFIG_VMAP_STACK is enabled.
+
+Reset the tag of kernel stack pointers after allocation in
+alloc_thread_stack_node().
+
+For SW_TAGS KASAN, when CONFIG_KASAN_STACK is enabled, the instrumentation
+can't handle the SP register being tagged.
+
+For HW_TAGS KASAN, there's no instrumentation-related issues.  However,
+the impact of having a tagged SP register needs to be properly evaluated,
+so keep it non-tagged for now.
+
+Note, that the memory for the stack allocation still gets tagged to catch
+vmalloc-into-stack out-of-bounds accesses.
+
+Link: https://lkml.kernel.org/r/c6c96f012371ecd80e1936509ebcd3b07a5956f7.1643047180.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Acked-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/fork.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/kernel/fork.c~kasan-fork-reset-pointer-tags-of-vmapped-stacks
++++ a/kernel/fork.c
+@@ -254,6 +254,7 @@ static unsigned long *alloc_thread_stack
+ 	 * so cache the vm_struct.
+ 	 */
+ 	if (stack) {
++		stack = kasan_reset_tag(stack);
+ 		tsk->stack_vm_area = find_vm_area(stack);
+ 		tsk->stack = stack;
+ 	}
+_

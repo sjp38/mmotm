@@ -1,0 +1,67 @@
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: mm: generalize ARCH_HAS_FILTER_PGPROT
+
+ARCH_HAS_FILTER_PGPROT config has duplicate definitions on platforms that
+subscribe it.  Instead make it a generic config option which can be
+selected on applicable platforms when required.
+
+Link: https://lkml.kernel.org/r/1643004823-16441-1-git-send-email-anshuman.khandual@arm.com
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/arm64/Kconfig |    4 +---
+ arch/x86/Kconfig   |    3 ---
+ mm/Kconfig         |    3 +++
+ 3 files changed, 4 insertions(+), 6 deletions(-)
+
+--- a/arch/arm64/Kconfig~mm-generalize-arch_has_filter_pgprot
++++ a/arch/arm64/Kconfig
+@@ -23,6 +23,7 @@ config ARM64
+ 	select ARCH_HAS_DMA_PREP_COHERENT
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+ 	select ARCH_HAS_FAST_MULTIPLIER
++	select ARCH_HAS_FILTER_PGPROT
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select ARCH_HAS_GIGANTIC_PAGE
+@@ -1166,9 +1167,6 @@ config HW_PERF_EVENTS
+ 	def_bool y
+ 	depends on ARM_PMU
+ 
+-config ARCH_HAS_FILTER_PGPROT
+-	def_bool y
+-
+ # Supported by clang >= 7.0
+ config CC_HAVE_SHADOW_CALL_STACK
+ 	def_bool $(cc-option, -fsanitize=shadow-call-stack -ffixed-x18)
+--- a/arch/x86/Kconfig~mm-generalize-arch_has_filter_pgprot
++++ a/arch/x86/Kconfig
+@@ -332,9 +332,6 @@ config GENERIC_CALIBRATE_DELAY
+ config ARCH_HAS_CPU_RELAX
+ 	def_bool y
+ 
+-config ARCH_HAS_FILTER_PGPROT
+-	def_bool y
+-
+ config ARCH_HIBERNATION_POSSIBLE
+ 	def_bool y
+ 
+--- a/mm/Kconfig~mm-generalize-arch_has_filter_pgprot
++++ a/mm/Kconfig
+@@ -744,6 +744,9 @@ config IDLE_PAGE_TRACKING
+ config ARCH_HAS_CACHE_LINE_SIZE
+ 	bool
+ 
++config ARCH_HAS_FILTER_PGPROT
++	bool
++
+ config ARCH_HAS_PTE_DEVMAP
+ 	bool
+ 
+_

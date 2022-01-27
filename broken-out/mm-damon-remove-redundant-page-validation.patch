@@ -1,0 +1,48 @@
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+Subject: mm/damon: remove redundant page validation
+
+It will never get a NULL page by pte_page() as discussed in thread [1],
+thus remove the redundant page validation to fix below Smatch static
+checker warning.
+
+    mm/damon/vaddr.c:405 damon_hugetlb_mkold()
+    warn: 'page' can't be NULL.
+
+[1] https://lore.kernel.org/linux-mm/20220106091200.GA14564@kili/
+
+Link: https://lkml.kernel.org/r/6d32f7d201b8970d53f51b6c5717d472aed2987c.1642386715.git.baolin.wang@linux.alibaba.com
+Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Reviewed-by: SeongJae Park <sj@kernel.org>
+Acked-by: David Rientjes <rientjes@google.com>
+Acked-by: Souptick Joarder <jrdr.linux@gmail.com>
+Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/vaddr.c |    6 ------
+ 1 file changed, 6 deletions(-)
+
+--- a/mm/damon/vaddr.c~mm-damon-remove-redundant-page-validation
++++ a/mm/damon/vaddr.c
+@@ -402,9 +402,6 @@ static void damon_hugetlb_mkold(pte_t *p
+ 	pte_t entry = huge_ptep_get(pte);
+ 	struct page *page = pte_page(entry);
+ 
+-	if (!page)
+-		return;
+-
+ 	get_page(page);
+ 
+ 	if (pte_young(entry)) {
+@@ -564,9 +561,6 @@ static int damon_young_hugetlb_entry(pte
+ 		goto out;
+ 
+ 	page = pte_page(entry);
+-	if (!page)
+-		goto out;
+-
+ 	get_page(page);
+ 
+ 	if (pte_young(entry) || !page_is_idle(page) ||
+_
