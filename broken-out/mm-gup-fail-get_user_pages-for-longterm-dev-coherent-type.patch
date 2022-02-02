@@ -1,0 +1,48 @@
+From: Alex Sierra <alex.sierra@amd.com>
+Subject: mm/gup: fail get_user_pages for LONGTERM dev coherent type
+
+Avoid long term pinning for Coherent device type pages.  This could
+interfere with their own device memory manager.  For now, we are just
+returning error for PIN_LONGTERM Coherent device type pages.  Eventually,
+these type of pages will get migrated to system memory, once the device
+migration pages support is added.
+
+Link: https://lkml.kernel.org/r/20220201154901.7921-4-alex.sierra@amd.com
+Signed-off-by: Alex Sierra <alex.sierra@amd.com>
+Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
+Reviewed-by: Alistair Poppple <apopple@nvidia.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Jerome Glisse <jglisse@redhat.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/gup.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/mm/gup.c~mm-gup-fail-get_user_pages-for-longterm-dev-coherent-type
++++ a/mm/gup.c
+@@ -1870,6 +1870,12 @@ static long check_and_migrate_movable_pa
+ 		 * If we get a movable page, since we are going to be pinning
+ 		 * these entries, try to move them out if possible.
+ 		 */
++		if (is_dev_private_or_coherent_page(head)) {
++			WARN_ON_ONCE(is_device_private_page(head));
++			ret = -EFAULT;
++			goto unpin_pages;
++		}
++
+ 		if (!is_pinnable_page(head)) {
+ 			if (PageHuge(head)) {
+ 				if (!isolate_huge_page(head, &movable_page_list))
+@@ -1900,6 +1906,7 @@ static long check_and_migrate_movable_pa
+ 	if (list_empty(&movable_page_list) && !isolation_error_count)
+ 		return nr_pages;
+ 
++unpin_pages:
+ 	if (gup_flags & FOLL_PIN) {
+ 		unpin_user_pages(pages, nr_pages);
+ 	} else {
+_

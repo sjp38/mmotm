@@ -54,7 +54,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/sched.h~kernel-hung_taskc-monitor-killed-tasks
 +++ a/include/linux/sched.h
-@@ -1069,6 +1069,7 @@ struct task_struct {
+@@ -1065,6 +1065,7 @@ struct task_struct {
  #ifdef CONFIG_DETECT_HUNG_TASK
  	unsigned long			last_switch_count;
  	unsigned long			last_switch_time;
@@ -64,7 +64,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct fs_struct		*fs;
 --- a/kernel/hung_task.c~kernel-hung_taskc-monitor-killed-tasks
 +++ a/kernel/hung_task.c
-@@ -145,6 +145,47 @@ static void check_hung_task(struct task_
+@@ -147,6 +147,47 @@ static void check_hung_task(struct task_
  	touch_nmi_watchdog();
  }
  
@@ -112,7 +112,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * To avoid extending the RCU grace period for an unbounded amount of time,
   * periodically exit the critical section and enter a new one.
-@@ -196,6 +237,9 @@ static void check_hung_uninterruptible_t
+@@ -198,6 +239,9 @@ static void check_hung_uninterruptible_t
  				goto unlock;
  			last_break = jiffies;
  		}

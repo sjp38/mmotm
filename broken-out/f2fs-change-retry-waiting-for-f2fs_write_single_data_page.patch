@@ -1,0 +1,72 @@
+From: NeilBrown <neilb@suse.de>
+Subject: f2fs: change retry waiting for f2fs_write_single_data_page()
+
+f2fs_write_single_data_page() can return -EAGAIN if it cannot get the
+cp_rwsem lock - it holds a page lock and so cannot wait for it.
+
+Some code which calls f2fs_write_single_data_page() use congestion_wait()
+and then tries again.  congestion_wait() doesn't do anything useful as
+congestion is no longer tracked.  So this is just a simple sleep.
+
+A better approach is it wait until the cp_rwsem lock can be taken - then
+try again.  There is certainly no point trying again *before* the lock can
+be taken.
+
+Link: https://lkml.kernel.org/r/164325158956.29787.7016948342209980097.stgit@noble.brown
+Signed-off-by: NeilBrown <neilb@suse.de>
+Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
+Cc: Chao Yu <chao@kernel.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Darrick J. Wong <djwong@kernel.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Paolo Valente <paolo.valente@linaro.org>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/f2fs/compress.c |    6 +++---
+ fs/f2fs/data.c     |    9 ++++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+--- a/fs/f2fs/compress.c~f2fs-change-retry-waiting-for-f2fs_write_single_data_page
++++ a/fs/f2fs/compress.c
+@@ -1505,9 +1505,9 @@ continue_unlock:
+ 				if (IS_NOQUOTA(cc->inode))
+ 					return 0;
+ 				ret = 0;
+-				cond_resched();
+-				congestion_wait(BLK_RW_ASYNC,
+-						DEFAULT_IO_TIMEOUT);
++				/* Wait until we can get the lock, then try again. */
++				f2fs_lock_op(F2FS_I_SB(cc->inode));
++				f2fs_unlock_op(F2FS_I_SB(cc->inode));
+ 				goto retry_write;
+ 			}
+ 			return ret;
+--- a/fs/f2fs/data.c~f2fs-change-retry-waiting-for-f2fs_write_single_data_page
++++ a/fs/f2fs/data.c
+@@ -3047,9 +3047,12 @@ result:
+ 				} else if (ret == -EAGAIN) {
+ 					ret = 0;
+ 					if (wbc->sync_mode == WB_SYNC_ALL) {
+-						cond_resched();
+-						congestion_wait(BLK_RW_ASYNC,
+-							DEFAULT_IO_TIMEOUT);
++						/* Wait until we can get the
++						 * lock, then try again.
++						 */
++						f2fs_lock_op(F2FS_I_SB(mapping->host));
++						f2fs_unlock_op(F2FS_I_SB(mapping->host));
++
+ 						goto retry_write;
+ 					}
+ 					goto next;
+_

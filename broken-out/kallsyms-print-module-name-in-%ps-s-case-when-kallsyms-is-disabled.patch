@@ -1,0 +1,114 @@
+From: Maninder Singh <maninder1.s@samsung.com>
+Subject: kallsyms: print module name in %ps/S case when KALLSYMS is disabled
+
+original:
+With KALLSYMS
+                   %pS                               %ps
+[16.4200]  hello_init+0x0/0x24 [crash]        hello_init [crash]
+
+Without KALLSYMS:
+[16.2200]      0xbe200040                         0xbe200040
+
+With Patch (Without KALLSYMS:) load address + current offset [Module Name]
+
+[13.5993]  0xbe200000+0x40 [crash]           0xbe200000+0x40 [crash]
+
+It will help in better debugging and checking when KALLSYMS is disabled,
+user will get information about module name and load address of module.
+
+verified for arm64:
+/ # insmod /crash.ko
+
+[   19.263556] 0xffff800000ec0000+0x38 [crash]
+
+..
+
+[   19.276023] Call trace:
+[   19.276277]  0xffff800000ec0000+0x28 [crash]
+[   19.276567]  0xffff800000ec0000+0x58 [crash]
+[   19.276727]  0xffff800000ec0000+0x74 [crash]
+[   19.276866]  0xffff8000080127d0
+[   19.276978]  0xffff80000812d95c
+[   19.277085]  0xffff80000812f554
+
+Link: https://lkml.kernel.org/r/20220201040044.1528568-1-maninder1.s@samsung.com
+Signed-off-by: Vaneet Narang <v.narang@samsung.com>
+Co-developed-by: Vaneet Narang <v.narang@samsung.com>
+Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Steven Rostedt (Google) <rostedt@goodmis.org>
+Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Miroslav Benes <mbenes@suse.cz>
+Cc: Stephen Boyd <swboyd@chromium.org>
+Cc: Miguel Ojeda <ojeda@kernel.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kallsyms.h |   27 +++++++++++++++++++++++++++
+ lib/vsprintf.c           |    5 +++--
+ 2 files changed, 30 insertions(+), 2 deletions(-)
+
+--- a/include/linux/kallsyms.h~kallsyms-print-module-name-in-%ps-s-case-when-kallsyms-is-disabled
++++ a/include/linux/kallsyms.h
+@@ -163,6 +163,33 @@ static inline bool kallsyms_show_value(c
+ 	return false;
+ }
+ 
++#ifdef CONFIG_MODULES
++static inline int fill_minimal_module_info(char *sym, int size, unsigned long value)
++{
++	struct module *mod;
++	unsigned long offset;
++	int ret = 0;
++
++	preempt_disable();
++	mod = __module_address(value);
++	if (mod) {
++		offset = value - (unsigned long)mod->core_layout.base;
++		snprintf(sym, size - 1, "0x%lx+0x%lx [%s]",
++				(unsigned long)mod->core_layout.base, offset, mod->name);
++
++		sym[size - 1] = '\0';
++		ret = 1;
++	}
++
++	preempt_enable();
++	return ret;
++}
++#else
++static inline int fill_minimal_module_info(char *sym, int size, unsigned long value)
++{
++	return 0;
++}
++#endif /*CONFIG_MODULES*/
+ #endif /*CONFIG_KALLSYMS*/
+ 
+ static inline void print_ip_sym(const char *loglvl, unsigned long ip)
+--- a/lib/vsprintf.c~kallsyms-print-module-name-in-%ps-s-case-when-kallsyms-is-disabled
++++ a/lib/vsprintf.c
+@@ -984,9 +984,7 @@ char *symbol_string(char *buf, char *end
+ 		    struct printf_spec spec, const char *fmt)
+ {
+ 	unsigned long value;
+-#ifdef CONFIG_KALLSYMS
+ 	char sym[KSYM_SYMBOL_LEN];
+-#endif
+ 
+ 	if (fmt[1] == 'R')
+ 		ptr = __builtin_extract_return_addr(ptr);
+@@ -1006,6 +1004,9 @@ char *symbol_string(char *buf, char *end
+ 
+ 	return string_nocheck(buf, end, sym, spec);
+ #else
++	if (fill_minimal_module_info(sym, KSYM_SYMBOL_LEN, value))
++		return string_nocheck(buf, end, sym, spec);
++
+ 	return special_hex_number(buf, end, value, sizeof(void *));
+ #endif
+ }
+_

@@ -1,0 +1,46 @@
+From: Waiman Long <longman@redhat.com>
+Subject: mm/sparsemem: fix 'mem_section' will never be NULL gcc 12 warning
+
+The gcc 12 compiler reports a warning on the following code:
+
+    static inline struct mem_section *__nr_to_section(unsigned long nr)
+    {
+    #ifdef CONFIG_SPARSEMEM_EXTREME
+        if (!mem_section)
+                return NULL;
+    #endif
+       :
+
+With CONFIG_SPARSEMEM_EXTREME on, the mem_section definition is
+
+    extern struct mem_section **mem_section;
+
+Obviously, mem_section cannot be NULL, but *mem_section can be if memory
+hasn't been allocated for the dynamic mem_section[] array yet.  Fix this
+warning by checking for "!*mem_section" instead.
+
+Link: https://lkml.kernel.org/r/20220201192924.672675-1-longman@redhat.com
+Fixes: 83e3c48729d9 ("mm/sparsemem: Allocate mem_section at runtime for CONFIG_SPARSEMEM_EXTREME=y")
+Signed-off-by: Waiman Long <longman@redhat.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Justin Forbes <jforbes@redhat.com>
+Cc: Rafael Aquini <aquini@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mmzone.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/mmzone.h~mm-sparsemem-fix-mem_section-will-never-be-null-gcc-12-warning
++++ a/include/linux/mmzone.h
+@@ -1390,7 +1390,7 @@ static inline unsigned long *section_to_
+ static inline struct mem_section *__nr_to_section(unsigned long nr)
+ {
+ #ifdef CONFIG_SPARSEMEM_EXTREME
+-	if (!mem_section)
++	if (!*mem_section)
+ 		return NULL;
+ #endif
+ 	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
+_

@@ -1,0 +1,28 @@
+From: Akira Kawata <akirakawata1@gmail.com>
+Subject: fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files-v5
+
+add comment per Kees
+
+Link: https://lkml.kernel.org/r/20220127124014.338760-2-akirakawata1@gmail.com
+Signed-off-by: Akira Kawata <akirakawata1@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/binfmt_elf.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/fs/binfmt_elf.c~fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files-v5
++++ a/fs/binfmt_elf.c
+@@ -1170,6 +1170,10 @@ out_free_interp:
+ 			}
+ 		}
+ 
++		/*
++		 * Figure out which segment in the file contains the Program
++		 * Header table, and map to the associated memory address.
++		 */
+ 		if (elf_ppnt->p_offset <= elf_ex->e_phoff &&
+ 		    elf_ex->e_phoff < elf_ppnt->p_offset + elf_ppnt->p_filesz) {
+ 			phdr_addr = elf_ex->e_phoff - elf_ppnt->p_offset +
+_

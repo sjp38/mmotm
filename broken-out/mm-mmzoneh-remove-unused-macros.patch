@@ -1,0 +1,39 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/mmzone.h: remove unused macros
+
+Remove pgdat_page_nr, nid_page_nr and NODE_MEM_MAP. They are unused now.
+
+Link: https://lkml.kernel.org/r/20220127093210.62293-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mmzone.h |    7 -------
+ 1 file changed, 7 deletions(-)
+
+--- a/include/linux/mmzone.h~mm-mmzoneh-remove-unused-macros
++++ a/include/linux/mmzone.h
+@@ -931,12 +931,6 @@ typedef struct pglist_data {
+ 
+ #define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
+ #define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
+-#ifdef CONFIG_FLATMEM
+-#define pgdat_page_nr(pgdat, pagenr)	((pgdat)->node_mem_map + (pagenr))
+-#else
+-#define pgdat_page_nr(pgdat, pagenr)	pfn_to_page((pgdat)->node_start_pfn + (pagenr))
+-#endif
+-#define nid_page_nr(nid, pagenr) 	pgdat_page_nr(NODE_DATA(nid),(pagenr))
+ 
+ #define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)
+ #define node_end_pfn(nid) pgdat_end_pfn(NODE_DATA(nid))
+@@ -1112,7 +1106,6 @@ static inline struct pglist_data *NODE_D
+ {
+ 	return &contig_page_data;
+ }
+-#define NODE_MEM_MAP(nid)	mem_map
+ 
+ #else /* CONFIG_NUMA */
+ 
+_

@@ -1,0 +1,48 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/sparse: make mminit_validate_memmodel_limits() static
+
+It's only used in the sparse.c now. So we can make it static and further
+clean up the relevant code.
+
+Link: https://lkml.kernel.org/r/20220127093221.63524-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/internal.h |   11 -----------
+ mm/sparse.c   |    2 +-
+ 2 files changed, 1 insertion(+), 12 deletions(-)
+
+--- a/mm/internal.h~mm-sparse-make-mminit_validate_memmodel_limits-static
++++ a/mm/internal.h
+@@ -572,17 +572,6 @@ static inline void mminit_verify_zonelis
+ }
+ #endif /* CONFIG_DEBUG_MEMORY_INIT */
+ 
+-/* mminit_validate_memmodel_limits is independent of CONFIG_DEBUG_MEMORY_INIT */
+-#if defined(CONFIG_SPARSEMEM)
+-extern void mminit_validate_memmodel_limits(unsigned long *start_pfn,
+-				unsigned long *end_pfn);
+-#else
+-static inline void mminit_validate_memmodel_limits(unsigned long *start_pfn,
+-				unsigned long *end_pfn)
+-{
+-}
+-#endif /* CONFIG_SPARSEMEM */
+-
+ #define NODE_RECLAIM_NOSCAN	-2
+ #define NODE_RECLAIM_FULL	-1
+ #define NODE_RECLAIM_SOME	0
+--- a/mm/sparse.c~mm-sparse-make-mminit_validate_memmodel_limits-static
++++ a/mm/sparse.c
+@@ -126,7 +126,7 @@ static inline int sparse_early_nid(struc
+ }
+ 
+ /* Validate the physical addressing limitations of the model */
+-void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
++static void __meminit mminit_validate_memmodel_limits(unsigned long *start_pfn,
+ 						unsigned long *end_pfn)
+ {
+ 	unsigned long max_sparsemem_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
+_

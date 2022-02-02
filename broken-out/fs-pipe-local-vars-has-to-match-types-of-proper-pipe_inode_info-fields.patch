@@ -11,6 +11,7 @@ Right now, it isn't an issue because the maximum pipe size is limited by
 Link: https://lkml.kernel.org/r/20220106171946.36128-1-avagin@gmail.com
 Signed-off-by: Andrei Vagin <avagin@gmail.com>
 Suggested-by: Dmitry Safonov <0x7f454c46@gmail.com>
+Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

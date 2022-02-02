@@ -5,6 +5,7 @@ The forward declaration for lazy_max_pages() is unnecessary.  Remove it.
 
 Link: https://lkml.kernel.org/r/20220124133752.60663-1-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Uladzislau Rezki <urezki@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

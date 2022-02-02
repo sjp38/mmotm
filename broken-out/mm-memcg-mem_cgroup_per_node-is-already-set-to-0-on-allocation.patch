@@ -1,0 +1,36 @@
+From: Wei Yang <richard.weiyang@gmail.com>
+Subject: mm/memcg: mem_cgroup_per_node is already set to 0 on allocation
+
+kzalloc_node() would set data to 0, so it's not necessary to set it
+again.
+
+Link: https://lkml.kernel.org/r/20220201004643.8391-1-richard.weiyang@gmail.com
+Signed-off-by: Wei Yang <richard.weiyang@gmail.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Roman Gushchin <guro@fb.com>
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
+Reviewed-by: Shakeel Butt <shakeelb@google.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Suren Baghdasaryan <surenb@google.com>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- a/mm/memcontrol.c~mm-memcg-mem_cgroup_per_node-is-already-set-to-0-on-allocation
++++ a/mm/memcontrol.c
+@@ -5102,8 +5102,6 @@ static int alloc_mem_cgroup_per_node_inf
+ 	}
+ 
+ 	lruvec_init(&pn->lruvec);
+-	pn->usage_in_excess = 0;
+-	pn->on_tree = false;
+ 	pn->memcg = memcg;
+ 
+ 	memcg->nodeinfo[node] = pn;
+_

@@ -1,0 +1,88 @@
+From: NeilBrown <neilb@suse.de>
+Subject: fuse: don't set/clear bdi_congested
+
+The bdo congestion framework is no longer used to manage writeout etc, so
+drop updating it in fuse.
+
+Link: https://lkml.kernel.org/r/164325158958.29787.9472805850412952920.stgit@noble.brown
+Signed-off-by: NeilBrown <neilb@suse.de>
+Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
+Cc: Chao Yu <chao@kernel.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Darrick J. Wong <djwong@kernel.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Paolo Valente <paolo.valente@linaro.org>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/fuse/control.c |   17 -----------------
+ fs/fuse/dev.c     |    8 --------
+ 2 files changed, 25 deletions(-)
+
+--- a/fs/fuse/control.c~fuse-dont-set-clear-bdi_congested
++++ a/fs/fuse/control.c
+@@ -164,7 +164,6 @@ static ssize_t fuse_conn_congestion_thre
+ {
+ 	unsigned val;
+ 	struct fuse_conn *fc;
+-	struct fuse_mount *fm;
+ 	ssize_t ret;
+ 
+ 	ret = fuse_conn_limit_write(file, buf, count, ppos, &val,
+@@ -178,22 +177,6 @@ static ssize_t fuse_conn_congestion_thre
+ 	down_read(&fc->killsb);
+ 	spin_lock(&fc->bg_lock);
+ 	fc->congestion_threshold = val;
+-
+-	/*
+-	 * Get any fuse_mount belonging to this fuse_conn; s_bdi is
+-	 * shared between all of them
+-	 */
+-
+-	if (!list_empty(&fc->mounts)) {
+-		fm = list_first_entry(&fc->mounts, struct fuse_mount, fc_entry);
+-		if (fc->num_background < fc->congestion_threshold) {
+-			clear_bdi_congested(fm->sb->s_bdi, BLK_RW_SYNC);
+-			clear_bdi_congested(fm->sb->s_bdi, BLK_RW_ASYNC);
+-		} else {
+-			set_bdi_congested(fm->sb->s_bdi, BLK_RW_SYNC);
+-			set_bdi_congested(fm->sb->s_bdi, BLK_RW_ASYNC);
+-		}
+-	}
+ 	spin_unlock(&fc->bg_lock);
+ 	up_read(&fc->killsb);
+ 	fuse_conn_put(fc);
+--- a/fs/fuse/dev.c~fuse-dont-set-clear-bdi_congested
++++ a/fs/fuse/dev.c
+@@ -315,10 +315,6 @@ void fuse_request_end(struct fuse_req *r
+ 				wake_up(&fc->blocked_waitq);
+ 		}
+ 
+-		if (fc->num_background == fc->congestion_threshold && fm->sb) {
+-			clear_bdi_congested(fm->sb->s_bdi, BLK_RW_SYNC);
+-			clear_bdi_congested(fm->sb->s_bdi, BLK_RW_ASYNC);
+-		}
+ 		fc->num_background--;
+ 		fc->active_background--;
+ 		flush_bg_queue(fc);
+@@ -540,10 +536,6 @@ static bool fuse_request_queue_backgroun
+ 		fc->num_background++;
+ 		if (fc->num_background == fc->max_background)
+ 			fc->blocked = 1;
+-		if (fc->num_background == fc->congestion_threshold && fm->sb) {
+-			set_bdi_congested(fm->sb->s_bdi, BLK_RW_SYNC);
+-			set_bdi_congested(fm->sb->s_bdi, BLK_RW_ASYNC);
+-		}
+ 		list_add_tail(&req->list, &fc->bg_queue);
+ 		flush_bg_queue(fc);
+ 		queued = true;
+_

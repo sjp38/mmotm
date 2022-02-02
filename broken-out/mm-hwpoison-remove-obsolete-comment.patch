@@ -9,6 +9,9 @@ Link: https://lkml.kernel.org/r/20220125025601.3054511-1-naoya.horiguchi@linux.d
 Signed-off-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Suggested-by: Mike Kravetz <mike.kravetz@oracle.com>
 Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

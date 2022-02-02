@@ -97,7 +97,7 @@ entry then skip calling page_mapcount().  Don't skip getting mapcount for
 device private entries since they do track references with mapcount.
 
 Link: https://lkml.kernel.org/r/20220120202805.3369-1-shy828301@gmail.com
-Fixes: b1d4d9e0cbd0 ("proc/smaps: carefully handle migration entries")
+Fixes: e9b61f19858a ("thp: reintroduce split_huge_page()")
 Signed-off-by: Yang Shi <shy828301@gmail.com>
 Reported-by: syzbot+1f52b3a18d5633fa7f82@syzkaller.appspotmail.com
 Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>

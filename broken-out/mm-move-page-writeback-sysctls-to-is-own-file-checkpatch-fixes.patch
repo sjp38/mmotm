@@ -1,0 +1,480 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-move-page-writeback-sysctls-to-is-own-file-checkpatch-fixes
+
+WARNING: please, no spaces at the start of a line
+#249: FILE: mm/page-writeback.c:2089:
++    {$
+
+ERROR: code indent should use tabs where possible
+#250: FILE: mm/page-writeback.c:2090:
++        .procname   = "dirty_background_ratio",$
+
+WARNING: please, no spaces at the start of a line
+#250: FILE: mm/page-writeback.c:2090:
++        .procname   = "dirty_background_ratio",$
+
+ERROR: code indent should use tabs where possible
+#251: FILE: mm/page-writeback.c:2091:
++        .data       = &dirty_background_ratio,$
+
+WARNING: please, no spaces at the start of a line
+#251: FILE: mm/page-writeback.c:2091:
++        .data       = &dirty_background_ratio,$
+
+ERROR: code indent should use tabs where possible
+#252: FILE: mm/page-writeback.c:2092:
++        .maxlen     = sizeof(dirty_background_ratio),$
+
+WARNING: please, no spaces at the start of a line
+#252: FILE: mm/page-writeback.c:2092:
++        .maxlen     = sizeof(dirty_background_ratio),$
+
+ERROR: code indent should use tabs where possible
+#253: FILE: mm/page-writeback.c:2093:
++        .mode       = 0644,$
+
+WARNING: please, no spaces at the start of a line
+#253: FILE: mm/page-writeback.c:2093:
++        .mode       = 0644,$
+
+ERROR: code indent should use tabs where possible
+#254: FILE: mm/page-writeback.c:2094:
++        .proc_handler   = dirty_background_ratio_handler,$
+
+WARNING: please, no spaces at the start of a line
+#254: FILE: mm/page-writeback.c:2094:
++        .proc_handler   = dirty_background_ratio_handler,$
+
+ERROR: code indent should use tabs where possible
+#255: FILE: mm/page-writeback.c:2095:
++        .extra1     = SYSCTL_ZERO,$
+
+WARNING: please, no spaces at the start of a line
+#255: FILE: mm/page-writeback.c:2095:
++        .extra1     = SYSCTL_ZERO,$
+
+ERROR: code indent should use tabs where possible
+#256: FILE: mm/page-writeback.c:2096:
++        .extra2     = SYSCTL_ONE_HUNDRED,$
+
+WARNING: please, no spaces at the start of a line
+#256: FILE: mm/page-writeback.c:2096:
++        .extra2     = SYSCTL_ONE_HUNDRED,$
+
+WARNING: please, no spaces at the start of a line
+#257: FILE: mm/page-writeback.c:2097:
++    },$
+
+WARNING: please, no spaces at the start of a line
+#258: FILE: mm/page-writeback.c:2098:
++    {$
+
+ERROR: code indent should use tabs where possible
+#259: FILE: mm/page-writeback.c:2099:
++        .procname   = "dirty_background_bytes",$
+
+WARNING: please, no spaces at the start of a line
+#259: FILE: mm/page-writeback.c:2099:
++        .procname   = "dirty_background_bytes",$
+
+ERROR: code indent should use tabs where possible
+#260: FILE: mm/page-writeback.c:2100:
++        .data       = &dirty_background_bytes,$
+
+WARNING: please, no spaces at the start of a line
+#260: FILE: mm/page-writeback.c:2100:
++        .data       = &dirty_background_bytes,$
+
+ERROR: code indent should use tabs where possible
+#261: FILE: mm/page-writeback.c:2101:
++        .maxlen     = sizeof(dirty_background_bytes),$
+
+WARNING: please, no spaces at the start of a line
+#261: FILE: mm/page-writeback.c:2101:
++        .maxlen     = sizeof(dirty_background_bytes),$
+
+ERROR: code indent should use tabs where possible
+#262: FILE: mm/page-writeback.c:2102:
++        .mode       = 0644,$
+
+WARNING: please, no spaces at the start of a line
+#262: FILE: mm/page-writeback.c:2102:
++        .mode       = 0644,$
+
+ERROR: code indent should use tabs where possible
+#263: FILE: mm/page-writeback.c:2103:
++        .proc_handler   = dirty_background_bytes_handler,$
+
+WARNING: please, no spaces at the start of a line
+#263: FILE: mm/page-writeback.c:2103:
++        .proc_handler   = dirty_background_bytes_handler,$
+
+ERROR: code indent should use tabs where possible
+#264: FILE: mm/page-writeback.c:2104:
++        .extra1     = SYSCTL_LONG_ONE,$
+
+WARNING: please, no spaces at the start of a line
+#264: FILE: mm/page-writeback.c:2104:
++        .extra1     = SYSCTL_LONG_ONE,$
+
+WARNING: please, no spaces at the start of a line
+#265: FILE: mm/page-writeback.c:2105:
++    },$
+
+WARNING: please, no spaces at the start of a line
+#266: FILE: mm/page-writeback.c:2106:
++    {$
+
+ERROR: code indent should use tabs where possible
+#267: FILE: mm/page-writeback.c:2107:
++        .procname   = "dirty_ratio",$
+
+WARNING: please, no spaces at the start of a line
+#267: FILE: mm/page-writeback.c:2107:
++        .procname   = "dirty_ratio",$
+
+ERROR: code indent should use tabs where possible
+#268: FILE: mm/page-writeback.c:2108:
++        .data       = &vm_dirty_ratio,$
+
+WARNING: please, no spaces at the start of a line
+#268: FILE: mm/page-writeback.c:2108:
++        .data       = &vm_dirty_ratio,$
+
+ERROR: code indent should use tabs where possible
+#269: FILE: mm/page-writeback.c:2109:
++        .maxlen     = sizeof(vm_dirty_ratio),$
+
+WARNING: please, no spaces at the start of a line
+#269: FILE: mm/page-writeback.c:2109:
++        .maxlen     = sizeof(vm_dirty_ratio),$
+
+ERROR: code indent should use tabs where possible
+#270: FILE: mm/page-writeback.c:2110:
++        .mode       = 0644,$
+
+WARNING: please, no spaces at the start of a line
+#270: FILE: mm/page-writeback.c:2110:
++        .mode       = 0644,$
+
+ERROR: code indent should use tabs where possible
+#271: FILE: mm/page-writeback.c:2111:
++        .proc_handler   = dirty_ratio_handler,$
+
+WARNING: please, no spaces at the start of a line
+#271: FILE: mm/page-writeback.c:2111:
++        .proc_handler   = dirty_ratio_handler,$
+
+ERROR: code indent should use tabs where possible
+#272: FILE: mm/page-writeback.c:2112:
++        .extra1     = SYSCTL_ZERO,$
+
+WARNING: please, no spaces at the start of a line
+#272: FILE: mm/page-writeback.c:2112:
++        .extra1     = SYSCTL_ZERO,$
+
+ERROR: code indent should use tabs where possible
+#273: FILE: mm/page-writeback.c:2113:
++        .extra2     = SYSCTL_ONE_HUNDRED,$
+
+WARNING: please, no spaces at the start of a line
+#273: FILE: mm/page-writeback.c:2113:
++        .extra2     = SYSCTL_ONE_HUNDRED,$
+
+WARNING: please, no spaces at the start of a line
+#274: FILE: mm/page-writeback.c:2114:
++    },$
+
+WARNING: please, no spaces at the start of a line
+#275: FILE: mm/page-writeback.c:2115:
++    {$
+
+ERROR: code indent should use tabs where possible
+#276: FILE: mm/page-writeback.c:2116:
++        .procname   = "dirty_bytes",$
+
+WARNING: please, no spaces at the start of a line
+#276: FILE: mm/page-writeback.c:2116:
++        .procname   = "dirty_bytes",$
+
+ERROR: code indent should use tabs where possible
+#277: FILE: mm/page-writeback.c:2117:
++        .data       = &vm_dirty_bytes,$
+
+WARNING: please, no spaces at the start of a line
+#277: FILE: mm/page-writeback.c:2117:
++        .data       = &vm_dirty_bytes,$
+
+ERROR: code indent should use tabs where possible
+#278: FILE: mm/page-writeback.c:2118:
++        .maxlen     = sizeof(vm_dirty_bytes),$
+
+WARNING: please, no spaces at the start of a line
+#278: FILE: mm/page-writeback.c:2118:
++        .maxlen     = sizeof(vm_dirty_bytes),$
+
+ERROR: code indent should use tabs where possible
+#279: FILE: mm/page-writeback.c:2119:
++        .mode       = 0644,$
+
+WARNING: please, no spaces at the start of a line
+#279: FILE: mm/page-writeback.c:2119:
++        .mode       = 0644,$
+
+ERROR: code indent should use tabs where possible
+#280: FILE: mm/page-writeback.c:2120:
++        .proc_handler   = dirty_bytes_handler,$
+
+WARNING: please, no spaces at the start of a line
+#280: FILE: mm/page-writeback.c:2120:
++        .proc_handler   = dirty_bytes_handler,$
+
+ERROR: code indent should use tabs where possible
+#281: FILE: mm/page-writeback.c:2121:
++        .extra1     = (void *)&dirty_bytes_min,$
+
+WARNING: please, no spaces at the start of a line
+#281: FILE: mm/page-writeback.c:2121:
++        .extra1     = (void *)&dirty_bytes_min,$
+
+WARNING: please, no spaces at the start of a line
+#282: FILE: mm/page-writeback.c:2122:
++    },$
+
+WARNING: please, no spaces at the start of a line
+#283: FILE: mm/page-writeback.c:2123:
++    {$
+
+ERROR: code indent should use tabs where possible
+#284: FILE: mm/page-writeback.c:2124:
++        .procname   = "dirty_writeback_centisecs",$
+
+WARNING: please, no spaces at the start of a line
+#284: FILE: mm/page-writeback.c:2124:
++        .procname   = "dirty_writeback_centisecs",$
+
+ERROR: code indent should use tabs where possible
+#285: FILE: mm/page-writeback.c:2125:
++        .data       = &dirty_writeback_interval,$
+
+WARNING: please, no spaces at the start of a line
+#285: FILE: mm/page-writeback.c:2125:
++        .data       = &dirty_writeback_interval,$
+
+ERROR: code indent should use tabs where possible
+#286: FILE: mm/page-writeback.c:2126:
++        .maxlen     = sizeof(dirty_writeback_interval),$
+
+WARNING: please, no spaces at the start of a line
+#286: FILE: mm/page-writeback.c:2126:
++        .maxlen     = sizeof(dirty_writeback_interval),$
+
+ERROR: code indent should use tabs where possible
+#287: FILE: mm/page-writeback.c:2127:
++        .mode       = 0644,$
+
+WARNING: please, no spaces at the start of a line
+#287: FILE: mm/page-writeback.c:2127:
++        .mode       = 0644,$
+
+ERROR: code indent should use tabs where possible
+#288: FILE: mm/page-writeback.c:2128:
++        .proc_handler   = dirty_writeback_centisecs_handler,$
+
+WARNING: please, no spaces at the start of a line
+#288: FILE: mm/page-writeback.c:2128:
++        .proc_handler   = dirty_writeback_centisecs_handler,$
+
+WARNING: please, no spaces at the start of a line
+#289: FILE: mm/page-writeback.c:2129:
++    },$
+
+WARNING: please, no spaces at the start of a line
+#290: FILE: mm/page-writeback.c:2130:
++    {$
+
+ERROR: code indent should use tabs where possible
+#291: FILE: mm/page-writeback.c:2131:
++        .procname   = "dirty_expire_centisecs",$
+
+WARNING: please, no spaces at the start of a line
+#291: FILE: mm/page-writeback.c:2131:
++        .procname   = "dirty_expire_centisecs",$
+
+ERROR: code indent should use tabs where possible
+#292: FILE: mm/page-writeback.c:2132:
++        .data       = &dirty_expire_interval,$
+
+WARNING: please, no spaces at the start of a line
+#292: FILE: mm/page-writeback.c:2132:
++        .data       = &dirty_expire_interval,$
+
+ERROR: code indent should use tabs where possible
+#293: FILE: mm/page-writeback.c:2133:
++        .maxlen     = sizeof(dirty_expire_interval),$
+
+WARNING: please, no spaces at the start of a line
+#293: FILE: mm/page-writeback.c:2133:
++        .maxlen     = sizeof(dirty_expire_interval),$
+
+ERROR: code indent should use tabs where possible
+#294: FILE: mm/page-writeback.c:2134:
++        .mode       = 0644,$
+
+WARNING: please, no spaces at the start of a line
+#294: FILE: mm/page-writeback.c:2134:
++        .mode       = 0644,$
+
+ERROR: code indent should use tabs where possible
+#295: FILE: mm/page-writeback.c:2135:
++        .proc_handler   = proc_dointvec_minmax,$
+
+WARNING: please, no spaces at the start of a line
+#295: FILE: mm/page-writeback.c:2135:
++        .proc_handler   = proc_dointvec_minmax,$
+
+ERROR: code indent should use tabs where possible
+#296: FILE: mm/page-writeback.c:2136:
++        .extra1     = SYSCTL_ZERO,$
+
+WARNING: please, no spaces at the start of a line
+#296: FILE: mm/page-writeback.c:2136:
++        .extra1     = SYSCTL_ZERO,$
+
+WARNING: please, no spaces at the start of a line
+#297: FILE: mm/page-writeback.c:2137:
++    },$
+
+total: 37 errors, 49 warnings, 287 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+NOTE: Whitespace errors detected.
+      You may wish to use scripts/cleanpatch or scripts/cleanfile
+
+./patches/mm-move-page-writeback-sysctls-to-is-own-file.patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
+Please run checkpatch prior to sending patches
+
+Cc: Iurii Zaikin <yzaikin@google.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Cc: zhanglianjie <zhanglianjie@uniontech.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page-writeback.c |   98 +++++++++++++++++++++---------------------
+ 1 file changed, 49 insertions(+), 49 deletions(-)
+
+--- a/mm/page-writeback.c~mm-move-page-writeback-sysctls-to-is-own-file-checkpatch-fixes
++++ a/mm/page-writeback.c
+@@ -2086,55 +2086,55 @@ static int page_writeback_cpu_online(uns
+ 
+ #ifdef CONFIG_SYSCTL
+ static struct ctl_table vm_page_writeback_sysctls[] = {
+-    {
+-        .procname   = "dirty_background_ratio",
+-        .data       = &dirty_background_ratio,
+-        .maxlen     = sizeof(dirty_background_ratio),
+-        .mode       = 0644,
+-        .proc_handler   = dirty_background_ratio_handler,
+-        .extra1     = SYSCTL_ZERO,
+-        .extra2     = SYSCTL_ONE_HUNDRED,
+-    },
+-    {
+-        .procname   = "dirty_background_bytes",
+-        .data       = &dirty_background_bytes,
+-        .maxlen     = sizeof(dirty_background_bytes),
+-        .mode       = 0644,
+-        .proc_handler   = dirty_background_bytes_handler,
+-        .extra1     = SYSCTL_LONG_ONE,
+-    },
+-    {
+-        .procname   = "dirty_ratio",
+-        .data       = &vm_dirty_ratio,
+-        .maxlen     = sizeof(vm_dirty_ratio),
+-        .mode       = 0644,
+-        .proc_handler   = dirty_ratio_handler,
+-        .extra1     = SYSCTL_ZERO,
+-        .extra2     = SYSCTL_ONE_HUNDRED,
+-    },
+-    {
+-        .procname   = "dirty_bytes",
+-        .data       = &vm_dirty_bytes,
+-        .maxlen     = sizeof(vm_dirty_bytes),
+-        .mode       = 0644,
+-        .proc_handler   = dirty_bytes_handler,
+-        .extra1     = (void *)&dirty_bytes_min,
+-    },
+-    {
+-        .procname   = "dirty_writeback_centisecs",
+-        .data       = &dirty_writeback_interval,
+-        .maxlen     = sizeof(dirty_writeback_interval),
+-        .mode       = 0644,
+-        .proc_handler   = dirty_writeback_centisecs_handler,
+-    },
+-    {
+-        .procname   = "dirty_expire_centisecs",
+-        .data       = &dirty_expire_interval,
+-        .maxlen     = sizeof(dirty_expire_interval),
+-        .mode       = 0644,
+-        .proc_handler   = proc_dointvec_minmax,
+-        .extra1     = SYSCTL_ZERO,
+-    },
++	{
++		.procname   = "dirty_background_ratio",
++		.data       = &dirty_background_ratio,
++		.maxlen     = sizeof(dirty_background_ratio),
++		.mode       = 0644,
++		.proc_handler   = dirty_background_ratio_handler,
++		.extra1     = SYSCTL_ZERO,
++		.extra2     = SYSCTL_ONE_HUNDRED,
++	},
++	{
++		.procname   = "dirty_background_bytes",
++		.data       = &dirty_background_bytes,
++		.maxlen     = sizeof(dirty_background_bytes),
++		.mode       = 0644,
++		.proc_handler   = dirty_background_bytes_handler,
++		.extra1     = SYSCTL_LONG_ONE,
++	},
++	{
++		.procname   = "dirty_ratio",
++		.data       = &vm_dirty_ratio,
++		.maxlen     = sizeof(vm_dirty_ratio),
++		.mode       = 0644,
++		.proc_handler   = dirty_ratio_handler,
++		.extra1     = SYSCTL_ZERO,
++		.extra2     = SYSCTL_ONE_HUNDRED,
++	},
++	{
++		.procname   = "dirty_bytes",
++		.data       = &vm_dirty_bytes,
++		.maxlen     = sizeof(vm_dirty_bytes),
++		.mode       = 0644,
++		.proc_handler   = dirty_bytes_handler,
++		.extra1     = (void *)&dirty_bytes_min,
++	},
++	{
++		.procname   = "dirty_writeback_centisecs",
++		.data       = &dirty_writeback_interval,
++		.maxlen     = sizeof(dirty_writeback_interval),
++		.mode       = 0644,
++		.proc_handler   = dirty_writeback_centisecs_handler,
++	},
++	{
++		.procname   = "dirty_expire_centisecs",
++		.data       = &dirty_expire_interval,
++		.maxlen     = sizeof(dirty_expire_interval),
++		.mode       = 0644,
++		.proc_handler   = proc_dointvec_minmax,
++		.extra1     = SYSCTL_ZERO,
++	},
+ #ifdef CONFIG_HIGHMEM
+ 	{
+ 		.procname	= "highmem_is_dirtyable",
+_

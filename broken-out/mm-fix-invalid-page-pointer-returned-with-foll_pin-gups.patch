@@ -1,5 +1,10 @@
 From: Peter Xu <peterx@redhat.com>
-Subject: mm/gup.c: fix invalid page pointer returned with FOLL_PIN gups
+Subject: mm: fix invalid page pointer returned with FOLL_PIN gups
+
+Patch series "mm/gup: some cleanups", v2.
+
+
+This patch (of 4):
 
 Alex reported invalid page pointer returned with pin_user_pages_remote()
 from vfio after upstream commit 4b6c33b32296 ("vfio/type1: Prepare for
@@ -25,31 +30,29 @@ FOLL_PIN pages"), even if that commit rightfully touched up
 follow_devmap_pud() on checking FOLL_PIN when it needs to return an
 -EEXIST.
 
-Since at it, add another WARN_ON_ONCE() at the -EEXIST handling to make
-sure we mustn't have **pages set when reaching there, because otherwise it
-means the caller will try to read a garbage right after __get_user_pages()
-returns.
+Attaching the Fixes to the FOLL_PIN rework commit, as it happened later than
+1027e4436b6a.
 
-Attaching the Fixes to the FOLL_PIN rework commit, as it happened later
-than 1027e4436b6a.
-
-Link: https://lkml.kernel.org/r/20220125033700.69705-1-peterx@redhat.com
+Link: https://lkml.kernel.org/r/20220201101108.306062-1-jhubbard@nvidia.com
+Link: https://lkml.kernel.org/r/20220201101108.306062-2-jhubbard@nvidia.com
 Fixes: 3faa52c03f44 ("mm/gup: track FOLL_PIN pages")
 Signed-off-by: Peter Xu <peterx@redhat.com>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Reviewed-by: John Hubbard <jhubbard@nvidia.com>
 Reported-by: Alex Williamson <alex.williamson@redhat.com>
 Debugged-by: Alex Williamson <alex.williamson@redhat.com>
+Tested-by: Alex Williamson <alex.williamson@redhat.com>
 Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jan Kara <jack@suse.cz>
-Cc: Jérôme Glisse <jglisse@redhat.com>
-Cc: John Hubbard <jhubbard@nvidia.com>
 Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-Cc: <stable@vger.kernel.org>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/gup.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ mm/gup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/mm/gup.c~mm-fix-invalid-page-pointer-returned-with-foll_pin-gups
 +++ a/mm/gup.c
@@ -62,18 +65,4 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return -EFAULT;
  
  	if (flags & FOLL_TOUCH) {
-@@ -1181,7 +1181,13 @@ retry:
- 			/*
- 			 * Proper page table entry exists, but no corresponding
- 			 * struct page.
-+			 *
-+			 * Warn if we jumped over even with a valid **pages.
-+			 * It shouldn't trigger in practise, but when there's
-+			 * buggy returns on -EEXIST we'll warn before returning
-+			 * an invalid page pointer in the array.
- 			 */
-+			WARN_ON_ONCE(pages);
- 			goto next_page;
- 		} else if (IS_ERR(page)) {
- 			ret = PTR_ERR(page);
 _

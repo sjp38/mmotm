@@ -42,9 +42,9 @@ Link: https://bugzilla.kernel.org/show_bug.cgi?id=197921
 Link: https://lkml.kernel.org/r/20211212232414.1402199-2-akirakawata1@gmail.com
 Signed-off-by: Akira Kawata <akirakawata1@gmail.com>
 Reported-by: kernel test robot <lkp@intel.com>
+Acked-by: Kees Cook <keescook@chromium.org>
 Cc: Alexey Dobriyan <adobriyan@gmail.com>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Kees Cook <keescook@chromium.org>
 Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 Cc: Eric Biederman <ebiederm@xmission.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

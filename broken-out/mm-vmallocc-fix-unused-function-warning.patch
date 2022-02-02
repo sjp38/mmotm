@@ -1,0 +1,57 @@
+From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Subject: mm/vmalloc.c: fix "unused function" warning
+
+compute_subtree_max_size() is unused, when building with
+DEBUG_AUGMENT_PROPAGATE_CHECK=y.
+
+mm/vmalloc.c:785:1: warning: unused function 'compute_subtree_max_size'
+[-Wunused-function].
+
+Link: https://lkml.kernel.org/r/20220129034652.75359-1-jiapeng.chong@linux.alibaba.com
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+--- a/mm/vmalloc.c~mm-vmallocc-fix-unused-function-warning
++++ a/mm/vmalloc.c
+@@ -776,17 +776,6 @@ get_subtree_max_size(struct rb_node *nod
+ 	return va ? va->subtree_max_size : 0;
+ }
+ 
+-/*
+- * Gets called when remove the node and rotate.
+- */
+-static __always_inline unsigned long
+-compute_subtree_max_size(struct vmap_area *va)
+-{
+-	return max3(va_size(va),
+-		get_subtree_max_size(va->rb_node.rb_left),
+-		get_subtree_max_size(va->rb_node.rb_right));
+-}
+-
+ RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
+ 	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
+ 
+@@ -978,6 +967,17 @@ unlink_va(struct vmap_area *va, struct r
+ }
+ 
+ #if DEBUG_AUGMENT_PROPAGATE_CHECK
++/*
++ * Gets called when remove the node and rotate.
++ */
++static __always_inline unsigned long
++compute_subtree_max_size(struct vmap_area *va)
++{
++	return max3(va_size(va),
++		get_subtree_max_size(va->rb_node.rb_left),
++		get_subtree_max_size(va->rb_node.rb_right));
++}
++
+ static void
+ augment_tree_propagate_check(void)
+ {
+_

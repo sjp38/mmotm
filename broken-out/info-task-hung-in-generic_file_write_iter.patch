@@ -138,7 +138,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		struct buffer_head *bh = buffers_to_free;
 --- a/include/linux/sched.h~info-task-hung-in-generic_file_write_iter
 +++ a/include/linux/sched.h
-@@ -1496,6 +1496,13 @@ struct task_struct {
+@@ -1492,6 +1492,13 @@ struct task_struct {
  	struct callback_head		l1d_flush_kill;
  #endif
  

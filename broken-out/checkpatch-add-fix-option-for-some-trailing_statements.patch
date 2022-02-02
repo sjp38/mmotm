@@ -1,0 +1,68 @@
+From: Joe Perches <joe@perches.com>
+Subject: checkpatch: add --fix option for some TRAILING_STATEMENTS
+
+Single line code like:
+
+	if (foo) bar;
+
+should generally be written:
+
+	if (foo)
+		bar;
+
+Add a --fix test to do so.
+
+This fix is not done when an ASSIGN_IN_IF in the same line exists.
+
+Link: https://lkml.kernel.org/r/20220128185924.80137-2-joe@perches.com
+Signed-off-by: Joe Perches <joe@perches.com>
+Cc: Dwaipayan Ray <dwaipayanray1@gmail.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ scripts/checkpatch.pl |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+--- a/scripts/checkpatch.pl~checkpatch-add-fix-option-for-some-trailing_statements
++++ a/scripts/checkpatch.pl
+@@ -5551,6 +5551,7 @@ sub process {
+ 		    defined($stat) && defined($cond) &&
+ 		    $line =~ /\b(?:if|while|for)\s*\(/ && $line !~ /^.\s*#/) {
+ 			my ($s, $c) = ($stat, $cond);
++			my $fixed_assign_in_if = 0;
+ 
+ 			if ($c =~ /\bif\s*\(.*[^<>!=]=[^=].*/s) {
+ 				if (ERROR("ASSIGN_IN_IF",
+@@ -5575,6 +5576,7 @@ sub process {
+ 						$newline .= ')';
+ 						$newline .= " {" if (defined($brace));
+ 						fix_insert_line($fixlinenr + 1, $newline);
++						$fixed_assign_in_if = 1;
+ 					}
+ 				}
+ 			}
+@@ -5598,8 +5600,20 @@ sub process {
+ 					$stat_real = "[...]\n$stat_real";
+ 				}
+ 
+-				ERROR("TRAILING_STATEMENTS",
+-				      "trailing statements should be on next line\n" . $herecurr . $stat_real);
++				if (ERROR("TRAILING_STATEMENTS",
++					  "trailing statements should be on next line\n" . $herecurr . $stat_real) &&
++				    !$fixed_assign_in_if &&
++				    $cond_lines == 0 &&
++				    $fix && $perl_version_ok &&
++				    $fixed[$fixlinenr] =~ /^\+(\s*)((?:if|while|for)\s*$balanced_parens)\s*(.*)$/) {
++					my $indent = $1;
++					my $test = $2;
++					my $rest = rtrim($4);
++					if ($rest =~ /;$/) {
++						$fixed[$fixlinenr] = "\+$indent$test";
++						fix_insert_line($fixlinenr + 1, "$indent\t$rest");
++					}
++				}
+ 			}
+ 		}
+ 
+_

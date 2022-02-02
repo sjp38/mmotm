@@ -1,0 +1,38 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: hugetlb: fix missing cache flush in copy_huge_page_from_user()
+
+The userfaultfd calls copy_huge_page_from_user() which does not do any
+cache flushing for the target page.  Then the target page will be mapped
+to the user space with a different address (user address), which might
+have an alias issue with the kernel address used to copy the data from the
+user to.  Fix this issue by flushing dcache in copy_huge_page_from_user().
+
+Link: https://lkml.kernel.org/r/20220131160254.43211-4-songmuchun@bytedance.com
+Fixes: fa4d75c1de13 ("userfaultfd: hugetlbfs: add copy_huge_page_from_user for hugetlb userfaultfd support")
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Lars Persson <lars.persson@axis.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Mina Almasry <almasrymina@google.com>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Cc: Zi Yan <ziy@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/mm/memory.c~mm-hugetlb-fix-missing-cache-flush-in-copy_huge_page_from_user
++++ a/mm/memory.c
+@@ -5499,6 +5499,8 @@ long copy_huge_page_from_user(struct pag
+ 		if (rc)
+ 			break;
+ 
++		flush_dcache_page(subpage);
++
+ 		cond_resched();
+ 	}
+ 	return ret_val;
+_

@@ -1,0 +1,37 @@
+From: Joe Perches <joe@perches.com>
+Subject: checkpatch: prefer MODULE_LICENSE("GPL") over MODULE_LICENSE("GPL v2")
+
+There is no effective difference.
+
+Given the large number of uses of "GPL v2", emit this message only for
+patches as a trivial treeside sed could be done one day.
+
+Ref: commit bf7fbeeae6db ("module: Cure the MODULE_LICENSE "GPL" vs. "GPL v2" bogosity")
+
+Link: https://lkml.kernel.org/r/20220128185924.80137-1-joe@perches.com
+Signed-off-by: Joe Perches <joe@perches.com>
+Cc: Dwaipayan Ray <dwaipayanray1@gmail.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ scripts/checkpatch.pl |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/scripts/checkpatch.pl~checkpatch-prefer-module_licensegpl-over-module_licensegpl-v2
++++ a/scripts/checkpatch.pl
+@@ -7418,6 +7418,13 @@ sub process {
+ 				WARN("MODULE_LICENSE",
+ 				     "unknown module license " . $extracted_string . "\n" . $herecurr);
+ 			}
++			if (!$file && $extracted_string eq '"GPL v2"') {
++				if (WARN("MODULE_LICENSE",
++				     "Prefer \"GPL\" over \"GPL v2\" - see commit bf7fbeeae6db (\"module: Cure the MODULE_LICENSE \"GPL\" vs. \"GPL v2\" bogosity\")\n" . $herecurr) &&
++				    $fix) {
++					$fixed[$fixlinenr] =~ s/\bMODULE_LICENSE\s*\(\s*"GPL v2"\s*\)/MODULE_LICENSE("GPL")/;
++				}
++			}
+ 		}
+ 
+ # check for sysctl duplicate constants
+_

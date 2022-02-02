@@ -1,0 +1,70 @@
+From: John Hubbard <jhubbard@nvidia.com>
+Subject: mm/gup: remove unused pin_user_pages_locked()
+
+This routine was used for a short while, but then the calling code was
+refactored and the only caller was removed.
+
+Link: https://lkml.kernel.org/r/20220201101108.306062-4-jhubbard@nvidia.com
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Alex Williamson <alex.williamson@redhat.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Peter Xu <peterx@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mm.h |    2 --
+ mm/gup.c           |   29 -----------------------------
+ 2 files changed, 31 deletions(-)
+
+--- a/include/linux/mm.h~mm-gup-remove-unused-pin_user_pages_locked
++++ a/include/linux/mm.h
+@@ -1918,8 +1918,6 @@ long pin_user_pages(unsigned long start,
+ 		    struct vm_area_struct **vmas);
+ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
+ 		    unsigned int gup_flags, struct page **pages, int *locked);
+-long pin_user_pages_locked(unsigned long start, unsigned long nr_pages,
+-		    unsigned int gup_flags, struct page **pages, int *locked);
+ long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
+ 		    struct page **pages, unsigned int gup_flags);
+ long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
+--- a/mm/gup.c~mm-gup-remove-unused-pin_user_pages_locked
++++ a/mm/gup.c
+@@ -3120,32 +3120,3 @@ long pin_user_pages_unlocked(unsigned lo
+ 	return get_user_pages_unlocked(start, nr_pages, pages, gup_flags);
+ }
+ EXPORT_SYMBOL(pin_user_pages_unlocked);
+-
+-/*
+- * pin_user_pages_locked() is the FOLL_PIN variant of get_user_pages_locked().
+- * Behavior is the same, except that this one sets FOLL_PIN and rejects
+- * FOLL_GET.
+- */
+-long pin_user_pages_locked(unsigned long start, unsigned long nr_pages,
+-			   unsigned int gup_flags, struct page **pages,
+-			   int *locked)
+-{
+-	/*
+-	 * FIXME: Current FOLL_LONGTERM behavior is incompatible with
+-	 * FAULT_FLAG_ALLOW_RETRY because of the FS DAX check requirement on
+-	 * vmas.  As there are no users of this flag in this call we simply
+-	 * disallow this option for now.
+-	 */
+-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
+-		return -EINVAL;
+-
+-	/* FOLL_GET and FOLL_PIN are mutually exclusive. */
+-	if (WARN_ON_ONCE(gup_flags & FOLL_GET))
+-		return -EINVAL;
+-
+-	gup_flags |= FOLL_PIN;
+-	return __get_user_pages_locked(current->mm, start, nr_pages,
+-				       pages, NULL, locked,
+-				       gup_flags | FOLL_TOUCH);
+-}
+-EXPORT_SYMBOL(pin_user_pages_locked);
+_

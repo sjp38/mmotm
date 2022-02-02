@@ -1,0 +1,57 @@
+From: John Hubbard <jhubbard@nvidia.com>
+Subject: mm/gup: clean up follow_pfn_pte() slightly
+
+Regardless of any FOLL_* flags, get_user_pages() and its variants should
+handle PFN-only entries by stopping early, if the caller expected **pages
+to be filled in.
+
+This makes for a more reliable API, as compared to the previous approach
+of skipping over such entries (and thus leaving them silently unwritten).
+
+Link: https://lkml.kernel.org/r/20220201101108.306062-3-jhubbard@nvidia.com
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex.williamson@redhat.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/gup.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+--- a/mm/gup.c~mm-gup-clean-up-follow_pfn_pte-slightly
++++ a/mm/gup.c
+@@ -439,10 +439,6 @@ static struct page *no_page_table(struct
+ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
+ 		pte_t *pte, unsigned int flags)
+ {
+-	/* No page to get reference */
+-	if (flags & (FOLL_GET | FOLL_PIN))
+-		return -EFAULT;
+-
+ 	if (flags & FOLL_TOUCH) {
+ 		pte_t entry = *pte;
+ 
+@@ -1180,8 +1176,14 @@ retry:
+ 		} else if (PTR_ERR(page) == -EEXIST) {
+ 			/*
+ 			 * Proper page table entry exists, but no corresponding
+-			 * struct page.
++			 * struct page. If the caller expects **pages to be
++			 * filled in, bail out now, because that can't be done
++			 * for this page.
+ 			 */
++			if (pages) {
++				page = ERR_PTR(-EFAULT);
++				goto out;
++			}
+ 			goto next_page;
+ 		} else if (IS_ERR(page)) {
+ 			ret = PTR_ERR(page);
+_

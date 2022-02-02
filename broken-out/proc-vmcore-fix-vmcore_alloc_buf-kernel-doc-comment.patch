@@ -1,0 +1,33 @@
+From: Yang Li <yang.lee@linux.alibaba.com>
+Subject: proc/vmcore: fix vmcore_alloc_buf() kernel-doc comment
+
+Fix a spelling problem to remove warnings found by running
+scripts/kernel-doc, which is caused by using 'make W=1'.
+
+fs/proc/vmcore.c:492: warning: Function parameter or member 'size' not
+described in 'vmcore_alloc_buf'
+fs/proc/vmcore.c:492: warning: Excess function parameter 'sizez'
+description in 'vmcore_alloc_buf'
+
+Link: https://lkml.kernel.org/r/20220129011449.105278-1-yang.lee@linux.alibaba.com
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Acked-by: Baoquan He <bhe@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/proc/vmcore.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/proc/vmcore.c~proc-vmcore-fix-vmcore_alloc_buf-kernel-doc-comment
++++ a/fs/proc/vmcore.c
+@@ -480,7 +480,7 @@ static const struct vm_operations_struct
+ 
+ /**
+  * vmcore_alloc_buf - allocate buffer in vmalloc memory
+- * @sizez: size of buffer
++ * @size: size of buffer
+  *
+  * If CONFIG_MMU is defined, use vmalloc_user() to allow users to mmap
+  * the buffer to user-space by means of remap_vmalloc_range().
+_

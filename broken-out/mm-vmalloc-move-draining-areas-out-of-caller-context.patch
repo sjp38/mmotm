@@ -1,0 +1,102 @@
+From: "Uladzislau Rezki (Sony)" <urezki@gmail.com>
+Subject: mm/vmalloc: Move draining areas out of caller context
+
+A caller initiates the drain procces from its context once the
+drain threshold is reached or passed. There are at least two
+drawbacks of doing so:
+
+a) a caller can be a high-prio or RT task. In that case it can
+   stuck in doing the actual drain of all lazily freed areas.
+   This is not optimal because such tasks usually are latency
+   sensitive where the control should be returned back as soon
+   as possible in order to drive such workloads in time. See
+   96e2db456135 ("mm/vmalloc: rework the drain logic")
+
+b) It is not safe to call vfree() during holding a spinlock due
+   to the vmap_purge_lock mutex. The was a report about this from
+   Zeal Robot <zealci@zte.com.cn> here:
+   https://lore.kernel.org/all/20211222081026.484058-1-chi.minghao@zte.com.cn
+
+Moving the drain to the separate work context addresses those
+issues.
+
+v1->v2:
+   - Added prefix "_work" to the drain worker function.
+v2->v3:
+   - Remove the drain_vmap_work_in_progress. Extra queuing
+     is expectable under heavy load but it can be disregarded
+     because a work will bail out if nothing to be done.
+
+Link: https://lkml.kernel.org/r/20220131144058.35608-1-urezki@gmail.com
+Signed-off-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Oleksiy Avramchenko <oleksiy.avramchenko@sonymobile.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmalloc.c |   30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
+
+--- a/mm/vmalloc.c~mm-vmalloc-move-draining-areas-out-of-caller-context
++++ a/mm/vmalloc.c
+@@ -792,6 +792,8 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vm
+ 
+ static void purge_vmap_area_lazy(void);
+ static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
++static void drain_vmap_area_work(struct work_struct *work);
++static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
+ 
+ static atomic_long_t nr_vmalloc_pages;
+ 
+@@ -1723,18 +1725,6 @@ static bool __purge_vmap_area_lazy(unsig
+ }
+ 
+ /*
+- * Kick off a purge of the outstanding lazy areas. Don't bother if somebody
+- * is already purging.
+- */
+-static void try_purge_vmap_area_lazy(void)
+-{
+-	if (mutex_trylock(&vmap_purge_lock)) {
+-		__purge_vmap_area_lazy(ULONG_MAX, 0);
+-		mutex_unlock(&vmap_purge_lock);
+-	}
+-}
+-
+-/*
+  * Kick off a purge of the outstanding lazy areas.
+  */
+ static void purge_vmap_area_lazy(void)
+@@ -1745,6 +1735,20 @@ static void purge_vmap_area_lazy(void)
+ 	mutex_unlock(&vmap_purge_lock);
+ }
+ 
++static void drain_vmap_area_work(struct work_struct *work)
++{
++	unsigned long nr_lazy;
++
++	do {
++		mutex_lock(&vmap_purge_lock);
++		__purge_vmap_area_lazy(ULONG_MAX, 0);
++		mutex_unlock(&vmap_purge_lock);
++
++		/* Recheck if further work is required. */
++		nr_lazy = atomic_long_read(&vmap_lazy_nr);
++	} while (nr_lazy > lazy_max_pages());
++}
++
+ /*
+  * Free a vmap area, caller ensuring that the area has been unmapped
+  * and flush_cache_vunmap had been called for the correct range
+@@ -1771,7 +1775,7 @@ static void free_vmap_area_noflush(struc
+ 
+ 	/* After this point, we may free va at any time */
+ 	if (unlikely(nr_lazy > lazy_max_pages()))
+-		try_purge_vmap_area_lazy();
++		schedule_work(&drain_vmap_work);
+ }
+ 
+ /*
+_

@@ -1,0 +1,97 @@
+From: NeilBrown <neilb@suse.de>
+Subject: f2f2: replace some congestion_wait() calls with io_schedule_timeout()
+
+As congestion is no longer tracked, contestion_wait() is effectively
+equivalent to io_schedule_timeout().
+
+It isn't clear to me what these contestion_wait() calls are waiting for,
+so I cannot change them to wait for some particular event.  So simply
+change them to io_schedule_timeout(), which will have exactly the same
+behaviour.
+
+Link: https://lkml.kernel.org/r/164325158957.29787.2116312603613564596.stgit@noble.brown
+Signed-off-by: NeilBrown <neilb@suse.de>
+Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
+Cc: Chao Yu <chao@kernel.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Darrick J. Wong <djwong@kernel.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Paolo Valente <paolo.valente@linaro.org>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/f2fs/segment.c |   14 ++++++++------
+ fs/f2fs/super.c   |    8 ++++----
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+--- a/fs/f2fs/segment.c~f2f2-replace-some-congestion_wait-calls-with-io_schedule_timeout
++++ a/fs/f2fs/segment.c
+@@ -313,8 +313,8 @@ next:
+ skip:
+ 		iput(inode);
+ 	}
+-	congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
+-	cond_resched();
++	set_current_state(TASK_UNINTERRUPTIBLE);
++	io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+ 	if (gc_failure) {
+ 		if (++looped >= count)
+ 			return;
+@@ -802,9 +802,10 @@ int f2fs_flush_device_cache(struct f2fs_
+ 
+ 		do {
+ 			ret = __submit_flush_wait(sbi, FDEV(i).bdev);
+-			if (ret)
+-				congestion_wait(BLK_RW_ASYNC,
+-						DEFAULT_IO_TIMEOUT);
++			if (ret) {
++				set_current_state(TASK_UNINTERRUPTIBLE);
++				io_schedule_timeout(DEFAULT_IO_TIMEOUT);
++			}
+ 		} while (ret && --count);
+ 
+ 		if (ret) {
+@@ -3133,7 +3134,8 @@ next:
+ 			blk_finish_plug(&plug);
+ 			mutex_unlock(&dcc->cmd_lock);
+ 			trimmed += __wait_all_discard_cmd(sbi, NULL);
+-			congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
++			set_current_state(TASK_UNINTERRUPTIBLE);
++			io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+ 			goto next;
+ 		}
+ skip:
+--- a/fs/f2fs/super.c~f2f2-replace-some-congestion_wait-calls-with-io_schedule_timeout
++++ a/fs/f2fs/super.c
+@@ -2135,8 +2135,8 @@ static void f2fs_enable_checkpoint(struc
+ 	/* we should flush all the data to keep data consistency */
+ 	do {
+ 		sync_inodes_sb(sbi->sb);
+-		cond_resched();
+-		congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+ 	} while (get_pages(sbi, F2FS_DIRTY_DATA) && retry--);
+ 
+ 	if (unlikely(retry < 0))
+@@ -2504,8 +2504,8 @@ retry:
+ 							&page, &fsdata);
+ 		if (unlikely(err)) {
+ 			if (err == -ENOMEM) {
+-				congestion_wait(BLK_RW_ASYNC,
+-						DEFAULT_IO_TIMEOUT);
++				set_current_state(TASK_UNINTERRUPTIBLE);
++				io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+ 				goto retry;
+ 			}
+ 			set_sbi_flag(F2FS_SB(sb), SBI_QUOTA_NEED_REPAIR);
+_

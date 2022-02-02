@@ -1,0 +1,60 @@
+From: Kees Cook <keescook@chromium.org>
+Subject: Kconfig.debug: make DEBUG_INFO always default=n
+
+While trying to make sure CONFIG_DEBUG_INFO wasn't set for COMPILE_TEST, I
+ordered the choices incorrectly to retain the prior default=n state.  Move
+DEBUG_INFO_NONE to the top so that the default choice is disabled, and
+remove the "if COMPILE_TEST" as it is now redundant.
+
+Link: https://lkml.kernel.org/r/20220128214131.580131-1-keescook@chromium.org
+Link: https://lore.kernel.org/lkml/YfRY6+CaQxX7O8vF@dev-arch.archlinux-ax161
+Reported-by: Nathan Chancellor <nathan@kernel.org>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: Miguel Ojeda <ojeda@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/Kconfig.debug |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+--- a/lib/Kconfig.debug~kconfigdebug-make-debug_info-selectable-from-a-choice-fix
++++ a/lib/Kconfig.debug
+@@ -234,7 +234,6 @@ config DEBUG_INFO
+ choice
+ 	prompt "Debug information"
+ 	depends on DEBUG_KERNEL
+-	default DEBUG_INFO_NONE if COMPILE_TEST
+ 	help
+ 	  Selecting something other than "None" results in a kernel image
+ 	  that will include debugging info resulting in a larger kernel image.
+@@ -245,6 +244,12 @@ choice
+ 	  Choose which version of DWARF debug info to emit. If unsure,
+ 	  select "Toolchain default".
+ 
++config DEBUG_INFO_NONE
++	bool "Disable debug information"
++	help
++	  Do not build the kernel with debugging information, which will
++	  result in a faster and smaller build.
++
+ config DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
+ 	bool "Rely on the toolchain's implicit default DWARF version"
+ 	select DEBUG_INFO
+@@ -283,12 +288,6 @@ config DEBUG_INFO_DWARF5
+ 	  config if they rely on tooling that has not yet been updated to
+ 	  support DWARF Version 5.
+ 
+-config DEBUG_INFO_NONE
+-	bool "Disable debug information"
+-	help
+-	  Do not build the kernel with debugging information, which will
+-	  result in a faster and smaller build.
+-
+ endchoice # "Debug information"
+ 
+ if DEBUG_INFO
+_

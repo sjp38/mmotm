@@ -18,6 +18,7 @@ Acked-by: David Hildenbrand <david@redhat.com>
 Tested-by: Dong Aisheng <aisheng.dong@nxp.com>
 Tested-by: Francesco Dolcini <francesco.dolcini@toradex.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
+Tested-by: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

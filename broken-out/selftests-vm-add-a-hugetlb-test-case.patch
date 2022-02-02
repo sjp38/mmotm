@@ -209,9 +209,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  TEST_GEN_FILES += map_fixed_noreplace
 --- a/tools/testing/selftests/vm/run_vmtests.sh~selftests-vm-add-a-hugetlb-test-case
 +++ a/tools/testing/selftests/vm/run_vmtests.sh
-@@ -119,6 +119,17 @@ else
- 	echo "[PASS]"
+@@ -120,6 +120,17 @@ else
  fi
+ rm -f $mnt/huge_mremap
  
 +echo "------------------------"
 +echo "running hugepage-vmemmap"

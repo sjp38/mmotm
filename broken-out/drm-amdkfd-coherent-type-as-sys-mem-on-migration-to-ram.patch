@@ -1,0 +1,40 @@
+From: Alex Sierra <alex.sierra@amd.com>
+Subject: drm/amdkfd: coherent type as sys mem on migration to ram
+
+Coherent device type memory on VRAM to RAM migration, has similar access
+as System RAM from the CPU.  This flag sets the source from the sender. 
+Which in Coherent type case, should be set as
+MIGRATE_VMA_SELECT_DEVICE_COHERENT.
+
+Link: https://lkml.kernel.org/r/20220201154901.7921-6-alex.sierra@amd.com
+Signed-off-by: Alex Sierra <alex.sierra@amd.com>
+Reviewed-by: Felix Kuehling <Felix.Kuehling@amd.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Jerome Glisse <jglisse@redhat.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/gpu/drm/amd/amdkfd/kfd_migrate.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c~drm-amdkfd-coherent-type-as-sys-mem-on-migration-to-ram
++++ a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
+@@ -659,9 +659,12 @@ svm_migrate_vma_to_ram(struct amdgpu_dev
+ 	migrate.vma = vma;
+ 	migrate.start = start;
+ 	migrate.end = end;
+-	migrate.flags = MIGRATE_VMA_SELECT_DEVICE_PRIVATE;
+ 	migrate.pgmap_owner = SVM_ADEV_PGMAP_OWNER(adev);
+ 
++	if (adev->gmc.xgmi.connected_to_cpu)
++		migrate.flags = MIGRATE_VMA_SELECT_DEVICE_COHERENT;
++	else
++		migrate.flags = MIGRATE_VMA_SELECT_DEVICE_PRIVATE;
+ 	size = 2 * sizeof(*migrate.src) + sizeof(uint64_t) + sizeof(dma_addr_t);
+ 	size *= npages;
+ 	buf = kvmalloc(size, GFP_KERNEL | __GFP_ZERO);
+_

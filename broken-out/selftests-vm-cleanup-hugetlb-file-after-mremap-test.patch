@@ -1,0 +1,107 @@
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Subject: selftests/vm: cleanup hugetlb file after mremap test
+
+The hugepage-mremap test will create a file in a hugetlb filesystem.  In a
+default 'run_vmtests' run, the file will contain all the hugetlb pages. 
+After the test, the file remains and there are no free hugetlb pages for
+subsequent tests.  This causes those hugetlb tests to fail.
+
+Change hugepage-mremap to take the name of the hugetlb file as an
+argument.  Unlink the file within the test, and just to be sure remove the
+file in the run_vmtests script.
+
+Link: https://lkml.kernel.org/r/20220201033459.156944-1-mike.kravetz@oracle.com
+Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Shuah Khan <skhan@linuxfoundation.org>
+Cc: Mina Almasry <almasrymina@google.com>
+Cc: Yosry Ahmed <yosryahmed@google.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/vm/hugepage-mremap.c |   26 ++++++++++++-----
+ tools/testing/selftests/vm/run_vmtests.sh    |    3 +
+ 2 files changed, 21 insertions(+), 8 deletions(-)
+
+--- a/tools/testing/selftests/vm/hugepage-mremap.c~selftests-vm-cleanup-hugetlb-file-after-mremap-test
++++ a/tools/testing/selftests/vm/hugepage-mremap.c
+@@ -3,9 +3,10 @@
+  * hugepage-mremap:
+  *
+  * Example of remapping huge page memory in a user application using the
+- * mremap system call.  Code assumes a hugetlbfs filesystem is mounted
+- * at './huge'.  The amount of memory used by this test is decided by a command
+- * line argument in MBs. If missing, the default amount is 10MB.
++ * mremap system call.  The path to a file in a hugetlbfs filesystem must
++ * be passed as the last argument to this test.  The amount of memory used
++ * by this test in MBs can optionally be passed as an argument.  If no memory
++ * amount is passed, the default amount is 10MB.
+  *
+  * To make sure the test triggers pmd sharing and goes through the 'unshare'
+  * path in the mremap code use 1GB (1024) or more.
+@@ -25,7 +26,6 @@
+ #define DEFAULT_LENGTH_MB 10UL
+ #define MB_TO_BYTES(x) (x * 1024 * 1024)
+ 
+-#define FILE_NAME "huge/hugepagefile"
+ #define PROTECTION (PROT_READ | PROT_WRITE | PROT_EXEC)
+ #define FLAGS (MAP_SHARED | MAP_ANONYMOUS)
+ 
+@@ -107,17 +107,26 @@ static void register_region_with_uffd(ch
+ 
+ int main(int argc, char *argv[])
+ {
++	size_t length;
++
++	if (argc != 2 && argc != 3) {
++		printf("Usage: %s [length_in_MB] <hugetlb_file>\n", argv[0]);
++		exit(1);
++	}
++
+ 	/* Read memory length as the first arg if valid, otherwise fallback to
+-	 * the default length. Any additional args are ignored.
++	 * the default length.
+ 	 */
+-	size_t length = argc > 1 ? (size_t)atoi(argv[1]) : 0UL;
++	if (argc == 3)
++		length = argc > 2 ? (size_t)atoi(argv[1]) : 0UL;
+ 
+ 	length = length > 0 ? length : DEFAULT_LENGTH_MB;
+ 	length = MB_TO_BYTES(length);
+ 
+ 	int ret = 0;
+ 
+-	int fd = open(FILE_NAME, O_CREAT | O_RDWR, 0755);
++	/* last arg is the hugetlb file name */
++	int fd = open(argv[argc-1], O_CREAT | O_RDWR, 0755);
+ 
+ 	if (fd < 0) {
+ 		perror("Open failed");
+@@ -169,5 +178,8 @@ int main(int argc, char *argv[])
+ 
+ 	munmap(addr, length);
+ 
++	close(fd);
++	unlink(argv[argc-1]);
++
+ 	return ret;
+ }
+--- a/tools/testing/selftests/vm/run_vmtests.sh~selftests-vm-cleanup-hugetlb-file-after-mremap-test
++++ a/tools/testing/selftests/vm/run_vmtests.sh
+@@ -111,13 +111,14 @@ fi
+ echo "-----------------------"
+ echo "running hugepage-mremap"
+ echo "-----------------------"
+-./hugepage-mremap 256
++./hugepage-mremap $mnt/huge_mremap
+ if [ $? -ne 0 ]; then
+ 	echo "[FAIL]"
+ 	exitcode=1
+ else
+ 	echo "[PASS]"
+ fi
++rm -f $mnt/huge_mremap
+ 
+ echo "NOTE: The above hugetlb tests provide minimal coverage.  Use"
+ echo "      https://github.com/libhugetlbfs/libhugetlbfs.git for"
+_

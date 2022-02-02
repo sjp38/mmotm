@@ -1,0 +1,48 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: hugetlb: fix missing cache flush in hugetlb_mcopy_atomic_pte()
+
+folio_copy() will copy the data from one page to the target page, then the
+target page will be mapped to the user space address, which might have an
+alias issue with the kernel address used to copy the data from the page
+to.  Fix this issue by flushing dcache but not use flush_dcache_folio()
+since it is not backportable.
+
+Link: https://lkml.kernel.org/r/20220131160254.43211-5-songmuchun@bytedance.com
+Fixes: 8cc5fcbb5be8 ("mm, hugetlb: fix racy resv_huge_pages underflow on UFFDIO_COPY")
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Mina Almasry <almasrymina@google.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Lars Persson <lars.persson@axis.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Cc: Zi Yan <ziy@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- a/mm/hugetlb.c~mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte
++++ a/mm/hugetlb.c
+@@ -5804,6 +5804,8 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
+ 			goto out;
+ 		}
+ 	} else {
++		int i, nr;
++
+ 		if (vm_shared &&
+ 		    hugetlbfs_pagecache_present(h, dst_vma, dst_addr)) {
+ 			put_page(*pagep);
+@@ -5819,6 +5821,9 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
+ 			goto out;
+ 		}
+ 		folio_copy(page_folio(page), page_folio(*pagep));
++		nr = compound_nr(page);
++		for (i = 0; i < nr; i++)
++			flush_dcache_page(page + i);
+ 		put_page(*pagep);
+ 		*pagep = NULL;
+ 	}
+_

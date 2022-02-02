@@ -1,0 +1,62 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: replace multiple dcache flush with flush_dcache_folio()
+
+Simplify the code by using flush_dcache_folio().
+
+Link: https://lkml.kernel.org/r/20220131160254.43211-6-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Lars Persson <lars.persson@axis.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Mina Almasry <almasrymina@google.com>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Cc: Zi Yan <ziy@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    6 +-----
+ mm/migrate.c |    8 ++------
+ 2 files changed, 3 insertions(+), 11 deletions(-)
+
+--- a/mm/hugetlb.c~mm-replace-multiple-dcache-flush-with-flush_dcache_folio
++++ a/mm/hugetlb.c
+@@ -5804,8 +5804,6 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
+ 			goto out;
+ 		}
+ 	} else {
+-		int i, nr;
+-
+ 		if (vm_shared &&
+ 		    hugetlbfs_pagecache_present(h, dst_vma, dst_addr)) {
+ 			put_page(*pagep);
+@@ -5821,9 +5819,7 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
+ 			goto out;
+ 		}
+ 		folio_copy(page_folio(page), page_folio(*pagep));
+-		nr = compound_nr(page);
+-		for (i = 0; i < nr; i++)
+-			flush_dcache_page(page + i);
++		flush_dcache_folio(page_folio(page));
+ 		put_page(*pagep);
+ 		*pagep = NULL;
+ 	}
+--- a/mm/migrate.c~mm-replace-multiple-dcache-flush-with-flush_dcache_folio
++++ a/mm/migrate.c
+@@ -916,12 +916,8 @@ static int move_to_new_page(struct page
+ 		if (!PageMappingFlags(page))
+ 			page->mapping = NULL;
+ 
+-		if (likely(!is_zone_device_page(newpage))) {
+-			int i, nr = compound_nr(newpage);
+-
+-			for (i = 0; i < nr; i++)
+-				flush_dcache_page(newpage + i);
+-		}
++		if (likely(!is_zone_device_page(newpage)))
++			flush_dcache_folio(page_folio(newpage));
+ 	}
+ out:
+ 	return rc;
+_

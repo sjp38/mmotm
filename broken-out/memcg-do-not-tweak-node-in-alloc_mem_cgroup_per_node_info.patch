@@ -1,0 +1,53 @@
+From: Wei Yang <richard.weiyang@gmail.com>
+Subject: memcg: do not tweak node in alloc_mem_cgroup_per_node_info
+
+alloc_mem_cgroup_per_node_info is allocated for each possible node and
+this used to be a problem because not !node_online nodes didn't have
+appropriate data structure allocated.  This has changed by "mm: handle
+uninitialized numa nodes gracefully" so we can drop the special casing
+here.
+
+Link: https://lkml.kernel.org/r/20220127085305.20890-7-mhocko@kernel.org
+Signed-off-by: Wei Yang <richard.weiyang@gmail.com>
+Signed-off-by: Michal Hocko <mhocko@suse.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Alexey Makhalov <amakhalov@vmware.com>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: Nico Pache <npache@redhat.com>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Rafael Aquini <raquini@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |   14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+--- a/mm/memcontrol.c~memcg-do-not-tweak-node-in-alloc_mem_cgroup_per_node_info
++++ a/mm/memcontrol.c
+@@ -5067,18 +5067,8 @@ struct mem_cgroup *mem_cgroup_from_id(un
+ static int alloc_mem_cgroup_per_node_info(struct mem_cgroup *memcg, int node)
+ {
+ 	struct mem_cgroup_per_node *pn;
+-	int tmp = node;
+-	/*
+-	 * This routine is called against possible nodes.
+-	 * But it's BUG to call kmalloc() against offline node.
+-	 *
+-	 * TODO: this routine can waste much memory for nodes which will
+-	 *       never be onlined. It's better to use memory hotplug callback
+-	 *       function.
+-	 */
+-	if (!node_state(node, N_NORMAL_MEMORY))
+-		tmp = -1;
+-	pn = kzalloc_node(sizeof(*pn), GFP_KERNEL, tmp);
++
++	pn = kzalloc_node(sizeof(*pn), GFP_KERNEL, node);
+ 	if (!pn)
+ 		return 1;
+ 
+_

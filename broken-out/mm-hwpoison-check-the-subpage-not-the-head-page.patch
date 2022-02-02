@@ -1,0 +1,37 @@
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+Subject: mm/hwpoison: check the subpage, not the head page
+
+Hardware poison is tracked on a per-page basis, not on the head page.
+
+Link: https://lkml.kernel.org/r/20220130013042.1906881-1-willy@infradead.org
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/rmap.c~mm-hwpoison-check-the-subpage-not-the-head-page
++++ a/mm/rmap.c
+@@ -1553,7 +1553,7 @@ static bool try_to_unmap_one(struct page
+ 		/* Update high watermark before we lower rss */
+ 		update_hiwater_rss(mm);
+ 
+-		if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
++		if (PageHWPoison(subpage) && !(flags & TTU_IGNORE_HWPOISON)) {
+ 			pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
+ 			if (PageHuge(page)) {
+ 				hugetlb_count_sub(compound_nr(page), mm);
+@@ -1873,7 +1873,7 @@ static bool try_to_migrate_one(struct pa
+ 			 * memory are supported.
+ 			 */
+ 			subpage = page;
+-		} else if (PageHWPoison(page)) {
++		} else if (PageHWPoison(subpage)) {
+ 			pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
+ 			if (PageHuge(page)) {
+ 				hugetlb_count_sub(compound_nr(page), mm);
+_

@@ -1,0 +1,36 @@
+From: Kees Cook <keescook@chromium.org>
+Subject: exec: Fix min/max typo in stack space calculation
+
+When handling the argc == 0 case, the stack space calculation should be
+using max() not min().
+
+Link: https://lkml.kernel.org/r/20220201190700.3147041-1-keescook@chromium.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Ariadne Conill <ariadne@dereferenced.org>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Christian Brauner <brauner@kernel.org>
+Cc: Rich Felker <dalias@libc.org>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Yang Yingliang <yangyingliang@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/exec.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/exec.c~exec-force-single-empty-string-when-argv-is-empty-fix
++++ a/fs/exec.c
+@@ -502,7 +502,7 @@ static int bprm_stack_limits(struct linu
+ 	 * argc can never be 0, to keep them from walking envp by accident.
+ 	 * See do_execveat_common().
+ 	 */
+-	ptr_size = (min(bprm->argc, 1) + bprm->envc) * sizeof(void *);
++	ptr_size = (max(bprm->argc, 1) + bprm->envc) * sizeof(void *);
+ 	if (limit <= ptr_size)
+ 		return -E2BIG;
+ 	limit -= ptr_size;
+_
