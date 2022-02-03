@@ -32,6 +32,7 @@ do
 	if ! git -C "$linux_repo" am "$patchesdir/$patch"
 	then
 		echo "Failed applying $patch"
+		echo "Maybe adding \"From: Andrew Morton <akpm@linux-foundation.org>\" could help?"
 		break
 	fi
 done < "$series"
