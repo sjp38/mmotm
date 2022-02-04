@@ -13,9 +13,9 @@ file in the run_vmtests script.
 Link: https://lkml.kernel.org/r/20220201033459.156944-1-mike.kravetz@oracle.com
 Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Reviewed-by: Shuah Khan <skhan@linuxfoundation.org>
+Acked-by: Yosry Ahmed <yosryahmed@google.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
 Cc: Mina Almasry <almasrymina@google.com>
-Cc: Yosry Ahmed <yosryahmed@google.com>
-Cc: Muchun Song <songmuchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

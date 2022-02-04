@@ -34,7 +34,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~vmap-dont-allow-invalid-pages
 +++ a/mm/vmalloc.c
-@@ -479,6 +479,8 @@ static int vmap_pages_pte_range(pmd_t *p
+@@ -478,6 +478,8 @@ static int vmap_pages_pte_range(pmd_t *p
  			return -EBUSY;
  		if (WARN_ON(!page))
  			return -ENOMEM;

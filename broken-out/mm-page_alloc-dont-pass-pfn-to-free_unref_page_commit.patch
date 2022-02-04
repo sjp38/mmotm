@@ -1,0 +1,80 @@
+From: Nicolas Saenz Julienne <nsaenzju@redhat.com>
+Subject: mm/page_alloc: don't pass pfn to free_unref_page_commit()
+
+free_unref_page_commit() doesn't make use of its pfn argument, so get
+rid of it.
+
+Link: https://lkml.kernel.org/r/20220202140451.415928-1-nsaenzju@redhat.com
+Signed-off-by: Nicolas Saenz Julienne <nsaenzju@redhat.com>
+Reviewed-by: Vlastimil Babka <vbabka@suse.cz>
+Reviewed-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |   17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
+
+--- a/mm/page_alloc.c~mm-page_alloc-dont-pass-pfn-to-free_unref_page_commit
++++ a/mm/page_alloc.c
+@@ -3422,8 +3422,8 @@ static int nr_pcp_high(struct per_cpu_pa
+ 	return min(READ_ONCE(pcp->batch) << 2, high);
+ }
+ 
+-static void free_unref_page_commit(struct page *page, unsigned long pfn,
+-				   int migratetype, unsigned int order)
++static void free_unref_page_commit(struct page *page, int migratetype,
++				   unsigned int order)
+ {
+ 	struct zone *zone = page_zone(page);
+ 	struct per_cpu_pages *pcp;
+@@ -3472,7 +3472,7 @@ void free_unref_page(struct page *page,
+ 	}
+ 
+ 	local_lock_irqsave(&pagesets.lock, flags);
+-	free_unref_page_commit(page, pfn, migratetype, order);
++	free_unref_page_commit(page, migratetype, order);
+ 	local_unlock_irqrestore(&pagesets.lock, flags);
+ }
+ 
+@@ -3482,13 +3482,13 @@ void free_unref_page(struct page *page,
+ void free_unref_page_list(struct list_head *list)
+ {
+ 	struct page *page, *next;
+-	unsigned long flags, pfn;
++	unsigned long flags;
+ 	int batch_count = 0;
+ 	int migratetype;
+ 
+ 	/* Prepare pages for freeing */
+ 	list_for_each_entry_safe(page, next, list, lru) {
+-		pfn = page_to_pfn(page);
++		unsigned long pfn = page_to_pfn(page);
+ 		if (!free_unref_page_prepare(page, pfn, 0)) {
+ 			list_del(&page->lru);
+ 			continue;
+@@ -3504,15 +3504,10 @@ void free_unref_page_list(struct list_he
+ 			free_one_page(page_zone(page), page, pfn, 0, migratetype, FPI_NONE);
+ 			continue;
+ 		}
+-
+-		set_page_private(page, pfn);
+ 	}
+ 
+ 	local_lock_irqsave(&pagesets.lock, flags);
+ 	list_for_each_entry_safe(page, next, list, lru) {
+-		pfn = page_private(page);
+-		set_page_private(page, 0);
+-
+ 		/*
+ 		 * Non-isolated types over MIGRATE_PCPTYPES get added
+ 		 * to the MIGRATE_MOVABLE pcp list.
+@@ -3522,7 +3517,7 @@ void free_unref_page_list(struct list_he
+ 			migratetype = MIGRATE_MOVABLE;
+ 
+ 		trace_mm_page_free_batched(page);
+-		free_unref_page_commit(page, pfn, migratetype, 0);
++		free_unref_page_commit(page, migratetype, 0);
+ 
+ 		/*
+ 		 * Guard against excessive IRQ disabled times when we get
+_

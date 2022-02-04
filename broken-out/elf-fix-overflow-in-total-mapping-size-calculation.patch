@@ -11,9 +11,12 @@ by v_addr anyway because mmap() doesn't care.
 Don't assume PT_LOAD segments are sorted and calculate min and max
 addresses correctly.
 
-Link: https://lkml.kernel.org/r/YVmd7D0M6G/DcP4O@localhost.localdomain
+Link: https://lore.kernel.org/all/YVmd7D0M6G/DcP4O@localhost.localdomain/
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Tested-by: Magnus Groß <magnus.gross@rwth-aachen.de>
 Cc: Kees Cook <keescook@chromium.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Eric Biederman <ebiederm@xmission.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

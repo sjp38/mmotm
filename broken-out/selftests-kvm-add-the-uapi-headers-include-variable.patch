@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/tools/testing/selftests/kvm/Makefile~selftests-kvm-add-the-uapi-headers-include-variable
 +++ a/tools/testing/selftests/kvm/Makefile
-@@ -149,7 +149,7 @@ endif
+@@ -150,7 +150,7 @@ endif
  CFLAGS += -Wall -Wstrict-prototypes -Wuninitialized -O2 -g -std=gnu99 \
  	-fno-stack-protector -fno-PIE -I$(LINUX_TOOL_INCLUDE) \
  	-I$(LINUX_TOOL_ARCH_INCLUDE) -I$(LINUX_HDR_PATH) -Iinclude \

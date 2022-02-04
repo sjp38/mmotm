@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/Documentation/admin-guide/sysctl/kernel.rst~docs-sysctl-kernel-add-missing-bit-to-panic_print
 +++ a/Documentation/admin-guide/sysctl/kernel.rst
-@@ -795,6 +795,7 @@ bit 1  print system memory info
+@@ -806,6 +806,7 @@ bit 1  print system memory info
  bit 2  print timer info
  bit 3  print locks info if ``CONFIG_LOCKDEP`` is on
  bit 4  print ftrace buffer

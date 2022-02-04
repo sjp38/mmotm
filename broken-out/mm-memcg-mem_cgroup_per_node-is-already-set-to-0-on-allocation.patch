@@ -24,7 +24,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-mem_cgroup_per_node-is-already-set-to-0-on-allocation
 +++ a/mm/memcontrol.c
-@@ -5102,8 +5102,6 @@ static int alloc_mem_cgroup_per_node_inf
+@@ -5105,8 +5105,6 @@ static int alloc_mem_cgroup_per_node_inf
  	}
  
  	lruvec_init(&pn->lruvec);

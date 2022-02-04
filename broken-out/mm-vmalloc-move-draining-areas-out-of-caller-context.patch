@@ -29,7 +29,7 @@ v2->v3:
 
 Link: https://lkml.kernel.org/r/20220131144058.35608-1-urezki@gmail.com
 Signed-off-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Oleksiy Avramchenko <oleksiy.avramchenko@sonymobile.com>
@@ -41,7 +41,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-move-draining-areas-out-of-caller-context
 +++ a/mm/vmalloc.c
-@@ -792,6 +792,8 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vm
+@@ -791,6 +791,8 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vm
  
  static void purge_vmap_area_lazy(void);
  static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static atomic_long_t nr_vmalloc_pages;
  
-@@ -1723,18 +1725,6 @@ static bool __purge_vmap_area_lazy(unsig
+@@ -1722,18 +1724,6 @@ static bool __purge_vmap_area_lazy(unsig
  }
  
  /*
@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * Kick off a purge of the outstanding lazy areas.
   */
  static void purge_vmap_area_lazy(void)
-@@ -1745,6 +1735,20 @@ static void purge_vmap_area_lazy(void)
+@@ -1744,6 +1734,20 @@ static void purge_vmap_area_lazy(void)
  	mutex_unlock(&vmap_purge_lock);
  }
  
@@ -90,7 +90,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Free a vmap area, caller ensuring that the area has been unmapped
   * and flush_cache_vunmap had been called for the correct range
-@@ -1771,7 +1775,7 @@ static void free_vmap_area_noflush(struc
+@@ -1770,7 +1774,7 @@ static void free_vmap_area_noflush(struc
  
  	/* After this point, we may free va at any time */
  	if (unlikely(nr_lazy > lazy_max_pages()))

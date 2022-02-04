@@ -47,7 +47,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			Format: <hex>[,nousertaint]
 --- a/Documentation/admin-guide/sysctl/kernel.rst~panic-add-option-to-dump-all-cpus-backtraces-in-panic_print
 +++ a/Documentation/admin-guide/sysctl/kernel.rst
-@@ -796,6 +796,7 @@ bit 2  print timer info
+@@ -807,6 +807,7 @@ bit 2  print timer info
  bit 3  print locks info if ``CONFIG_LOCKDEP`` is on
  bit 4  print ftrace buffer
  bit 5  print all printk messages in buffer

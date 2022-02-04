@@ -132,7 +132,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
 --- a/mm/memcontrol.c~mm-add-zone-device-coherent-type-memory-support
 +++ a/mm/memcontrol.c
-@@ -5681,8 +5681,8 @@ out:
+@@ -5694,8 +5694,8 @@ out:
   *   2(MC_TARGET_SWAP): if the swap entry corresponding to this pte is a
   *     target for charge migration. if @target is not NULL, the entry is stored
   *     in target->ent.
@@ -143,7 +143,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *     For now we such page is charge like a regular page would be as for all
   *     intent and purposes it is just special memory taking the place of a
   *     regular page.
-@@ -5716,7 +5716,7 @@ static enum mc_target_type get_mctgt_typ
+@@ -5729,7 +5729,7 @@ static enum mc_target_type get_mctgt_typ
  		 */
  		if (page_memcg(page) == mc.from) {
  			ret = MC_TARGET_PAGE;
@@ -219,7 +219,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
 --- a/mm/migrate.c~mm-add-zone-device-coherent-type-memory-support
 +++ a/mm/migrate.c
-@@ -347,7 +347,7 @@ static int expected_page_refs(struct add
+@@ -348,7 +348,7 @@ static int expected_page_refs(struct add
  	 * Device private pages have an extra refcount as they are
  	 * ZONE_DEVICE pages.
  	 */
@@ -228,7 +228,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (mapping)
  		expected_count += compound_nr(page) + page_has_private(page);
  
-@@ -2612,7 +2612,7 @@ EXPORT_SYMBOL(migrate_vma_setup);
+@@ -2634,7 +2634,7 @@ EXPORT_SYMBOL(migrate_vma_setup);
   *     handle_pte_fault()
   *       do_anonymous_page()
   * to map in an anonymous zero page but the struct page will be a ZONE_DEVICE
@@ -237,7 +237,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   */
  static void migrate_vma_insert_page(struct migrate_vma *migrate,
  				    unsigned long addr,
-@@ -2677,25 +2677,24 @@ static void migrate_vma_insert_page(stru
+@@ -2699,25 +2699,24 @@ static void migrate_vma_insert_page(stru
  	 */
  	__SetPageUptodate(page);
  
@@ -280,7 +280,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	} else {
  		entry = mk_pte(page, vma->vm_page_prot);
  		if (vma->vm_flags & VM_WRITE)
-@@ -2797,10 +2796,10 @@ void migrate_vma_pages(struct migrate_vm
+@@ -2819,10 +2818,10 @@ void migrate_vma_pages(struct migrate_vm
  		mapping = page_mapping(page);
  
  		if (is_zone_device_page(newpage)) {

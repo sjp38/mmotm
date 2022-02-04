@@ -5,8 +5,9 @@ Hardware poison is tracked on a per-page basis, not on the head page.
 
 Link: https://lkml.kernel.org/r/20220130013042.1906881-1-willy@infradead.org
 Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
 Cc: David Rientjes <rientjes@google.com>
-Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
@@ -16,7 +17,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/rmap.c~mm-hwpoison-check-the-subpage-not-the-head-page
 +++ a/mm/rmap.c
-@@ -1553,7 +1553,7 @@ static bool try_to_unmap_one(struct page
+@@ -1555,7 +1555,7 @@ static bool try_to_unmap_one(struct page
  		/* Update high watermark before we lower rss */
  		update_hiwater_rss(mm);
  
@@ -25,7 +26,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			pteval = swp_entry_to_pte(make_hwpoison_entry(subpage));
  			if (PageHuge(page)) {
  				hugetlb_count_sub(compound_nr(page), mm);
-@@ -1873,7 +1873,7 @@ static bool try_to_migrate_one(struct pa
+@@ -1877,7 +1877,7 @@ static bool try_to_migrate_one(struct pa
  			 * memory are supported.
  			 */
  			subpage = page;

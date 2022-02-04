@@ -1,7 +1,7 @@
 From: Yang Shi <shy828301@gmail.com>
 Subject: fs/proc: task_mmu.c: don't read mapcount for migration entry
 
-syzbot reported the below BUG:
+The syzbot reported the below BUG:
 
 kernel BUG at include/linux/page-flags.h:785!
 invalid opcode: 0000 [#1] PREEMPT SMP KASAN
@@ -69,9 +69,9 @@ CR2: 00007fff7e663318 CR3: 0000000018c6e000 CR4: 00000000003506e0
 DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
 DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
 
-The reproducer was trying to reading /proc/$PID/smaps when calling
-MADV_FREE at the same time.  MADV_FREE may split THPs if it is called for
-partial THP.  It may trigger the below race:
+The reproducer was trying to read /proc/$PID/smaps when calling MADV_FREE
+at the mean time.  MADV_FREE may split THPs if it is called for partial
+THP.  It may trigger the below race:
 
          CPU A                         CPU B
          -----                         -----
@@ -96,10 +96,14 @@ Add a new parameter for smaps_account() to tell this entry is migration
 entry then skip calling page_mapcount().  Don't skip getting mapcount for
 device private entries since they do track references with mapcount.
 
+Pagemap also has the similar issue although it was not reported.  Fixed it
+as well.
+
 Link: https://lkml.kernel.org/r/20220120202805.3369-1-shy828301@gmail.com
 Fixes: e9b61f19858a ("thp: reintroduce split_huge_page()")
 Signed-off-by: Yang Shi <shy828301@gmail.com>
 Reported-by: syzbot+1f52b3a18d5633fa7f82@syzkaller.appspotmail.com
+Acked-by: David Hildenbrand <david@redhat.com>
 Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Cc: Jann Horn <jannh@google.com>
 Cc: Matthew Wilcox <willy@infradead.org>

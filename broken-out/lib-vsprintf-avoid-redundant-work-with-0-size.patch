@@ -1,0 +1,106 @@
+From: Waiman Long <longman@redhat.com>
+Subject: lib/vsprintf: avoid redundant work with 0 size
+
+Patch series "mm/page_owner: Extend page_owner to show memcg information", v4.
+
+While debugging the constant increase in percpu memory consumption on a
+system that spawned large number of containers, it was found that a lot of
+offline mem_cgroup structures remained in place without being freed. 
+Further investigation indicated that those mem_cgroup structures were
+pinned by some pages.
+
+In order to find out what those pages are, the existing page_owner
+debugging tool is extended to show memory cgroup information and whether
+those memcgs are offline or not.  With the enhanced page_owner tool, the
+following is a typical page that pinned the mem_cgroup structure in my
+test case:
+
+Page allocated via order 0, mask 0x1100cca(GFP_HIGHUSER_MOVABLE), pid 162970 (podman), ts 1097761405537 ns, free_ts 1097760838089 ns
+PFN 1925700 type Movable Block 3761 type Movable Flags 0x17ffffc00c001c(uptodate|dirty|lru|reclaim|swapbacked|node=0|zone=2|lastcpupid=0x1fffff)
+ prep_new_page+0xac/0xe0
+ get_page_from_freelist+0x1327/0x14d0
+ __alloc_pages+0x191/0x340
+ alloc_pages_vma+0x84/0x250
+ shmem_alloc_page+0x3f/0x90
+ shmem_alloc_and_acct_page+0x76/0x1c0
+ shmem_getpage_gfp+0x281/0x940
+ shmem_write_begin+0x36/0xe0
+ generic_perform_write+0xed/0x1d0
+ __generic_file_write_iter+0xdc/0x1b0
+ generic_file_write_iter+0x5d/0xb0
+ new_sync_write+0x11f/0x1b0
+ vfs_write+0x1ba/0x2a0
+ ksys_write+0x59/0xd0
+ do_syscall_64+0x37/0x80
+ entry_SYSCALL_64_after_hwframe+0x44/0xae
+Charged to offline memcg libpod-conmon-15e4f9c758422306b73b2dd99f9d50a5ea53cbb16b4a13a2c2308a4253cc0ec8.
+
+So the page was not freed because it was part of a shmem segment.  That is
+useful information that can help users to diagnose similar problems.
+
+With cgroup v1, /proc/cgroups can be read to find out the total number of
+memory cgroups (online + offline).  With cgroup v2, the cgroup.stat of the
+root cgroup can be read to find the number of dying cgroups (most likely
+pinned by dying memcgs).
+
+The page_owner feature is not supposed to be enabled for production system
+due to its memory overhead.  However, if it is suspected that dying memcgs
+are increasing over time, a test environment with page_owner enabled can
+then be set up with appropriate workload for further analysis on what may
+be causing the increasing number of dying memcgs.
+
+
+This patch (of 4):
+
+For *scnprintf(), vsnprintf() is always called even if the input size is
+0.  That is a waste of time, so just return 0 in this case.
+
+Note that vsnprintf() will never return -1 to indicate an error.  So
+skipping the call to vsnprintf() when size is 0 will have no functional
+impact at all.
+
+Link: https://lkml.kernel.org/r/20220202203036.744010-1-longman@redhat.com
+Link: https://lkml.kernel.org/r/20220202203036.744010-2-longman@redhat.com
+Signed-off-by: Waiman Long <longman@redhat.com>
+Acked-by: David Rientjes <rientjes@google.com>
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Acked-by: Roman Gushchin <guro@fb.com>
+Acked-by: Rafael Aquini <aquini@redhat.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Steven Rostedt (Google) <rostedt@goodmis.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: David Rientjes <rientjes@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/vsprintf.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- a/lib/vsprintf.c~lib-vsprintf-avoid-redundant-work-with-0-size
++++ a/lib/vsprintf.c
+@@ -2895,13 +2895,15 @@ int vscnprintf(char *buf, size_t size, c
+ {
+ 	int i;
+ 
++	if (unlikely(!size))
++		return 0;
++
+ 	i = vsnprintf(buf, size, fmt, args);
+ 
+ 	if (likely(i < size))
+ 		return i;
+-	if (size != 0)
+-		return size - 1;
+-	return 0;
++
++	return size - 1;
+ }
+ EXPORT_SYMBOL(vscnprintf);
+ 
+_

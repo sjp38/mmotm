@@ -1,0 +1,33 @@
+From: Waiman Long <longman@redhat.com>
+Subject: mm-sparsemem-fix-mem_section-will-never-be-null-gcc-12-warning-v2
+
+Link: https://lkml.kernel.org/r/20220202003550.698768-1-longman@redhat.com
+Fixes: 83e3c48729d9 ("mm/sparsemem: Allocate mem_section at runtime for CONFIG_SPARSEMEM_EXTREME=y")
+Fixes: 3e347261a80b ("sparsemem extreme implementation")
+Reported-by: Justin Forbes <jforbes@redhat.com>
+Signed-off-by: Waiman Long <longman@redhat.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Rafael Aquini <aquini@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mmzone.h |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+--- a/include/linux/mmzone.h~mm-sparsemem-fix-mem_section-will-never-be-null-gcc-12-warning-v2
++++ a/include/linux/mmzone.h
+@@ -1390,11 +1390,9 @@ static inline unsigned long *section_to_
+ static inline struct mem_section *__nr_to_section(unsigned long nr)
+ {
+ #ifdef CONFIG_SPARSEMEM_EXTREME
+-	if (!*mem_section)
++	if (!*mem_section || !mem_section[SECTION_NR_TO_ROOT(nr)])
+ 		return NULL;
+ #endif
+-	if (!mem_section[SECTION_NR_TO_ROOT(nr)])
+-		return NULL;
+ 	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
+ }
+ extern size_t mem_section_usage_size(void);
+_

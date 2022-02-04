@@ -166,7 +166,6 @@ Reported-by: Nadav Amit <nadav.amit@gmail.com>
 Reviewed-by: Matthew Wilcox (Oracle) <willy@infradead.org>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Hugh Dickins <hughd@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: David Rientjes <rientjes@google.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: John Hubbard <jhubbard@nvidia.com>

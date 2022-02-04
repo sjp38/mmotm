@@ -49,11 +49,15 @@ Link: https://lkml.kernel.org/r/20220201000947.2453721-1-keescook@chromium.org
 Signed-off-by: Kees Cook <keescook@chromium.org>
 Reported-by: Ariadne Conill <ariadne@dereferenced.org>
 Reported-by: Michael Kerrisk <mtk.manpages@gmail.com>
+Acked-by: Ariadne Conill <ariadne@dereferenced.org>
+Acked-by: Andy Lutomirski <luto@kernel.org>
+Acked-by: Christian Brauner <brauner@kernel.org>
 Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Christian Brauner <brauner@kernel.org>
 Cc: Rich Felker <dalias@libc.org>
 Cc: Eric Biederman <ebiederm@xmission.com>
 Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Yang Yingliang <yangyingliang@huawei.com>
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

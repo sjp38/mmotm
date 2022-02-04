@@ -2,7 +2,7 @@ From: Wei Yang <richard.weiyang@gmail.com>
 Subject: memcg: do not tweak node in alloc_mem_cgroup_per_node_info
 
 alloc_mem_cgroup_per_node_info is allocated for each possible node and
-this used to be a problem because not !node_online nodes didn't have
+this used to be a problem because !node_online nodes didn't have
 appropriate data structure allocated.  This has changed by "mm: handle
 uninitialized numa nodes gracefully" so we can drop the special casing
 here.
@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~memcg-do-not-tweak-node-in-alloc_mem_cgroup_per_node_info
 +++ a/mm/memcontrol.c
-@@ -5067,18 +5067,8 @@ struct mem_cgroup *mem_cgroup_from_id(un
+@@ -5082,18 +5082,8 @@ struct mem_cgroup *mem_cgroup_from_id(un
  static int alloc_mem_cgroup_per_node_info(struct mem_cgroup *memcg, int node)
  {
  	struct mem_cgroup_per_node *pn;

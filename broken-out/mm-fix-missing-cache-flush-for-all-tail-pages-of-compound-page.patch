@@ -15,7 +15,6 @@ this by not using flush_dcache_folio() since it is not backportable.
 
 Link: https://lkml.kernel.org/r/20220131160254.43211-3-songmuchun@bytedance.com
 Fixes: 616b8371539a ("mm: thp: enable thp migration in generic path")
-Fixes: 290408d4a250 ("hugetlb: hugepage migration core")
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 Reviewed-by: Zi Yan <ziy@nvidia.com>
 Cc: David Rientjes <rientjes@google.com>

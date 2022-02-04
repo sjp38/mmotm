@@ -1,0 +1,64 @@
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: include: drop pointless __compiler_offsetof indirection
+
+(1) compiler_types.h is unconditionally included via an -include flag
+    (see scripts/Makefile.lib), and it defines __compiler_offsetof
+    unconditionally.  So testing for definedness of __compiler_offsetof is
+    mostly pointless.
+
+(2) Every relevant compiler provides __builtin_offsetof (even sparse
+    has had that for 14 years), and if for whatever reason one would end
+    up picking up the poor man's fallback definition (C file compiler with
+    completely custom CFLAGS?), newer clang versions won't treat the
+    result as an Integer Constant Expression, so if used in place where
+    such is required (static initializer or static_assert), one would get
+    errors like
+
+t.c:11:16: error: static_assert expression is not an integral constant expression
+t.c:11:16: note: cast that performs the conversions of a reinterpret_cast is not allowed in a constant expression
+t.c:4:33: note: expanded from macro 'offsetof'
+#define offsetof(TYPE, MEMBER)  ((size_t)&((TYPE *)0)->MEMBER)
+
+So just define offsetof unconditionally and directly in terms of
+__builtin_offsetof.
+
+Link: https://lkml.kernel.org/r/20220202102147.326672-1-linux@rasmusvillemoes.dk
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Reviewed-by: Miguel Ojeda <ojeda@kernel.org>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Acked-by: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/compiler_types.h |    2 --
+ include/linux/stddef.h         |    6 +-----
+ 2 files changed, 1 insertion(+), 7 deletions(-)
+
+--- a/include/linux/compiler_types.h~include-drop-pointless-__compiler_offsetof-indirection
++++ a/include/linux/compiler_types.h
+@@ -137,8 +137,6 @@ struct ftrace_likely_data {
+  */
+ #define __naked			__attribute__((__naked__)) notrace
+ 
+-#define __compiler_offsetof(a, b)	__builtin_offsetof(a, b)
+-
+ /*
+  * Prefer gnu_inline, so that extern inline functions do not emit an
+  * externally visible function. This makes extern inline behave as per gnu89
+--- a/include/linux/stddef.h~include-drop-pointless-__compiler_offsetof-indirection
++++ a/include/linux/stddef.h
+@@ -13,11 +13,7 @@ enum {
+ };
+ 
+ #undef offsetof
+-#ifdef __compiler_offsetof
+-#define offsetof(TYPE, MEMBER)	__compiler_offsetof(TYPE, MEMBER)
+-#else
+-#define offsetof(TYPE, MEMBER)	((size_t)&((TYPE *)0)->MEMBER)
+-#endif
++#define offsetof(TYPE, MEMBER)	__builtin_offsetof(TYPE, MEMBER)
+ 
+ /**
+  * sizeof_field() - Report the size of a struct field in bytes
+_

@@ -15,8 +15,7 @@ share this between standard ELF and FDPIC ELF anyway, I guess it's fine?
 And this also keeps the change small for backporting.
 
 Link: https://lkml.kernel.org/r/20220126025739.2014888-1-jannh@google.com
-Fixes: 429a22e776a2 ("coredump: rework elf/elf_fdpic vma_dump_size() into c=
-ommon helper")
+Fixes: 429a22e776a2 ("coredump: rework elf/elf_fdpic vma_dump_size() into common helper")
 Signed-off-by: Jann Horn <jannh@google.com>
 Reported-by: Bill Messmer <wmessmer@microsoft.com>
 Cc: "Eric W . Biederman" <ebiederm@xmission.com>

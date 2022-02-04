@@ -287,7 +287,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include "internal.h"
  
-@@ -3939,6 +3940,13 @@ static bool pgdat_watermark_boosted(pg_d
+@@ -3941,6 +3942,13 @@ static bool pgdat_watermark_boosted(pg_d
  }
  
  /*
@@ -301,7 +301,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * Returns true if there is an eligible zone balanced for the request order
   * and highest_zoneidx
   */
-@@ -3959,6 +3967,15 @@ static bool pgdat_balanced(pg_data_t *pg
+@@ -3961,6 +3969,15 @@ static bool pgdat_balanced(pg_data_t *pg
  			continue;
  
  		mark = high_wmark_pages(zone);

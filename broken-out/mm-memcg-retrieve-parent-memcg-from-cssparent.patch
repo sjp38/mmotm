@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/memcontrol.h~mm-memcg-retrieve-parent-memcg-from-cssparent
 +++ a/include/linux/memcontrol.h
-@@ -841,9 +841,7 @@ static inline struct mem_cgroup *lruvec_
+@@ -842,9 +842,7 @@ static inline struct mem_cgroup *lruvec_
   */
  static inline struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *memcg)
  {

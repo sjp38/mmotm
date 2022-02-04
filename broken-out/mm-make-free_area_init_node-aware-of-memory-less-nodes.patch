@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-make-free_area_init_node-aware-of-memory-less-nodes
 +++ a/mm/page_alloc.c
-@@ -7727,9 +7727,14 @@ static void __init free_area_init_node(i
+@@ -7722,9 +7722,14 @@ static void __init free_area_init_node(i
  	pgdat->node_start_pfn = start_pfn;
  	pgdat->per_cpu_nodestats = NULL;
  

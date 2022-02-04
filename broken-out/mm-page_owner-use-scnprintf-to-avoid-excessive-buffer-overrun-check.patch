@@ -1,0 +1,77 @@
+From: Waiman Long <longman@redhat.com>
+Subject: mm/page_owner: use scnprintf() to avoid excessive buffer overrun check
+
+The snprintf() function can return a length greater than the given input
+size.  That will require a check for buffer overrun after each invocation
+of snprintf().  scnprintf(), on the other hand, will never return a
+greater length.  By using scnprintf() in selected places, we can avoid
+some buffer overrun checks except after stack_depot_snprint() and after
+the last snprintf().
+
+Link: https://lkml.kernel.org/r/20220202203036.744010-3-longman@redhat.com
+Signed-off-by: Waiman Long <longman@redhat.com>
+Acked-by: David Rientjes <rientjes@google.com>
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Acked-by: Rafael Aquini <aquini@redhat.com>
+Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Steven Rostedt (Google) <rostedt@goodmis.org>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_owner.c |   14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
+
+--- a/mm/page_owner.c~mm-page_owner-use-scnprintf-to-avoid-excessive-buffer-overrun-check
++++ a/mm/page_owner.c
+@@ -338,19 +338,16 @@ print_page_owner(char __user *buf, size_
+ 	if (!kbuf)
+ 		return -ENOMEM;
+ 
+-	ret = snprintf(kbuf, count,
++	ret = scnprintf(kbuf, count,
+ 			"Page allocated via order %u, mask %#x(%pGg), pid %d, ts %llu ns, free_ts %llu ns\n",
+ 			page_owner->order, page_owner->gfp_mask,
+ 			&page_owner->gfp_mask, page_owner->pid,
+ 			page_owner->ts_nsec, page_owner->free_ts_nsec);
+ 
+-	if (ret >= count)
+-		goto err;
+-
+ 	/* Print information relevant to grouping pages by mobility */
+ 	pageblock_mt = get_pageblock_migratetype(page);
+ 	page_mt  = gfp_migratetype(page_owner->gfp_mask);
+-	ret += snprintf(kbuf + ret, count - ret,
++	ret += scnprintf(kbuf + ret, count - ret,
+ 			"PFN %lu type %s Block %lu type %s Flags %pGp\n",
+ 			pfn,
+ 			migratetype_names[page_mt],
+@@ -358,19 +355,14 @@ print_page_owner(char __user *buf, size_
+ 			migratetype_names[pageblock_mt],
+ 			&page->flags);
+ 
+-	if (ret >= count)
+-		goto err;
+-
+ 	ret += stack_depot_snprint(handle, kbuf + ret, count - ret, 0);
+ 	if (ret >= count)
+ 		goto err;
+ 
+ 	if (page_owner->last_migrate_reason != -1) {
+-		ret += snprintf(kbuf + ret, count - ret,
++		ret += scnprintf(kbuf + ret, count - ret,
+ 			"Page has been migrated, last migrate reason: %s\n",
+ 			migrate_reason_names[page_owner->last_migrate_reason]);
+-		if (ret >= count)
+-			goto err;
+ 	}
+ 
+ 	ret += snprintf(kbuf + ret, count - ret, "\n");
+_

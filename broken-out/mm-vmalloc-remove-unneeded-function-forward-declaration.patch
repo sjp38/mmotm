@@ -14,7 +14,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-remove-unneeded-function-forward-declaration
 +++ a/mm/vmalloc.c
-@@ -792,7 +792,6 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vm
+@@ -791,7 +791,6 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vm
  
  static void purge_vmap_area_lazy(void);
  static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);

@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	select ARCH_HAS_FORTIFY_SOURCE
  	select ARCH_HAS_GCOV_PROFILE_ALL
  	select ARCH_HAS_GIGANTIC_PAGE
-@@ -1166,9 +1167,6 @@ config HW_PERF_EVENTS
+@@ -1235,9 +1236,6 @@ config HW_PERF_EVENTS
  	def_bool y
  	depends on ARM_PMU
  
@@ -42,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	def_bool $(cc-option, -fsanitize=shadow-call-stack -ffixed-x18)
 --- a/arch/x86/Kconfig~mm-generalize-arch_has_filter_pgprot
 +++ a/arch/x86/Kconfig
-@@ -332,9 +332,6 @@ config GENERIC_CALIBRATE_DELAY
+@@ -333,9 +333,6 @@ config GENERIC_CALIBRATE_DELAY
  config ARCH_HAS_CPU_RELAX
  	def_bool y
  

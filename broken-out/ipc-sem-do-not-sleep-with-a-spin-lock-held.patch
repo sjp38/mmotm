@@ -15,6 +15,7 @@ Cc: Davidlohr Bueso <dbueso@suse.de>
 Cc: Randy Dunlap <rdunlap@infradead.org>
 Cc: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 Cc: Vasily Averin <vvs@virtuozzo.com>
+Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

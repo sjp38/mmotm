@@ -1,0 +1,121 @@
+From: Yosry Ahmed <yosryahmed@google.com>
+Subject: memcg-add-per-memcg-total-kernel-memory-stat-v2
+
+- Moved "kernel" stat ahead of other subset kernel stats.
+- Renamed mem_cgroup_kmem_record() to memcg_account_kmem(), following
+  Johannes's review to avoid the line wrap, but keeping a memcg_ prefix
+  to stay consistent with other static functions in the file.
+- Fixed a build error when CONFIG_MEMCG_KMEM is not set (added an empty
+  version if the config is not set).
+
+Link: https://lkml.kernel.org/r/20220203193856.972500-1-yosryahmed@google.com
+Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
+Acked-by: Shakeel Butt <shakeelb@google.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Reported-by: kernel test robot <lkp@intel.com>
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/cgroup-v2.rst |   10 +++++-----
+ mm/memcontrol.c                         |   15 +++++++++------
+ 2 files changed, 14 insertions(+), 11 deletions(-)
+
+--- a/Documentation/admin-guide/cgroup-v2.rst~memcg-add-per-memcg-total-kernel-memory-stat-v2
++++ a/Documentation/admin-guide/cgroup-v2.rst
+@@ -1301,6 +1301,11 @@ PAGE_SIZE multiple when read back.
+ 		Amount of memory used to cache filesystem data,
+ 		including tmpfs and shared memory.
+ 
++	  kernel (npn)
++		Amount of total kernel memory, including
++		(kernel_stack, pagetables, percpu, vmalloc, slab) in
++		addition to other kernel memory use cases.
++
+ 	  kernel_stack
+ 		Amount of memory allocated to kernel stacks.
+ 
+@@ -1317,11 +1322,6 @@ PAGE_SIZE multiple when read back.
+ 	  vmalloc (npn)
+ 		Amount of memory used for vmap backed memory.
+ 
+-	  kernel (npn)
+-		Amount of total kernel memory, including
+-		(kernel_stack, pagetables, percpu, vmalloc, slab) in
+-		addition to other kernel memory use cases.
+-
+ 	  shmem
+ 		Amount of cached filesystem data that is swap-backed,
+ 		such as tmpfs, shm segments, shared anonymous mmap()s
+--- a/mm/memcontrol.c~memcg-add-per-memcg-total-kernel-memory-stat-v2
++++ a/mm/memcontrol.c
+@@ -1371,12 +1371,12 @@ struct memory_stat {
+ static const struct memory_stat memory_stats[] = {
+ 	{ "anon",			NR_ANON_MAPPED			},
+ 	{ "file",			NR_FILE_PAGES			},
++	{ "kernel",			MEMCG_KMEM			},
+ 	{ "kernel_stack",		NR_KERNEL_STACK_KB		},
+ 	{ "pagetables",			NR_PAGETABLE			},
+ 	{ "percpu",			MEMCG_PERCPU_B			},
+ 	{ "sock",			MEMCG_SOCK			},
+ 	{ "vmalloc",			MEMCG_VMALLOC			},
+-	{ "kernel",			MEMCG_KMEM			},
+ 	{ "shmem",			NR_SHMEM			},
+ 	{ "file_mapped",		NR_FILE_MAPPED			},
+ 	{ "file_dirty",			NR_FILE_DIRTY			},
+@@ -2115,6 +2115,7 @@ static DEFINE_MUTEX(percpu_charge_mutex)
+ static void drain_obj_stock(struct obj_stock *stock);
+ static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
+ 				     struct mem_cgroup *root_memcg);
++static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages);
+ 
+ #else
+ static inline void drain_obj_stock(struct obj_stock *stock)
+@@ -2125,6 +2126,9 @@ static bool obj_stock_flush_required(str
+ {
+ 	return false;
+ }
++static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages)
++{
++}
+ #endif
+ 
+ /**
+@@ -2980,8 +2984,7 @@ static void memcg_free_cache_id(int id)
+ 	ida_simple_remove(&memcg_cache_ida, id);
+ }
+ 
+-static void mem_cgroup_kmem_record(struct mem_cgroup *memcg,
+-				   int nr_pages)
++static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages)
+ {
+ 	mod_memcg_state(memcg, MEMCG_KMEM, nr_pages);
+ 	if (!cgroup_subsys_on_dfl(memory_cgrp_subsys)) {
+@@ -3005,7 +3008,7 @@ static void obj_cgroup_uncharge_pages(st
+ 
+ 	memcg = get_mem_cgroup_from_objcg(objcg);
+ 
+-	mem_cgroup_kmem_record(memcg, -nr_pages);
++	memcg_account_kmem(memcg, -nr_pages);
+ 	refill_stock(memcg, nr_pages);
+ 
+ 	css_put(&memcg->css);
+@@ -3031,7 +3034,7 @@ static int obj_cgroup_charge_pages(struc
+ 	if (ret)
+ 		goto out;
+ 
+-	mem_cgroup_kmem_record(memcg, nr_pages);
++	memcg_account_kmem(memcg, nr_pages);
+ out:
+ 	css_put(&memcg->css);
+ 
+@@ -6814,7 +6817,7 @@ static void uncharge_batch(const struct
+ 		if (do_memsw_account())
+ 			page_counter_uncharge(&ug->memcg->memsw, ug->nr_memory);
+ 		if (ug->nr_kmem)
+-			mem_cgroup_kmem_record(ug->memcg, -ug->nr_kmem);
++			memcg_account_kmem(ug->memcg, -ug->nr_kmem);
+ 		memcg_oom_recover(ug->memcg);
+ 	}
+ 
+_

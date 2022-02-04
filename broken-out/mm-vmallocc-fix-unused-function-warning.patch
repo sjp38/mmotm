@@ -18,7 +18,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmallocc-fix-unused-function-warning
 +++ a/mm/vmalloc.c
-@@ -776,17 +776,6 @@ get_subtree_max_size(struct rb_node *nod
+@@ -775,17 +775,6 @@ get_subtree_max_size(struct rb_node *nod
  	return va ? va->subtree_max_size : 0;
  }
  
@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
  	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
  
-@@ -978,6 +967,17 @@ unlink_va(struct vmap_area *va, struct r
+@@ -977,6 +966,17 @@ unlink_va(struct vmap_area *va, struct r
  }
  
  #if DEBUG_AUGMENT_PROPAGATE_CHECK

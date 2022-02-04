@@ -188,7 +188,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * We detected a synchronous write error writing a page out.  Probably
   * -ENOSPC.  We need to propagate that into the address_space for a subsequent
-@@ -1199,8 +1188,6 @@ static pageout_t pageout(struct page *pa
+@@ -1201,8 +1190,6 @@ static pageout_t pageout(struct page *pa
  	}
  	if (mapping->a_ops->writepage == NULL)
  		return PAGE_ACTIVATE;
@@ -197,7 +197,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (clear_page_dirty_for_io(page)) {
  		int res;
-@@ -1576,9 +1563,7 @@ retry:
+@@ -1578,9 +1565,7 @@ retry:
  		 * end of the LRU a second time.
  		 */
  		mapping = page_mapping(page);
