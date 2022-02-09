@@ -1,0 +1,53 @@
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: mm: remove usercopy_warn()
+
+Users of usercopy_warn() were removed by commit 53944f171a89 ("mm: remove
+HARDENED_USERCOPY_FALLBACK")
+
+Remove it.
+
+Link: https://lkml.kernel.org/r/5f26643fc70b05f8455b60b99c30c17d635fa640.1644231910.git.christophe.leroy@csgroup.eu
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Stephen Kitt <steve@sk2.org>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Kees Cook <keescook@chromium.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/uaccess.h |    2 --
+ mm/usercopy.c           |   11 -----------
+ 2 files changed, 13 deletions(-)
+
+--- a/include/linux/uaccess.h~mm-remove-usercopy_warn
++++ a/include/linux/uaccess.h
+@@ -401,8 +401,6 @@ static inline void user_access_restore(u
+ #endif
+ 
+ #ifdef CONFIG_HARDENED_USERCOPY
+-void usercopy_warn(const char *name, const char *detail, bool to_user,
+-		   unsigned long offset, unsigned long len);
+ void __noreturn usercopy_abort(const char *name, const char *detail,
+ 			       bool to_user, unsigned long offset,
+ 			       unsigned long len);
+--- a/mm/usercopy.c~mm-remove-usercopy_warn
++++ a/mm/usercopy.c
+@@ -70,17 +70,6 @@ static noinline int check_stack_object(c
+  * kmem_cache_create_usercopy() function to create the cache (and
+  * carefully audit the whitelist range).
+  */
+-void usercopy_warn(const char *name, const char *detail, bool to_user,
+-		   unsigned long offset, unsigned long len)
+-{
+-	WARN_ONCE(1, "Bad or missing usercopy whitelist? Kernel memory %s attempt detected %s %s%s%s%s (offset %lu, size %lu)!\n",
+-		 to_user ? "exposure" : "overwrite",
+-		 to_user ? "from" : "to",
+-		 name ? : "unknown?!",
+-		 detail ? " '" : "", detail ? : "", detail ? "'" : "",
+-		 offset, len);
+-}
+-
+ void __noreturn usercopy_abort(const char *name, const char *detail,
+ 			       bool to_user, unsigned long offset,
+ 			       unsigned long len)
+_

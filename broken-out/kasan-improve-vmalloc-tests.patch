@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include <asm/page.h>
  
-@@ -1054,21 +1055,181 @@ static void kmalloc_double_kzfree(struct
+@@ -1057,21 +1058,181 @@ static void kmalloc_double_kzfree(struct
  	KUNIT_EXPECT_KASAN_FAIL(test, kfree_sensitive(ptr));
  }
  
@@ -233,7 +233,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -1102,6 +1263,18 @@ static void match_all_not_assigned(struc
+@@ -1105,6 +1266,18 @@ static void match_all_not_assigned(struc
  		KUNIT_EXPECT_LT(test, (u8)get_tag(ptr), (u8)KASAN_TAG_KERNEL);
  		free_pages((unsigned long)ptr, order);
  	}
@@ -252,7 +252,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /* Check that 0xff works as a match-all pointer tag for tag-based modes. */
-@@ -1207,7 +1380,11 @@ static struct kunit_case kasan_kunit_tes
+@@ -1210,7 +1383,11 @@ static struct kunit_case kasan_kunit_tes
  	KUNIT_CASE(kasan_bitops_generic),
  	KUNIT_CASE(kasan_bitops_tags),
  	KUNIT_CASE(kmalloc_double_kzfree),

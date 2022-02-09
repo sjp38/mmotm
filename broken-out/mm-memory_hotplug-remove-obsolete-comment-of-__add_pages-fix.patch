@@ -1,0 +1,26 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-memory_hotplug-remove-obsolete-comment-of-__add_pages-fix
+
+remove the comment altogether, per David
+
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory_hotplug.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/mm/memory_hotplug.c~mm-memory_hotplug-remove-obsolete-comment-of-__add_pages-fix
++++ a/mm/memory_hotplug.c
+@@ -295,9 +295,6 @@ struct page *pfn_to_online_page(unsigned
+ }
+ EXPORT_SYMBOL_GPL(pfn_to_online_page);
+ 
+-/*
+- * Reasonably generic function for adding memory.
+- */
+ int __ref __add_pages(int nid, unsigned long pfn, unsigned long nr_pages,
+ 		struct mhp_params *params)
+ {
+_

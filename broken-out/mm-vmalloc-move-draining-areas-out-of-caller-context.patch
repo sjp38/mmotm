@@ -33,6 +33,8 @@ Reviewed-by: Christoph Hellwig <hch@lst.de>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Oleksiy Avramchenko <oleksiy.avramchenko@sonymobile.com>
+Cc: Uladzislau Rezki <uladzislau.rezki@sony.com>
+Cc: Vasily Averin <vvs@virtuozzo.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

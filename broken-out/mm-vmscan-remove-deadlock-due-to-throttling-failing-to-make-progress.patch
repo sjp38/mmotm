@@ -56,6 +56,7 @@ Signed-off-by: Mel Gorman <mgorman@suse.de>
 Debugged-by: Vlastimil Babka <vbabka@suse.cz>
 Reviewed-by: Vlastimil Babka <vbabka@suse.cz>
 Acked-by: Michal Hocko <mhocko@suse.com>
+Acked-by: David Rientjes <rientjes@google.com>
 Cc: Hugh Dickins <hughd@google.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>

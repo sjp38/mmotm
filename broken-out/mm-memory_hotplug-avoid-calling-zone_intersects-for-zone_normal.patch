@@ -1,0 +1,29 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory_hotplug: avoid calling zone_intersects() for ZONE_NORMAL
+
+If zid reaches ZONE_NORMAL, the caller will always get the NORMAL zone no
+matter what zone_intersects() returns.  So we can save some possible cpu
+cycles by avoid calling zone_intersects() for ZONE_NORMAL.
+
+Link: https://lkml.kernel.org/r/20220207133643.23427-3-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory_hotplug.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memory_hotplug.c~mm-memory_hotplug-avoid-calling-zone_intersects-for-zone_normal
++++ a/mm/memory_hotplug.c
+@@ -823,7 +823,7 @@ static struct zone *default_kernel_zone_
+ 	struct pglist_data *pgdat = NODE_DATA(nid);
+ 	int zid;
+ 
+-	for (zid = 0; zid <= ZONE_NORMAL; zid++) {
++	for (zid = 0; zid < ZONE_NORMAL; zid++) {
+ 		struct zone *zone = &pgdat->node_zones[zid];
+ 
+ 		if (zone_intersects(zone, start_pfn, nr_pages))
+_

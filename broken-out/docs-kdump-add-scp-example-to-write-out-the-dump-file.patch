@@ -1,0 +1,32 @@
+From: Tiezhu Yang <yangtiezhu@loongson.cn>
+Subject: docs: kdump: add scp example to write out the dump file
+
+Except cp and makedumpfile, add scp example to write out the dump file.
+
+Link: https://lkml.kernel.org/r/1644324666-15947-3-git-send-email-yangtiezhu@loongson.cn
+Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
+Acked-by: Baoquan He <bhe@redhat.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Marco Elver <elver@google.com>
+Cc: Xuefeng Li <lixuefeng@loongson.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/kdump/kdump.rst |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/Documentation/admin-guide/kdump/kdump.rst~docs-kdump-add-scp-example-to-write-out-the-dump-file
++++ a/Documentation/admin-guide/kdump/kdump.rst
+@@ -533,6 +533,10 @@ the following command::
+ 
+    cp /proc/vmcore <dump-file>
+ 
++or use scp to write out the dump file between hosts on a network, e.g::
++
++   scp /proc/vmcore remote_username@remote_ip:<dump-file>
++
+ You can also use makedumpfile utility to write out the dump file
+ with specified options to filter out unwanted contents, e.g::
+ 
+_

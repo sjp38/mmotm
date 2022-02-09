@@ -33,7 +33,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  struct migrate_vma {
 --- a/mm/migrate.c~mm-add-device-coherent-vma-selection-for-memory-migration
 +++ a/mm/migrate.c
-@@ -2287,15 +2287,21 @@ again:
+@@ -2298,15 +2298,21 @@ again:
  			if (is_writable_device_private_entry(entry))
  				mpfn |= MIGRATE_PFN_WRITE;
  		} else {

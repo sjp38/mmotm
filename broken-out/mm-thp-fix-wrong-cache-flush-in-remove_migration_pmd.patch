@@ -1,20 +1,13 @@
 From: Muchun Song <songmuchun@bytedance.com>
 Subject: mm: thp: fix wrong cache flush in remove_migration_pmd()
 
-Patch series "Fix some cache flush bugs", v3.
-
-This series focus on fixing cache maintenance.
-
-
-This patch (of 5):
-
-The flush_cache_page() is supposed to be justified only if the page is
+The flush_cache_range() is supposed to be justified only if the page is
 already placed in process page table, and that is done right after
-flush_cache_page().  So using this interface is wrong.  And there is no
+flush_cache_range().  So using this interface is wrong.  And there is no
 need to invalite cache since it was non-present before in
 remove_migration_pmd().  So just to remove it.
 
-Link: https://lkml.kernel.org/r/20220131160254.43211-2-songmuchun@bytedance.com
+Link: https://lkml.kernel.org/r/20220208073617.70342-2-songmuchun@bytedance.com
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 Reviewed-by: Zi Yan <ziy@nvidia.com>
 Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>

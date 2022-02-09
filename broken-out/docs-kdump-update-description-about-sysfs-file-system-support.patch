@@ -1,0 +1,44 @@
+From: Tiezhu Yang <yangtiezhu@loongson.cn>
+Subject: docs: kdump: update description about sysfs file system support
+
+Patch series "Update doc and fix some issues about kdump", v2.
+
+
+This patch (of 5):
+
+After commit 6a108a14fa35 ("kconfig: rename CONFIG_EMBEDDED to
+CONFIG_EXPERT"), "Configure standard kernel features (for small systems)"
+is not exist, we should use "Configure standard kernel features (expert
+users)" now.
+
+Link: https://lkml.kernel.org/r/1644324666-15947-1-git-send-email-yangtiezhu@loongson.cn
+Link: https://lkml.kernel.org/r/1644324666-15947-2-git-send-email-yangtiezhu@loongson.cn
+Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
+Acked-by: Baoquan He <bhe@redhat.com>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Xuefeng Li <lixuefeng@loongson.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/kdump/kdump.rst |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/Documentation/admin-guide/kdump/kdump.rst~docs-kdump-update-description-about-sysfs-file-system-support
++++ a/Documentation/admin-guide/kdump/kdump.rst
+@@ -146,9 +146,9 @@ System kernel config options
+ 	CONFIG_SYSFS=y
+ 
+    Note that "sysfs file system support" might not appear in the "Pseudo
+-   filesystems" menu if "Configure standard kernel features (for small
+-   systems)" is not enabled in "General Setup." In this case, check the
+-   .config file itself to ensure that sysfs is turned on, as follows::
++   filesystems" menu if "Configure standard kernel features (expert users)"
++   is not enabled in "General Setup." In this case, check the .config file
++   itself to ensure that sysfs is turned on, as follows::
+ 
+ 	grep 'CONFIG_SYSFS' .config
+ 
+_

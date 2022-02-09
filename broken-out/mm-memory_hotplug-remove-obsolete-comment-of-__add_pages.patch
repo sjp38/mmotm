@@ -1,0 +1,39 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory_hotplug: remove obsolete comment of __add_pages
+
+Patch series "A few cleanup patches around memory_hotplug".
+
+This series contains a few patches to fix obsolete and misplaced comments,
+clean up the try_offline_node function and so on.  
+
+
+This patch (of 4):
+
+Since commit f1dd2cd13c4b ("mm, memory_hotplug: do not associate hotadded
+memory to zones until online"), there is no need to pass in the zone.
+
+Link: https://lkml.kernel.org/r/20220207133643.23427-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220207133643.23427-2-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: David Hildenbrand <david@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory_hotplug.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/mm/memory_hotplug.c~mm-memory_hotplug-remove-obsolete-comment-of-__add_pages
++++ a/mm/memory_hotplug.c
+@@ -296,10 +296,7 @@ struct page *pfn_to_online_page(unsigned
+ EXPORT_SYMBOL_GPL(pfn_to_online_page);
+ 
+ /*
+- * Reasonably generic function for adding memory.  It is
+- * expected that archs that support memory hotplug will
+- * call this function after deciding the zone to which to
+- * add the new pages.
++ * Reasonably generic function for adding memory.
+  */
+ int __ref __add_pages(int nid, unsigned long pfn, unsigned long nr_pages,
+ 		struct mhp_params *params)
+_

@@ -1,0 +1,91 @@
+From: Domenico Andreoli <domenico.andreoli@linux.com>
+Subject: fix regression due to "fs: move binfmt_misc sysctl to its own file"
+
+Commit 3ba442d5331f did not go unnoticed, binfmt-support stopped to work
+on my Debian system since v5.17-rc2 (did not check with -rc1).
+
+The existence of /proc/sys/fs/binfmt_misc is a precondition for attempting
+to mount the binfmt_misc fs, which in turn triggers the autoload of the
+binfmt_misc module.  Without it, no module is loaded and no binfmt is
+available at boot.
+
+Building as built-in or manually loading the module and mounting the fs
+works fine, it's therefore only a matter of interaction with user-space.
+
+I could try to improve the Debian systemd configuration but I can't
+say anything about the other distributions.
+
+In the meanwhile this patch restores a working system right after boot.
+
+Link: https://lkml.kernel.org/r/YgEeQNdgBuHRyEWl@dumbo
+Fixes: 3ba442d5331f ("fs: move binfmt_misc sysctl to its own file")
+Signed-off-by: Domenico Andreoli <domenico.andreoli@linux.com>
+Cc: Luis Chamberlain <mcgrof@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/binfmt_misc.c |    6 +-----
+ kernel/sysctl.c  |   13 +++++++++++++
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+--- a/fs/binfmt_misc.c~fix-regression-due-to-fs-move-binfmt_misc-sysctl-to-its-own-file
++++ a/fs/binfmt_misc.c
+@@ -817,20 +817,16 @@ static struct file_system_type bm_fs_typ
+ };
+ MODULE_ALIAS_FS("binfmt_misc");
+ 
+-static struct ctl_table_header *binfmt_misc_header;
+-
+ static int __init init_misc_binfmt(void)
+ {
+ 	int err = register_filesystem(&bm_fs_type);
+ 	if (!err)
+ 		insert_binfmt(&misc_format);
+-	binfmt_misc_header = register_sysctl_mount_point("fs/binfmt_misc");
+-	return 0;
++	return err;
+ }
+ 
+ static void __exit exit_misc_binfmt(void)
+ {
+-	unregister_sysctl_table(binfmt_misc_header);
+ 	unregister_binfmt(&misc_format);
+ 	unregister_filesystem(&bm_fs_type);
+ }
+--- a/kernel/sysctl.c~fix-regression-due-to-fs-move-binfmt_misc-sysctl-to-its-own-file
++++ a/kernel/sysctl.c
+@@ -2806,6 +2806,17 @@ static struct ctl_table vm_table[] = {
+ 	{ }
+ };
+ 
++static struct ctl_table fs_table[] = {
++#if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
++	{
++		.procname	= "binfmt_misc",
++		.mode		= 0555,
++		.child		= sysctl_mount_point,
++	},
++#endif
++	{ }
++};
++
+ static struct ctl_table debug_table[] = {
+ #ifdef CONFIG_SYSCTL_EXCEPTION_TRACE
+ 	{
+@@ -2825,6 +2836,7 @@ static struct ctl_table dev_table[] = {
+ 
+ DECLARE_SYSCTL_BASE(kernel, kern_table);
+ DECLARE_SYSCTL_BASE(vm, vm_table);
++DECLARE_SYSCTL_BASE(fs, fs_table);
+ DECLARE_SYSCTL_BASE(debug, debug_table);
+ DECLARE_SYSCTL_BASE(dev, dev_table);
+ 
+@@ -2832,6 +2844,7 @@ int __init sysctl_init_bases(void)
+ {
+ 	register_sysctl_base(kernel);
+ 	register_sysctl_base(vm);
++	register_sysctl_base(fs);
+ 	register_sysctl_base(debug);
+ 	register_sysctl_base(dev);
+ 
+_

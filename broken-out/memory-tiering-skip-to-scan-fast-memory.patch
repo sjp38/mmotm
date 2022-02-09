@@ -17,6 +17,7 @@ Signed-off-by: "Huang, Ying" <ying.huang@intel.com>
 Suggested-by: Dave Hansen <dave.hansen@linux.intel.com>
 Tested-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Mel Gorman <mgorman@techsingularity.net>

@@ -1,0 +1,23 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: mm: unexport page_init_poison
+
+page_init_poison is only used in core MM code, so unexport it.
+
+Link: https://lkml.kernel.org/r/20220207063446.1833404-1-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/debug.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/mm/debug.c~mm-unexport-page_init_poison
++++ a/mm/debug.c
+@@ -265,5 +265,4 @@ void page_init_poison(struct page *page,
+ 	if (page_init_poisoning)
+ 		memset(page, PAGE_POISON_PATTERN, size);
+ }
+-EXPORT_SYMBOL_GPL(page_init_poison);
+ #endif		/* CONFIG_DEBUG_VM */
+_

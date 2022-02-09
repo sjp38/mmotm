@@ -1,0 +1,84 @@
+From: John Hubbard <jhubbard@nvidia.com>
+Subject: mm/gup: follow_pfn_pte(): -EEXIST cleanup
+
+Remove a quirky special case from follow_pfn_pte(), and adjust its callers
+to match.  Caller changes include:
+
+__get_user_pages(): Regardless of any FOLL_* flags, get_user_pages() and
+its variants should handle PFN-only entries by stopping early, if the
+caller expected **pages to be filled in.  This makes for a more reliable
+API, as compared to the previous approach of skipping over such entries
+(and thus leaving them silently unwritten).
+
+move_pages(): squash the -EEXIST error return from follow_page() into
+-EFAULT, because -EFAULT is listed in the man page, whereas -EEXIST is
+not.
+
+Link: https://lkml.kernel.org/r/20220204020010.68930-3-jhubbard@nvidia.com
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Jan Kara <jack@suse.cz>
+Cc: Peter Xu <peterx@redhat.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: Alex Williamson <alex.williamson@redhat.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/gup.c     |   13 ++++++++-----
+ mm/migrate.c |    7 +++++++
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+--- a/mm/gup.c~mm-gup-follow_pfn_pte-eexist-cleanup
++++ a/mm/gup.c
+@@ -464,10 +464,6 @@ static struct page *no_page_table(struct
+ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
+ 		pte_t *pte, unsigned int flags)
+ {
+-	/* No page to get reference */
+-	if (flags & (FOLL_GET | FOLL_PIN))
+-		return -EFAULT;
+-
+ 	if (flags & FOLL_TOUCH) {
+ 		pte_t entry = *pte;
+ 
+@@ -1205,8 +1201,15 @@ retry:
+ 		} else if (PTR_ERR(page) == -EEXIST) {
+ 			/*
+ 			 * Proper page table entry exists, but no corresponding
+-			 * struct page.
++			 * struct page. If the caller expects **pages to be
++			 * filled in, bail out now, because that can't be done
++			 * for this page.
+ 			 */
++			if (pages) {
++				ret = PTR_ERR(page);
++				goto out;
++			}
++
+ 			goto next_page;
+ 		} else if (IS_ERR(page)) {
+ 			ret = PTR_ERR(page);
+--- a/mm/migrate.c~mm-gup-follow_pfn_pte-eexist-cleanup
++++ a/mm/migrate.c
+@@ -1762,6 +1762,13 @@ static int do_pages_move(struct mm_struc
+ 		}
+ 
+ 		/*
++		 * The move_pages() man page does not have an -EEXIST choice, so
++		 * use -EFAULT instead.
++		 */
++		if (err == -EEXIST)
++			err = -EFAULT;
++
++		/*
+ 		 * If the page is already on the target node (!err), store the
+ 		 * node, otherwise, store the err.
+ 		 */
+_

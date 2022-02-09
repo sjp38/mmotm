@@ -1,0 +1,20 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-outline-copy_overflow-fix
+
+export copy_overflow() to modules
+
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/maccess.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/maccess.c~mm-outline-copy_overflow-fix
++++ a/mm/maccess.c
+@@ -340,3 +340,4 @@ void copy_overflow(int size, unsigned lo
+ {
+ 	WARN(1, "Buffer overflow detected (%d < %lu)!\n", size, count);
+ }
++EXPORT_SYMBOL_GPL(copy_overflow);
+_

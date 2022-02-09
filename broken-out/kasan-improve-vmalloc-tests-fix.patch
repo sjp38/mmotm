@@ -12,7 +12,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/test_kasan.c~kasan-improve-vmalloc-tests-fix
 +++ a/lib/test_kasan.c
-@@ -1096,6 +1096,8 @@ static void vmalloc_oob(struct kunit *te
+@@ -1099,6 +1099,8 @@ static void vmalloc_oob(struct kunit *te
  	v_ptr = vmalloc(size);
  	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, v_ptr);
  

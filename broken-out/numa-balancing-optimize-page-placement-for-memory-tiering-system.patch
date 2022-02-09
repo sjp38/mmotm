@@ -244,7 +244,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include <asm/tlbflush.h>
  
-@@ -2035,16 +2036,30 @@ static int numamigrate_isolate_page(pg_d
+@@ -2042,16 +2043,30 @@ static int numamigrate_isolate_page(pg_d
  {
  	int page_lru;
  	int nr_pages = thp_nr_pages(page);

@@ -35,12 +35,12 @@ machine with DRAM and PMEM.
 Link: https://lkml.kernel.org/r/20220128055940.1792614-1-ying.huang@intel.com
 Fixes: ac16ec835314 ("mm: migrate: support multiple target nodes demotion")
 Signed-off-by: "Huang, Ying" <ying.huang@intel.com>
+Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Cc: Baolin Wang <baolin.wang@linux.alibaba.com>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
 Cc: Zi Yan <ziy@nvidia.com>
 Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Yang Shi <shy828301@gmail.com>
-Cc: Baolin Wang <baolin.wang@linux.alibaba.com>
 Cc: zhongjiang-ali <zhongjiang-ali@linux.alibaba.com>
 Cc: Xunlei Pang <xlpang@linux.alibaba.com>
 Cc: Mel Gorman <mgorman@techsingularity.net>
@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/migrate.c~mmmigrate-fix-establishing-demotion-target
 +++ a/mm/migrate.c
-@@ -3083,18 +3083,21 @@ static int establish_migrate_target(int
+@@ -3090,18 +3090,21 @@ static int establish_migrate_target(int
  	if (best_distance != -1) {
  		val = node_distance(node, migration_target);
  		if (val > best_distance)

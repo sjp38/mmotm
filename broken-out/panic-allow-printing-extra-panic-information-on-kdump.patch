@@ -53,7 +53,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/kernel/panic.c~panic-allow-printing-extra-panic-information-on-kdump
 +++ a/kernel/panic.c
-@@ -245,6 +245,13 @@ void panic(const char *fmt, ...)
+@@ -255,6 +255,13 @@ void panic(const char *fmt, ...)
  	kgdb_panic(buf);
  
  	/*

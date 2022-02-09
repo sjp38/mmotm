@@ -1,0 +1,31 @@
+From: Colin Ian King <colin.i.king@gmail.com>
+Subject: ext2: remove unused pointer bdi
+
+The call to bdi_congested has been removed and so the bdi pointer is no
+longer required.  Remove it.
+
+Link: https://lkml.kernel.org/r/20220207134039.337197-1-colin.i.king@gmail.com
+Fixes: 9bbab3a63d49 ("mm/fs: remove bdi_congested() and wb_congested() and related functions")
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+Cc: NeilBrown <neilb@suse.de>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/ext2/ialloc.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/fs/ext2/ialloc.c~remove-bdi_congested-and-wb_congested-and-related-functions-fix-2
++++ a/fs/ext2/ialloc.c
+@@ -170,9 +170,6 @@ static void ext2_preread_inode(struct in
+ 	unsigned long offset;
+ 	unsigned long block;
+ 	struct ext2_group_desc * gdp;
+-	struct backing_dev_info *bdi;
+-
+-	bdi = inode_to_bdi(inode);
+ 
+ 	block_group = (inode->i_ino - 1) / EXT2_INODES_PER_GROUP(inode->i_sb);
+ 	gdp = ext2_get_group_desc(inode->i_sb, block_group, NULL);
+_

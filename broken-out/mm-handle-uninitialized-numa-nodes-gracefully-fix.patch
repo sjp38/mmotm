@@ -1,0 +1,48 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-handle-uninitialized-numa-nodes-gracefully-fix
+
+replace comment, per Mike
+
+Cc: Alexey Makhalov <amakhalov@vmware.com>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Dennis Zhou <dennis@kernel.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Nico Pache <npache@redhat.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Rafael Aquini <raquini@redhat.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+--- a/mm/page_alloc.c~mm-handle-uninitialized-numa-nodes-gracefully-fix
++++ a/mm/page_alloc.c
+@@ -8155,12 +8155,16 @@ void __init free_area_init(unsigned long
+ 			}
+ 			arch_refresh_nodedata(nid, pgdat);
+ 			free_area_init_memoryless_node(nid);
++
+ 			/*
+-			 * not marking this node online because we do not want to
+-			 * confuse userspace by sysfs files/directories for node
+-			 * without any memory attached to it (see topology_init)
+-			 * The pgdat will get fully initialized when a memory is
+-			 * hotpluged into it by hotadd_init_pgdat
++			 * We do not want to confuse userspace by sysfs
++			 * files/directories for node without any memory
++			 * attached to it, so this node is not marked as
++			 * N_MEMORY and not marked online so that no sysfs
++			 * hierarchy will be created via register_one_node for
++			 * it. The pgdat will get fully initialized by
++			 * hotadd_init_pgdat() when memory is hotplugged into
++			 * this node.
+ 			 */
+ 			continue;
+ 		}
+_

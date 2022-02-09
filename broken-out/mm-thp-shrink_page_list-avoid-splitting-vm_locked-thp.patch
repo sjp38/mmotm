@@ -1,0 +1,89 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: mm/thp: shrink_page_list() avoid splitting VM_LOCKED THP
+
+4.8 commit 7751b2da6be0 ("vmscan: split file huge pages before paging them
+out") inserted a split_huge_page_to_list() into shrink_page_list() without
+considering the mlock case: no problem if the page has already been marked
+as Mlocked (the !page_evictable check much higher up will have skipped all
+this), but it has always been the case that races or omissions in setting
+Mlocked can rely on page reclaim to detect this and correct it before
+actually reclaiming - and that remains so, but what a shame if a hugepage
+is needlessly split before discovering it.
+
+It is surprising that page_check_references() returns PAGEREF_RECLAIM when
+VM_LOCKED, but there was a good reason for that: try_to_unmap_one() is
+where the condition is detected and corrected; and until now it could not
+be done in page_referenced_one(), because that does not always have the
+page locked.  Now that mlock's requirement for page lock has gone, copy
+try_to_unmap_one()'s mlock restoration into page_referenced_one(), and let
+page_check_references() return PAGEREF_ACTIVATE in this case.
+
+But page_referenced_one() may find a pte mapping one part of a hugepage:
+what hold should a pte mapped in a VM_LOCKED area exert over the entire
+huge page?  That's debatable.  The approach taken here is to treat that
+pte mapping in page_referenced_one() as if not VM_LOCKED, and if no
+VM_LOCKED pmd mapping is found later in the walk, and lack of reference
+permits, then PAGEREF_RECLAIM take it to attempted splitting as before.
+
+Link: https://lkml.kernel.org/r/6df82db0-0e6-ef83-6925-4fa3f834133d@google.com
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Greg Thelen <gthelen@google.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Suren Baghdasaryan <surenb@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Yu Zhao <yuzhao@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c   |    7 +++++--
+ mm/vmscan.c |    6 +++---
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+--- a/mm/rmap.c~mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp
++++ a/mm/rmap.c
+@@ -814,7 +814,10 @@ static bool page_referenced_one(struct p
+ 	while (page_vma_mapped_walk(&pvmw)) {
+ 		address = pvmw.address;
+ 
+-		if (vma->vm_flags & VM_LOCKED) {
++		if ((vma->vm_flags & VM_LOCKED) &&
++		    (!PageTransCompound(page) || !pvmw.pte)) {
++			/* Restore the mlock which got missed */
++			mlock_vma_page(page, vma, !pvmw.pte);
+ 			page_vma_mapped_walk_done(&pvmw);
+ 			pra->vm_flags |= VM_LOCKED;
+ 			return false; /* To break the loop */
+@@ -853,7 +856,7 @@ static bool page_referenced_one(struct p
+ 
+ 	if (referenced) {
+ 		pra->referenced++;
+-		pra->vm_flags |= vma->vm_flags;
++		pra->vm_flags |= vma->vm_flags & ~VM_LOCKED;
+ 	}
+ 
+ 	if (!pra->mapcount)
+--- a/mm/vmscan.c~mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp
++++ a/mm/vmscan.c
+@@ -1376,11 +1376,11 @@ static enum page_references page_check_r
+ 	referenced_page = TestClearPageReferenced(page);
+ 
+ 	/*
+-	 * Mlock lost the isolation race with us.  Let try_to_unmap()
+-	 * move the page to the unevictable list.
++	 * The supposedly reclaimable page was found to be in a VM_LOCKED vma.
++	 * Let the page, now marked Mlocked, be moved to the unevictable list.
+ 	 */
+ 	if (vm_flags & VM_LOCKED)
+-		return PAGEREF_RECLAIM;
++		return PAGEREF_ACTIVATE;
+ 
+ 	if (referenced_ptes) {
+ 		/*
+_

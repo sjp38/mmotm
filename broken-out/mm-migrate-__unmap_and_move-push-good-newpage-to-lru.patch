@@ -1,0 +1,88 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: mm/migrate: __unmap_and_move() push good newpage to LRU
+
+Compaction, NUMA page movement, THP collapse/split, and memory failure do
+isolate unevictable pages from their "LRU", losing the record of
+mlock_count in doing so (isolators are likely to use page->lru for their
+own private lists, so mlock_count has to be presumed lost).
+
+That's unfortunate, and we should put in some work to correct that: one
+can imagine a function to build up the mlock_count again - but it would
+require i_mmap_rwsem for read, so be careful where it's called.  Or
+page_referenced_one() and try_to_unmap_one() might do that extra work.
+
+But one place that can very easily be improved is page migration's
+__unmap_and_move(): a small adjustment to where the successful new page is
+put back on LRU, and its mlock_count (if any) is built back up by
+remove_migration_ptes().
+
+Link: https://lkml.kernel.org/r/33fb71cf-ea55-123a-bf9d-fdad297cae1@google.com
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Greg Thelen <gthelen@google.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Suren Baghdasaryan <surenb@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Yu Zhao <yuzhao@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/migrate.c |   31 +++++++++++++++++++------------
+ 1 file changed, 19 insertions(+), 12 deletions(-)
+
+--- a/mm/migrate.c~mm-migrate-__unmap_and_move-push-good-newpage-to-lru
++++ a/mm/migrate.c
+@@ -1034,6 +1034,21 @@ static int __unmap_and_move(struct page
+ 	if (!page_mapped(page))
+ 		rc = move_to_new_page(newpage, page, mode);
+ 
++	/*
++	 * When successful, push newpage to LRU immediately: so that if it
++	 * turns out to be an mlocked page, remove_migration_ptes() will
++	 * automatically build up the correct newpage->mlock_count for it.
++	 *
++	 * We would like to do something similar for the old page, when
++	 * unsuccessful, and other cases when a page has been temporarily
++	 * isolated from the unevictable LRU: but this case is the easiest.
++	 */
++	if (rc == MIGRATEPAGE_SUCCESS) {
++		lru_cache_add(newpage);
++		if (page_was_mapped)
++			lru_add_drain();
++	}
++
+ 	if (page_was_mapped)
+ 		remove_migration_ptes(page,
+ 			rc == MIGRATEPAGE_SUCCESS ? newpage : page, false);
+@@ -1047,20 +1062,12 @@ out_unlock:
+ 	unlock_page(page);
+ out:
+ 	/*
+-	 * If migration is successful, decrease refcount of the newpage
++	 * If migration is successful, decrease refcount of the newpage,
+ 	 * which will not free the page because new page owner increased
+-	 * refcounter. As well, if it is LRU page, add the page to LRU
+-	 * list in here. Use the old state of the isolated source page to
+-	 * determine if we migrated a LRU page. newpage was already unlocked
+-	 * and possibly modified by its owner - don't rely on the page
+-	 * state.
++	 * refcounter.
+ 	 */
+-	if (rc == MIGRATEPAGE_SUCCESS) {
+-		if (unlikely(!is_lru))
+-			put_page(newpage);
+-		else
+-			putback_lru_page(newpage);
+-	}
++	if (rc == MIGRATEPAGE_SUCCESS)
++		put_page(newpage);
+ 
+ 	return rc;
+ }
+_

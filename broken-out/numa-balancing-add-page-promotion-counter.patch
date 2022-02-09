@@ -59,6 +59,7 @@ Signed-off-by: "Huang, Ying" <ying.huang@intel.com>
 Reviewed-by: Yang Shi <shy828301@gmail.com>
 Tested-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Mel Gorman <mgorman@techsingularity.net>
@@ -106,7 +107,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* _LINUX_NODE_H_ */
 --- a/mm/migrate.c~numa-balancing-add-page-promotion-counter
 +++ a/mm/migrate.c
-@@ -2073,6 +2073,7 @@ int migrate_misplaced_page(struct page *
+@@ -2080,6 +2080,7 @@ int migrate_misplaced_page(struct page *
  	pg_data_t *pgdat = NODE_DATA(node);
  	int isolated;
  	int nr_remaining;
@@ -114,7 +115,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	LIST_HEAD(migratepages);
  	new_page_t *new;
  	bool compound;
-@@ -2111,7 +2112,8 @@ int migrate_misplaced_page(struct page *
+@@ -2118,7 +2119,8 @@ int migrate_misplaced_page(struct page *
  
  	list_add(&page->lru, &migratepages);
  	nr_remaining = migrate_pages(&migratepages, *new, NULL, node,
@@ -124,7 +125,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (nr_remaining) {
  		if (!list_empty(&migratepages)) {
  			list_del(&page->lru);
-@@ -2120,8 +2122,13 @@ int migrate_misplaced_page(struct page *
+@@ -2127,8 +2129,13 @@ int migrate_misplaced_page(struct page *
  			putback_lru_page(page);
  		}
  		isolated = 0;

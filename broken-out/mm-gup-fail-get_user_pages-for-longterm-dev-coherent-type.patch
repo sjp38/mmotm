@@ -24,7 +24,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/gup.c~mm-gup-fail-get_user_pages-for-longterm-dev-coherent-type
 +++ a/mm/gup.c
-@@ -1889,6 +1889,12 @@ static long check_and_migrate_movable_pa
+@@ -1865,6 +1865,12 @@ static long check_and_migrate_movable_pa
  		 * If we get a movable page, since we are going to be pinning
  		 * these entries, try to move them out if possible.
  		 */
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		if (!is_pinnable_page(head)) {
  			if (PageHuge(head)) {
  				if (!isolate_huge_page(head, &movable_page_list))
-@@ -1919,6 +1925,7 @@ static long check_and_migrate_movable_pa
+@@ -1895,6 +1901,7 @@ static long check_and_migrate_movable_pa
  	if (list_empty(&movable_page_list) && !isolation_error_count)
  		return nr_pages;
  
