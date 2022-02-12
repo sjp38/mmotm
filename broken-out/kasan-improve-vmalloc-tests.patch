@@ -32,8 +32,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- lib/test_kasan.c |  189 +++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 183 insertions(+), 6 deletions(-)
 
 --- a/lib/test_kasan.c~kasan-improve-vmalloc-tests
 +++ a/lib/test_kasan.c

@@ -120,9 +120,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/memcontrol.h |    5 +++--
- mm/memcontrol.c            |   10 +++++-----
- 2 files changed, 8 insertions(+), 7 deletions(-)
 
 --- a/include/linux/memcontrol.h~mm-memcg-synchronize-objcg-lists-with-a-dedicated-spinlock
 +++ a/include/linux/memcontrol.h

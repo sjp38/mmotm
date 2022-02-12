@@ -15,8 +15,6 @@ Cc: Zhenliang Wei <weizhenliang@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/vm/page_owner.rst |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
 --- a/Documentation/vm/page_owner.rst~documentation-vm-page_ownerrst-update-the-documentation-fix
 +++ a/Documentation/vm/page_owner.rst

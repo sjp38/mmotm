@@ -22,8 +22,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/vmalloc.h |   11 -----------
- 1 file changed, 11 deletions(-)
 
 --- a/include/linux/vmalloc.h~kasan-vmalloc-drop-outdated-vm_kasan-comment
 +++ a/include/linux/vmalloc.h

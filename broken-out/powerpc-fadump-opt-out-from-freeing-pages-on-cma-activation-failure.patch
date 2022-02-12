@@ -29,8 +29,6 @@ Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/kernel/fadump.c |    6 ++++++
- 1 file changed, 6 insertions(+)
 
 --- a/arch/powerpc/kernel/fadump.c~powerpc-fadump-opt-out-from-freeing-pages-on-cma-activation-failure
 +++ a/arch/powerpc/kernel/fadump.c

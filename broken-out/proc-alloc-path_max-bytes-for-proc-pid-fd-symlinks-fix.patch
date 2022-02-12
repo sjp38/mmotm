@@ -12,8 +12,6 @@ Cc: Kees Cook <keescook@chromium.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/proc/base.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/fs/proc/base.c~proc-alloc-path_max-bytes-for-proc-pid-fd-symlinks-fix
 +++ a/fs/proc/base.c

@@ -75,11 +75,6 @@ Cc: Hasan Al Maruf <hasanalmaruf@fb.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mmzone.h |    3 +++
- include/linux/node.h   |    5 +++++
- mm/migrate.c           |   13 ++++++++++---
- mm/vmstat.c            |    3 +++
- 4 files changed, 21 insertions(+), 3 deletions(-)
 
 --- a/include/linux/mmzone.h~numa-balancing-add-page-promotion-counter
 +++ a/include/linux/mmzone.h

@@ -13,14 +13,12 @@ Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Alexey Dobriyan <adobriyan@gmail.com>
 Cc: Christoph Hellwig <hch@lst.de>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Cc: Junichi Nomura <j-nomura@ce.jp.nec.com>
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/proc/page.c |   37 ++++++++++++++++++-------------------
- 1 file changed, 18 insertions(+), 19 deletions(-)
 
 --- a/fs/proc/page.c~proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags
 +++ a/fs/proc/page.c

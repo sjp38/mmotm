@@ -19,8 +19,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/proc/task_mmu.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
 
 --- a/fs/proc/task_mmu.c~fs-proc-task_mmuc-dont-read-mapcount-for-migration-entry-v4
 +++ a/fs/proc/task_mmu.c

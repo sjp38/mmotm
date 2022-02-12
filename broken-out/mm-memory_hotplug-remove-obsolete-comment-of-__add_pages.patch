@@ -19,8 +19,6 @@ Cc: David Hildenbrand <david@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memory_hotplug.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
 
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-remove-obsolete-comment-of-__add_pages
 +++ a/mm/memory_hotplug.c

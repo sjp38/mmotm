@@ -25,13 +25,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm64/kernel/module.c |    2 +-
- arch/s390/kernel/module.c  |    2 +-
- arch/x86/kernel/module.c   |    2 +-
- include/linux/kasan.h      |   14 +++++++-------
- mm/kasan/shadow.c          |    4 ++--
- mm/vmalloc.c               |    2 +-
- 6 files changed, 13 insertions(+), 13 deletions(-)
 
 --- a/arch/arm64/kernel/module.c~kasan-x86-arm64-s390-rename-functions-for-modules-shadow
 +++ a/arch/arm64/kernel/module.c

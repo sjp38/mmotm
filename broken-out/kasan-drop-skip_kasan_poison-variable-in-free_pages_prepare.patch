@@ -20,8 +20,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/page_alloc.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
 --- a/mm/page_alloc.c~kasan-drop-skip_kasan_poison-variable-in-free_pages_prepare
 +++ a/mm/page_alloc.c

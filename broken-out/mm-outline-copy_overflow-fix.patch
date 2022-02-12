@@ -7,8 +7,6 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/maccess.c |    1 +
- 1 file changed, 1 insertion(+)
 
 --- a/mm/maccess.c~mm-outline-copy_overflow-fix
 +++ a/mm/maccess.c

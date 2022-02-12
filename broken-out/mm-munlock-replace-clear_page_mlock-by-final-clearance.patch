@@ -31,6 +31,7 @@ the stats - let's not complicate that without good reason.
 
 Link: https://lkml.kernel.org/r/652a918-8a11-c1e9-a760-854873841bc@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -41,16 +42,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/internal.h |   12 ------------
- mm/mlock.c    |   30 ------------------------------
- mm/rmap.c     |    9 ---------
- mm/swap.c     |   32 ++++++++++++++++++++++++--------
- 4 files changed, 24 insertions(+), 59 deletions(-)
 
 --- a/mm/internal.h~mm-munlock-replace-clear_page_mlock-by-final-clearance
 +++ a/mm/internal.h

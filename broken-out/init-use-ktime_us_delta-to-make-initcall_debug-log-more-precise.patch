@@ -1,0 +1,45 @@
+From: Mark-PK Tsai <mark-pk.tsai@mediatek.com>
+Subject: init: use ktime_us_delta() to make initcall_debug log more precise
+
+Use ktime_us_delta() to make the initcall_debug log more precise than
+right shifting the result of ktime_to_ns() by 10 bits.
+
+Link: https://lkml.kernel.org/r/20220209053350.15771-1-mark-pk.tsai@mediatek.com
+Signed-off-by: Mark-PK Tsai <mark-pk.tsai@mediatek.com>
+Reviewed-by: Andrew Halaney <ahalaney@redhat.com>
+Tested-by: Andrew Halaney <ahalaney@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Valentin Schneider <valentin.schneider@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: YJ Chiang <yj.chiang@mediatek.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/init/main.c~init-use-ktime_us_delta-to-make-initcall_debug-log-more-precise
++++ a/init/main.c
+@@ -1246,15 +1246,11 @@ trace_initcall_start_cb(void *data, init
+ static __init_or_module void
+ trace_initcall_finish_cb(void *data, initcall_t fn, int ret)
+ {
+-	ktime_t *calltime = (ktime_t *)data;
+-	ktime_t delta, rettime;
+-	unsigned long long duration;
++	ktime_t rettime, *calltime = (ktime_t *)data;
+ 
+ 	rettime = ktime_get();
+-	delta = ktime_sub(rettime, *calltime);
+-	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
+ 	printk(KERN_DEBUG "initcall %pS returned %d after %lld usecs\n",
+-		 fn, ret, duration);
++		 fn, ret, (unsigned long long)ktime_us_delta(rettime, *calltime));
+ }
+ 
+ static ktime_t initcall_calltime;
+_

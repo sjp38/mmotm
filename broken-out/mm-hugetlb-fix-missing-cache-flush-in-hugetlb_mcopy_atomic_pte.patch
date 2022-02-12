@@ -10,29 +10,28 @@ to.  There are 2 ways to fix this issue.
  2) replace folio_copy() with copy_user_huge_page() which already
     considers the cache maintenance.
 
-We chose 2) to fix the issue since architectures can optimize this
-situation.
+We chose 2) way to fix the issue since architectures can optimize this
+situation.  It is also make backports easier.
 
-Link: https://lkml.kernel.org/r/20220208073617.70342-5-songmuchun@bytedance.com
+Link: https://lkml.kernel.org/r/20220210123058.79206-5-songmuchun@bytedance.com
 Fixes: 8cc5fcbb5be8 ("mm, hugetlb: fix racy resv_huge_pages underflow on UFFDIO_COPY")
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Axel Rasmussen <axelrasmussen@google.com>
 Cc: David Rientjes <rientjes@google.com>
+Cc: Fam Zheng <fam.zheng@bytedance.com>
 Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 Cc: Lars Persson <lars.persson@axis.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
-Cc: Mina Almasry <almasrymina@google.com>
+Cc: Peter Xu <peterx@redhat.com>
 Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
 Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/hugetlb.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
 --- a/mm/hugetlb.c~mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte
 +++ a/mm/hugetlb.c
-@@ -5817,7 +5817,8 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
+@@ -5816,7 +5816,8 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
  			*pagep = NULL;
  			goto out;
  		}

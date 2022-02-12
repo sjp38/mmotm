@@ -21,10 +21,6 @@ Cc: Saravanan D <saravanand@fb.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/vm_event_item.h |    3 +++
- mm/ksm.c                      |    3 +++
- mm/vmstat.c                   |    3 +++
- 3 files changed, 9 insertions(+)
 
 --- a/include/linux/vm_event_item.h~mm-vmstat-add-event-for-ksm-swapping-in-copy
 +++ a/include/linux/vm_event_item.h

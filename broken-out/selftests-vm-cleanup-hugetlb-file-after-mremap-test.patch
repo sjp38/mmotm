@@ -19,9 +19,6 @@ Cc: Mina Almasry <almasrymina@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/vm/hugepage-mremap.c |   26 ++++++++++++-----
- tools/testing/selftests/vm/run_vmtests.sh    |    3 +
- 2 files changed, 21 insertions(+), 8 deletions(-)
 
 --- a/tools/testing/selftests/vm/hugepage-mremap.c~selftests-vm-cleanup-hugetlb-file-after-mremap-test
 +++ a/tools/testing/selftests/vm/hugepage-mremap.c

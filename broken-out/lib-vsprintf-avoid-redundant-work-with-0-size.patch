@@ -79,8 +79,6 @@ Cc: David Rientjes <rientjes@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- lib/vsprintf.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
 
 --- a/lib/vsprintf.c~lib-vsprintf-avoid-redundant-work-with-0-size
 +++ a/lib/vsprintf.c

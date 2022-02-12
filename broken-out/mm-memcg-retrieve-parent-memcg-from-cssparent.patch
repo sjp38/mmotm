@@ -22,8 +22,6 @@ Cc: Mike Rapoport <rppt@linux.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/memcontrol.h |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
 
 --- a/include/linux/memcontrol.h~mm-memcg-retrieve-parent-memcg-from-cssparent
 +++ a/include/linux/memcontrol.h

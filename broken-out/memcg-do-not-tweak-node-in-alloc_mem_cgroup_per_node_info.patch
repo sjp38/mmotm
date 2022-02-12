@@ -24,8 +24,6 @@ Cc: Rafael Aquini <raquini@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memcontrol.c |   14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
 
 --- a/mm/memcontrol.c~memcg-do-not-tweak-node-in-alloc_mem_cgroup_per_node_info
 +++ a/mm/memcontrol.c

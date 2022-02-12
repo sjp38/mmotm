@@ -23,10 +23,6 @@ Cc: Matthew Wilcox <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/buffer.c           |   50 ++++++++++++++++++++++++++++++++++++++--
- include/linux/sched.h |    7 +++++
- lib/Kconfig.debug     |    6 ++++
- 3 files changed, 61 insertions(+), 2 deletions(-)
 
 --- a/fs/buffer.c~info-task-hung-in-generic_file_write_iter
 +++ a/fs/buffer.c

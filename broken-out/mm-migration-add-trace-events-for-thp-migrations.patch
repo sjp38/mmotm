@@ -21,7 +21,7 @@ Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Zi Yan <ziy@nvidia.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Cc: John Hubbard <jhubbard@nvidia.com>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -29,10 +29,6 @@ Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/powerpc/mm/book3s64/trace.c |    1 -
- include/trace/events/thp.h       |   27 +++++++++++++++++++++++++++
- mm/huge_memory.c                 |    5 +++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
 
 --- a/arch/powerpc/mm/book3s64/trace.c~mm-migration-add-trace-events-for-thp-migrations
 +++ a/arch/powerpc/mm/book3s64/trace.c

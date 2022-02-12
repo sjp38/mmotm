@@ -48,8 +48,6 @@ Cc: Dave Young <dyoung@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/panic.c |    7 +++++++
- 1 file changed, 7 insertions(+)
 
 --- a/kernel/panic.c~panic-allow-printing-extra-panic-information-on-kdump
 +++ a/kernel/panic.c

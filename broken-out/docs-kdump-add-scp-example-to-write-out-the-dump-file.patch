@@ -13,8 +13,6 @@ Cc: Xuefeng Li <lixuefeng@loongson.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/admin-guide/kdump/kdump.rst |    4 ++++
- 1 file changed, 4 insertions(+)
 
 --- a/Documentation/admin-guide/kdump/kdump.rst~docs-kdump-add-scp-example-to-write-out-the-dump-file
 +++ a/Documentation/admin-guide/kdump/kdump.rst

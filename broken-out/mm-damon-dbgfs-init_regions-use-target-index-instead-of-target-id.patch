@@ -40,9 +40,6 @@ Signed-off-by: SeongJae Park <sj@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/damon/dbgfs-test.h |   20 ++++++++++----------
- mm/damon/dbgfs.c      |   25 ++++++++++++-------------
- 2 files changed, 22 insertions(+), 23 deletions(-)
 
 --- a/mm/damon/dbgfs.c~mm-damon-dbgfs-init_regions-use-target-index-instead-of-target-id
 +++ a/mm/damon/dbgfs.c

@@ -64,8 +64,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/vmscan.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
 --- a/mm/vmscan.c~mm-vmscan-remove-deadlock-due-to-throttling-failing-to-make-progress
 +++ a/mm/vmscan.c

@@ -24,8 +24,6 @@ Cc: Jann Horn <jannh@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/proc/fd.c |   23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
 
 --- a/fs/proc/fd.c~procfs-prevent-unpriveleged-processes-accessing-fdinfo-dir
 +++ a/fs/proc/fd.c

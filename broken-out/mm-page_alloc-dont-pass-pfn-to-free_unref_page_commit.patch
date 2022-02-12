@@ -11,8 +11,6 @@ Reviewed-by: Matthew Wilcox (Oracle) <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/page_alloc.c |   17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
 
 --- a/mm/page_alloc.c~mm-page_alloc-dont-pass-pfn-to-free_unref_page_commit
 +++ a/mm/page_alloc.c

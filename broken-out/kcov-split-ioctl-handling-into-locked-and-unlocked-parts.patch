@@ -46,8 +46,6 @@ Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/kcov.c |   68 ++++++++++++++++++++++++++----------------------
- 1 file changed, 37 insertions(+), 31 deletions(-)
 
 --- a/kernel/kcov.c~kcov-split-ioctl-handling-into-locked-and-unlocked-parts
 +++ a/kernel/kcov.c

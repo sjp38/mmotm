@@ -42,9 +42,6 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/rmap.c   |    7 +++++--
- mm/vmscan.c |    6 +++---
- 2 files changed, 8 insertions(+), 5 deletions(-)
 
 --- a/mm/rmap.c~mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp
 +++ a/mm/rmap.c

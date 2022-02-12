@@ -18,9 +18,6 @@ Cc: Xin Tan <tanxin.ctf@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/rmap.h |    8 +++++---
- mm/rmap.c            |   14 +++++++-------
- 2 files changed, 12 insertions(+), 10 deletions(-)
 
 --- a/include/linux/rmap.h~mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount
 +++ a/include/linux/rmap.h

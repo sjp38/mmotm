@@ -11,8 +11,6 @@ Acked-by: David Rientjes <rientjes@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/highmem.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
 
 --- a/mm/highmem.c~mm-highmem-remove-unnecessary-done-label
 +++ a/mm/highmem.c

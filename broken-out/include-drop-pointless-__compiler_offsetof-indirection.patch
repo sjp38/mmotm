@@ -31,9 +31,6 @@ Acked-by: Nick Desaulniers <ndesaulniers@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/compiler_types.h |    2 --
- include/linux/stddef.h         |    6 +-----
- 2 files changed, 1 insertion(+), 7 deletions(-)
 
 --- a/include/linux/compiler_types.h~include-drop-pointless-__compiler_offsetof-indirection
 +++ a/include/linux/compiler_types.h

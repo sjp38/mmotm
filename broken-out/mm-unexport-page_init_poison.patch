@@ -9,8 +9,6 @@ Reviewed-by: David Hildenbrand <david@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/debug.c |    1 -
- 1 file changed, 1 deletion(-)
 
 --- a/mm/debug.c~mm-unexport-page_init_poison
 +++ a/mm/debug.c

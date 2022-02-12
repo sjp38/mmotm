@@ -38,6 +38,7 @@ lruvec lock under page table lock, just "nicer" to do it less).
 
 Link: https://lkml.kernel.org/r/eadba522-cfe1-b0d6-56fc-7bc9f649b89d@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -48,15 +49,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/internal.h |    7 +
- mm/mlock.c    |  212 ++++++++++++++++++++++++++++++++++++++++--------
- mm/swap.c     |   27 +++---
- 3 files changed, 199 insertions(+), 47 deletions(-)
 
 --- a/mm/internal.h~mm-munlock-mlock_page-munlock_page-batch-by-pagevec
 +++ a/mm/internal.h

@@ -13,8 +13,6 @@ Reviewed-by: Oscar Salvador <osalvador@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memory_hotplug.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
 
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-clean-up-try_offline_node
 +++ a/mm/memory_hotplug.c

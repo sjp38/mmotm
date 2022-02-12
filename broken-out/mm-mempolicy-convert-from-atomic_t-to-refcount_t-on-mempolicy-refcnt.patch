@@ -16,9 +16,6 @@ Cc: Yanfei Xu <yanfei.xu@windriver.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mempolicy.h |    5 +++--
- mm/mempolicy.c            |    8 ++++----
- 2 files changed, 7 insertions(+), 6 deletions(-)
 
 --- a/include/linux/mempolicy.h~mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt
 +++ a/include/linux/mempolicy.h

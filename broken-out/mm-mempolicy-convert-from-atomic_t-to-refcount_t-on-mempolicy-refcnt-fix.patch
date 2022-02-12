@@ -17,8 +17,6 @@ Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/mempolicy.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/mm/mempolicy.c~mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix
 +++ a/mm/mempolicy.c

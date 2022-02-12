@@ -62,8 +62,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/exec.c |   26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
 
 --- a/fs/exec.c~exec-force-single-empty-string-when-argv-is-empty
 +++ a/fs/exec.c

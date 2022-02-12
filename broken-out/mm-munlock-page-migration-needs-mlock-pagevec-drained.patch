@@ -23,6 +23,7 @@ sysctl to tune its length to 1, which reverts to synchronous operation.
 
 Link: https://lkml.kernel.org/r/90c8962-d188-8687-dc70-628293316343@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -33,14 +34,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/migrate.c |    2 ++
- mm/rmap.c    |    4 ++++
- 2 files changed, 6 insertions(+)
 
 --- a/mm/migrate.c~mm-munlock-page-migration-needs-mlock-pagevec-drained
 +++ a/mm/migrate.c

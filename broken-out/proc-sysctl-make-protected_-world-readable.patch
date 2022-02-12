@@ -28,8 +28,6 @@ Cc: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/namei.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
 --- a/fs/namei.c~proc-sysctl-make-protected_-world-readable
 +++ a/fs/namei.c

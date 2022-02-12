@@ -13,8 +13,6 @@ Signed-off-by: Andrew Halaney <ahalaney@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- init/main.c |   25 +++++++++++++++----------
- 1 file changed, 15 insertions(+), 10 deletions(-)
 
 --- a/init/main.c~init-mainc-silence-some-wunused-parameter-warnings
 +++ a/init/main.c
@@ -82,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	const struct obs_kernel_param *p;
  
-@@ -1352,8 +1355,10 @@ static const char *initcall_level_names[
+@@ -1348,8 +1351,10 @@ static const char *initcall_level_names[
  	"late",
  };
  
@@ -95,7 +93,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return 0;
  }
-@@ -1490,7 +1495,7 @@ void __weak free_initmem(void)
+@@ -1486,7 +1491,7 @@ void __weak free_initmem(void)
  	free_initmem_default(POISON_FREE_INITMEM);
  }
  

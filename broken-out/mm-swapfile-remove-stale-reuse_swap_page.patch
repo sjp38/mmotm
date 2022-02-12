@@ -32,9 +32,6 @@ Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/swap.h |    4 -
- mm/swapfile.c        |  104 -----------------------------------------
- 2 files changed, 108 deletions(-)
 
 --- a/include/linux/swap.h~mm-swapfile-remove-stale-reuse_swap_page
 +++ a/include/linux/swap.h

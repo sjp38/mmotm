@@ -32,8 +32,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm64/include/asm/vmap_stack.h |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
 
 --- a/arch/arm64/include/asm/vmap_stack.h~kasan-arm64-reset-pointer-tags-of-vmapped-stacks
 +++ a/arch/arm64/include/asm/vmap_stack.h

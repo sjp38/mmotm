@@ -26,8 +26,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm64/mm/init.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
 
 --- a/arch/arm64/mm/init.c~arm64-mm-use-is_enabledconfig_kexec_core-instead-of-ifdef
 +++ a/arch/arm64/mm/init.c

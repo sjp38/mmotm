@@ -31,9 +31,6 @@ Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mm.h |    5 ----
- mm/huge_memory.c   |   48 -------------------------------------------
- 2 files changed, 53 deletions(-)
 
 --- a/include/linux/mm.h~mm-huge_memory-remove-stale-page_trans_huge_mapcount
 +++ a/include/linux/mm.h

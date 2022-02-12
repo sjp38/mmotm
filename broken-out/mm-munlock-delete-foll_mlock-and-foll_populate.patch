@@ -25,6 +25,7 @@ and have no reason to disagree with current behaviour.
 
 Link: https://lkml.kernel.org/r/2b5eee76-183f-bd97-2e9d-f5ff8df63db@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -35,15 +36,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mm.h |    2 --
- mm/gup.c           |   43 ++++++++-----------------------------------
- mm/huge_memory.c   |   33 ---------------------------------
- 3 files changed, 8 insertions(+), 70 deletions(-)
 
 --- a/include/linux/mm.h~mm-munlock-delete-foll_mlock-and-foll_populate
 +++ a/include/linux/mm.h

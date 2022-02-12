@@ -33,9 +33,6 @@ Cc: Wei Xu <weixugc@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/huge_memory.c |   30 +++++++++++++++++++++---------
- mm/mprotect.c    |   13 ++++++++++++-
- 2 files changed, 33 insertions(+), 10 deletions(-)
 
 --- a/mm/huge_memory.c~memory-tiering-skip-to-scan-fast-memory
 +++ a/mm/huge_memory.c

@@ -31,10 +31,6 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/ceph/addr.c  |   27 ---------------------------
- fs/ceph/super.c |    2 --
- fs/ceph/super.h |    2 --
- 3 files changed, 31 deletions(-)
 
 --- a/fs/ceph/addr.c~cephfs-dont-set-clear-bdi_congestion
 +++ a/fs/ceph/addr.c

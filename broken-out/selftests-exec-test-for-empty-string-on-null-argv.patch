@@ -17,9 +17,6 @@ Cc: Rich Felker <dalias@libc.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/exec/Makefile    |    1 
- tools/testing/selftests/exec/null-argv.c |   78 +++++++++++++++++++++
- 2 files changed, 79 insertions(+)
 
 --- a/tools/testing/selftests/exec/Makefile~selftests-exec-test-for-empty-string-on-null-argv
 +++ a/tools/testing/selftests/exec/Makefile

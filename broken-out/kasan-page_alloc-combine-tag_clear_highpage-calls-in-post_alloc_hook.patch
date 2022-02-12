@@ -21,8 +21,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/page_alloc.c |   32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
 
 --- a/mm/page_alloc.c~kasan-page_alloc-combine-tag_clear_highpage-calls-in-post_alloc_hook
 +++ a/mm/page_alloc.c

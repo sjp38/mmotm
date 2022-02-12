@@ -1,0 +1,40 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/internal: Implement no-op mlock_page_drain() for !CONFIG_MMU
+
+Commit 4b3b8bd6c8287 ("mm/munlock: mlock_page() munlock_page() batch by
+pagevec") in -mm tree[1] implements 'mlock_page_drain()' under CONFIG_MMU
+only, but the function is used by 'lru_add_drain_cpu()', which defined
+outside of CONFIG_MMU.  As a result, below build error occurs.
+
+    /linux/mm/swap.c: In function 'lru_add_drain_cpu':
+    /linux/mm/swap.c:637:2: error: implicit declaration of function 'mlock_page_drain' [-Werror=implicit-function-declaration]
+      637 |  mlock_page_drain(cpu);
+          |  ^~~~~~~~~~~~~~~~
+    cc1: some warnings being treated as errors
+    /linux/scripts/Makefile.build:289: recipe for target 'mm/swap.o' failed
+
+This commit fixes it by implementing no-op 'mlock_page_drain()' for
+!CONFIG_MMU case, similar to 'mlock_new_page()'.
+
+[1] https://www.ozlabs.org/~akpm/mmotm/broken-out/mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch
+
+[hughd: add need_mlock_page_drain() stub too]
+Link: https://lkml.kernel.org/r/8eae6026-098-befb-92d3-b9ad2ad57776@google.com
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/internal.h~mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix-2
++++ a/mm/internal.h
+@@ -508,6 +508,8 @@ static inline void mlock_vma_page(struct
+ static inline void munlock_vma_page(struct page *page,
+ 			struct vm_area_struct *vma, bool compound) { }
+ static inline void mlock_new_page(struct page *page) { }
++static inline bool need_mlock_page_drain(int cpu) { return false; }
++static inline void mlock_page_drain(int cpu) { }
+ static inline void vunmap_range_noflush(unsigned long start, unsigned long end)
+ {
+ }
+_

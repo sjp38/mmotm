@@ -17,8 +17,6 @@ Cc: James Morris <jamorris@linux.microsoft.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/proc/base.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
 --- a/fs/proc/base.c~proc-alloc-path_max-bytes-for-proc-pid-fd-symlinks
 +++ a/fs/proc/base.c

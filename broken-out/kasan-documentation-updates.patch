@@ -27,8 +27,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/dev-tools/kasan.rst |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
 
 --- a/Documentation/dev-tools/kasan.rst~kasan-documentation-updates
 +++ a/Documentation/dev-tools/kasan.rst

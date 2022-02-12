@@ -26,14 +26,12 @@ Outline it.
 
 This reduces the size of vmlinux by almost 4kbytes.
 
+Link: https://lkml.kernel.org/r/ece7b29b480e8dca06544687d186a56ec67b72a7.1644575495.git.christophe.leroy@csgroup.eu
 Link: https://lkml.kernel.org/r/b9a31b025e729394e7081257870f0a0e73355a04.1644229010.git.christophe.leroy@csgroup.eu
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/thread_info.h |    5 +----
- mm/maccess.c                |    5 +++++
- 2 files changed, 6 insertions(+), 4 deletions(-)
 
 --- a/include/linux/thread_info.h~mm-outline-copy_overflow
 +++ a/include/linux/thread_info.h

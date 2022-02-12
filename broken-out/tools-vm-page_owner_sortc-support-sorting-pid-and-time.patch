@@ -30,8 +30,6 @@ Reviewed-by: Sean Anderson <seanga2@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/vm/page_owner_sort.c |  177 +++++++++++++++++++++++++++++------
- 1 file changed, 148 insertions(+), 29 deletions(-)
 
 --- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-support-sorting-pid-and-time
 +++ a/tools/vm/page_owner_sort.c

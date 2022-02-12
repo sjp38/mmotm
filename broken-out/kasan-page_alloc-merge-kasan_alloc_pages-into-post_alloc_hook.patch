@@ -36,11 +36,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/kasan.h |    9 ---------
- mm/kasan/common.c     |    2 +-
- mm/kasan/hw_tags.c    |   22 ----------------------
- mm/page_alloc.c       |   20 +++++++++++++++-----
- 4 files changed, 16 insertions(+), 37 deletions(-)
 
 --- a/include/linux/kasan.h~kasan-page_alloc-merge-kasan_alloc_pages-into-post_alloc_hook
 +++ a/include/linux/kasan.h

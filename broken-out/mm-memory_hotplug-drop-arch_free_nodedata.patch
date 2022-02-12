@@ -29,10 +29,6 @@ Cc: Wei Yang <richard.weiyang@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/ia64/mm/discontig.c       |    5 -----
- include/linux/memory_hotplug.h |    3 ---
- mm/memory_hotplug.c            |   10 ----------
- 3 files changed, 18 deletions(-)
 
 --- a/arch/ia64/mm/discontig.c~mm-memory_hotplug-drop-arch_free_nodedata
 +++ a/arch/ia64/mm/discontig.c

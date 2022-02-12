@@ -19,10 +19,6 @@ Cc: Christian Knig <christian.koenig@amd.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/kfence.h  |    2 ++
- mm/kfence/core.c        |    3 ++-
- mm/kfence/kfence_test.c |    8 ++++----
- 3 files changed, 8 insertions(+), 5 deletions(-)
 
 --- a/include/linux/kfence.h~kfence-make-test-case-compatible-with-run-time-set-sample-interval
 +++ a/include/linux/kfence.h

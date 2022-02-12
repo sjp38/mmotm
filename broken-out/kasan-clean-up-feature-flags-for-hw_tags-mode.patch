@@ -26,9 +26,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/kasan/hw_tags.c |   38 +++++++++++++++++++++-----------------
- mm/kasan/kasan.h   |    2 +-
- 2 files changed, 22 insertions(+), 18 deletions(-)
 
 --- a/mm/kasan/hw_tags.c~kasan-clean-up-feature-flags-for-hw_tags-mode
 +++ a/mm/kasan/hw_tags.c

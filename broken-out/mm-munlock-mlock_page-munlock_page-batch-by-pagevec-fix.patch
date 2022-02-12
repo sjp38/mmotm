@@ -1,0 +1,54 @@
+From: Yang Li <yang.lee@linux.alibaba.com>
+Subject: mm/munlock: fix kernel-doc formatting issues
+
+Some functions had kernel-doc that used a hash instead of a colon to
+separate the parameter name from the one line description.
+
+Replacing them to remove warnings found by running scripts/kernel-doc,
+which is caused by using 'make W=1'.
+
+mm/mlock.c:218: warning: Function parameter or member 'page' not
+described in 'mlock_page'
+mm/mlock.c:240: warning: Function parameter or member 'page' not
+described in 'mlock_new_page'
+mm/mlock.c:260: warning: Function parameter or member 'page' not
+described in 'munlock_page'
+
+Link: https://lkml.kernel.org/r/20220210004849.69017-1-yang.lee@linux.alibaba.com
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Cc: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/mlock.c~mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix
++++ a/mm/mlock.c
+@@ -212,7 +212,7 @@ bool need_mlock_page_drain(int cpu)
+ 
+ /**
+  * mlock_page - mlock a page already on (or temporarily off) LRU
+- * @page - page to be mlocked, either a normal page or a THP head.
++ * @page: page to be mlocked, either a normal page or a THP head.
+  */
+ void mlock_page(struct page *page)
+ {
+@@ -234,7 +234,7 @@ void mlock_page(struct page *page)
+ 
+ /**
+  * mlock_new_page - mlock a newly allocated page not yet on LRU
+- * @page - page to be mlocked, either a normal page or a THP head.
++ * @page: page to be mlocked, either a normal page or a THP head.
+  */
+ void mlock_new_page(struct page *page)
+ {
+@@ -254,7 +254,7 @@ void mlock_new_page(struct page *page)
+ 
+ /**
+  * munlock_page - munlock a page
+- * @page - page to be munlocked, either a normal page or a THP head.
++ * @page: page to be munlocked, either a normal page or a THP head.
+  */
+ void munlock_page(struct page *page)
+ {
+_

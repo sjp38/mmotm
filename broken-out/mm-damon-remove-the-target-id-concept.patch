@@ -24,15 +24,6 @@ Signed-off-by: SeongJae Park <sj@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/damon.h |   11 +-
- mm/damon/core-test.h  |   18 ++--
- mm/damon/core.c       |    4 -
- mm/damon/dbgfs-test.h |   63 +++++-----------
- mm/damon/dbgfs.c      |  152 +++++++++++++++++++++++-----------------
- mm/damon/reclaim.c    |    3 
- mm/damon/vaddr-test.h |    6 -
- mm/damon/vaddr.c      |    4 -
- 8 files changed, 133 insertions(+), 128 deletions(-)
 
 --- a/include/linux/damon.h~mm-damon-remove-the-target-id-concept
 +++ a/include/linux/damon.h

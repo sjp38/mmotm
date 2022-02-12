@@ -101,12 +101,6 @@ Cc: Jun Piao <piaojun@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/ocfs2/namei.c        |   32 +++++++++++++-------------------
- fs/ocfs2/namei.h        |    2 ++
- fs/ocfs2/refcounttree.c |   15 +++++++++++----
- fs/ocfs2/xattr.c        |   12 +-----------
- fs/ocfs2/xattr.h        |    1 +
- 5 files changed, 28 insertions(+), 34 deletions(-)
 
 --- a/fs/ocfs2/namei.c~ocfs2-reflink-deadlock-when-clone-file-to-the-same-directory-simultaneously
 +++ a/fs/ocfs2/namei.c

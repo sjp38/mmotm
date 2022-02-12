@@ -55,8 +55,6 @@ Cc: Jason Gunthorpe <jgg@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/gup.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/mm/gup.c~mm-fix-invalid-page-pointer-returned-with-foll_pin-gups
 +++ a/mm/gup.c

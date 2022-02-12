@@ -24,8 +24,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/kasan/hw_tags.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
 
 --- a/mm/kasan/hw_tags.c~kasan-mark-kasan_arg_stacktrace-as-__initdata
 +++ a/mm/kasan/hw_tags.c

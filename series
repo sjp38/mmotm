@@ -25,7 +25,6 @@ mm-memcg-synchronize-objcg-lists-with-a-dedicated-spinlock.patch
 coredump-also-dump-first-pages-of-non-executable-elf-libraries.patch
 #
 #fix-regression-due-to-fs-move-binfmt_misc-sysctl-to-its-own-file.patch: acks? TBU
-fix-regression-due-to-fs-move-binfmt_misc-sysctl-to-its-own-file.patch
 #
 #mm/pagealloc
 #mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
@@ -35,11 +34,22 @@ mm-fix-panic-in-__alloc_pages.patch
 #selftests-vm-cleanup-hugetlb-file-after-mremap-test.patch: TBU?
 selftests-vm-cleanup-hugetlb-file-after-mremap-test.patch
 #
+mm-hugetlb-fix-kernel-crash-with-hugetlb-mremap.patch
+#
 #mm/kasan
 kasan-test-prevent-cache-merging-in-kmem_cache_double_destroy.patch
 #
 #mm/kfence
 kfence-make-test-case-compatible-with-run-time-set-sample-interval.patch
+#
+#mm/pagemap
+mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
+#
+#exec
+selftests-exec-add-non-regular-to-test_gen_progs.patch
+#
+#mm/hugetlbfs
+hugetlbfs-fix-a-truncation-issue-in-hugepages-parameter.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -449,6 +459,8 @@ mm-gup-remove-unused-get_user_pages_locked.patch
 #
 #mm/swap
 #mm/shmem
+tmpfs-support-for-file-creation-time.patch
+#
 #mm/frontswap
 #mm/memremap
 #mm/memcg
@@ -476,13 +488,15 @@ mm-huge_memory-remove-stale-locking-logic-from-__split_huge_pmd.patch
 #
 mm-merge-pte_mkhuge-call-into-arch_make_huge_pte.patch
 #
+mm-remove-mmu_gathers-storage-from-remaining-architectures.patch
+#
 mm-thp-fix-wrong-cache-flush-in-remove_migration_pmd.patch
 mm-fix-missing-cache-flush-for-all-tail-pages-of-compound-page.patch
 mm-hugetlb-fix-missing-cache-flush-in-copy_huge_page_from_user.patch
 mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte.patch
+mm-shmem-fix-missing-cache-flush-in-shmem_mfill_atomic_pte.patch
+mm-userfaultfd-fix-missing-cache-flush-in-mcopy_atomic_pte-and-__mcopy_atomic.patch
 mm-replace-multiple-dcache-flush-with-flush_dcache_folio.patch
-#
-mm-remove-mmu_gathers-storage-from-remaining-architectures.patch
 #
 #mm/mprotect
 #mm/mremap
@@ -539,6 +553,7 @@ mm-hwpoison-remove-obsolete-comment.patch
 #
 mm-hwpoison-fix-error-page-recovered-but-reported-not-recovered.patch
 #
+#
 #mm/hugetlb
 mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
 mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key.patch
@@ -588,6 +603,7 @@ numa-balancing-add-page-promotion-counter.patch
 numa-balancing-optimize-page-placement-for-memory-tiering-system.patch
 numa-balancing-optimize-page-placement-for-memory-tiering-system-fix.patch
 numa-balancing-optimize-page-placement-for-memory-tiering-system-fix-fix.patch
+numa-balancing-optimize-page-placement-for-memory-tiering-system-fix-fix-fix.patch
 memory-tiering-skip-to-scan-fast-memory.patch
 #
 #mm/psi
@@ -628,6 +644,9 @@ mm-memory_hotplug-avoid-calling-zone_intersects-for-zone_normal.patch
 mm-memory_hotplug-clean-up-try_offline_node.patch
 mm-memory_hotplug-fix-misplaced-comment-in-offline_pages.patch
 #
+drivers-base-node-rename-link_mem_sections-to-register_memory_block_under_node.patch
+drivers-base-memory-determine-and-store-zone-for-single-zone-memory-blocks.patch
+#
 #mm/mlock
 mm-munlock-delete-page_mlock-and-all-its-works.patch
 mm-munlock-delete-foll_mlock-and-foll_populate.patch
@@ -638,7 +657,10 @@ mm-munlock-maintain-page-mlock_count-while-unevictable.patch
 mm-munlock-mlock_pte_range-when-mlocking-or-munlocking.patch
 mm-migrate-__unmap_and_move-push-good-newpage-to-lru.patch
 mm-munlock-delete-smp_mb-from-__pagevec_lru_add_fn.patch
+#mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch: https://lkml.kernel.org/r/202202120048.jS44WAmd-lkp@intel.com
 mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch
+mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix.patch
+mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix-2.patch
 mm-munlock-page-migration-needs-mlock-pagevec-drained.patch
 mm-thp-collapse_file-do-try_to_unmapttu_batch_flush.patch
 mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp.patch
@@ -657,6 +679,7 @@ mm-remove-usercopy_warn.patch
 mm-outline-copy_overflow.patch
 mm-outline-copy_overflow-fix.patch
 #
+#
 #mm/ioremap
 #mm/highmem
 highmem-document-kunmap_local.patch
@@ -672,7 +695,21 @@ mm-highmem-remove-unnecessary-done-label.patch
 #mm/hmm
 mm-hmmc-remove-unneeded-local-variable-ret.patch
 #
-#mm-add-zone-device-coherent-type-memory-support.patch+N: https://lkml.kernel.org/r/20220202145750.GA25170@lst.de
+mm-remove-a-pointless-config_zone_device-check-in-memremap_pages.patch
+mm-remove-the-__kernel__-guard-from-linux-mmh.patch
+mm-remove-pointless-includes-from-linux-hmmh.patch
+mm-move-free_devmap_managed_page-to-memremapc.patch
+mm-simplify-freeing-of-devmap-managed-pages.patch
+mm-dont-include-linux-memremaph-in-linux-mmh.patch
+mm-dont-include-linux-memremaph-in-linux-mmh-fix.patch
+mm-remove-the-extra-zone_device-struct-page-refcount.patch
+fsdax-depend-on-zone_device-fs_dax_limited.patch
+mm-generalize-the-pgmap-based-page_free-infrastructure.patch
+mm-refactor-check_and_migrate_movable_pages.patch
+mm-refactor-the-zone_device-handling-in-migrate_vma_insert_page.patch
+mm-refactor-the-zone_device-handling-in-migrate_vma_pages.patch
+mm-move-the-migrate_vma_-device-migration-code-into-its-own-file.patch
+mm-build-migrate_vma_-for-all-configs-with-zone_device-support.patch
 mm-add-zone-device-coherent-type-memory-support.patch
 mm-add-device-coherent-vma-selection-for-memory-migration.patch
 mm-gup-fail-get_user_pages-for-longterm-dev-coherent-type.patch
@@ -683,10 +720,9 @@ lib-test_hmm-add-module-param-for-zone-device-type.patch
 lib-add-support-for-device-coherent-type-in-test_hmm.patch
 tools-update-hmm-test-to-support-device-coherent-type.patch
 tools-update-test_hmm-script-to-support-sp-config.patch
+mm-remove-the-vma-check-in-migrate_vma_setup.patch
+mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing.patch
 #
-migratec-remove-vma-check-in-migrate_vma_setup.patch
-mm-gupc-migrate-device-coherent-pages-when-pinning-instead-of-failing.patch
-tools-add-hmm-gup-test-for-long-term-pinned-device-pages.patch
 #
 #mm/damon
 mm-damon-dbgfs-init_regions-use-target-index-instead-of-target-id.patch
@@ -790,6 +826,8 @@ ilog2-force-inlining-of-__ilog2_u32-and-__ilog2_u64.patch
 #
 bitfield-add-explicit-inclusions-to-the-example.patch
 #
+#
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitmap
 #NEXT_PATCHES_END
@@ -854,6 +892,8 @@ kallsyms-print-module-name-in-%ps-s-case-when-kallsyms-is-disabled.patch
 #NEXT_PATCHES_START rwsem
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START init
+init-use-ktime_us_delta-to-make-initcall_debug-log-more-precise.patch
+#
 #init-mainc-silence-some-wunused-parameter-warnings.patch: https://lkml.kernel.org/r/f06b8308-645b-031b-f9c6-b92400a269aa@rasmusvillemoes.dk
 init-mainc-silence-some-wunused-parameter-warnings.patch
 #
@@ -1267,3 +1307,24 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte.patch
 #[to-be-updated]mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte-v4.patch
 #[to-be-updated]mm-replace-multiple-dcache-flush-with-flush_dcache_folio.patch
+#[merged]fix-regression-due-to-fs-move-binfmt_misc-sysctl-to-its-own-file.patch
+#[to-be-updated]mm-thp-fix-wrong-cache-flush-in-remove_migration_pmd.patch
+#[to-be-updated]mm-fix-missing-cache-flush-for-all-tail-pages-of-compound-page.patch
+#[to-be-updated]mm-hugetlb-fix-missing-cache-flush-in-copy_huge_page_from_user.patch
+#[to-be-updated]mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte.patch
+#[to-be-updated]mm-replace-multiple-dcache-flush-with-flush_dcache_folio.patch
+#[to-be-updated]mm-shmem-fix-missing-cache-flush-in-shmem_mfill_atomic_pte.patch
+#[to-be-updated]mm-add-zone-device-coherent-type-memory-support.patch
+#[to-be-updated]mm-add-device-coherent-vma-selection-for-memory-migration.patch
+#[to-be-updated]mm-gup-fail-get_user_pages-for-longterm-dev-coherent-type.patch
+#[to-be-updated]drm-amdkfd-add-spm-support-for-svm.patch
+#[to-be-updated]drm-amdkfd-coherent-type-as-sys-mem-on-migration-to-ram.patch
+#[to-be-updated]lib-test_hmm-add-ioctl-to-get-zone-device-type.patch
+#[to-be-updated]lib-test_hmm-add-module-param-for-zone-device-type.patch
+#[to-be-updated]lib-add-support-for-device-coherent-type-in-test_hmm.patch
+#[to-be-updated]tools-update-hmm-test-to-support-device-coherent-type.patch
+#[to-be-updated]tools-update-test_hmm-script-to-support-sp-config.patch
+#[to-be-updated]migratec-remove-vma-check-in-migrate_vma_setup.patch
+#[to-be-updated]mm-gupc-migrate-device-coherent-pages-when-pinning-instead-of-failing.patch
+#[to-be-updated]tools-add-hmm-gup-test-for-long-term-pinned-device-pages.patch
+#[failures]container_ofh-make-container_of-const-aware.patch

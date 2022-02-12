@@ -21,9 +21,6 @@ Cc: Peter Xu <peterx@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mm.h |    2 --
- mm/gup.c           |   29 -----------------------------
- 2 files changed, 31 deletions(-)
 
 --- a/include/linux/mm.h~mm-gup-remove-unused-pin_user_pages_locked
 +++ a/include/linux/mm.h

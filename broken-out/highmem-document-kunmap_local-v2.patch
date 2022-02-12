@@ -9,8 +9,6 @@ Cc: Christoph Hellwig <hch@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/highmem-internal.h |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
 
 --- a/include/linux/highmem-internal.h~highmem-document-kunmap_local-v2
 +++ a/include/linux/highmem-internal.h

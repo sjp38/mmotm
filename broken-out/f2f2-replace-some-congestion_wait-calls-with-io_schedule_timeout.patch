@@ -29,9 +29,6 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/f2fs/segment.c |   14 ++++++++------
- fs/f2fs/super.c   |    8 ++++----
- 2 files changed, 12 insertions(+), 10 deletions(-)
 
 --- a/fs/f2fs/segment.c~f2f2-replace-some-congestion_wait-calls-with-io_schedule_timeout
 +++ a/fs/f2fs/segment.c

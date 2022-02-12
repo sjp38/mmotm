@@ -21,8 +21,6 @@ Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- scripts/checkpatch.pl |   18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
 
 --- a/scripts/checkpatch.pl~checkpatch-add-fix-option-for-some-trailing_statements
 +++ a/scripts/checkpatch.pl

@@ -30,8 +30,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm64/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/arch/arm64/Kconfig~arm64-select-kasan_vmalloc-for-sw-hw_tags-modes
 +++ a/arch/arm64/Kconfig

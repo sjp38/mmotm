@@ -26,8 +26,6 @@ Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/Makefile |    4 ++++
- 1 file changed, 4 insertions(+)
 
 --- a/tools/testing/selftests/Makefile~selftests-add-and-export-a-kernel-uapi-headers-path
 +++ a/tools/testing/selftests/Makefile

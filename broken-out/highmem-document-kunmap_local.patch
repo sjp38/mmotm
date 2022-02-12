@@ -19,8 +19,6 @@ Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/highmem-internal.h |   11 +++++++++++
- 1 file changed, 11 insertions(+)
 
 --- a/include/linux/highmem-internal.h~highmem-document-kunmap_local
 +++ a/include/linux/highmem-internal.h

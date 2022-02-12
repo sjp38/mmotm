@@ -1,82 +1,41 @@
-From: Alex Sierra <alex.sierra@amd.com>
+From: Christoph Hellwig <hch@lst.de>
 Subject: mm: add zone device coherent type memory support
 
-Patch series "Add MEMORY_DEVICE_COHERENT for coherent device memory mapping", v6.
+From: Alex Sierra <alex.sierra@amd.com>
 
-This patch series introduces MEMORY_DEVICE_COHERENT, a type of memory
-owned by a device that can be mapped into CPU page tables like
-MEMORY_DEVICE_GENERIC and can also be migrated like MEMORY_DEVICE_PRIVATE.
+Device memory that is cache coherent from device and CPU point of view.
+This is used on platforms that have an advanced system bus (like CAPI
+or CXL). Any page of a process can be migrated to such memory. However,
+no one should be allowed to pin such memory so that it can always be
+evicted.
 
-the Tsuggestion to incorporate Ralph Campbells refcount cleanup patch into
-our hardware page migration patchset originally came from Christoph, but
-it proved impractical to do things in that order because the refcount
-cleanup introduced a bug with wide ranging structural implications. 
-Instead, we amended Ralph's patch so that it could be applied after
-merging the migration work.  As we saw from the recent discussion, merging
-the refcount work is going to take some time and cooperation between
-multiple development groups, while the migration work is ready now and is
-needed now.  So we propose to merge this patchset first and continue to
-work with Ralph and others to merge the refcount cleanup separately, when
-it is ready.
-
-This patch series is mostly self-contained except for a few places where
-it needs to update other subsystems to handle the new memory type.
-
-System stability and performance are not affected according to our ongoing
-testing, including xfstests.
-
-How it works: The system BIOS advertises the GPU device memory (aka VRAM)
-as SPM (special purpose memory) in the UEFI system address map.
-
-The amdgpu driver registers the memory with devmap as
-MEMORY_DEVICE_COHERENT using devm_memremap_pages.  The initial user for
-this hardware page migration capability is the Frontier supercomputer
-project.  This functionality is not AMD-specific.  We expect other GPU
-vendors to find this functionality useful, and possibly other hardware
-types in the future.
-
-Our test nodes in the lab are similar to the Frontier configuration, with
-.5 TB of system memory plus 256 GB of device memory split across 4 GPUs,
-all in a single coherent address space.  Page migration is expected to
-improve application efficiency significantly.  We will report empirical
-results as they become available.
-
-We extended hmm_test to cover migration of MEMORY_DEVICE_COHERENT.  This
-patch set builds on HMM and our SVM memory manager already merged in 5.15.
-
-
-This patch (of 10):
-
-Device memory that is cache coherent from device and CPU point of view. 
-This is used on platforms that have an advanced system bus (like CAPI or
-CXL).  Any page of a process can be migrated to such memory.  However, no
-one should be allowed to pin such memory so that it can always be evicted.
-
-Link: https://lkml.kernel.org/r/20220201154901.7921-1-alex.sierra@amd.com
-Link: https://lkml.kernel.org/r/20220201154901.7921-2-alex.sierra@amd.com
+[hch@lst.de: rebased ontop of the refcount changes, removed is_dev_private_or_coherent_page]
+Link: https://lkml.kernel.org/r/20220210072828.2930359-16-hch@lst.de
 Signed-off-by: Alex Sierra <alex.sierra@amd.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
 Reviewed-by: Alistair Popple <apopple@nvidia.com>
-Cc: Ralph Campbell <rcampbell@nvidia.com>
-Cc: Christoph Hellwig <hch@lst.de>
+Tested-by: "Sierra Guiza, Alejandro (Alex)" <alex.sierra@amd.com>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Ben Skeggs <bskeggs@redhat.com>
+Cc: Chaitanya Kulkarni <kch@nvidia.com>
+Cc: Christian Knig <christian.koenig@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Jason Gunthorpe <jgg@nvidia.com>
-Cc: Jerome Glisse <jglisse@redhat.com>
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Karol Herbst <kherbst@redhat.com>
+Cc: Logan Gunthorpe <logang@deltatee.com>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/memremap.h |    8 ++++++
- include/linux/mm.h       |   16 +++++++++++++
- mm/memcontrol.c          |    6 ++--
- mm/memory-failure.c      |    8 ++++--
- mm/memremap.c            |   14 ++++++++++-
- mm/migrate.c             |   45 ++++++++++++++++++-------------------
- mm/rmap.c                |    5 ++--
- 7 files changed, 71 insertions(+), 31 deletions(-)
 
 --- a/include/linux/memremap.h~mm-add-zone-device-coherent-type-memory-support
 +++ a/include/linux/memremap.h
-@@ -39,6 +39,13 @@ struct vmem_altmap {
+@@ -41,6 +41,13 @@ struct vmem_altmap {
   * A more complete discussion of unaddressable memory may be found in
   * include/linux/hmm.h and Documentation/vm/hmm.rst.
   *
@@ -90,7 +49,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * MEMORY_DEVICE_FS_DAX:
   * Host memory that has similar access semantics as System RAM i.e. DMA
   * coherent and supports page pinning. In support of coordinating page
-@@ -59,6 +66,7 @@ struct vmem_altmap {
+@@ -61,6 +68,7 @@ struct vmem_altmap {
  enum memory_type {
  	/* 0 is reserved to catch uninitialized type fields */
  	MEMORY_DEVICE_PRIVATE = 1,
@@ -98,41 +57,22 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	MEMORY_DEVICE_FS_DAX,
  	MEMORY_DEVICE_GENERIC,
  	MEMORY_DEVICE_PCI_P2PDMA,
---- a/include/linux/mm.h~mm-add-zone-device-coherent-type-memory-support
-+++ a/include/linux/mm.h
-@@ -1101,6 +1101,7 @@ static inline bool page_is_devmap_manage
- 		return false;
- 	switch (page->pgmap->type) {
- 	case MEMORY_DEVICE_PRIVATE:
-+	case MEMORY_DEVICE_COHERENT:
- 	case MEMORY_DEVICE_FS_DAX:
- 		return true;
- 	default:
-@@ -1130,6 +1131,21 @@ static inline bool is_device_private_pag
+@@ -138,6 +146,12 @@ static inline bool is_device_private_pag
  		page->pgmap->type == MEMORY_DEVICE_PRIVATE;
  }
  
 +static inline bool is_device_coherent_page(const struct page *page)
 +{
-+	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
-+		is_zone_device_page(page) &&
++	return is_zone_device_page(page) &&
 +		page->pgmap->type == MEMORY_DEVICE_COHERENT;
-+}
-+
-+static inline bool is_dev_private_or_coherent_page(const struct page *page)
-+{
-+	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
-+		is_zone_device_page(page) &&
-+		(page->pgmap->type == MEMORY_DEVICE_PRIVATE ||
-+		page->pgmap->type == MEMORY_DEVICE_COHERENT);
 +}
 +
  static inline bool is_pci_p2pdma_page(const struct page *page)
  {
- 	return IS_ENABLED(CONFIG_DEV_PAGEMAP_OPS) &&
+ 	return IS_ENABLED(CONFIG_PCI_P2PDMA) &&
 --- a/mm/memcontrol.c~mm-add-zone-device-coherent-type-memory-support
 +++ a/mm/memcontrol.c
-@@ -5693,8 +5693,8 @@ out:
+@@ -5689,8 +5689,8 @@ out:
   *   2(MC_TARGET_SWAP): if the swap entry corresponding to this pte is a
   *     target for charge migration. if @target is not NULL, the entry is stored
   *     in target->ent.
@@ -143,12 +83,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *     For now we such page is charge like a regular page would be as for all
   *     intent and purposes it is just special memory taking the place of a
   *     regular page.
-@@ -5728,7 +5728,7 @@ static enum mc_target_type get_mctgt_typ
+@@ -5724,7 +5724,8 @@ static enum mc_target_type get_mctgt_typ
  		 */
  		if (page_memcg(page) == mc.from) {
  			ret = MC_TARGET_PAGE;
 -			if (is_device_private_page(page))
-+			if (is_dev_private_or_coherent_page(page))
++			if (is_device_private_page(page) ||
++			    is_device_coherent_page(page))
  				ret = MC_TARGET_DEVICE;
  			if (target)
  				target->page = page;
@@ -175,23 +116,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
 --- a/mm/memremap.c~mm-add-zone-device-coherent-type-memory-support
 +++ a/mm/memremap.c
-@@ -44,6 +44,7 @@ EXPORT_SYMBOL(devmap_managed_key);
- static void devmap_managed_enable_put(struct dev_pagemap *pgmap)
- {
- 	if (pgmap->type == MEMORY_DEVICE_PRIVATE ||
-+	    pgmap->type == MEMORY_DEVICE_COHERENT ||
- 	    pgmap->type == MEMORY_DEVICE_FS_DAX)
- 		static_branch_dec(&devmap_managed_key);
- }
-@@ -51,6 +52,7 @@ static void devmap_managed_enable_put(st
- static void devmap_managed_enable_get(struct dev_pagemap *pgmap)
- {
- 	if (pgmap->type == MEMORY_DEVICE_PRIVATE ||
-+	    pgmap->type == MEMORY_DEVICE_COHERENT ||
- 	    pgmap->type == MEMORY_DEVICE_FS_DAX)
- 		static_branch_inc(&devmap_managed_key);
- }
-@@ -348,6 +350,16 @@ void *memremap_pages(struct dev_pagemap
+@@ -334,6 +334,16 @@ void *memremap_pages(struct dev_pagemap
  			return ERR_PTR(-EINVAL);
  		}
  		break;
@@ -206,29 +131,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		}
 +		break;
  	case MEMORY_DEVICE_FS_DAX:
- 		if (!IS_ENABLED(CONFIG_ZONE_DEVICE) ||
- 		    IS_ENABLED(CONFIG_FS_DAX_LIMITED)) {
-@@ -490,7 +502,7 @@ EXPORT_SYMBOL_GPL(get_dev_pagemap);
- void free_devmap_managed_page(struct page *page)
- {
- 	/* notify page idle for dax */
--	if (!is_device_private_page(page)) {
-+	if (!is_dev_private_or_coherent_page(page)) {
- 		wake_up_var(&page->_refcount);
- 		return;
- 	}
---- a/mm/migrate.c~mm-add-zone-device-coherent-type-memory-support
-+++ a/mm/migrate.c
-@@ -345,7 +345,7 @@ static int expected_page_refs(struct add
- 	 * Device private pages have an extra refcount as they are
- 	 * ZONE_DEVICE pages.
- 	 */
--	expected_count += is_device_private_page(page);
-+	expected_count += is_dev_private_or_coherent_page(page);
- 	if (mapping)
- 		expected_count += compound_nr(page) + page_has_private(page);
- 
-@@ -2645,7 +2645,7 @@ EXPORT_SYMBOL(migrate_vma_setup);
+ 		if (IS_ENABLED(CONFIG_FS_DAX_LIMITED)) {
+ 			WARN(1, "File system DAX not supported\n");
+--- a/mm/migrate_device.c~mm-add-zone-device-coherent-type-memory-support
++++ a/mm/migrate_device.c
+@@ -494,7 +494,7 @@ EXPORT_SYMBOL(migrate_vma_setup);
   *     handle_pte_fault()
   *       do_anonymous_page()
   * to map in an anonymous zero page but the struct page will be a ZONE_DEVICE
@@ -237,63 +144,35 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   */
  static void migrate_vma_insert_page(struct migrate_vma *migrate,
  				    unsigned long addr,
-@@ -2710,25 +2710,24 @@ static void migrate_vma_insert_page(stru
- 	 */
- 	__SetPageUptodate(page);
- 
--	if (is_zone_device_page(page)) {
--		if (is_device_private_page(page)) {
--			swp_entry_t swp_entry;
-+	if (is_device_private_page(page)) {
-+		swp_entry_t swp_entry;
- 
--			if (vma->vm_flags & VM_WRITE)
--				swp_entry = make_writable_device_private_entry(
--							page_to_pfn(page));
--			else
--				swp_entry = make_readable_device_private_entry(
--							page_to_pfn(page));
--			entry = swp_entry_to_pte(swp_entry);
--		} else {
--			/*
--			 * For now we only support migrating to un-addressable
--			 * device memory.
--			 */
--			pr_warn_once("Unsupported ZONE_DEVICE page type.\n");
--			goto abort;
--		}
-+		if (vma->vm_flags & VM_WRITE)
-+			swp_entry = make_writable_device_private_entry(
-+						page_to_pfn(page));
-+		else
-+			swp_entry = make_readable_device_private_entry(
-+						page_to_pfn(page));
-+		entry = swp_entry_to_pte(swp_entry);
-+	} else if (is_zone_device_page(page) &&
-+		   !is_device_coherent_page(page)) {
-+		/*
-+		 * We support migrating to private and coherent types
-+		 * for device zone memory.
-+		 */
-+		pr_warn_once("Unsupported ZONE_DEVICE page type.\n");
-+		goto abort;
+@@ -570,11 +570,8 @@ static void migrate_vma_insert_page(stru
+ 						page_to_pfn(page));
+ 		entry = swp_entry_to_pte(swp_entry);
  	} else {
- 		entry = mk_pte(page, vma->vm_page_prot);
- 		if (vma->vm_flags & VM_WRITE)
-@@ -2830,10 +2829,10 @@ void migrate_vma_pages(struct migrate_vm
+-		/*
+-		 * For now we only support migrating to un-addressable device
+-		 * memory.
+-		 */
+-		if (is_zone_device_page(page)) {
++		if (is_zone_device_page(page) &&
++		    !is_device_coherent_page(page)) {
+ 			pr_warn_once("Unsupported ZONE_DEVICE page type.\n");
+ 			goto abort;
+ 		}
+@@ -677,10 +674,11 @@ void migrate_vma_pages(struct migrate_vm
+ 
  		mapping = page_mapping(page);
  
- 		if (is_zone_device_page(newpage)) {
--			if (is_device_private_page(newpage)) {
-+			if (is_dev_private_or_coherent_page(newpage)) {
- 				/*
--				 * For now only support private anonymous when
--				 * migrating to un-addressable device memory.
-+				 * For now only support private and coherent
-+				 * anonymous when migrating to device memory.
- 				 */
- 				if (mapping) {
- 					migrate->src[i] &= ~MIGRATE_PFN_MIGRATE;
+-		if (is_device_private_page(newpage)) {
++		if (is_device_private_page(newpage) ||
++		    is_device_coherent_page(newpage)) {
+ 			/*
+-			 * For now only support private anonymous when migrating
+-			 * to un-addressable device memory.
++			 * For now only support anonymous memory migrating to
++			 * device private or coherent memory.
+ 			 */
+ 			if (mapping) {
+ 				migrate->src[i] &= ~MIGRATE_PFN_MIGRATE;
 --- a/mm/rmap.c~mm-add-zone-device-coherent-type-memory-support
 +++ a/mm/rmap.c
 @@ -1852,7 +1852,7 @@ static bool try_to_migrate_one(struct pa
@@ -311,7 +190,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 -	if (is_zone_device_page(page) && !is_device_private_page(page))
 +	if (is_zone_device_page(page) &&
-+	    !is_dev_private_or_coherent_page(page))
++	    (!is_device_private_page(page) && !is_device_coherent_page(page)))
  		return;
  
  	/*

@@ -26,8 +26,6 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/pipe.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
 
 --- a/fs/pipe.c~fs-pipe-use-kvcalloc-to-allocate-a-pipe_buffer-array
 +++ a/fs/pipe.c

@@ -25,9 +25,6 @@ Cc: Deepa Dinamani <deepa.kernel@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/namespace.c     |    2 ++
- include/linux/fs.h |    1 +
- 2 files changed, 3 insertions(+)
 
 --- a/fs/namespace.c~mount-warn-only-once-about-timestamp-range-expiration
 +++ a/fs/namespace.c

@@ -16,11 +16,6 @@ Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm/Kconfig   |    4 +---
- arch/riscv/Kconfig |    4 +---
- arch/x86/Kconfig   |    4 +---
- mm/Kconfig         |    3 +++
- 4 files changed, 6 insertions(+), 9 deletions(-)
 
 --- a/arch/arm/Kconfig~mm-hugetlb-generalize-arch_want_general_hugetlb
 +++ a/arch/arm/Kconfig

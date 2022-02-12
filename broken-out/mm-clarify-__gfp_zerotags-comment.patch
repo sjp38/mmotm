@@ -22,8 +22,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/gfp.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
 
 --- a/include/linux/gfp.h~mm-clarify-__gfp_zerotags-comment
 +++ a/include/linux/gfp.h

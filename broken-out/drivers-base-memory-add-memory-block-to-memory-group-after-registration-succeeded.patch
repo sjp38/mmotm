@@ -18,8 +18,6 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/base/memory.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
 
 --- a/drivers/base/memory.c~drivers-base-memory-add-memory-block-to-memory-group-after-registration-succeeded
 +++ a/drivers/base/memory.c

@@ -75,8 +75,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/percpu-vm.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
 
 --- a/mm/percpu-vm.c~mm-fix-panic-in-__alloc_pages
 +++ a/mm/percpu-vm.c

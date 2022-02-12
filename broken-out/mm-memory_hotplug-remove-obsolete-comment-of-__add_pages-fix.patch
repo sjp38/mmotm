@@ -8,8 +8,6 @@ Cc: Miaohe Lin <linmiaohe@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memory_hotplug.c |    3 ---
- 1 file changed, 3 deletions(-)
 
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-remove-obsolete-comment-of-__add_pages-fix
 +++ a/mm/memory_hotplug.c

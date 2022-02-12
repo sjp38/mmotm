@@ -21,9 +21,6 @@ Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mm.h  |    2 ++
- mm/sparse-vmemmap.c |    2 ++
- 2 files changed, 4 insertions(+)
 
 --- a/include/linux/mm.h~mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap
 +++ a/include/linux/mm.h

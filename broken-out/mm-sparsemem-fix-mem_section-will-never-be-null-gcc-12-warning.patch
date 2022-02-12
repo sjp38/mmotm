@@ -45,8 +45,6 @@ Cc: Rafael Aquini <aquini@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mmzone.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/include/linux/mmzone.h~mm-sparsemem-fix-mem_section-will-never-be-null-gcc-12-warning
 +++ a/include/linux/mmzone.h

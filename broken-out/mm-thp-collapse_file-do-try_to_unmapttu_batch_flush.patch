@@ -36,8 +36,6 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/khugepaged.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
 
 --- a/mm/khugepaged.c~mm-thp-collapse_file-do-try_to_unmapttu_batch_flush
 +++ a/mm/khugepaged.c

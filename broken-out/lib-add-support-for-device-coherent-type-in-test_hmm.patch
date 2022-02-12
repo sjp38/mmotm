@@ -7,9 +7,9 @@ BIOS-e820 memory enumeration.  If no SP memory is supported in system,
 this could be faked by setting CONFIG_EFI_FAKE_MEMMAP.
 
 Currently, test_hmm only supports two different SP ranges of at least
-256MB size. This could be specified in the kernel parameter variable
-efi_fake_mem. Ex. Two SP ranges of 1GB starting at 0x100000000 &
-0x140000000 physical address. Ex.
+256MB size.  This could be specified in the kernel parameter variable
+efi_fake_mem.  Ex.  Two SP ranges of 1GB starting at 0x100000000 &
+0x140000000 physical address.  Ex. 
 efi_fake_mem=1G@0x100000000:0x40000,1G@0x140000000:0x40000
 
 Private and coherent device mirror instances can be created in the same
@@ -21,25 +21,31 @@ through /dev/hmm_mirror<num_device>.  Usually num_device 0 and 1 are for
 private, and 2 and 3 for coherent types.  If no module parameters are
 passed, two instances of private type device_mirror will be created only.
 
-Link: https://lkml.kernel.org/r/20220201154901.7921-9-alex.sierra@amd.com
+Link: https://lkml.kernel.org/r/20220210072828.2930359-23-hch@lst.de
 Signed-off-by: Alex Sierra <alex.sierra@amd.com>
-Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
 Reviewed-by: Alistair Poppple <apopple@nvidia.com>
-Cc: Christoph Hellwig <hch@lst.de>
+Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
+Tested-by: "Sierra Guiza, Alejandro (Alex)" <alex.sierra@amd.com>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Ben Skeggs <bskeggs@redhat.com>
+Cc: Chaitanya Kulkarni <kch@nvidia.com>
+Cc: Christian Knig <christian.koenig@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Jason Gunthorpe <jgg@nvidia.com>
-Cc: Jerome Glisse <jglisse@redhat.com>
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Karol Herbst <kherbst@redhat.com>
+Cc: Logan Gunthorpe <logang@deltatee.com>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
 Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- lib/test_hmm.c      |  260 +++++++++++++++++++++++++++++++-----------
- lib/test_hmm_uapi.h |   15 +-
- 2 files changed, 205 insertions(+), 70 deletions(-)
 
 --- a/lib/test_hmm.c~lib-add-support-for-device-coherent-type-in-test_hmm
 +++ a/lib/test_hmm.c
-@@ -29,11 +29,22 @@
+@@ -32,11 +32,22 @@
  
  #include "test_hmm_uapi.h"
  
@@ -63,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static unsigned long spm_addr_dev0;
  module_param(spm_addr_dev0, long, 0644);
  MODULE_PARM_DESC(spm_addr_dev0,
-@@ -122,6 +133,21 @@ static int dmirror_bounce_init(struct dm
+@@ -125,6 +136,21 @@ static int dmirror_bounce_init(struct dm
  	return 0;
  }
  
@@ -74,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +}
 +
 +static enum migrate_vma_direction
-+	dmirror_select_device(struct dmirror *dmirror)
++dmirror_select_device(struct dmirror *dmirror)
 +{
 +	return (dmirror->mdevice->zone_device_type ==
 +		HMM_DMIRROR_MEMORY_DEVICE_PRIVATE) ?
@@ -85,7 +91,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void dmirror_bounce_fini(struct dmirror_bounce *bounce)
  {
  	vfree(bounce->ptr);
-@@ -572,16 +598,19 @@ err_devmem:
+@@ -575,16 +601,19 @@ err_devmem:
  static struct page *dmirror_devmem_alloc_page(struct dmirror_device *mdevice)
  {
  	struct page *dpage = NULL;
@@ -95,10 +101,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
 -	 * This is a fake device so we alloc real system memory to store
 -	 * our device memory.
-+	 * For ZONE_DEVICE private type, this is a fake device so we alloc real
-+	 * system memory to store our device memory.
-+	 * For ZONE_DEVICE coherent type we use the actual dpage to store the data
-+	 * and ignore rpage.
++	 * For ZONE_DEVICE private type, this is a fake device so we allocate
++	 * real system memory to store our device memory.
++	 * For ZONE_DEVICE coherent type we use the actual dpage to store the
++	 * data and ignore rpage.
  	 */
 -	rpage = alloc_page(GFP_HIGHUSER);
 -	if (!rpage)
@@ -112,7 +118,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	spin_lock(&mdevice->lock);
  
  	if (mdevice->free_pages) {
-@@ -601,7 +630,8 @@ static struct page *dmirror_devmem_alloc
+@@ -603,7 +632,8 @@ static struct page *dmirror_devmem_alloc
  	return dpage;
  
  error:
@@ -122,7 +128,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return NULL;
  }
  
-@@ -627,12 +657,16 @@ static void dmirror_migrate_alloc_and_co
+@@ -629,12 +659,16 @@ static void dmirror_migrate_alloc_and_co
  		 * unallocated pte_none() or read-only zero page.
  		 */
  		spage = migrate_pfn_to_page(*src);
@@ -140,7 +146,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		if (spage)
  			copy_highpage(rpage, spage);
  		else
-@@ -646,6 +680,8 @@ static void dmirror_migrate_alloc_and_co
+@@ -648,6 +682,8 @@ static void dmirror_migrate_alloc_and_co
  		 */
  		rpage->zone_device_data = dmirror;
  
@@ -149,7 +155,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		*dst = migrate_pfn(page_to_pfn(dpage));
  		if ((*src & MIGRATE_PFN_WRITE) ||
  		    (!spage && args->vma->vm_flags & VM_WRITE))
-@@ -723,11 +759,7 @@ static int dmirror_migrate_finalize_and_
+@@ -725,11 +761,7 @@ static int dmirror_migrate_finalize_and_
  		if (!dpage)
  			continue;
  
@@ -162,7 +168,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		if (*dst & MIGRATE_PFN_WRITE)
  			entry = xa_tag_pointer(entry, DPT_XA_TAG_WRITE);
  		entry = xa_store(&dmirror->pt, pfn, entry, GFP_ATOMIC);
-@@ -807,15 +839,124 @@ static int dmirror_exclusive(struct dmir
+@@ -809,15 +841,126 @@ static int dmirror_exclusive(struct dmir
  	return ret;
  }
  
@@ -185,7 +191,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		if (!spage || !(*src & MIGRATE_PFN_MIGRATE))
 +			continue;
 +
-+		if (WARN_ON(!is_dev_private_or_coherent_page(spage)))
++		if (WARN_ON(!is_device_private_page(spage) &&
++			    !is_device_coherent_page(spage)))
 +			continue;
 +		spage = BACKING_PAGE(spage);
 +		dpage = alloc_page_vma(GFP_HIGHUSER_MOVABLE, args->vma, addr);
@@ -204,7 +211,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	return 0;
 +}
 +
-+static unsigned long dmirror_successful_migrated_pages(struct migrate_vma *migrate)
++static unsigned long
++dmirror_successful_migrated_pages(struct migrate_vma *migrate)
 +{
 +	unsigned long cpages = 0;
 +	unsigned long i;
@@ -219,11 +227,13 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +static int dmirror_migrate_to_system(struct dmirror *dmirror,
 +				     struct hmm_dmirror_cmd *cmd)
-+{
-+	unsigned long start, end, addr;
-+	unsigned long size = cmd->npages << PAGE_SHIFT;
-+	struct mm_struct *mm = dmirror->notifier.mm;
-+	struct vm_area_struct *vma;
+ {
+ 	unsigned long start, end, addr;
+ 	unsigned long size = cmd->npages << PAGE_SHIFT;
+ 	struct mm_struct *mm = dmirror->notifier.mm;
+ 	struct vm_area_struct *vma;
+-	unsigned long src_pfns[64];
+-	unsigned long dst_pfns[64];
 +	unsigned long src_pfns[64] = { 0 };
 +	unsigned long dst_pfns[64] = { 0 };
 +	struct migrate_vma args;
@@ -279,19 +289,17 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +static int dmirror_migrate_to_device(struct dmirror *dmirror,
 +				struct hmm_dmirror_cmd *cmd)
- {
- 	unsigned long start, end, addr;
- 	unsigned long size = cmd->npages << PAGE_SHIFT;
- 	struct mm_struct *mm = dmirror->notifier.mm;
- 	struct vm_area_struct *vma;
--	unsigned long src_pfns[64];
--	unsigned long dst_pfns[64];
++{
++	unsigned long start, end, addr;
++	unsigned long size = cmd->npages << PAGE_SHIFT;
++	struct mm_struct *mm = dmirror->notifier.mm;
++	struct vm_area_struct *vma;
 +	unsigned long src_pfns[64] = { 0 };
 +	unsigned long dst_pfns[64] = { 0 };
  	struct dmirror_bounce bounce;
  	struct migrate_vma args;
  	unsigned long next;
-@@ -852,6 +993,7 @@ static int dmirror_migrate(struct dmirro
+@@ -854,6 +997,7 @@ static int dmirror_migrate(struct dmirro
  		if (ret)
  			goto out;
  
@@ -299,43 +307,32 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		dmirror_migrate_alloc_and_copy(&args, dmirror);
  		migrate_vma_pages(&args);
  		dmirror_migrate_finalize_and_map(&args, dmirror);
-@@ -860,7 +1002,7 @@ static int dmirror_migrate(struct dmirro
+@@ -862,7 +1006,10 @@ static int dmirror_migrate(struct dmirro
  	mmap_read_unlock(mm);
  	mmput(mm);
  
 -	/* Return the migrated data for verification. */
-+	/* Return the migrated data for verification. only for pages in device zone */
++	/*
++	 * Return the migrated data for verification.
++	 * Only for pages in device zone
++	 */
  	ret = dmirror_bounce_init(&bounce, start, size);
  	if (ret)
  		return ret;
-@@ -897,12 +1039,22 @@ static void dmirror_mkentry(struct dmirr
- 	}
- 
- 	page = hmm_pfn_to_page(entry);
--	if (is_device_private_page(page)) {
--		/* Is the page migrated to this device or some other? */
--		if (dmirror->mdevice == dmirror_page_to_device(page))
-+	if (is_dev_private_or_coherent_page(page)) {
-+		/* Is page ZONE_DEVICE coherent? */
-+		if (is_device_coherent_page(page)) {
-+			if (dmirror->mdevice == dmirror_page_to_device(page))
-+				*perm = HMM_DMIRROR_PROT_DEV_COHERENT_LOCAL;
-+			else
-+				*perm = HMM_DMIRROR_PROT_DEV_COHERENT_REMOTE;
-+		/*
-+		 * Is page ZONE_DEVICE private migrated to
-+		 * this device or some other?
-+		 */
-+		} else if (dmirror->mdevice == dmirror_page_to_device(page)) {
+@@ -905,6 +1052,12 @@ static void dmirror_mkentry(struct dmirr
  			*perm = HMM_DMIRROR_PROT_DEV_PRIVATE_LOCAL;
--		else
-+		} else {
+ 		else
  			*perm = HMM_DMIRROR_PROT_DEV_PRIVATE_REMOTE;
-+		}
++	} else if (is_device_coherent_page(page)) {
++		/* Is the page migrated to this device or some other? */
++		if (dmirror->mdevice == dmirror_page_to_device(page))
++			*perm = HMM_DMIRROR_PROT_DEV_COHERENT_LOCAL;
++		else
++			*perm = HMM_DMIRROR_PROT_DEV_COHERENT_REMOTE;
  	} else if (is_zero_pfn(page_to_pfn(page)))
  		*perm = HMM_DMIRROR_PROT_ZERO;
  	else
-@@ -1099,8 +1251,12 @@ static long dmirror_fops_unlocked_ioctl(
+@@ -1101,8 +1254,12 @@ static long dmirror_fops_unlocked_ioctl(
  		ret = dmirror_write(dmirror, &cmd);
  		break;
  
@@ -350,7 +347,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		break;
  
  	case HMM_DMIRROR_EXCLUSIVE:
-@@ -1165,14 +1321,13 @@ static const struct file_operations dmir
+@@ -1167,14 +1324,13 @@ static const struct file_operations dmir
  
  static void dmirror_devmem_free(struct page *page)
  {
@@ -367,7 +364,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	spin_lock(&mdevice->lock);
  	mdevice->cfree++;
  	page->zone_device_data = mdevice->free_pages;
-@@ -1180,43 +1335,11 @@ static void dmirror_devmem_free(struct p
+@@ -1182,43 +1338,11 @@ static void dmirror_devmem_free(struct p
  	spin_unlock(&mdevice->lock);
  }
  
@@ -413,7 +410,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct page *rpage;
  	struct dmirror *dmirror;
  	vm_fault_t ret;
-@@ -1236,7 +1359,7 @@ static vm_fault_t dmirror_devmem_fault(s
+@@ -1238,7 +1362,7 @@ static vm_fault_t dmirror_devmem_fault(s
  	args.src = &src_pfns;
  	args.dst = &dst_pfns;
  	args.pgmap_owner = dmirror->mdevice;
@@ -422,7 +419,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (migrate_vma_setup(&args))
  		return VM_FAULT_SIGBUS;
-@@ -1315,6 +1438,12 @@ static int __init hmm_dmirror_init(void)
+@@ -1317,6 +1441,12 @@ static int __init hmm_dmirror_init(void)
  				HMM_DMIRROR_MEMORY_DEVICE_PRIVATE;
  	dmirror_devices[ndevices++].zone_device_type =
  				HMM_DMIRROR_MEMORY_DEVICE_PRIVATE;
@@ -435,7 +432,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	for (id = 0; id < ndevices; id++) {
  		ret = dmirror_device_init(dmirror_devices + id, id);
  		if (ret)
-@@ -1337,7 +1466,8 @@ static void __exit hmm_dmirror_exit(void
+@@ -1339,7 +1469,8 @@ static void __exit hmm_dmirror_exit(void
  	int id;
  
  	for (id = 0; id < DMIRROR_NDEVICES; id++)

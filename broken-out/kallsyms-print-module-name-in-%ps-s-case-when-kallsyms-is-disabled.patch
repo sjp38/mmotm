@@ -49,9 +49,6 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/kallsyms.h |   27 +++++++++++++++++++++++++++
- lib/vsprintf.c           |    5 +++--
- 2 files changed, 30 insertions(+), 2 deletions(-)
 
 --- a/include/linux/kallsyms.h~kallsyms-print-module-name-in-%ps-s-case-when-kallsyms-is-disabled
 +++ a/include/linux/kallsyms.h

@@ -18,8 +18,6 @@ Cc: Greg KH <greg@kroah.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/pci/pci.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
 
 --- a/drivers/pci/pci.c~workaround-for-a-pci-restoring-bug
 +++ a/drivers/pci/pci.c

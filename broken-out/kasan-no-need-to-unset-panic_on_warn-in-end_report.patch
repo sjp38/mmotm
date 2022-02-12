@@ -14,8 +14,6 @@ Cc: Xuefeng Li <lixuefeng@loongson.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/kasan/report.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
 
 --- a/mm/kasan/report.c~kasan-no-need-to-unset-panic_on_warn-in-end_report
 +++ a/mm/kasan/report.c

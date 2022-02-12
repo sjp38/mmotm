@@ -25,8 +25,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/coredump.c |   39 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 34 insertions(+), 5 deletions(-)
 
 --- a/fs/coredump.c~coredump-also-dump-first-pages-of-non-executable-elf-libraries
 +++ a/fs/coredump.c

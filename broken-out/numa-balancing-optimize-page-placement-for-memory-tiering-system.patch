@@ -99,13 +99,6 @@ Cc: Oscar Salvador <osalvador@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/admin-guide/sysctl/kernel.rst |   31 ++++++++++++------
- include/linux/sched/sysctl.h                |   10 +++++
- kernel/sched/core.c                         |   21 +++++++++---
- kernel/sysctl.c                             |    2 -
- mm/migrate.c                                |   19 +++++++++--
- mm/vmscan.c                                 |   17 +++++++++
- 6 files changed, 83 insertions(+), 17 deletions(-)
 
 --- a/Documentation/admin-guide/sysctl/kernel.rst~numa-balancing-optimize-page-placement-for-memory-tiering-system
 +++ a/Documentation/admin-guide/sysctl/kernel.rst

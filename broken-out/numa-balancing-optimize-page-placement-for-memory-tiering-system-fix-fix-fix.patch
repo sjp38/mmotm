@@ -1,0 +1,25 @@
+From: Huang Ying <ying.huang@intel.com>
+Subject: numa-balancing-optimize-page-placement-for-memory-tiering-system-fix-fix-fix
+
+fix the following warnings of `make htmldocs`,
+
+Documentation/admin-guide/sysctl/kernel.rst:603: WARNING: Inconsistent literal block quoting.
+
+Link: https://lkml.kernel.org/r/87r18cjwbe.fsf@yhuang6-desk2.ccr.corp.intel.com
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/Documentation/admin-guide/sysctl/kernel.rst~numa-balancing-optimize-page-placement-for-memory-tiering-system-fix-fix-fix
++++ a/Documentation/admin-guide/sysctl/kernel.rst
+@@ -597,7 +597,7 @@ numa_balancing
+ 
+ Enables/disables and configures automatic page fault based NUMA memory
+ balancing.  Memory is moved automatically to nodes that access it often. 
+-The value to set can be the result of ORing the following::
++The value to set can be the result of ORing the following:
+ 
+ = =================================
+ 0 NUMA_BALANCING_DISABLED
+_

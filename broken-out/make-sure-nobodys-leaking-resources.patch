@@ -15,8 +15,6 @@ Cc: Dominik Brodowski <linux@dominikbrodowski.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/resource.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
 
 --- a/kernel/resource.c~make-sure-nobodys-leaking-resources
 +++ a/kernel/resource.c

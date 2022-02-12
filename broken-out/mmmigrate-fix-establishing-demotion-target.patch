@@ -47,8 +47,6 @@ Cc: Mel Gorman <mgorman@techsingularity.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/migrate.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
 
 --- a/mm/migrate.c~mmmigrate-fix-establishing-demotion-target
 +++ a/mm/migrate.c

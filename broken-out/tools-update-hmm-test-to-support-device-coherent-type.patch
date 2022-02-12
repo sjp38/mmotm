@@ -13,20 +13,28 @@ coherent zone types.
 Helpers to migrate from device to sys memory and vicerversa were also
 added.
 
-Link: https://lkml.kernel.org/r/20220201154901.7921-10-alex.sierra@amd.com
+Link: https://lkml.kernel.org/r/20220210072828.2930359-24-hch@lst.de
 Signed-off-by: Alex Sierra <alex.sierra@amd.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
 Reviewed-by: Alistair Popple <apopple@nvidia.com>
-Cc: Christoph Hellwig <hch@lst.de>
+Tested-by: "Sierra Guiza, Alejandro (Alex)" <alex.sierra@amd.com>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Ben Skeggs <bskeggs@redhat.com>
+Cc: Chaitanya Kulkarni <kch@nvidia.com>
+Cc: Christian Knig <christian.koenig@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Jason Gunthorpe <jgg@nvidia.com>
-Cc: Jerome Glisse <jglisse@redhat.com>
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Karol Herbst <kherbst@redhat.com>
+Cc: Logan Gunthorpe <logang@deltatee.com>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
 Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/vm/hmm-tests.c |  123 +++++++++++++++++++----
- 1 file changed, 102 insertions(+), 21 deletions(-)
 
 --- a/tools/testing/selftests/vm/hmm-tests.c~tools-update-hmm-test-to-support-device-coherent-type
 +++ a/tools/testing/selftests/vm/hmm-tests.c

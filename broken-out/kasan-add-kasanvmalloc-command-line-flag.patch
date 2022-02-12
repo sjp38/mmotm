@@ -25,9 +25,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/kasan/hw_tags.c |   45 ++++++++++++++++++++++++++++++++++++++++++-
- mm/kasan/kasan.h   |    6 +++++
- 2 files changed, 50 insertions(+), 1 deletion(-)
 
 --- a/mm/kasan/hw_tags.c~kasan-add-kasanvmalloc-command-line-flag
 +++ a/mm/kasan/hw_tags.c

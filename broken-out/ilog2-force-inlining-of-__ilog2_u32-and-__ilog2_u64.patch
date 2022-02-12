@@ -77,8 +77,6 @@ Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/log2.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/include/linux/log2.h~ilog2-force-inlining-of-__ilog2_u32-and-__ilog2_u64
 +++ a/include/linux/log2.h

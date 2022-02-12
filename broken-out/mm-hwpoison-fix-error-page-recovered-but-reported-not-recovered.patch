@@ -35,8 +35,6 @@ Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memory-failure.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
 --- a/mm/memory-failure.c~mm-hwpoison-fix-error-page-recovered-but-reported-not-recovered
 +++ a/mm/memory-failure.c

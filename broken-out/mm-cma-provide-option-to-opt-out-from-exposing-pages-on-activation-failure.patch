@@ -21,10 +21,6 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/cma.h |    2 ++
- mm/cma.c            |   11 +++++++++--
- mm/cma.h            |    1 +
- 3 files changed, 12 insertions(+), 2 deletions(-)
 
 --- a/include/linux/cma.h~mm-cma-provide-option-to-opt-out-from-exposing-pages-on-activation-failure
 +++ a/include/linux/cma.h

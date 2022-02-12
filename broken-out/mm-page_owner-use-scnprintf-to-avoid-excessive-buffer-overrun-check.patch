@@ -26,8 +26,6 @@ Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/page_owner.c |   14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
 
 --- a/mm/page_owner.c~mm-page_owner-use-scnprintf-to-avoid-excessive-buffer-overrun-check
 +++ a/mm/page_owner.c

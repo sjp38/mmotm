@@ -16,8 +16,6 @@ Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/binfmt_elf.c |   18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
 
 --- a/fs/binfmt_elf.c~fs-binfmt_elf-refactor-load_elf_binary-function
 +++ a/fs/binfmt_elf.c

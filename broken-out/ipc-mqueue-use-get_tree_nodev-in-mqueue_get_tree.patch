@@ -61,8 +61,6 @@ Cc: Davidlohr Bueso <dave@stgolabs.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- ipc/mqueue.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
 
 --- a/ipc/mqueue.c~ipc-mqueue-use-get_tree_nodev-in-mqueue_get_tree
 +++ a/ipc/mqueue.c

@@ -32,8 +32,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/fork.c |    1 +
- 1 file changed, 1 insertion(+)
 
 --- a/kernel/fork.c~kasan-fork-reset-pointer-tags-of-vmapped-stacks
 +++ a/kernel/fork.c

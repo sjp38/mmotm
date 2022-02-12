@@ -73,8 +73,6 @@ Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memory.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
 
 --- a/mm/memory.c~mm-optimize-do_wp_page-for-fresh-pages-in-local-lru-pagevecs
 +++ a/mm/memory.c

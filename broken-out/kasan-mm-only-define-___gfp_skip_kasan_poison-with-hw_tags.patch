@@ -22,9 +22,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/gfp.h            |    8 +++++++-
- include/trace/events/mmflags.h |   12 +++++++++---
- 2 files changed, 16 insertions(+), 4 deletions(-)
 
 --- a/include/linux/gfp.h~kasan-mm-only-define-___gfp_skip_kasan_poison-with-hw_tags
 +++ a/include/linux/gfp.h

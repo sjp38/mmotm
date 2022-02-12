@@ -37,8 +37,6 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/ocfs2/namei.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
 
 --- a/fs/ocfs2/namei.c~ocfs2-clear-links-count-in-ocfs2_mknod-if-an-error-occurs
 +++ a/fs/ocfs2/namei.c

@@ -27,8 +27,6 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/page_alloc.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
 
 --- a/mm/page_alloc.c~kasan-page_alloc-init-memory-of-skipped-pages-on-free
 +++ a/mm/page_alloc.c

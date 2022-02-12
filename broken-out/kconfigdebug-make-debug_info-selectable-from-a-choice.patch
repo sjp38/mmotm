@@ -28,8 +28,6 @@ Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- lib/Kconfig.debug |  140 +++++++++++++++++++++++---------------------
- 1 file changed, 75 insertions(+), 65 deletions(-)
 
 --- a/lib/Kconfig.debug~kconfigdebug-make-debug_info-selectable-from-a-choice
 +++ a/lib/Kconfig.debug

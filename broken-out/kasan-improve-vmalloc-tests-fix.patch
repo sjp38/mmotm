@@ -7,8 +7,6 @@ Cc: Andrey Konovalov <andreyknvl@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- lib/test_kasan.c |    2 ++
- 1 file changed, 2 insertions(+)
 
 --- a/lib/test_kasan.c~kasan-improve-vmalloc-tests-fix
 +++ a/lib/test_kasan.c

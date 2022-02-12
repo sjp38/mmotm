@@ -16,8 +16,6 @@ Acked-by: Baoquan He <bhe@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/proc/vmcore.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/fs/proc/vmcore.c~proc-vmcore-fix-vmcore_alloc_buf-kernel-doc-comment
 +++ a/fs/proc/vmcore.c

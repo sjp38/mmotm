@@ -48,9 +48,6 @@ Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/sched.h |    1 
- kernel/hung_task.c    |   44 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 45 insertions(+)
 
 --- a/include/linux/sched.h~kernel-hung_taskc-monitor-killed-tasks
 +++ a/include/linux/sched.h

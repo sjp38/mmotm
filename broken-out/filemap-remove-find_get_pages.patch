@@ -5,6 +5,7 @@ It's unused now. Remove it and clean up the relevant comment.
 
 Link: https://lkml.kernel.org/r/20220208134149.47299-1-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
 Cc: David Howells <dhowells@redhat.com>
 Cc: William Kucharski <william.kucharski@oracle.com>
@@ -15,9 +16,6 @@ Cc: Andreas Gruenbacher <agruenba@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/pagemap.h |    7 -------
- mm/filemap.c            |   11 ++++++-----
- 2 files changed, 6 insertions(+), 12 deletions(-)
 
 --- a/include/linux/pagemap.h~filemap-remove-find_get_pages
 +++ a/include/linux/pagemap.h

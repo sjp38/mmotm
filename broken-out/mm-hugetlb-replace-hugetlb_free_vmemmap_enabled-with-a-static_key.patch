@@ -24,11 +24,6 @@ Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/hugetlb.h    |    6 ------
- include/linux/page-flags.h |   16 ++++++++++++++--
- mm/hugetlb_vmemmap.c       |   12 ++++++------
- mm/memory_hotplug.c        |    2 +-
- 4 files changed, 21 insertions(+), 15 deletions(-)
 
 --- a/include/linux/hugetlb.h~mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key
 +++ a/include/linux/hugetlb.h

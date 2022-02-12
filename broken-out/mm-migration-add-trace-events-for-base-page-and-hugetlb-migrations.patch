@@ -15,17 +15,12 @@ Reported-by: kernel test robot <lkp@intel.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Zi Yan <ziy@nvidia.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Cc: John Hubbard <jhubbard@nvidia.com>
 Cc: Matthew Wilcox <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/x86/mm/init.c             |    1 -
- include/trace/events/migrate.h |   31 +++++++++++++++++++++++++++++++
- mm/migrate.c                   |    4 +++-
- mm/rmap.c                      |    6 ++++++
- 4 files changed, 40 insertions(+), 2 deletions(-)
 
 --- a/arch/x86/mm/init.c~mm-migration-add-trace-events-for-base-page-and-hugetlb-migrations
 +++ a/arch/x86/mm/init.c

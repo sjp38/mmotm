@@ -21,9 +21,6 @@ Cc: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- lib/Kconfig.kcsan |   11 -----------
- lib/Kconfig.ubsan |   12 ------------
- 2 files changed, 23 deletions(-)
 
 --- a/lib/Kconfig.kcsan~revert-ubsan-kcsan-dont-combine-sanitizer-with-kcov-on-clang
 +++ a/lib/Kconfig.kcsan

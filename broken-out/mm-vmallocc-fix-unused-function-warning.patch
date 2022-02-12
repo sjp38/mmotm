@@ -13,8 +13,6 @@ Reported-by: Abaci Robot <abaci@linux.alibaba.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/vmalloc.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
 
 --- a/mm/vmalloc.c~mm-vmallocc-fix-unused-function-warning
 +++ a/mm/vmalloc.c

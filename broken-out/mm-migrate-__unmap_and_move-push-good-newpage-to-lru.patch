@@ -18,6 +18,7 @@ remove_migration_ptes().
 
 Link: https://lkml.kernel.org/r/33fb71cf-ea55-123a-bf9d-fdad297cae1@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -28,13 +29,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/migrate.c |   31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
 
 --- a/mm/migrate.c~mm-migrate-__unmap_and_move-push-good-newpage-to-lru
 +++ a/mm/migrate.c

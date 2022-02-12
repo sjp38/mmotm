@@ -71,8 +71,6 @@ Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memory.c |   55 +++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 43 insertions(+), 12 deletions(-)
 
 --- a/mm/memory.c~mm-streamline-cow-logic-in-do_swap_page
 +++ a/mm/memory.c

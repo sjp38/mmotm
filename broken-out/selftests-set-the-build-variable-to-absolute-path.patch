@@ -70,8 +70,6 @@ Cc: Alistair Popple <apopple@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/Makefile |   26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
 
 --- a/tools/testing/selftests/Makefile~selftests-set-the-build-variable-to-absolute-path
 +++ a/tools/testing/selftests/Makefile

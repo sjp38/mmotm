@@ -27,6 +27,7 @@ its destination list immediately.
 
 Link: https://lkml.kernel.org/r/3d204af4-664f-e4b0-4781-16718a2efb9c@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -37,19 +38,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/mm_inline.h |   11 ++++--
- include/linux/mm_types.h  |   19 +++++++++-
- mm/huge_memory.c          |    5 ++
- mm/memcontrol.c           |    3 -
- mm/mlock.c                |   66 ++++++++++++++++++++++++++++--------
- mm/mmzone.c               |    7 +++
- mm/swap.c                 |    1 
- 7 files changed, 91 insertions(+), 21 deletions(-)
 
 --- a/include/linux/mm_inline.h~mm-munlock-maintain-page-mlock_count-while-unevictable
 +++ a/include/linux/mm_inline.h

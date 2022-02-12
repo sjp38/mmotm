@@ -33,6 +33,7 @@ VM_LOCKED on VM_SPECIAL; but haven't quite convinced myself to change it).
 
 Link: https://lkml.kernel.org/r/9f9ca113-ffb9-498e-4bd6-6bfeaaa10b7@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -43,24 +44,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/rmap.h    |   17 ++++++-----
- kernel/events/uprobes.c |    7 +---
- mm/huge_memory.c        |   17 +++++------
- mm/hugetlb.c            |    4 +-
- mm/internal.h           |   36 +++++++++++++++++++++---
- mm/khugepaged.c         |    4 +-
- mm/ksm.c                |   12 --------
- mm/memory.c             |   45 ++++++++++--------------------
- mm/migrate.c            |    9 +-----
- mm/mlock.c              |   21 ++++----------
- mm/rmap.c               |   56 +++++++++++++++++---------------------
- mm/userfaultfd.c        |   14 +++++----
- 12 files changed, 113 insertions(+), 129 deletions(-)
 
 --- a/include/linux/rmap.h~mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page
 +++ a/include/linux/rmap.h
@@ -189,7 +176,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	update_mmu_cache_pmd(vma, address, pvmw->pmd);
 --- a/mm/hugetlb.c~mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page
 +++ a/mm/hugetlb.c
-@@ -5013,7 +5013,7 @@ static void __unmap_hugepage_range(struc
+@@ -5012,7 +5012,7 @@ static void __unmap_hugepage_range(struc
  			set_page_dirty(page);
  
  		hugetlb_count_sub(pages_per_huge_page(h), mm);
@@ -198,7 +185,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		spin_unlock(ptl);
  		tlb_remove_page_size(tlb, page, huge_page_size(h));
-@@ -5258,7 +5258,7 @@ retry_avoidcopy:
+@@ -5257,7 +5257,7 @@ retry_avoidcopy:
  		/* Break COW */
  		huge_ptep_clear_flush(vma, haddr, ptep);
  		mmu_notifier_invalidate_range(mm, range.start, range.end);

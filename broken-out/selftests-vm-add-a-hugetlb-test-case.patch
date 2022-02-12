@@ -34,11 +34,6 @@ Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- tools/testing/selftests/vm/.gitignore         |    1 
- tools/testing/selftests/vm/Makefile           |    1 
- tools/testing/selftests/vm/hugepage-vmemmap.c |  144 ++++++++++++++++
- tools/testing/selftests/vm/run_vmtests.sh     |   11 +
- 4 files changed, 157 insertions(+)
 
 --- a/tools/testing/selftests/vm/.gitignore~selftests-vm-add-a-hugetlb-test-case
 +++ a/tools/testing/selftests/vm/.gitignore

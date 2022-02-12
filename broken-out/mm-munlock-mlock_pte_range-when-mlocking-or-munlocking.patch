@@ -28,6 +28,7 @@ decline such vmas.
 
 Link: https://lkml.kernel.org/r/8bc3ee8c-7f1-d812-7f22-4f9f6d436bc@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -38,14 +39,10 @@ Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/internal.h |    3 -
- mm/mlock.c    |  108 +++++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 90 insertions(+), 21 deletions(-)
 
 --- a/mm/internal.h~mm-munlock-mlock_pte_range-when-mlocking-or-munlocking
 +++ a/mm/internal.h

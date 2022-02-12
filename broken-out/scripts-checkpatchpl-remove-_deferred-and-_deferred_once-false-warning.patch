@@ -34,8 +34,6 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- scripts/checkpatch.pl |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
 
 --- a/scripts/checkpatch.pl~scripts-checkpatchpl-remove-_deferred-and-_deferred_once-false-warning
 +++ a/scripts/checkpatch.pl

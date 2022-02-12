@@ -24,8 +24,6 @@ Cc: Vasily Averin <vvs@virtuozzo.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/vmalloc.c |   37 ++++++++++++++++++++++++++++---------
- 1 file changed, 28 insertions(+), 9 deletions(-)
 
 --- a/mm/vmalloc.c~mm-vmalloc-add-adjust_search_size-parameter
 +++ a/mm/vmalloc.c

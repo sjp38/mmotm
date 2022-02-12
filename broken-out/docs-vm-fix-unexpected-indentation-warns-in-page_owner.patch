@@ -13,8 +13,6 @@ Cc: Jonathan Corbet <corbet@lwn.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/vm/page_owner.rst |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
 --- a/Documentation/vm/page_owner.rst~docs-vm-fix-unexpected-indentation-warns-in-page_owner
 +++ a/Documentation/vm/page_owner.rst

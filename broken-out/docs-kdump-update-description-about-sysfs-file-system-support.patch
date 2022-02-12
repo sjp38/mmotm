@@ -23,8 +23,6 @@ Cc: Xuefeng Li <lixuefeng@loongson.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/admin-guide/kdump/kdump.rst |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
 --- a/Documentation/admin-guide/kdump/kdump.rst~docs-kdump-update-description-about-sysfs-file-system-support
 +++ a/Documentation/admin-guide/kdump/kdump.rst

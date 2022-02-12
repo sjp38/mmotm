@@ -1,0 +1,158 @@
+From: Alistair Popple <apopple@nvidia.com>
+Subject: mm/gup: migrate device coherent pages when pinning instead of failing
+
+Currently any attempts to pin a device coherent page will fail.  This is
+because device coherent pages need to be managed by a device driver, and
+pinning them would prevent a driver from migrating them off the device.
+
+However this is no reason to fail pinning of these pages.  These are
+coherent and accessible from the CPU so can be migrated just like pinning
+ZONE_MOVABLE pages.  So instead of failing all attempts to pin them first
+try migrating them out of ZONE_DEVICE.
+
+[hch@lst.de: rebased to the split device memory checks, moved migrate_device_page to migrate_device.c]
+Link: https://lkml.kernel.org/r/20220210072828.2930359-27-hch@lst.de
+Signed-off-by: Alistair Popple <apopple@nvidia.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
+Tested-by: "Sierra Guiza, Alejandro (Alex)" <alex.sierra@amd.com>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Ben Skeggs <bskeggs@redhat.com>
+Cc: Chaitanya Kulkarni <kch@nvidia.com>
+Cc: Christian Knig <christian.koenig@amd.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Karol Herbst <kherbst@redhat.com>
+Cc: Logan Gunthorpe <logang@deltatee.com>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/gup.c~mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing
++++ a/mm/gup.c
+@@ -1865,9 +1865,31 @@ static long check_and_migrate_movable_pa
+ 			ret = -EFAULT;
+ 			goto unpin_pages;
+ 		}
++
++		/*
++		 * Device coherent pages are managed by a driver and should not
++		 * be pinned indefinitely as it prevents the driver moving the
++		 * page. So when trying to pin with FOLL_LONGTERM instead try
++		 * to migrate the page out of device memory.
++		 */
+ 		if (is_device_coherent_page(head)) {
+-			ret = -EFAULT;
+-			goto unpin_pages;
++			WARN_ON_ONCE(PageCompound(head));
++
++			/*
++			 * Migration will fail if the page is pinned, so convert
++			 * the pin on the source page to a normal reference.
++			 */
++			if (gup_flags & FOLL_PIN) {
++				get_page(head);
++				unpin_user_page(head);
++			}
++
++			pages[i] = migrate_device_page(head, gup_flags);
++			if (!pages[i]) {
++				ret = -EBUSY;
++				goto unpin_pages;
++			}
++			continue;
+ 		}
+ 
+ 		if (is_pinnable_page(head))
+@@ -1907,10 +1929,13 @@ static long check_and_migrate_movable_pa
+ 	return nr_pages;
+ 
+ unpin_pages:
+-	if (gup_flags & FOLL_PIN) {
+-		unpin_user_pages(pages, nr_pages);
+-	} else {
+-		for (i = 0; i < nr_pages; i++)
++	for (i = 0; i < nr_pages; i++) {
++		if (!pages[i])
++			continue;
++
++		if (gup_flags & FOLL_PIN)
++			unpin_user_page(pages[i]);
++		else
+ 			put_page(pages[i]);
+ 	}
+ 
+--- a/mm/internal.h~mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing
++++ a/mm/internal.h
+@@ -720,5 +720,6 @@ int numa_migrate_prep(struct page *page,
+ DECLARE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
+ 
+ void free_zone_device_page(struct page *page);
++struct page *migrate_device_page(struct page *page, unsigned int gup_flags);
+ 
+ #endif	/* __MM_INTERNAL_H */
+--- a/mm/migrate_device.c~mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing
++++ a/mm/migrate_device.c
+@@ -767,3 +767,56 @@ void migrate_vma_finalize(struct migrate
+ 	}
+ }
+ EXPORT_SYMBOL(migrate_vma_finalize);
++
++/*
++ * Migrate a device coherent page back to normal memory.  The caller should have
++ * a reference on page which will be copied to the new page if migration is
++ * successful or dropped on failure.
++ */
++struct page *migrate_device_page(struct page *page, unsigned int gup_flags)
++{
++	unsigned long src_pfn, dst_pfn = 0;
++	struct migrate_vma args;
++	struct page *dpage;
++
++	lock_page(page);
++	src_pfn = migrate_pfn(page_to_pfn(page)) | MIGRATE_PFN_MIGRATE;
++	args.src = &src_pfn;
++	args.dst = &dst_pfn;
++	args.cpages = 1;
++	args.npages = 1;
++	args.vma = NULL;
++	migrate_vma_setup(&args);
++	if (!(src_pfn & MIGRATE_PFN_MIGRATE))
++		return NULL;
++
++	dpage = alloc_pages(GFP_USER | __GFP_NOWARN, 0);
++
++	/*
++	 * get/pin the new page now so we don't have to retry gup after
++	 * migrating. We already have a reference so this should never fail.
++	 */
++	if (dpage && WARN_ON_ONCE(!try_grab_page(dpage, gup_flags))) {
++		__free_pages(dpage, 0);
++		dpage = NULL;
++	}
++
++	if (dpage) {
++		lock_page(dpage);
++		dst_pfn = migrate_pfn(page_to_pfn(dpage));
++	}
++
++	migrate_vma_pages(&args);
++	if (src_pfn & MIGRATE_PFN_MIGRATE)
++		copy_highpage(dpage, page);
++	migrate_vma_finalize(&args);
++	if (dpage && !(src_pfn & MIGRATE_PFN_MIGRATE)) {
++		if (gup_flags & FOLL_PIN)
++			unpin_user_page(dpage);
++		else
++			put_page(dpage);
++		dpage = NULL;
++	}
++
++	return dpage;
++}
+_

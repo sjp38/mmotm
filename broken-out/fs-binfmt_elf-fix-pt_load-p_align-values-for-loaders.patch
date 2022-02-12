@@ -23,8 +23,6 @@ Cc: Kees Cook <keescook@chromium.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- fs/binfmt_elf.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/fs/binfmt_elf.c~fs-binfmt_elf-fix-pt_load-p_align-values-for-loaders
 +++ a/fs/binfmt_elf.c

@@ -59,11 +59,6 @@ Cc: Shakeel Butt <shakeelb@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/rmap.h |    6 
- mm/internal.h        |    2 
- mm/mlock.c           |  377 ++---------------------------------------
- mm/rmap.c            |   80 --------
- 4 files changed, 25 insertions(+), 440 deletions(-)
 
 --- a/include/linux/rmap.h~mm-munlock-delete-page_mlock-and-all-its-works
 +++ a/include/linux/rmap.h

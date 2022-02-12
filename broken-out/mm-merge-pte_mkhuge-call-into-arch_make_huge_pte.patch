@@ -20,13 +20,6 @@ Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm64/mm/hugetlbpage.c                      |    1 +
- arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h |    4 ++--
- arch/sparc/mm/hugetlbpage.c                      |    1 +
- include/linux/hugetlb.h                          |    2 +-
- mm/hugetlb.c                                     |    3 +--
- mm/vmalloc.c                                     |    1 -
- 6 files changed, 6 insertions(+), 6 deletions(-)
 
 --- a/arch/arm64/mm/hugetlbpage.c~mm-merge-pte_mkhuge-call-into-arch_make_huge_pte
 +++ a/arch/arm64/mm/hugetlbpage.c
@@ -83,7 +76,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	entry = arch_make_huge_pte(entry, shift, vma->vm_flags);
  
  	return entry;
-@@ -6172,7 +6171,7 @@ unsigned long hugetlb_change_protection(
+@@ -6171,7 +6170,7 @@ unsigned long hugetlb_change_protection(
  			unsigned int shift = huge_page_shift(hstate_vma(vma));
  
  			old_pte = huge_ptep_modify_prot_start(vma, address, ptep);

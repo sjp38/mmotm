@@ -31,9 +31,6 @@ Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/gup.c     |   13 ++++++++-----
- mm/migrate.c |    7 +++++++
- 2 files changed, 15 insertions(+), 5 deletions(-)
 
 --- a/mm/gup.c~mm-gup-follow_pfn_pte-eexist-cleanup
 +++ a/mm/gup.c
