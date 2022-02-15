@@ -21,6 +21,11 @@ Cc: Matthew Wilcox <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/x86/mm/init.c             |    1 -
+ include/trace/events/migrate.h |   31 +++++++++++++++++++++++++++++++
+ mm/migrate.c                   |    4 +++-
+ mm/rmap.c                      |    6 ++++++
+ 4 files changed, 40 insertions(+), 2 deletions(-)
 
 --- a/arch/x86/mm/init.c~mm-migration-add-trace-events-for-base-page-and-hugetlb-migrations
 +++ a/arch/x86/mm/init.c

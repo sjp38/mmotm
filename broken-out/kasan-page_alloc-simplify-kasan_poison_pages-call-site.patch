@@ -21,6 +21,8 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/page_alloc.c |   18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
 
 --- a/mm/page_alloc.c~kasan-page_alloc-simplify-kasan_poison_pages-call-site
 +++ a/mm/page_alloc.c

@@ -11,6 +11,9 @@ Cc: Shuah Khan <shuah@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ tools/testing/selftests/kselftest.h       |   10 ++++++++++
+ tools/testing/selftests/vm/memfd_secret.c |    2 +-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
 --- a/tools/testing/selftests/kselftest.h~selftests-kselftest-framework-provide-finished-helper
 +++ a/tools/testing/selftests/kselftest.h

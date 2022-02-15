@@ -116,6 +116,12 @@ Cc: Rafael Parra <rparrazo@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ drivers/base/memory.c          |  101 +++++++++++++++++++++++++++++--
+ drivers/base/node.c            |   13 +--
+ include/linux/memory.h         |   12 +++
+ include/linux/memory_hotplug.h |    6 -
+ mm/memory_hotplug.c            |   50 +++------------
+ 5 files changed, 125 insertions(+), 57 deletions(-)
 
 --- a/drivers/base/memory.c~drivers-base-memory-determine-and-store-zone-for-single-zone-memory-blocks
 +++ a/drivers/base/memory.c

@@ -16,6 +16,8 @@ Cc: Xiaoming Ni <nixiaoming@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/vm/page_owner.rst |   21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
 --- a/Documentation/vm/page_owner.rst~documentation-vm-page_ownerrst-update-the-documentation
 +++ a/Documentation/vm/page_owner.rst

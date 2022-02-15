@@ -18,6 +18,8 @@ Cc: Yinan Zhang <zhangyinan2019@email.szu.edu.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ tools/vm/page_owner_sort.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling-fix
 +++ a/tools/vm/page_owner_sort.c

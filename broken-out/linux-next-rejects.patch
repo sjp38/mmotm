@@ -4,6 +4,9 @@ Subject: linux-next-rejects
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ drivers/gpu/drm/drm_cache.c |    4 ++--
+ lib/Kconfig.debug           |    1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
 --- a/drivers/gpu/drm/drm_cache.c~linux-next-rejects
 +++ a/drivers/gpu/drm/drm_cache.c

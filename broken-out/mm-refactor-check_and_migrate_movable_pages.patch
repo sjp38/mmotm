@@ -26,6 +26,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/gup.c |   83 ++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 45 insertions(+), 38 deletions(-)
 
 --- a/mm/gup.c~mm-refactor-check_and_migrate_movable_pages
 +++ a/mm/gup.c

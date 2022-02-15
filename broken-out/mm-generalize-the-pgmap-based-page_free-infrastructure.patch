@@ -26,6 +26,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memremap.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/mm/memremap.c~mm-generalize-the-pgmap-based-page_free-infrastructure
 +++ a/mm/memremap.c

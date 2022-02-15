@@ -1,0 +1,53 @@
+From: Helge Deller <deller@gmx.de>
+Subject: fat: use pointer to simple type in put_user()
+
+The put_user(val,ptr) macro wants a pointer to a simple type, but in
+fat_ioctl_filldir() the d_name field references an "array of chars".  Be
+more accurate and explicitly give the pointer to the first character of
+the d_name[] array.
+
+I noticed that issue while trying to optimize the parisc put_user() macro
+and used an intermediate variable to store the pointer.  In that case I
+got this error:
+
+In file included from include/linux/uaccess.h:11,
+                 from include/linux/compat.h:17,
+                 from fs/fat/dir.c:18:
+fs/fat/dir.c: In function `fat_ioctl_filldir':
+fs/fat/dir.c:725:33: error: invalid initializer
+  725 |                 if (put_user(0, d2->d_name)                     ||         \
+      |                                 ^~
+include/asm/uaccess.h:152:33: note: in definition of macro `__put_user'
+  152 |         __typeof__(ptr) __ptr = ptr;                            \
+      |                                 ^~~
+fs/fat/dir.c:759:1: note: in expansion of macro `FAT_IOCTL_FILLDIR_FUNC'
+  759 | FAT_IOCTL_FILLDIR_FUNC(fat_ioctl_filldir, __fat_dirent)
+
+Andreas Schwab <schwab@linux-m68k.org> suggested to use
+   __typeof__(&*(ptr)) __ptr = ptr;
+instead. This works, but nevertheless it's probably reasonable to
+fix the original caller too.
+
+Link: https://lkml.kernel.org/r/Ygo+A9MREmC1H3kr@p100
+Signed-off-by: Helge Deller <deller@gmx.de>
+Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: David Laight <David.Laight@aculab.com>
+Cc: Andreas Schwab <schwab@linux-m68k.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/fat/dir.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/fat/dir.c~fat-use-pointer-to-simple-type-in-put_user
++++ a/fs/fat/dir.c
+@@ -722,7 +722,7 @@ static int func(struct dir_context *ctx,
+ 		if (name_len >= sizeof(d1->d_name))			   \
+ 			name_len = sizeof(d1->d_name) - 1;		   \
+ 									   \
+-		if (put_user(0, d2->d_name)			||	   \
++		if (put_user(0, &d2->d_name[0])			||	   \
+ 		    put_user(0, &d2->d_reclen)			||	   \
+ 		    copy_to_user(d1->d_name, name, name_len)	||	   \
+ 		    put_user(0, d1->d_name + name_len)		||	   \
+_

@@ -9,6 +9,8 @@ Signed-off-by: Shenghong Han <hanshenghong2019@email.szu.edu.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ tools/vm/page_owner_sort.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 --- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-two-trivial-fixes
 +++ a/tools/vm/page_owner_sort.c

@@ -19,6 +19,8 @@ Cc: Yang Yingliang <yangyingliang@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/exec.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/fs/exec.c~exec-force-single-empty-string-when-argv-is-empty-fix
 +++ a/fs/exec.c

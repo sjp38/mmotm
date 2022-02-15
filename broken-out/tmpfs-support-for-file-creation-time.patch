@@ -12,6 +12,9 @@ Cc: Hugh Dickins <hughd@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/shmem_fs.h |    1 +
+ mm/shmem.c               |   11 +++++++++++
+ 2 files changed, 12 insertions(+)
 
 --- a/include/linux/shmem_fs.h~tmpfs-support-for-file-creation-time
 +++ a/include/linux/shmem_fs.h

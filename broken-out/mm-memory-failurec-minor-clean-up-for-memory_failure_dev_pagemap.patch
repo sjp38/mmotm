@@ -1,0 +1,44 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: minor clean up for memory_failure_dev_pagemap
+
+Patch series "mm/memory-failure.c: A few cleanup patches for memory failure".
+
+This series contains a few patches to simplify the code logic, remove
+unneeded variable and remove obsolete comment.  More details can be found
+in the respective changelogs.
+
+
+This patch (of 8):
+
+The flags always has MF_ACTION_REQUIRED and MF_MUST_KILL set.  So we do
+not need to check these flags again.
+
+Link: https://lkml.kernel.org/r/20220210141733.1908-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220210141733.1908-2-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/memory-failure.c~mm-memory-failurec-minor-clean-up-for-memory_failure_dev_pagemap
++++ a/mm/memory-failure.c
+@@ -1640,7 +1640,7 @@ static int memory_failure_dev_pagemap(un
+ 	 * SIGBUS (i.e. MF_MUST_KILL)
+ 	 */
+ 	flags |= MF_ACTION_REQUIRED | MF_MUST_KILL;
+-	collect_procs(page, &tokill, flags & MF_ACTION_REQUIRED);
++	collect_procs(page, &tokill, true);
+ 
+ 	list_for_each_entry(tk, &tokill, nd)
+ 		if (tk->size_shift)
+@@ -1655,7 +1655,7 @@ static int memory_failure_dev_pagemap(un
+ 		start = (page->index << PAGE_SHIFT) & ~(size - 1);
+ 		unmap_mapping_range(page->mapping, start, size, 0);
+ 	}
+-	kill_procs(&tokill, flags & MF_MUST_KILL, false, pfn, flags);
++	kill_procs(&tokill, true, false, pfn, flags);
+ 	rc = 0;
+ unlock:
+ 	dax_unlock_page(page, cookie);
+_

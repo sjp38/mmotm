@@ -9,6 +9,8 @@ Cc: Kees Cook <keescook@chromium.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/binfmt_elf.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
 --- a/fs/binfmt_elf.c~fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files-v5
 +++ a/fs/binfmt_elf.c

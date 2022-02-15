@@ -140,6 +140,8 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/proc/vmcore.c |   41 ++++++++++++++++++++++-------------------
+ 1 file changed, 22 insertions(+), 19 deletions(-)
 
 --- a/fs/proc/vmcore.c~proc-vmcore-fix-possible-deadlock-on-concurrent-mmap-and-read
 +++ a/fs/proc/vmcore.c

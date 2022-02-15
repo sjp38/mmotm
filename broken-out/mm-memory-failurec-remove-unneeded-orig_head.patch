@@ -1,0 +1,43 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: remove unneeded orig_head
+
+orig_head is used to check whether the page have changed compound pages
+during the locking.  But it's always equal to hpage.  So we can use hpage
+directly and remove this redundant one.
+
+Link: https://lkml.kernel.org/r/20220210141733.1908-5-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/memory-failure.c~mm-memory-failurec-remove-unneeded-orig_head
++++ a/mm/memory-failure.c
+@@ -1687,7 +1687,6 @@ int memory_failure(unsigned long pfn, in
+ {
+ 	struct page *p;
+ 	struct page *hpage;
+-	struct page *orig_head;
+ 	struct dev_pagemap *pgmap;
+ 	int res = 0;
+ 	unsigned long page_flags;
+@@ -1733,7 +1732,7 @@ try_again:
+ 		goto unlock_mutex;
+ 	}
+ 
+-	orig_head = hpage = compound_head(p);
++	hpage = compound_head(p);
+ 	num_poisoned_pages_inc();
+ 
+ 	/*
+@@ -1817,7 +1816,7 @@ try_again:
+ 	 * The page could have changed compound pages during the locking.
+ 	 * If this happens just bail out.
+ 	 */
+-	if (PageCompound(p) && compound_head(p) != orig_head) {
++	if (PageCompound(p) && compound_head(p) != hpage) {
+ 		action_result(pfn, MF_MSG_DIFFERENT_COMPOUND, MF_IGNORED);
+ 		res = -EBUSY;
+ 		goto unlock_page;
+_

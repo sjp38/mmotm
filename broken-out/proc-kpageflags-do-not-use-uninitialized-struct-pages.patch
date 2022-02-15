@@ -71,6 +71,10 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/proc/page.c           |    3 +++
+ include/linux/memremap.h |    6 ++++++
+ mm/memremap.c            |   20 ++++++++++++++++++++
+ 3 files changed, 29 insertions(+)
 
 --- a/fs/proc/page.c~proc-kpageflags-do-not-use-uninitialized-struct-pages
 +++ a/fs/proc/page.c

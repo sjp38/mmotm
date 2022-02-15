@@ -21,6 +21,8 @@ Cc: YJ Chiang <yj.chiang@mediatek.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ init/main.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 --- a/init/main.c~init-use-ktime_us_delta-to-make-initcall_debug-log-more-precise
 +++ a/init/main.c

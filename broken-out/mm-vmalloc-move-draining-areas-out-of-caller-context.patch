@@ -38,6 +38,8 @@ Cc: Vasily Averin <vvs@virtuozzo.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/vmalloc.c |   30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
 
 --- a/mm/vmalloc.c~mm-vmalloc-move-draining-areas-out-of-caller-context
 +++ a/mm/vmalloc.c

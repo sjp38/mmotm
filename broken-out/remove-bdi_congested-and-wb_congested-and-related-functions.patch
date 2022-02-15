@@ -31,6 +31,14 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ drivers/block/drbd/drbd_int.h |    3 ---
+ drivers/block/drbd/drbd_req.c |    3 +--
+ fs/ext2/ialloc.c              |    2 --
+ fs/nilfs2/segbuf.c            |   11 -----------
+ fs/xfs/xfs_buf.c              |    3 ---
+ include/linux/backing-dev.h   |   26 --------------------------
+ mm/vmscan.c                   |    4 +---
+ 7 files changed, 2 insertions(+), 50 deletions(-)
 
 --- a/drivers/block/drbd/drbd_int.h~remove-bdi_congested-and-wb_congested-and-related-functions
 +++ a/drivers/block/drbd/drbd_int.h

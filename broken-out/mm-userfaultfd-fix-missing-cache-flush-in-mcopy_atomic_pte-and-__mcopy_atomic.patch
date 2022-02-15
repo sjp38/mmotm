@@ -24,6 +24,8 @@ Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/userfaultfd.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
 --- a/mm/userfaultfd.c~mm-userfaultfd-fix-missing-cache-flush-in-mcopy_atomic_pte-and-__mcopy_atomic
 +++ a/mm/userfaultfd.c

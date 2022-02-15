@@ -32,6 +32,10 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/gup.c            |   37 ++++++++++++++++++++++++-----
+ mm/internal.h       |    1 
+ mm/migrate_device.c |   53 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 85 insertions(+), 6 deletions(-)
 
 --- a/mm/gup.c~mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing
 +++ a/mm/gup.c

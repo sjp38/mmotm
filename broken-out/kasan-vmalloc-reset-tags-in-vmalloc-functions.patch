@@ -27,6 +27,8 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/vmalloc.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
 --- a/mm/vmalloc.c~kasan-vmalloc-reset-tags-in-vmalloc-functions
 +++ a/mm/vmalloc.c

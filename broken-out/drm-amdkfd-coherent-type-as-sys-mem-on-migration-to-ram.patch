@@ -28,6 +28,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ drivers/gpu/drm/amd/amdkfd/kfd_migrate.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 --- a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c~drm-amdkfd-coherent-type-as-sys-mem-on-migration-to-ram
 +++ a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c

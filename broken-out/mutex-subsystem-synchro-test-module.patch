@@ -74,6 +74,11 @@ Signed-off-by: Michel Lespinasse <walken@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/synchro-test.txt |   59 +++
+ kernel/Makefile                |    1 
+ kernel/synchro-test.c          |  585 +++++++++++++++++++++++++++++++
+ lib/Kconfig.debug              |   14 
+ 4 files changed, 659 insertions(+)
 
 --- /dev/null
 +++ a/Documentation/synchro-test.txt

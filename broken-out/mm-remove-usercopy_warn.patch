@@ -15,6 +15,9 @@ Cc: Kees Cook <keescook@chromium.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/uaccess.h |    2 --
+ mm/usercopy.c           |   11 -----------
+ 2 files changed, 13 deletions(-)
 
 --- a/include/linux/uaccess.h~mm-remove-usercopy_warn
 +++ a/include/linux/uaccess.h

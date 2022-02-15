@@ -8,6 +8,8 @@ Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ kernel/fork.c |    1 +
+ 1 file changed, 1 insertion(+)
 
 --- a/kernel/fork.c~kernel-forkc-export-kernel_thread-to-modules
 +++ a/kernel/fork.c

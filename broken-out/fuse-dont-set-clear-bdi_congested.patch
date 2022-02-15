@@ -24,6 +24,9 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/fuse/control.c |   17 -----------------
+ fs/fuse/dev.c     |    8 --------
+ 2 files changed, 25 deletions(-)
 
 --- a/fs/fuse/control.c~fuse-dont-set-clear-bdi_congested
 +++ a/fs/fuse/control.c

@@ -1,0 +1,30 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: remove PageSlab check in hwpoison_filter_dev
+
+Since commit 03e5ac2fc3bf ("mm: fix crash when using XFS on loopback"),
+page_mapping() can handle the Slab pages.  So remove this unnecessary
+PageSlab check and obsolete comment.
+
+Link: https://lkml.kernel.org/r/20220210141733.1908-6-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/memory-failure.c~mm-memory-failurec-remove-pageslab-check-in-hwpoison_filter_dev
++++ a/mm/memory-failure.c
+@@ -130,12 +130,6 @@ static int hwpoison_filter_dev(struct pa
+ 	    hwpoison_filter_dev_minor == ~0U)
+ 		return 0;
+ 
+-	/*
+-	 * page_mapping() does not accept slab pages.
+-	 */
+-	if (PageSlab(p))
+-		return -EINVAL;
+-
+ 	mapping = page_mapping(p);
+ 	if (mapping == NULL || mapping->host == NULL)
+ 		return -EINVAL;
+_

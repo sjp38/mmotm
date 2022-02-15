@@ -26,6 +26,11 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/kasan.h |    7 +++--
+ mm/kasan/hw_tags.c    |    7 +++++
+ mm/kasan/shadow.c     |    7 +++++
+ mm/vmalloc.c          |   49 +++++++++++++++++++++++-----------------
+ 4 files changed, 47 insertions(+), 23 deletions(-)
 
 --- a/include/linux/kasan.h~kasan-vmalloc-only-tag-normal-vmalloc-allocations
 +++ a/include/linux/kasan.h

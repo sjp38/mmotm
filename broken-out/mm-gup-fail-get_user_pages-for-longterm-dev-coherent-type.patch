@@ -30,6 +30,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/gup.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
 --- a/mm/gup.c~mm-gup-fail-get_user_pages-for-longterm-dev-coherent-type
 +++ a/mm/gup.c

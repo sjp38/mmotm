@@ -17,6 +17,9 @@ Reported-by: kernel test robot <lkp@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/admin-guide/cgroup-v2.rst |   10 +++++-----
+ mm/memcontrol.c                         |   15 +++++++++------
+ 2 files changed, 14 insertions(+), 11 deletions(-)
 
 --- a/Documentation/admin-guide/cgroup-v2.rst~memcg-add-per-memcg-total-kernel-memory-stat-v2
 +++ a/Documentation/admin-guide/cgroup-v2.rst

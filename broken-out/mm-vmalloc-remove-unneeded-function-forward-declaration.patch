@@ -9,6 +9,8 @@ Cc: Uladzislau Rezki <urezki@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/vmalloc.c |    1 -
+ 1 file changed, 1 deletion(-)
 
 --- a/mm/vmalloc.c~mm-vmalloc-remove-unneeded-function-forward-declaration
 +++ a/mm/vmalloc.c

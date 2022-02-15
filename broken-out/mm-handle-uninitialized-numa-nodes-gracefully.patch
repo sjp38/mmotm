@@ -56,6 +56,12 @@ Cc: Wei Yang <richard.weiyang@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/ia64/mm/discontig.c       |    4 +--
+ include/linux/memory_hotplug.h |    2 -
+ mm/internal.h                  |    2 +
+ mm/memory_hotplug.c            |   21 +++++++-----------
+ mm/page_alloc.c                |   36 +++++++++++++++++++++++++++----
+ 5 files changed, 46 insertions(+), 19 deletions(-)
 
 --- a/arch/ia64/mm/discontig.c~mm-handle-uninitialized-numa-nodes-gracefully
 +++ a/arch/ia64/mm/discontig.c

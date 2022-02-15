@@ -16,6 +16,9 @@ Cc: Andreas Gruenbacher <agruenba@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/pagemap.h |    7 -------
+ mm/filemap.c            |   11 ++++++-----
+ 2 files changed, 6 insertions(+), 12 deletions(-)
 
 --- a/include/linux/pagemap.h~filemap-remove-find_get_pages
 +++ a/include/linux/pagemap.h

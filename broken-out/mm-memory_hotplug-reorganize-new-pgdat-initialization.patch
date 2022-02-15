@@ -34,6 +34,10 @@ Cc: Wei Yang <richard.weiyang@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/memory_hotplug.h |    2 +-
+ mm/memory_hotplug.c            |   28 +++-------------------------
+ mm/page_alloc.c                |   25 +++++++++++++++++++++++--
+ 3 files changed, 27 insertions(+), 28 deletions(-)
 
 --- a/include/linux/memory_hotplug.h~mm-memory_hotplug-reorganize-new-pgdat-initialization
 +++ a/include/linux/memory_hotplug.h

@@ -42,6 +42,14 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/mm_inline.h |   11 ++++--
+ include/linux/mm_types.h  |   19 +++++++++-
+ mm/huge_memory.c          |    5 ++
+ mm/memcontrol.c           |    3 -
+ mm/mlock.c                |   66 ++++++++++++++++++++++++++++--------
+ mm/mmzone.c               |    7 +++
+ mm/swap.c                 |    1 
+ 7 files changed, 91 insertions(+), 21 deletions(-)
 
 --- a/include/linux/mm_inline.h~mm-munlock-maintain-page-mlock_count-while-unevictable
 +++ a/include/linux/mm_inline.h

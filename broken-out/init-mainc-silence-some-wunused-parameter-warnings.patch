@@ -13,6 +13,8 @@ Signed-off-by: Andrew Halaney <ahalaney@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ init/main.c |   25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
 
 --- a/init/main.c~init-mainc-silence-some-wunused-parameter-warnings
 +++ a/init/main.c

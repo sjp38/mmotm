@@ -44,6 +44,9 @@ Cc: Cyrill Gorcunov <gorcunov@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/mm_inline.h |   13 ++++++
+ mm/madvise.c              |   67 ++++++++++++++++++++++++++----------
+ 2 files changed, 63 insertions(+), 17 deletions(-)
 
 --- a/include/linux/mm_inline.h~mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed
 +++ a/include/linux/mm_inline.h

@@ -27,6 +27,8 @@ Cc: Chengyang Fan <cy.fan@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/lz4/lz4_decompress.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 --- a/lib/lz4/lz4_decompress.c~lz4-fix-lz4_decompress_safe_partial-read-out-of-bound
 +++ a/lib/lz4/lz4_decompress.c

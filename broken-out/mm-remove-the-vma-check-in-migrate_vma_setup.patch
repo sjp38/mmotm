@@ -28,6 +28,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/migrate_device.c |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
 --- a/mm/migrate_device.c~mm-remove-the-vma-check-in-migrate_vma_setup
 +++ a/mm/migrate_device.c

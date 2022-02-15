@@ -49,6 +49,19 @@ Cc: "Rafael J. Wysocki" <rafael@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/arm64/kernel/setup.c   |    3 ---
+ arch/ia64/kernel/topology.c |   10 ----------
+ arch/mips/kernel/topology.c |    5 -----
+ arch/powerpc/kernel/sysfs.c |   17 -----------------
+ arch/riscv/kernel/setup.c   |    3 ---
+ arch/s390/kernel/numa.c     |    7 -------
+ arch/sh/kernel/topology.c   |    5 -----
+ arch/sparc/kernel/sysfs.c   |   12 ------------
+ arch/x86/kernel/topology.c  |    5 -----
+ drivers/base/init.c         |    1 +
+ drivers/base/node.c         |   30 +++++++++++++++++-------------
+ include/linux/node.h        |    4 ++++
+ 12 files changed, 22 insertions(+), 80 deletions(-)
 
 --- a/arch/arm64/kernel/setup.c~drivers-base-node-consolidate-node-device-subsystem-initialization-in-node_dev_init
 +++ a/arch/arm64/kernel/setup.c

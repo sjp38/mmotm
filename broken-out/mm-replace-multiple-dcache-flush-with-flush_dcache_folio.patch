@@ -17,6 +17,8 @@ Cc: Zi Yan <ziy@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/migrate.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 --- a/mm/migrate.c~mm-replace-multiple-dcache-flush-with-flush_dcache_folio
 +++ a/mm/migrate.c

@@ -187,6 +187,8 @@ Cc: Jan Kara <jack@suse.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memory.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
 --- a/mm/memory.c~mm-optimize-do_wp_page-for-exclusive-pages-in-the-swapcache
 +++ a/mm/memory.c

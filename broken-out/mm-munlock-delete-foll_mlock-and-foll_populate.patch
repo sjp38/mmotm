@@ -40,6 +40,10 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/mm.h |    2 --
+ mm/gup.c           |   43 ++++++++-----------------------------------
+ mm/huge_memory.c   |   33 ---------------------------------
+ 3 files changed, 8 insertions(+), 70 deletions(-)
 
 --- a/include/linux/mm.h~mm-munlock-delete-foll_mlock-and-foll_populate
 +++ a/include/linux/mm.h

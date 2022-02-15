@@ -21,18 +21,11 @@ Cc: Hugh Dickins <hughd@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/mlock.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/mm/mlock.c~mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix
 +++ a/mm/mlock.c
-@@ -212,7 +212,7 @@ bool need_mlock_page_drain(int cpu)
- 
- /**
-  * mlock_page - mlock a page already on (or temporarily off) LRU
-- * @page - page to be mlocked, either a normal page or a THP head.
-+ * @page: page to be mlocked, either a normal page or a THP head.
-  */
- void mlock_page(struct page *page)
- {
 @@ -234,7 +234,7 @@ void mlock_page(struct page *page)
  
  /**

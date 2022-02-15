@@ -10,6 +10,8 @@ Signed-off-by: SeongJae Park <sj@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/admin-guide/mm/damon/usage.rst |   24 +++++++++--------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
 --- a/Documentation/admin-guide/mm/damon/usage.rst~docs-admin-guide-mm-damon-usage-update-for-changed-initail_regions-file-input
 +++ a/Documentation/admin-guide/mm/damon/usage.rst

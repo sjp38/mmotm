@@ -34,6 +34,10 @@ Cc: Muchun Song <songmuchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/admin-guide/cgroup-v2.rst |    5 ++++
+ include/linux/memcontrol.h              |    1 
+ mm/memcontrol.c                         |   24 ++++++++++++++++------
+ 3 files changed, 24 insertions(+), 6 deletions(-)
 
 --- a/Documentation/admin-guide/cgroup-v2.rst~memcg-add-per-memcg-total-kernel-memory-stat
 +++ a/Documentation/admin-guide/cgroup-v2.rst

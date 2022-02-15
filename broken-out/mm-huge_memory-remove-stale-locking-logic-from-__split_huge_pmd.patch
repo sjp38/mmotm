@@ -31,6 +31,8 @@ Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/huge_memory.c |   32 +-------------------------------
+ 1 file changed, 1 insertion(+), 31 deletions(-)
 
 --- a/mm/huge_memory.c~mm-huge_memory-remove-stale-locking-logic-from-__split_huge_pmd
 +++ a/mm/huge_memory.c

@@ -22,6 +22,8 @@ Cc: Xuefeng Li <lixuefeng@loongson.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ kernel/panic.c |   20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
 --- a/kernel/panic.c~panic-unset-panic_on_warn-inside-panic
 +++ a/kernel/panic.c

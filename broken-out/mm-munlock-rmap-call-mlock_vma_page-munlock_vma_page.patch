@@ -48,6 +48,19 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/rmap.h    |   17 ++++++-----
+ kernel/events/uprobes.c |    7 +---
+ mm/huge_memory.c        |   17 +++++------
+ mm/hugetlb.c            |    4 +-
+ mm/internal.h           |   36 +++++++++++++++++++++---
+ mm/khugepaged.c         |    4 +-
+ mm/ksm.c                |   12 --------
+ mm/memory.c             |   45 ++++++++++--------------------
+ mm/migrate.c            |    9 +-----
+ mm/mlock.c              |   21 ++++----------
+ mm/rmap.c               |   56 +++++++++++++++++---------------------
+ mm/userfaultfd.c        |   14 +++++----
+ 12 files changed, 113 insertions(+), 129 deletions(-)
 
 --- a/include/linux/rmap.h~mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page
 +++ a/include/linux/rmap.h

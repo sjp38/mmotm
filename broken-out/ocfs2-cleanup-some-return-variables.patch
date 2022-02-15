@@ -18,6 +18,9 @@ Cc: Jun Piao <piaojun@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/ocfs2/file.c       |    9 +++------
+ fs/ocfs2/stack_user.c |   18 ++++++------------
+ 2 files changed, 9 insertions(+), 18 deletions(-)
 
 --- a/fs/ocfs2/file.c~ocfs2-cleanup-some-return-variables
 +++ a/fs/ocfs2/file.c

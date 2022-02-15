@@ -27,6 +27,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
 --- a/fs/Kconfig~fsdax-depend-on-zone_device-fs_dax_limited
 +++ a/fs/Kconfig

@@ -30,6 +30,10 @@ Cc: Samuel Iglesias Gonsalvez <siglesias@igalia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/admin-guide/kernel-parameters.txt |    1 +
+ Documentation/admin-guide/sysctl/kernel.rst     |    1 +
+ kernel/panic.c                                  |    4 ++++
+ 3 files changed, 6 insertions(+)
 
 --- a/Documentation/admin-guide/kernel-parameters.txt~panic-add-option-to-dump-all-cpus-backtraces-in-panic_print
 +++ a/Documentation/admin-guide/kernel-parameters.txt

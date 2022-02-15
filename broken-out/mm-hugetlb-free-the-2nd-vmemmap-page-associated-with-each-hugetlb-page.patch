@@ -157,6 +157,11 @@ Cc: Qi Zheng <zhengqi.arch@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ Documentation/admin-guide/kernel-parameters.txt |    2 
+ include/linux/page-flags.h                      |   78 +++++++++++++-
+ mm/hugetlb_vmemmap.c                            |   62 ++++++-----
+ mm/sparse-vmemmap.c                             |   21 +++
+ 4 files changed, 130 insertions(+), 33 deletions(-)
 
 --- a/Documentation/admin-guide/kernel-parameters.txt~mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page
 +++ a/Documentation/admin-guide/kernel-parameters.txt

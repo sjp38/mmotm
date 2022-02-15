@@ -29,6 +29,10 @@ Cc: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/hexagon/mm/init.c  |    2 --
+ arch/nds32/mm/init.c    |    1 -
+ arch/openrisc/mm/init.c |    2 --
+ 3 files changed, 5 deletions(-)
 
 --- a/arch/hexagon/mm/init.c~mm-remove-mmu_gathers-storage-from-remaining-architectures
 +++ a/arch/hexagon/mm/init.c

@@ -1,0 +1,25 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: avoid walking page table when vma_address() return -EFAULT
+
+It's unnecessary to walk the page table when vma_address() return -EFAULT.
+Return early if so to save some cpu cycles.
+
+Link: https://lkml.kernel.org/r/20220210141733.1908-3-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/memory-failure.c~mm-memory-failurec-avoid-walking-page-table-when-vma_address-return-efault
++++ a/mm/memory-failure.c
+@@ -315,6 +315,8 @@ static unsigned long dev_pagemap_mapping
+ 	pmd_t *pmd;
+ 	pte_t *pte;
+ 
++	if (address == -EFAULT)
++		return 0;
+ 	pgd = pgd_offset(vma->vm_mm, address);
+ 	if (!pgd_present(*pgd))
+ 		return 0;
+_

@@ -38,6 +38,9 @@ Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/ptdump.c         |   16 ++++++++++----
+ mm/sparse-vmemmap.c |   47 +++++++++++++++++++++++++++---------------
+ 2 files changed, 43 insertions(+), 20 deletions(-)
 
 --- a/mm/ptdump.c~mm-sparsemem-use-page-table-lock-to-protect-kernel-pmd-operations
 +++ a/mm/ptdump.c

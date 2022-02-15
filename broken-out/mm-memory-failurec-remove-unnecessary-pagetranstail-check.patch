@@ -1,0 +1,25 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: remove unnecessary PageTransTail check
+
+When we reach here, we're guaranteed to have non-compound page as thp is
+already splited.  Remove this unnecessary PageTransTail check.
+
+Link: https://lkml.kernel.org/r/20220210141733.1908-9-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+
+--- a/mm/memory-failure.c~mm-memory-failurec-remove-unnecessary-pagetranstail-check
++++ a/mm/memory-failure.c
+@@ -1834,7 +1834,7 @@ try_again:
+ 	 * page_lock. We need wait writeback completion for this page or it
+ 	 * may trigger vfs BUG while evict inode.
+ 	 */
+-	if (!PageTransTail(p) && !PageLRU(p) && !PageWriteback(p))
++	if (!PageLRU(p) && !PageWriteback(p))
+ 		goto identify_page_state;
+ 
+ 	/*
+_

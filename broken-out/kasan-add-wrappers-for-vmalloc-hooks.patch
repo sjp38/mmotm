@@ -22,6 +22,9 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/kasan.h |   17 +++++++++++++++--
+ mm/kasan/shadow.c     |    5 ++---
+ 2 files changed, 17 insertions(+), 5 deletions(-)
 
 --- a/include/linux/kasan.h~kasan-add-wrappers-for-vmalloc-hooks
 +++ a/include/linux/kasan.h

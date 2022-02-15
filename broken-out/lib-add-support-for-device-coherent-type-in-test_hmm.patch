@@ -42,6 +42,9 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/test_hmm.c      |  253 +++++++++++++++++++++++++++++++-----------
+ lib/test_hmm_uapi.h |   15 +-
+ 2 files changed, 202 insertions(+), 66 deletions(-)
 
 --- a/lib/test_hmm.c~lib-add-support-for-device-coherent-type-in-test_hmm
 +++ a/lib/test_hmm.c

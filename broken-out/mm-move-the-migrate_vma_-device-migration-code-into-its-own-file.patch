@@ -1,5 +1,5 @@
 From: Christoph Hellwig <hch@lst.de>
-Subject: mm: move the migrate_vma_* device migration code into it's own file
+Subject: mm: move the migrate_vma_* device migration code into its own file
 
 Split the code used to migrate to and from ZONE_DEVICE memory from
 migrate.c into a new file.
@@ -7,7 +7,6 @@ migrate.c into a new file.
 Link: https://lkml.kernel.org/r/20220210072828.2930359-14-hch@lst.de
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Tested-by: "Sierra Guiza, Alejandro (Alex)" <alex.sierra@amd.com>
-
 Cc: Alex Deucher <alexander.deucher@amd.com>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: Ben Skeggs <bskeggs@redhat.com>
@@ -26,6 +25,11 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/Kconfig          |    3 
+ mm/Makefile         |    1 
+ mm/migrate.c        |  753 -----------------------------------------
+ mm/migrate_device.c |  765 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 769 insertions(+), 753 deletions(-)
 
 --- a/mm/Kconfig~mm-move-the-migrate_vma_-device-migration-code-into-its-own-file
 +++ a/mm/Kconfig

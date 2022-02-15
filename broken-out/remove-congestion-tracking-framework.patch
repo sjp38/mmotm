@@ -23,6 +23,11 @@ Cc: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/backing-dev-defs.h |    8 ----
+ include/linux/backing-dev.h      |    2 -
+ include/trace/events/writeback.h |   28 --------------
+ mm/backing-dev.c                 |   57 -----------------------------
+ 4 files changed, 95 deletions(-)
 
 --- a/include/linux/backing-dev-defs.h~remove-congestion-tracking-framework
 +++ a/include/linux/backing-dev-defs.h

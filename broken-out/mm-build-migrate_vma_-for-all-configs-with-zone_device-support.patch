@@ -26,6 +26,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/mm/Kconfig~mm-build-migrate_vma_-for-all-configs-with-zone_device-support
 +++ a/mm/Kconfig

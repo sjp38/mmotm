@@ -21,6 +21,8 @@ Cc: Taras Madan <tarasmadan@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ kernel/kcov.c |   34 +++++++++++++++-------------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
 --- a/kernel/kcov.c~kcov-properly-handle-subsequent-mmap-calls
 +++ a/kernel/kcov.c

@@ -27,6 +27,8 @@ Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ tools/testing/selftests/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/tools/testing/selftests/Makefile~selftests-correct-the-headers-install-path
 +++ a/tools/testing/selftests/Makefile

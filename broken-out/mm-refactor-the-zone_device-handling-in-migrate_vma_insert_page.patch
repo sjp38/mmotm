@@ -26,6 +26,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/migrate.c |   31 +++++++++++++++----------------
+ 1 file changed, 15 insertions(+), 16 deletions(-)
 
 --- a/mm/migrate.c~mm-refactor-the-zone_device-handling-in-migrate_vma_insert_page
 +++ a/mm/migrate.c

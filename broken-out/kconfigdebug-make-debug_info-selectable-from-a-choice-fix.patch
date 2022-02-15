@@ -18,6 +18,8 @@ Cc: Miguel Ojeda <ojeda@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/Kconfig.debug |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
 --- a/lib/Kconfig.debug~kconfigdebug-make-debug_info-selectable-from-a-choice-fix
 +++ a/lib/Kconfig.debug

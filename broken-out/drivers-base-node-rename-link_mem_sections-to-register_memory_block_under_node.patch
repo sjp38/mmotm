@@ -57,6 +57,10 @@ Cc: Rafael Parra <rparrazo@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ drivers/base/node.c  |    5 +++--
+ include/linux/node.h |   16 ++++++++--------
+ mm/memory_hotplug.c  |    6 +++---
+ 3 files changed, 14 insertions(+), 13 deletions(-)
 
 --- a/drivers/base/node.c~drivers-base-node-rename-link_mem_sections-to-register_memory_block_under_node
 +++ a/drivers/base/node.c

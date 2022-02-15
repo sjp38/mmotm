@@ -13,6 +13,8 @@ Acked-by: Anton Altaparmakov <anton@tuxera.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/ntfs/inode.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
 --- a/fs/ntfs/inode.c~ntfs-add-sanity-check-on-allocation-size
 +++ a/fs/ntfs/inode.c

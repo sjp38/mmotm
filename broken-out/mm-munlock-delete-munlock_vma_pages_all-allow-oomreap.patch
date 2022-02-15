@@ -33,6 +33,12 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/internal.h |   16 ++--------------
+ mm/madvise.c  |    5 +++++
+ mm/mlock.c    |    4 ++--
+ mm/mmap.c     |   32 ++------------------------------
+ mm/oom_kill.c |    2 +-
+ 5 files changed, 12 insertions(+), 47 deletions(-)
 
 --- a/mm/internal.h~mm-munlock-delete-munlock_vma_pages_all-allow-oomreap
 +++ a/mm/internal.h

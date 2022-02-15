@@ -19,6 +19,10 @@ Cc: Luis Chamberlain <mcgrof@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/writeback.h |   15 -----
+ kernel/sysctl.c           |   69 -------------------------
+ mm/page-writeback.c       |   99 ++++++++++++++++++++++++++++++++----
+ 3 files changed, 89 insertions(+), 94 deletions(-)
 
 --- a/include/linux/writeback.h~mm-move-page-writeback-sysctls-to-is-own-file
 +++ a/include/linux/writeback.h

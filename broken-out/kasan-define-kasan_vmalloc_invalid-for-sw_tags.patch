@@ -22,6 +22,8 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/kasan/kasan.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 --- a/mm/kasan/kasan.h~kasan-define-kasan_vmalloc_invalid-for-sw_tags
 +++ a/mm/kasan/kasan.h

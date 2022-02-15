@@ -27,6 +27,10 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/gfp.h            |   21 +++++++++++++--------
+ include/trace/events/mmflags.h |    5 +++--
+ mm/page_alloc.c                |   31 ++++++++++++++++++++++---------
+ 3 files changed, 38 insertions(+), 19 deletions(-)
 
 --- a/include/linux/gfp.h~kasan-page_alloc-allow-skipping-unpoisoning-for-hw_tags
 +++ a/include/linux/gfp.h

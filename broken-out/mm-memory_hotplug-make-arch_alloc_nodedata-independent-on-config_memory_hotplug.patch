@@ -56,6 +56,9 @@ Cc: Tejun Heo <tj@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/ia64/mm/discontig.c       |    2 
+ include/linux/memory_hotplug.h |  119 +++++++++++++++----------------
+ 2 files changed, 59 insertions(+), 62 deletions(-)
 
 --- a/arch/ia64/mm/discontig.c~mm-memory_hotplug-make-arch_alloc_nodedata-independent-on-config_memory_hotplug
 +++ a/arch/ia64/mm/discontig.c

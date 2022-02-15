@@ -14,6 +14,8 @@ Cc: Matthew Wilcox <willy@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ kernel/resource.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 --- a/kernel/resource.c~releasing-resources-with-children
 +++ a/kernel/resource.c

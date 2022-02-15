@@ -19,6 +19,8 @@ Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/minix/inode.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 --- a/fs/minix/inode.c~minix-fix-bug-when-opening-a-file-with-o_direct
 +++ a/fs/minix/inode.c

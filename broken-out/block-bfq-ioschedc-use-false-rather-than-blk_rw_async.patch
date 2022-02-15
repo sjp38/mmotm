@@ -24,6 +24,8 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ block/bfq-iosched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/block/bfq-iosched.c~block-bfq-ioschedc-use-false-rather-than-blk_rw_async
 +++ a/block/bfq-iosched.c

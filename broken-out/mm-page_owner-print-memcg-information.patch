@@ -32,6 +32,8 @@ Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/page_owner.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
 --- a/mm/page_owner.c~mm-page_owner-print-memcg-information
 +++ a/mm/page_owner.c

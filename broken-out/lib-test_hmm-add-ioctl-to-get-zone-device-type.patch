@@ -26,6 +26,9 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/test_hmm.c      |   23 +++++++++++++++++++++--
+ lib/test_hmm_uapi.h |    8 ++++++++
+ 2 files changed, 29 insertions(+), 2 deletions(-)
 
 --- a/lib/test_hmm.c~lib-test_hmm-add-ioctl-to-get-zone-device-type
 +++ a/lib/test_hmm.c

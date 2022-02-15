@@ -12,6 +12,12 @@ Signed-off-by: SeongJae Park <sj@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/damon.h |    2 -
+ mm/damon/core-test.h  |    5 +++
+ mm/damon/core.c       |   32 ------------------------
+ mm/damon/dbgfs-test.h |   14 +++++-----
+ mm/damon/dbgfs.c      |   53 ++++++++++++++++++++++++++++++----------
+ 5 files changed, 52 insertions(+), 54 deletions(-)
 
 --- a/include/linux/damon.h~mm-damon-core-move-damon_set_targets-into-dbgfs
 +++ a/include/linux/damon.h

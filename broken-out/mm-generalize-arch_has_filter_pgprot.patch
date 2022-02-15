@@ -15,6 +15,10 @@ Cc: "H. Peter Anvin" <hpa@zytor.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/arm64/Kconfig |    4 +---
+ arch/x86/Kconfig   |    3 ---
+ mm/Kconfig         |    3 +++
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
 --- a/arch/arm64/Kconfig~mm-generalize-arch_has_filter_pgprot
 +++ a/arch/arm64/Kconfig

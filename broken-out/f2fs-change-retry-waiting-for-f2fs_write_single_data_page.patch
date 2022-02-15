@@ -32,6 +32,9 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/f2fs/compress.c |    6 +++---
+ fs/f2fs/data.c     |    9 ++++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
 --- a/fs/f2fs/compress.c~f2fs-change-retry-waiting-for-f2fs_write_single_data_page
 +++ a/fs/f2fs/compress.c

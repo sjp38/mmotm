@@ -10,6 +10,8 @@ Cc: zhanglianjie <zhanglianjie@uniontech.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/page-writeback.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
 --- a/mm/page-writeback.c~mm-move-page-writeback-sysctls-to-is-own-file-fix
 +++ a/mm/page-writeback.c

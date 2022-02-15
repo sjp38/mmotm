@@ -78,6 +78,8 @@ Cc: David Rientjes <rientjes@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/page_alloc.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 --- a/mm/page_alloc.c~mm-page_alloc-add-penalty-to-local_node
 +++ a/mm/page_alloc.c

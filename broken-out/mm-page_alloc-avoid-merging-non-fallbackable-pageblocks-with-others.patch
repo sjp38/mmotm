@@ -24,6 +24,9 @@ Cc: Mike Rapoport <rppt@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/mmzone.h |   11 +++++++++
+ mm/page_alloc.c        |   46 ++++++++++++++++++---------------------
+ 2 files changed, 33 insertions(+), 24 deletions(-)
 
 --- a/include/linux/mmzone.h~mm-page_alloc-avoid-merging-non-fallbackable-pageblocks-with-others
 +++ a/include/linux/mmzone.h

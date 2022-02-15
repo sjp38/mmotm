@@ -29,6 +29,8 @@ Cc: Peter Xu <peterx@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/mempolicy.c |   21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
 --- a/mm/mempolicy.c~mm-change-lookup_node-to-use-get_user_pages_fast
 +++ a/mm/mempolicy.c

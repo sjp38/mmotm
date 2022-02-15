@@ -46,6 +46,12 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/fs-writeback.c           |   37 ----------------------------------
+ include/linux/backing-dev.h |   22 --------------------
+ mm/fadvise.c                |    5 +---
+ mm/readahead.c              |    6 -----
+ mm/vmscan.c                 |   17 ---------------
+ 5 files changed, 3 insertions(+), 84 deletions(-)
 
 --- a/fs/fs-writeback.c~remove-inode_congested
 +++ a/fs/fs-writeback.c

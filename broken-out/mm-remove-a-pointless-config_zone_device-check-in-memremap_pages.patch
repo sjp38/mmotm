@@ -39,6 +39,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memremap.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 --- a/mm/memremap.c~mm-remove-a-pointless-config_zone_device-check-in-memremap_pages
 +++ a/mm/memremap.c

@@ -43,6 +43,10 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/arm64/kernel/module.c    |    3 ++-
+ arch/arm64/mm/pageattr.c      |    2 +-
+ arch/arm64/net/bpf_jit_comp.c |    3 ++-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
 --- a/arch/arm64/kernel/module.c~kasan-arm64-dont-tag-executable-vmalloc-allocations
 +++ a/arch/arm64/kernel/module.c

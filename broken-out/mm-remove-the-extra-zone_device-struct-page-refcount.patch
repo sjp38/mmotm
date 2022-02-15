@@ -38,6 +38,20 @@ Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/powerpc/kvm/book3s_hv_uvmem.c       |    1 
+ drivers/gpu/drm/amd/amdkfd/kfd_migrate.c |    1 
+ drivers/gpu/drm/nouveau/nouveau_dmem.c   |    1 
+ fs/Kconfig                               |    1 
+ include/linux/memremap.h                 |   12 +---
+ include/linux/mm.h                       |    6 +-
+ lib/test_hmm.c                           |    1 
+ mm/Kconfig                               |    4 -
+ mm/internal.h                            |    2 
+ mm/memcontrol.c                          |   11 +---
+ mm/memremap.c                            |   57 +++++++--------------
+ mm/migrate.c                             |    6 --
+ mm/swap.c                                |   16 +----
+ 13 files changed, 36 insertions(+), 83 deletions(-)
 
 --- a/arch/powerpc/kvm/book3s_hv_uvmem.c~mm-remove-the-extra-zone_device-struct-page-refcount
 +++ a/arch/powerpc/kvm/book3s_hv_uvmem.c

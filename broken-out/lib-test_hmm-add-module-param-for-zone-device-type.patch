@@ -28,6 +28,9 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/test_hmm.c      |   73 +++++++++++++++++++++++++++++-------------
+ lib/test_hmm_uapi.h |    1 
+ 2 files changed, 53 insertions(+), 21 deletions(-)
 
 --- a/lib/test_hmm.c~lib-test_hmm-add-module-param-for-zone-device-type
 +++ a/lib/test_hmm.c

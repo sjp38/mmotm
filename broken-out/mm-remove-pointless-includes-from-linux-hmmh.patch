@@ -26,6 +26,11 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ drivers/gpu/drm/amd/amdkfd/kfd_migrate.c |    1 +
+ drivers/gpu/drm/nouveau/nouveau_dmem.c   |    1 +
+ include/linux/hmm.h                      |    9 ++-------
+ lib/test_hmm.c                           |    2 ++
+ 4 files changed, 6 insertions(+), 7 deletions(-)
 
 --- a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c~mm-remove-pointless-includes-from-linux-hmmh
 +++ a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c

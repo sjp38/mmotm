@@ -25,6 +25,10 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/arm64/include/asm/vmalloc.h |    6 ++++++
+ include/linux/vmalloc.h          |    7 +++++++
+ mm/vmalloc.c                     |    9 +++++++++
+ 3 files changed, 22 insertions(+)
 
 --- a/arch/arm64/include/asm/vmalloc.h~kasan-vmalloc-arm64-mark-vmalloc-mappings-as-pgprot_tagged
 +++ a/arch/arm64/include/asm/vmalloc.h

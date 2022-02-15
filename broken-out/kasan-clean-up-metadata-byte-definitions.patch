@@ -22,6 +22,8 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/kasan/kasan.h |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 --- a/mm/kasan/kasan.h~kasan-clean-up-metadata-byte-definitions
 +++ a/mm/kasan/kasan.h

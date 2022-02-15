@@ -19,6 +19,8 @@ Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/proc/page.c |   37 ++++++++++++++++++-------------------
+ 1 file changed, 18 insertions(+), 19 deletions(-)
 
 --- a/fs/proc/page.c~proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags
 +++ a/fs/proc/page.c

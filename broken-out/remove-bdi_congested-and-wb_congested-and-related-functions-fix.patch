@@ -10,6 +10,8 @@ Cc: NeilBrown <neilb@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/nilfs2/segbuf.c |    1 -
+ 1 file changed, 1 deletion(-)
 
 --- a/fs/nilfs2/segbuf.c~remove-bdi_congested-and-wb_congested-and-related-functions-fix
 +++ a/fs/nilfs2/segbuf.c

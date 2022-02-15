@@ -101,6 +101,12 @@ Cc: Jun Piao <piaojun@huawei.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/ocfs2/namei.c        |   32 +++++++++++++-------------------
+ fs/ocfs2/namei.h        |    2 ++
+ fs/ocfs2/refcounttree.c |   15 +++++++++++----
+ fs/ocfs2/xattr.c        |   12 +-----------
+ fs/ocfs2/xattr.h        |    1 +
+ 5 files changed, 28 insertions(+), 34 deletions(-)
 
 --- a/fs/ocfs2/namei.c~ocfs2-reflink-deadlock-when-clone-file-to-the-same-directory-simultaneously
 +++ a/fs/ocfs2/namei.c
@@ -268,7 +274,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * Used for reflink a non-preserve-security file.
 - *
 - * It uses common api like ocfs2_xattr_set, so the caller
-- * must not hold any lock expect i_mutex.
+- * must not hold any lock expect i_rwsem.
   */
  int ocfs2_init_security_and_acl(struct inode *dir,
 +				struct buffer_head *dir_bh,

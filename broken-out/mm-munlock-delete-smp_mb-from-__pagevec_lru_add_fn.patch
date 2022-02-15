@@ -22,6 +22,8 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/swap.c |   37 +++++++++----------------------------
+ 1 file changed, 9 insertions(+), 28 deletions(-)
 
 --- a/mm/swap.c~mm-munlock-delete-smp_mb-from-__pagevec_lru_add_fn
 +++ a/mm/swap.c

@@ -29,6 +29,8 @@ Cc: Uladzislau Rezki <urezki@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/vmalloc.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 --- a/mm/vmalloc.c~vmap-dont-allow-invalid-pages
 +++ a/mm/vmalloc.c

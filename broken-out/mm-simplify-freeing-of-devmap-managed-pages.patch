@@ -26,6 +26,10 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ include/linux/mm.h |   34 ++++++++++------------------------
+ mm/memremap.c      |   20 +++++++++-----------
+ mm/swap.c          |   10 +---------
+ 3 files changed, 20 insertions(+), 44 deletions(-)
 
 --- a/include/linux/mm.h~mm-simplify-freeing-of-devmap-managed-pages
 +++ a/include/linux/mm.h

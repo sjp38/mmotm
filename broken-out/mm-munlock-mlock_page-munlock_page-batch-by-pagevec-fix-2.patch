@@ -25,6 +25,8 @@ Signed-off-by: Hugh Dickins <hughd@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/internal.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
 --- a/mm/internal.h~mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix-2
 +++ a/mm/internal.h

@@ -15,6 +15,8 @@ Reviewed-by: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memory-failure.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
 --- a/mm/memory-failure.c~mm-hwpoison-remove-obsolete-comment
 +++ a/mm/memory-failure.c

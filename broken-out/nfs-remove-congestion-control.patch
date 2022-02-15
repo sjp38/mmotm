@@ -27,6 +27,11 @@ Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/nfs/sysctl.c           |    7 ----
+ fs/nfs/write.c            |   53 ------------------------------------
+ include/linux/nfs_fs.h    |    1 
+ include/linux/nfs_fs_sb.h |    1 
+ 4 files changed, 1 insertion(+), 61 deletions(-)
 
 --- a/fs/nfs/sysctl.c~nfs-remove-congestion-control
 +++ a/fs/nfs/sysctl.c

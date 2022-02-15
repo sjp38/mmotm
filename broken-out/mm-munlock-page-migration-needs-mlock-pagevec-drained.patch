@@ -38,6 +38,9 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/migrate.c |    2 ++
+ mm/rmap.c    |    4 ++++
+ 2 files changed, 6 insertions(+)
 
 --- a/mm/migrate.c~mm-munlock-page-migration-needs-mlock-pagevec-drained
 +++ a/mm/migrate.c

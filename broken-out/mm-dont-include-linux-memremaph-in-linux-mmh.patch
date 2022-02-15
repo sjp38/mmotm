@@ -17,7 +17,6 @@ Cc: Alex Deucher <alexander.deucher@amd.com>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: Ben Skeggs <bskeggs@redhat.com>
 Cc: Chaitanya Kulkarni <kch@nvidia.com>
-Cc: Christian Knig <christian.koenig@amd.com>
 Cc: Karol Herbst <kherbst@redhat.com>
 Cc: Lyude Paul <lyude@redhat.com>
 Cc: Miaohe Lin <linmiaohe@huawei.com>
@@ -27,6 +26,22 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ arch/arm64/mm/mmu.c                    |    1 +
+ drivers/gpu/drm/amd/amdkfd/kfd_priv.h  |    1 +
+ drivers/gpu/drm/drm_cache.c            |    2 +-
+ drivers/gpu/drm/nouveau/nouveau_dmem.c |    1 +
+ drivers/gpu/drm/nouveau/nouveau_svm.c  |    1 +
+ drivers/infiniband/core/rw.c           |    1 +
+ drivers/nvdimm/pmem.h                  |    1 +
+ drivers/nvme/host/pci.c                |    1 +
+ drivers/nvme/target/io-cmd-bdev.c      |    1 +
+ fs/fuse/virtio_fs.c                    |    1 +
+ include/linux/memremap.h               |   18 ++++++++++++++++++
+ include/linux/mm.h                     |   20 --------------------
+ lib/test_hmm.c                         |    1 +
+ mm/memcontrol.c                        |    1 +
+ mm/memremap.c                          |    6 +++++-
+ 15 files changed, 35 insertions(+), 22 deletions(-)
 
 --- a/arch/arm64/mm/mmu.c~mm-dont-include-linux-memremaph-in-linux-mmh
 +++ a/arch/arm64/mm/mmu.c

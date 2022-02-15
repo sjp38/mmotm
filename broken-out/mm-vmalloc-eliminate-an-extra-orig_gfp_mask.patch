@@ -20,6 +20,8 @@ Cc: Uladzislau Rezki <uladzislau.rezki@sony.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/vmalloc.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 --- a/mm/vmalloc.c~mm-vmalloc-eliminate-an-extra-orig_gfp_mask
 +++ a/mm/vmalloc.c

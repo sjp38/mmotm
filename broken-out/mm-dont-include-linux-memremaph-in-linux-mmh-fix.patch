@@ -28,6 +28,8 @@ Cc: "Sierra Guiza, Alejandro (Alex)" <alex.sierra@amd.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ fs/proc/page.c |    1 +
+ 1 file changed, 1 insertion(+)
 
 --- a/fs/proc/page.c~mm-dont-include-linux-memremaph-in-linux-mmh-fix
 +++ a/fs/proc/page.c

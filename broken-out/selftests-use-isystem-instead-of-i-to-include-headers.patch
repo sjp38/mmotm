@@ -1,0 +1,37 @@
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Subject: selftests: use -isystem instead of -I to include headers
+
+Selftests need kernel headers and glibc for compilation.  In compilation
+of selftests, uapi headers from kernel source are used instead of default
+ones while glibc has already been compiled with different header files
+installed in the operating system.  So there can be redefinition warnings
+from compiler.  These warnings can be suppressed by using -isystem to
+include the uapi headers.
+
+Link: https://lkml.kernel.org/r/20220214160756.3543590-1-usama.anjum@collabora.com
+Signed-off-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Shuah Khan <skhan@linuxfoundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/Makefile |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/tools/testing/selftests/Makefile~selftests-use-isystem-instead-of-i-to-include-headers
++++ a/tools/testing/selftests/Makefile
+@@ -129,11 +129,11 @@ ifneq ($(KBUILD_OUTPUT),)
+   # $(realpath ...) resolves symlinks
+   abs_objtree := $(realpath $(abs_objtree))
+   BUILD := $(abs_objtree)/kselftest
+-  KHDR_INCLUDES := -I${abs_objtree}/usr/include
++  KHDR_INCLUDES := -isystem ${abs_objtree}/usr/include
+ else
+   BUILD := $(CURDIR)
+   abs_srctree := $(shell cd $(top_srcdir) && pwd)
+-  KHDR_INCLUDES := -I${abs_srctree}/usr/include
++  KHDR_INCLUDES := -isystem ${abs_srctree}/usr/include
+   DEFAULT_INSTALL_HDR_PATH := 1
+ endif
+ 
+_

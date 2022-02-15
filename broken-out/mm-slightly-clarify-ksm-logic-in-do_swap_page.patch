@@ -34,6 +34,8 @@ Cc: Yang Shi <shy828301@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memory.c |   36 ++++++++++++++++++++++--------------
+ 1 file changed, 22 insertions(+), 14 deletions(-)
 
 --- a/mm/memory.c~mm-slightly-clarify-ksm-logic-in-do_swap_page
 +++ a/mm/memory.c

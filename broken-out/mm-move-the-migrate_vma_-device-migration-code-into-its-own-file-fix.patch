@@ -1,0 +1,24 @@
+From: Christoph Hellwig <hch@lst.de>
+Subject: mm: include <asm/tlbflush.h> in migrate_device.c
+
+Fixup the split of migrate.c by adding a missing include in the new file.
+
+Link: https://lkml.kernel.org/r/20220214072429.3302759-1-hch@lst.de
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/migrate_device.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/migrate_device.c~mm-move-the-migrate_vma_-device-migration-code-into-its-own-file-fix
++++ a/mm/migrate_device.c
+@@ -13,6 +13,7 @@
+ #include <linux/pagewalk.h>
+ #include <linux/rmap.h>
+ #include <linux/swapops.h>
++#include <asm/tlbflush.h>
+ #include "internal.h"
+ 
+ static int migrate_vma_collect_skip(unsigned long start,
+_

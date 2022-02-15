@@ -24,6 +24,8 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/Kconfig.kasan |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
 --- a/lib/Kconfig.kasan~kasan-allow-enabling-kasan_vmalloc-and-sw-hw_tags
 +++ a/lib/Kconfig.kasan

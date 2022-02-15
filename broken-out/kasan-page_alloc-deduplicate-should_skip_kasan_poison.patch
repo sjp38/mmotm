@@ -52,6 +52,8 @@ Cc: Evgenii Stepanov <eugenis@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/page_alloc.c |   55 +++++++++++++++++++++++++++-------------------
+ 1 file changed, 33 insertions(+), 22 deletions(-)
 
 --- a/mm/page_alloc.c~kasan-page_alloc-deduplicate-should_skip_kasan_poison
 +++ a/mm/page_alloc.c

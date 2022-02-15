@@ -35,6 +35,8 @@ Cc: Ralph Campbell <rcampbell@nvidia.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ tools/testing/selftests/vm/hmm-tests.c |  123 +++++++++++++++++++----
+ 1 file changed, 102 insertions(+), 21 deletions(-)
 
 --- a/tools/testing/selftests/vm/hmm-tests.c~tools-update-hmm-test-to-support-device-coherent-type
 +++ a/tools/testing/selftests/vm/hmm-tests.c

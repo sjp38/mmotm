@@ -10,6 +10,9 @@ Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/internal.h |   11 -----------
+ mm/sparse.c   |    2 +-
+ 2 files changed, 1 insertion(+), 12 deletions(-)
 
 --- a/mm/internal.h~mm-sparse-make-mminit_validate_memmodel_limits-static
 +++ a/mm/internal.h

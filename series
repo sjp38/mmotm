@@ -3,19 +3,14 @@ origin.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
 #binfmt
-fs-binfmt_elf-fix-pt_load-p_align-values-for-loaders.patch
 #
 #procfs
-fs-proc-task_mmuc-dont-read-mapcount-for-migration-entry.patch
-fs-proc-task_mmuc-dont-read-mapcount-for-migration-entry-v4.patch
-#proc-avoid-unused-variable-warning-in-pagemap_pmd_range.patch: fold
-proc-avoid-unused-variable-warning-in-pagemap_pmd_range.patch
 #
 #mm/vmscan
-mm-vmscan-remove-deadlock-due-to-throttling-failing-to-make-progress.patch
 #
 #mm/memcg
-mm-memcg-synchronize-objcg-lists-with-a-dedicated-spinlock.patch
+#
+#mm/kfence
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mainline-later (next week, approximately)
@@ -23,8 +18,6 @@ mm-memcg-synchronize-objcg-lists-with-a-dedicated-spinlock.patch
 #coredump
 #coredump-also-dump-first-pages-of-non-executable-elf-libraries.patch: TBU? check review
 coredump-also-dump-first-pages-of-non-executable-elf-libraries.patch
-#
-#fix-regression-due-to-fs-move-binfmt_misc-sysctl-to-its-own-file.patch: acks? TBU
 #
 #mm/pagealloc
 #mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
@@ -39,14 +32,8 @@ mm-hugetlb-fix-kernel-crash-with-hugetlb-mremap.patch
 #mm/kasan
 kasan-test-prevent-cache-merging-in-kmem_cache_double_destroy.patch
 #
-#mm/kfence
-kfence-make-test-case-compatible-with-run-time-set-sample-interval.patch
-#
 #mm/pagemap
 mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
-#
-#exec
-selftests-exec-add-non-regular-to-test_gen_progs.patch
 #
 #mm/hugetlbfs
 hugetlbfs-fix-a-truncation-issue-in-hugepages-parameter.patch
@@ -273,6 +260,7 @@ ntfs-add-sanity-check-on-allocation-size.patch
 #NEXT_PATCHES_START ocfs2
 ocfs2-cleanup-some-return-variables.patch
 #
+fs-ocfs2-fix-comments-mentioning-i_mutex.patch
 #
 #
 #
@@ -547,12 +535,26 @@ mm-mmzoneh-remove-unused-macros.patch
 #
 mm-page_alloc-dont-pass-pfn-to-free_unref_page_commit.patch
 #
+cma-factor-out-minimum-alignment-requirement.patch
+mm-enforce-pageblock_order-max_order.patch
 #
 #mm/memory-failure
 mm-hwpoison-remove-obsolete-comment.patch
 #
 mm-hwpoison-fix-error-page-recovered-but-reported-not-recovered.patch
 #
+mm-memory-failurec-minor-clean-up-for-memory_failure_dev_pagemap.patch
+#mm-memory-failurec-avoid-walking-page-table-when-vma_address-return-efault.patch: -stable?
+mm-memory-failurec-avoid-walking-page-table-when-vma_address-return-efault.patch
+mm-memory-failurec-rework-the-signaling-logic-in-kill_proc.patch
+#mm-memory-failurec-remove-unneeded-orig_head.patch: check review
+mm-memory-failurec-remove-unneeded-orig_head.patch
+mm-memory-failurec-remove-pageslab-check-in-hwpoison_filter_dev.patch
+mm-memory-failurec-rework-the-try_to_unmap-logic-in-hwpoison_user_mappings.patch
+mm-memory-failurec-remove-obsolete-comment-in-__soft_offline_page.patch
+mm-memory-failurec-remove-unnecessary-pagetranstail-check.patch
+#
+mm-clean-up-hwpoison-page-cache-page-in-fault-path.patch
 #
 #mm/hugetlb
 mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
@@ -607,6 +609,8 @@ numa-balancing-optimize-page-placement-for-memory-tiering-system-fix-fix-fix.pat
 memory-tiering-skip-to-scan-fast-memory.patch
 #
 #mm/psi
+mm-page_io-fix-psi-memory-pressure-error-on-cold-swapins.patch
+#
 #mm/ksm
 mm-vmstat-add-event-for-ksm-swapping-in-copy.patch
 #
@@ -676,8 +680,7 @@ mm-zswapc-allow-handling-just-same-value-filled-pages.patch
 #mm/uaccess
 mm-remove-usercopy_warn.patch
 #
-mm-outline-copy_overflow.patch
-mm-outline-copy_overflow-fix.patch
+mm-uninline-copy_overflow.patch
 #
 #
 #mm/ioremap
@@ -702,6 +705,7 @@ mm-move-free_devmap_managed_page-to-memremapc.patch
 mm-simplify-freeing-of-devmap-managed-pages.patch
 mm-dont-include-linux-memremaph-in-linux-mmh.patch
 mm-dont-include-linux-memremaph-in-linux-mmh-fix.patch
+mm-dont-include-linux-memremaph-in-linux-mmh-fix-2.patch
 mm-remove-the-extra-zone_device-struct-page-refcount.patch
 fsdax-depend-on-zone_device-fs_dax_limited.patch
 mm-generalize-the-pgmap-based-page_free-infrastructure.patch
@@ -709,6 +713,7 @@ mm-refactor-check_and_migrate_movable_pages.patch
 mm-refactor-the-zone_device-handling-in-migrate_vma_insert_page.patch
 mm-refactor-the-zone_device-handling-in-migrate_vma_pages.patch
 mm-move-the-migrate_vma_-device-migration-code-into-its-own-file.patch
+mm-move-the-migrate_vma_-device-migration-code-into-its-own-file-fix.patch
 mm-build-migrate_vma_-for-all-configs-with-zone_device-support.patch
 mm-add-zone-device-coherent-type-memory-support.patch
 mm-add-device-coherent-vma-selection-for-memory-migration.patch
@@ -721,6 +726,7 @@ lib-add-support-for-device-coherent-type-in-test_hmm.patch
 tools-update-hmm-test-to-support-device-coherent-type.patch
 tools-update-test_hmm-script-to-support-sp-config.patch
 mm-remove-the-vma-check-in-migrate_vma_setup.patch
+#mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing.patch: TBU
 mm-gup-migrate-device-coherent-pages-when-pinning-instead-of-failing.patch
 #
 #
@@ -852,6 +858,8 @@ lz4-fix-lz4_decompress_safe_partial-read-out-of-bound.patch
 checkpatch-prefer-module_licensegpl-over-module_licensegpl-v2.patch
 checkpatch-add-fix-option-for-some-trailing_statements.patch
 #
+checkpatch-add-early_param-exception-to-blank-line-after-struct-function-test.patch
+#
 #scripts-checkpatchpl-remove-_deferred-and-_deferred_once-false-warning.patch: acks?
 scripts-checkpatchpl-remove-_deferred-and-_deferred_once-false-warning.patch
 #
@@ -875,6 +883,7 @@ fs-binfmt_elf-refactor-load_elf_binary-function.patch
 #
 elf-fix-overflow-in-total-mapping-size-calculation.patch
 #
+binfmt-move-more-stuff-undef-config_coredump.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START list
@@ -967,6 +976,8 @@ minix-fix-bug-when-opening-a-file-with-o_direct.patch
 #NEXT_PATCHES_START hppfs
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START fat
+fat-use-pointer-to-simple-type-in-put_user.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START quota
 #NEXT_PATCHES_END
@@ -1184,6 +1195,8 @@ selftests-vm-remove-dependecy-from-internal-kernel-macros.patch
 #
 selftests-kselftest-framework-provide-finished-helper.patch
 #
+selftests-use-isystem-instead-of-i-to-include-headers.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START genclk
 #NEXT_PATCHES_END
@@ -1269,6 +1282,7 @@ linux-next-rejects.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START post-linux-next
 #
+#
 #NEXT_PATCHES_END
 # maybe-merge-one-day
 #
@@ -1328,3 +1342,13 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]mm-gupc-migrate-device-coherent-pages-when-pinning-instead-of-failing.patch
 #[to-be-updated]tools-add-hmm-gup-test-for-long-term-pinned-device-pages.patch
 #[failures]container_ofh-make-container_of-const-aware.patch
+#[folded-merged]fs-proc-task_mmuc-dont-read-mapcount-for-migration-entry-v4.patch
+#[folded-merged]proc-avoid-unused-variable-warning-in-pagemap_pmd_range.patch
+#[merged]fs-binfmt_elf-fix-pt_load-p_align-values-for-loaders.patch
+#[merged]fs-proc-task_mmuc-dont-read-mapcount-for-migration-entry.patch
+#[merged]mm-vmscan-remove-deadlock-due-to-throttling-failing-to-make-progress.patch
+#[merged]mm-memcg-synchronize-objcg-lists-with-a-dedicated-spinlock.patch
+#[merged]kfence-make-test-case-compatible-with-run-time-set-sample-interval.patch
+#[merged]selftests-exec-add-non-regular-to-test_gen_progs.patch
+#[to-be-updated]mm-outline-copy_overflow.patch
+#[to-be-updated]mm-outline-copy_overflow-fix.patch

@@ -46,6 +46,11 @@ Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/internal.h |   12 ------------
+ mm/mlock.c    |   30 ------------------------------
+ mm/rmap.c     |    9 ---------
+ mm/swap.c     |   32 ++++++++++++++++++++++++--------
+ 4 files changed, 24 insertions(+), 59 deletions(-)
 
 --- a/mm/internal.h~mm-munlock-replace-clear_page_mlock-by-final-clearance
 +++ a/mm/internal.h

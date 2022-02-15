@@ -9,6 +9,8 @@ Reviewed-by: Muchun Song <songmuchun@bytedance.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/hmm.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 --- a/mm/hmm.c~mm-hmmc-remove-unneeded-local-variable-ret
 +++ a/mm/hmm.c

@@ -14,6 +14,8 @@ Cc: Xuefeng Li <lixuefeng@loongson.cn>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ lib/ubsan.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
 --- a/lib/ubsan.c~ubsan-no-need-to-unset-panic_on_warn-in-ubsan_epilogue
 +++ a/lib/ubsan.c

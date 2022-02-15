@@ -24,6 +24,8 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/page_alloc.c |   20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
 --- a/mm/page_alloc.c~kasan-page_alloc-refactor-init-checks-in-post_alloc_hook
 +++ a/mm/page_alloc.c

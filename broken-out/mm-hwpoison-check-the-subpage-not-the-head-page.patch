@@ -12,6 +12,8 @@ Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/rmap.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/mm/rmap.c~mm-hwpoison-check-the-subpage-not-the-head-page
 +++ a/mm/rmap.c
