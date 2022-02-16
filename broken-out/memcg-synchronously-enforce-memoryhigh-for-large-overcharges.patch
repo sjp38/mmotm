@@ -1,0 +1,54 @@
+From: Shakeel Butt <shakeelb@google.com>
+Subject: memcg: synchronously enforce memory.high for large overcharges
+
+The high limit is used to throttle the workload without invoking the
+oom-killer.  Recently we tried to use the high limit to right size our
+internal workloads.  More specifically dynamically adjusting the limits of
+the workload without letting the workload get oom-killed.  However due to
+the limitation of the implementation of high limit enforcement, we
+observed the mechanism fails for some real workloads.
+
+The high limit is enforced on return-to-userspace i.e.  the kernel let the
+usage goes over the limit and when the execution returns to userspace, the
+high reclaim is triggered and the process can get throttled as well. 
+However this mechanism fails for workloads which do large allocations in a
+single kernel entry e.g.  applications that mlock() a large chunk of
+memory in a single syscall.  Such applications bypass the high limit and
+can trigger the oom-killer.
+
+To make high limit enforcement more robust, this patch makes the limit
+enforcement synchronous only if the accumulated overcharge becomes larger
+than MEMCG_CHARGE_BATCH.  So, most of the allocations would still be
+throttled on the return-to-userspace path but only the extreme allocations
+which accumulates large amount of overcharge without returning to the
+userspace will be throttled synchronously.  The value MEMCG_CHARGE_BATCH
+is a bit arbitrary but most of other places in the memcg codebase uses
+this constant therefore for now uses the same one.
+
+Link: https://lkml.kernel.org/r/20220211064917.2028469-5-shakeelb@google.com
+Signed-off-by: Shakeel Butt <shakeelb@google.com>
+Cc: Chris Down <chris@chrisdown.name>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Roman Gushchin <guro@fb.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- a/mm/memcontrol.c~memcg-synchronously-enforce-memoryhigh-for-large-overcharges
++++ a/mm/memcontrol.c
+@@ -2704,6 +2704,11 @@ done_restock:
+ 		}
+ 	} while ((memcg = parent_mem_cgroup(memcg)));
+ 
++	if (current->memcg_nr_pages_over_high > MEMCG_CHARGE_BATCH &&
++	    !(current->flags & PF_MEMALLOC) &&
++	    gfpflags_allow_blocking(gfp_mask)) {
++		mem_cgroup_handle_over_high();
++	}
+ 	return 0;
+ }
+ 
+_

@@ -1,47 +1,45 @@
-From: Yang Li <yang.lee@linux.alibaba.com>
-Subject: mm/munlock: fix kernel-doc formatting issues
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix
 
-Some functions had kernel-doc that used a hash instead of a colon to
-separate the parameter name from the one line description.
+implement mlock_lru() and mlock_new() as inlines, per Matthew
 
-Replacing them to remove warnings found by running scripts/kernel-doc,
-which is caused by using 'make W=1'.
-
-mm/mlock.c:218: warning: Function parameter or member 'page' not
-described in 'mlock_page'
-mm/mlock.c:240: warning: Function parameter or member 'page' not
-described in 'mlock_new_page'
-mm/mlock.c:260: warning: Function parameter or member 'page' not
-described in 'munlock_page'
-
-Link: https://lkml.kernel.org/r/20220210004849.69017-1-yang.lee@linux.alibaba.com
-Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Greg Thelen <gthelen@google.com>
 Cc: Hugh Dickins <hughd@google.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Suren Baghdasaryan <surenb@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/mlock.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/mlock.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 --- a/mm/mlock.c~mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix
 +++ a/mm/mlock.c
-@@ -234,7 +234,7 @@ void mlock_page(struct page *page)
- 
- /**
-  * mlock_new_page - mlock a newly allocated page not yet on LRU
-- * @page - page to be mlocked, either a normal page or a THP head.
-+ * @page: page to be mlocked, either a normal page or a THP head.
+@@ -159,8 +159,15 @@ out:
   */
- void mlock_new_page(struct page *page)
- {
-@@ -254,7 +254,7 @@ void mlock_new_page(struct page *page)
+ #define LRU_PAGE 0x1
+ #define NEW_PAGE 0x2
+-#define mlock_lru(page) ((struct page *)((unsigned long)page + LRU_PAGE))
+-#define mlock_new(page) ((struct page *)((unsigned long)page + NEW_PAGE))
++static inline struct page *mlock_lru(struct page *page)
++{
++	return (struct page *)((unsigned long)page + LRU_PAGE);
++}
++
++static inline struct page *mlock_new(struct page *page)
++{
++	return (struct page *)((unsigned long)page + NEW_PAGE);
++}
  
- /**
-  * munlock_page - munlock a page
-- * @page - page to be munlocked, either a normal page or a THP head.
-+ * @page: page to be munlocked, either a normal page or a THP head.
-  */
- void munlock_page(struct page *page)
- {
+ /*
+  * mlock_pagevec() is derived from pagevec_lru_move_fn():
 _

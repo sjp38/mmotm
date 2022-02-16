@@ -23,7 +23,7 @@ And is it intentional that COW is not broken on existing pages when
 setting up a VM_LOCKONFAULT area?  I can see that being argued either way,
 and have no reason to disagree with current behaviour.
 
-Link: https://lkml.kernel.org/r/2b5eee76-183f-bd97-2e9d-f5ff8df63db@google.com
+Link: https://lkml.kernel.org/r/cbed9c9f-1747-f06a-15ad-b2d9fb6025eb@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>

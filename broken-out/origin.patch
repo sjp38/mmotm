@@ -1,5 +1,307 @@
-GIT d567f5db412ed52de0b3b3efca4a451263de6108
+GIT 705d84a366cfccda1e7aec1113a5399cd2ffee7d
 
+diff --git a/arch/parisc/include/asm/bitops.h b/arch/parisc/include/asm/bitops.h
+index 0ec9cfc5131f..56ffd260c669 100644
+--- a/arch/parisc/include/asm/bitops.h
++++ b/arch/parisc/include/asm/bitops.h
+@@ -12,6 +12,14 @@
+ #include <asm/barrier.h>
+ #include <linux/atomic.h>
+ 
++/* compiler build environment sanity checks: */
++#if !defined(CONFIG_64BIT) && defined(__LP64__)
++#error "Please use 'ARCH=parisc' to build the 32-bit kernel."
++#endif
++#if defined(CONFIG_64BIT) && !defined(__LP64__)
++#error "Please use 'ARCH=parisc64' to build the 64-bit kernel."
++#endif
++
+ /* See http://marc.theaimsgroup.com/?t=108826637900003 for discussion
+  * on use of volatile and __*_bit() (set/clear/change):
+  *	*_bit() want use of volatile.
+diff --git a/arch/parisc/include/asm/uaccess.h b/arch/parisc/include/asm/uaccess.h
+index ebf8a845b017..123d5f16cd9d 100644
+--- a/arch/parisc/include/asm/uaccess.h
++++ b/arch/parisc/include/asm/uaccess.h
+@@ -89,8 +89,8 @@ struct exception_table_entry {
+ 	__asm__("1: " ldx " 0(" sr "%2),%0\n"		\
+ 		"9:\n"					\
+ 		ASM_EXCEPTIONTABLE_ENTRY_EFAULT(1b, 9b)	\
+-		: "=r"(__gu_val), "=r"(__gu_err)        \
+-		: "r"(ptr), "1"(__gu_err));		\
++		: "=r"(__gu_val), "+r"(__gu_err)        \
++		: "r"(ptr));				\
+ 							\
+ 	(val) = (__force __typeof__(*(ptr))) __gu_val;	\
+ }
+@@ -123,8 +123,8 @@ struct exception_table_entry {
+ 		"9:\n"					\
+ 		ASM_EXCEPTIONTABLE_ENTRY_EFAULT(1b, 9b)	\
+ 		ASM_EXCEPTIONTABLE_ENTRY_EFAULT(2b, 9b)	\
+-		: "=&r"(__gu_tmp.l), "=r"(__gu_err)	\
+-		: "r"(ptr), "1"(__gu_err));		\
++		: "=&r"(__gu_tmp.l), "+r"(__gu_err)	\
++		: "r"(ptr));				\
+ 							\
+ 	(val) = __gu_tmp.t;				\
+ }
+@@ -135,13 +135,12 @@ struct exception_table_entry {
+ #define __put_user_internal(sr, x, ptr)				\
+ ({								\
+ 	ASM_EXCEPTIONTABLE_VAR(__pu_err);		      	\
+-        __typeof__(*(ptr)) __x = (__typeof__(*(ptr)))(x);	\
+ 								\
+ 	switch (sizeof(*(ptr))) {				\
+-	case 1: __put_user_asm(sr, "stb", __x, ptr); break;	\
+-	case 2: __put_user_asm(sr, "sth", __x, ptr); break;	\
+-	case 4: __put_user_asm(sr, "stw", __x, ptr); break;	\
+-	case 8: STD_USER(sr, __x, ptr); break;			\
++	case 1: __put_user_asm(sr, "stb", x, ptr); break;	\
++	case 2: __put_user_asm(sr, "sth", x, ptr); break;	\
++	case 4: __put_user_asm(sr, "stw", x, ptr); break;	\
++	case 8: STD_USER(sr, x, ptr); break;			\
+ 	default: BUILD_BUG();					\
+ 	}							\
+ 								\
+@@ -150,7 +149,9 @@ struct exception_table_entry {
+ 
+ #define __put_user(x, ptr)					\
+ ({								\
+-	__put_user_internal("%%sr3,", x, ptr);			\
++	__typeof__(&*(ptr)) __ptr = ptr;			\
++	__typeof__(*(__ptr)) __x = (__typeof__(*(__ptr)))(x);	\
++	__put_user_internal("%%sr3,", __x, __ptr);		\
+ })
+ 
+ #define __put_kernel_nofault(dst, src, type, err_label)		\
+@@ -180,8 +181,8 @@ struct exception_table_entry {
+ 		"1: " stx " %2,0(" sr "%1)\n"			\
+ 		"9:\n"						\
+ 		ASM_EXCEPTIONTABLE_ENTRY_EFAULT(1b, 9b)		\
+-		: "=r"(__pu_err)				\
+-		: "r"(ptr), "r"(x), "0"(__pu_err))
++		: "+r"(__pu_err)				\
++		: "r"(ptr), "r"(x))
+ 
+ 
+ #if !defined(CONFIG_64BIT)
+@@ -193,8 +194,8 @@ struct exception_table_entry {
+ 		"9:\n"						\
+ 		ASM_EXCEPTIONTABLE_ENTRY_EFAULT(1b, 9b)		\
+ 		ASM_EXCEPTIONTABLE_ENTRY_EFAULT(2b, 9b)		\
+-		: "=r"(__pu_err)				\
+-		: "r"(ptr), "r"(__val), "0"(__pu_err));		\
++		: "+r"(__pu_err)				\
++		: "r"(ptr), "r"(__val));			\
+ } while (0)
+ 
+ #endif /* !defined(CONFIG_64BIT) */
+diff --git a/arch/parisc/lib/iomap.c b/arch/parisc/lib/iomap.c
+index 367f6397bda7..860385058085 100644
+--- a/arch/parisc/lib/iomap.c
++++ b/arch/parisc/lib/iomap.c
+@@ -346,6 +346,16 @@ u64 ioread64be(const void __iomem *addr)
+ 	return *((u64 *)addr);
+ }
+ 
++u64 ioread64_lo_hi(const void __iomem *addr)
++{
++	u32 low, high;
++
++	low = ioread32(addr);
++	high = ioread32(addr + sizeof(u32));
++
++	return low + ((u64)high << 32);
++}
++
+ u64 ioread64_hi_lo(const void __iomem *addr)
+ {
+ 	u32 low, high;
+@@ -419,6 +429,12 @@ void iowrite64be(u64 datum, void __iomem *addr)
+ 	}
+ }
+ 
++void iowrite64_lo_hi(u64 val, void __iomem *addr)
++{
++	iowrite32(val, addr);
++	iowrite32(val >> 32, addr + sizeof(u32));
++}
++
+ void iowrite64_hi_lo(u64 val, void __iomem *addr)
+ {
+ 	iowrite32(val >> 32, addr + sizeof(u32));
+@@ -530,6 +546,7 @@ EXPORT_SYMBOL(ioread32);
+ EXPORT_SYMBOL(ioread32be);
+ EXPORT_SYMBOL(ioread64);
+ EXPORT_SYMBOL(ioread64be);
++EXPORT_SYMBOL(ioread64_lo_hi);
+ EXPORT_SYMBOL(ioread64_hi_lo);
+ EXPORT_SYMBOL(iowrite8);
+ EXPORT_SYMBOL(iowrite16);
+@@ -538,6 +555,7 @@ EXPORT_SYMBOL(iowrite32);
+ EXPORT_SYMBOL(iowrite32be);
+ EXPORT_SYMBOL(iowrite64);
+ EXPORT_SYMBOL(iowrite64be);
++EXPORT_SYMBOL(iowrite64_lo_hi);
+ EXPORT_SYMBOL(iowrite64_hi_lo);
+ EXPORT_SYMBOL(ioread8_rep);
+ EXPORT_SYMBOL(ioread16_rep);
+diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
+index 1ae31db9988f..1dc2e88e7b04 100644
+--- a/arch/parisc/mm/init.c
++++ b/arch/parisc/mm/init.c
+@@ -337,9 +337,9 @@ static void __init setup_bootmem(void)
+ 
+ static bool kernel_set_to_readonly;
+ 
+-static void __init map_pages(unsigned long start_vaddr,
+-			     unsigned long start_paddr, unsigned long size,
+-			     pgprot_t pgprot, int force)
++static void __ref map_pages(unsigned long start_vaddr,
++			    unsigned long start_paddr, unsigned long size,
++			    pgprot_t pgprot, int force)
+ {
+ 	pmd_t *pmd;
+ 	pte_t *pg_table;
+@@ -449,7 +449,7 @@ void __init set_kernel_text_rw(int enable_read_write)
+ 	flush_tlb_all();
+ }
+ 
+-void __ref free_initmem(void)
++void free_initmem(void)
+ {
+ 	unsigned long init_begin = (unsigned long)__init_begin;
+ 	unsigned long init_end = (unsigned long)__init_end;
+@@ -463,7 +463,6 @@ void __ref free_initmem(void)
+ 	/* The init text pages are marked R-X.  We have to
+ 	 * flush the icache and mark them RW-
+ 	 *
+-	 * This is tricky, because map_pages is in the init section.
+ 	 * Do a dummy remap of the data section first (the data
+ 	 * section is already PAGE_KERNEL) to pull in the TLB entries
+ 	 * for map_kernel */
+diff --git a/drivers/hv/hv_utils_transport.c b/drivers/hv/hv_utils_transport.c
+index eb2833d2b5d0..832885198643 100644
+--- a/drivers/hv/hv_utils_transport.c
++++ b/drivers/hv/hv_utils_transport.c
+@@ -13,7 +13,7 @@
+ #include "hv_utils_transport.h"
+ 
+ static DEFINE_SPINLOCK(hvt_list_lock);
+-static struct list_head hvt_list = LIST_HEAD_INIT(hvt_list);
++static LIST_HEAD(hvt_list);
+ 
+ static void hvt_reset(struct hvutil_transport *hvt)
+ {
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 17bf55fe3169..12a2b37e87f3 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -2028,8 +2028,10 @@ int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
+ 	kobj->kset = dev->channels_kset;
+ 	ret = kobject_init_and_add(kobj, &vmbus_chan_ktype, NULL,
+ 				   "%u", relid);
+-	if (ret)
++	if (ret) {
++		kobject_put(kobj);
+ 		return ret;
++	}
+ 
+ 	ret = sysfs_create_group(kobj, &vmbus_chan_group);
+ 
+@@ -2038,6 +2040,7 @@ int vmbus_add_channel_kobj(struct hv_device *dev, struct vmbus_channel *channel)
+ 		 * The calling functions' error handling paths will cleanup the
+ 		 * empty channel directory.
+ 		 */
++		kobject_put(kobj);
+ 		dev_err(device, "Unable to set up channel sysfs files\n");
+ 		return ret;
+ 	}
+@@ -2079,7 +2082,6 @@ struct hv_device *vmbus_device_create(const guid_t *type,
+ 	return child_device_obj;
+ }
+ 
+-static u64 vmbus_dma_mask = DMA_BIT_MASK(64);
+ /*
+  * vmbus_device_register - Register the child device
+  */
+@@ -2120,8 +2122,9 @@ int vmbus_device_register(struct hv_device *child_device_obj)
+ 	}
+ 	hv_debug_add_dev_dir(child_device_obj);
+ 
+-	child_device_obj->device.dma_mask = &vmbus_dma_mask;
+ 	child_device_obj->device.dma_parms = &child_device_obj->dma_parms;
++	child_device_obj->device.dma_mask = &child_device_obj->dma_mask;
++	dma_set_mask(&child_device_obj->device, DMA_BIT_MASK(64));
+ 	return 0;
+ 
+ err_kset_unregister:
+diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+index 059566f54429..9be007c9420f 100644
+--- a/drivers/parisc/ccio-dma.c
++++ b/drivers/parisc/ccio-dma.c
+@@ -1003,7 +1003,7 @@ ccio_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	ioc->usg_calls++;
+ #endif
+ 
+-	while(sg_dma_len(sglist) && nents--) {
++	while (nents && sg_dma_len(sglist)) {
+ 
+ #ifdef CCIO_COLLECT_STATS
+ 		ioc->usg_pages += sg_dma_len(sglist) >> PAGE_SHIFT;
+@@ -1011,6 +1011,7 @@ ccio_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 		ccio_unmap_page(dev, sg_dma_address(sglist),
+ 				  sg_dma_len(sglist), direction, 0);
+ 		++sglist;
++		nents--;
+ 	}
+ 
+ 	DBG_RUN_SG("%s() DONE (nents %d)\n", __func__, nents);
+diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+index e60690d38d67..374b9199878d 100644
+--- a/drivers/parisc/sba_iommu.c
++++ b/drivers/parisc/sba_iommu.c
+@@ -1047,7 +1047,7 @@ sba_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	spin_unlock_irqrestore(&ioc->res_lock, flags);
+ #endif
+ 
+-	while (sg_dma_len(sglist) && nents--) {
++	while (nents && sg_dma_len(sglist)) {
+ 
+ 		sba_unmap_page(dev, sg_dma_address(sglist), sg_dma_len(sglist),
+ 				direction, 0);
+@@ -1056,6 +1056,7 @@ sba_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 		ioc->usingle_calls--;	/* kluge since call is unmap_sg() */
+ #endif
+ 		++sglist;
++		nents--;
+ 	}
+ 
+ 	DBG_RUN_SG("%s() DONE (nents %d)\n", __func__,  nents);
+diff --git a/drivers/pci/controller/pci-hyperv.c b/drivers/pci/controller/pci-hyperv.c
+index 20ea2ee330b8..ae0bc2fee4ca 100644
+--- a/drivers/pci/controller/pci-hyperv.c
++++ b/drivers/pci/controller/pci-hyperv.c
+@@ -2155,8 +2155,17 @@ static void hv_pci_assign_numa_node(struct hv_pcibus_device *hbus)
+ 		if (!hv_dev)
+ 			continue;
+ 
+-		if (hv_dev->desc.flags & HV_PCI_DEVICE_FLAG_NUMA_AFFINITY)
+-			set_dev_node(&dev->dev, hv_dev->desc.virtual_numa_node);
++		if (hv_dev->desc.flags & HV_PCI_DEVICE_FLAG_NUMA_AFFINITY &&
++		    hv_dev->desc.virtual_numa_node < num_possible_nodes())
++			/*
++			 * The kernel may boot with some NUMA nodes offline
++			 * (e.g. in a KDUMP kernel) or with NUMA disabled via
++			 * "numa=off". In those cases, adjust the host provided
++			 * NUMA node to a valid NUMA node used by the kernel.
++			 */
++			set_dev_node(&dev->dev,
++				     numa_map_to_online_node(
++					     hv_dev->desc.virtual_numa_node));
+ 
+ 		put_pcichild(hv_dev);
+ 	}
 diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
 index 86aa4141efa9..d2553970a67b 100644
 --- a/drivers/regulator/core.c
@@ -32,3 +334,97 @@ index 86aa4141efa9..d2553970a67b 100644
  		goto unlock;
  
  	if (have_full_constraints()) {
+diff --git a/drivers/tty/serial/8250/8250_gsc.c b/drivers/tty/serial/8250/8250_gsc.c
+index 673cda3d011d..948d0a1c6ae8 100644
+--- a/drivers/tty/serial/8250/8250_gsc.c
++++ b/drivers/tty/serial/8250/8250_gsc.c
+@@ -26,7 +26,7 @@ static int __init serial_init_chip(struct parisc_device *dev)
+ 	unsigned long address;
+ 	int err;
+ 
+-#ifdef CONFIG_64BIT
++#if defined(CONFIG_64BIT) && defined(CONFIG_IOSAPIC)
+ 	if (!dev->irq && (dev->id.sversion == 0xad))
+ 		dev->irq = iosapic_serial_irq(dev);
+ #endif
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 33eda39df685..927771d1853f 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -1210,6 +1210,10 @@ static int defrag_collect_targets(struct btrfs_inode *inode,
+ 		if (em->generation < newer_than)
+ 			goto next;
+ 
++		/* This em is under writeback, no need to defrag */
++		if (em->generation == (u64)-1)
++			goto next;
++
+ 		/*
+ 		 * Our start offset might be in the middle of an existing extent
+ 		 * map, so take that into account.
+@@ -1629,6 +1633,7 @@ int btrfs_defrag_file(struct inode *inode, struct file_ra_state *ra,
+ 			ret = 0;
+ 			break;
+ 		}
++		cond_resched();
+ 	}
+ 
+ 	if (ra_allocated)
+diff --git a/fs/btrfs/send.c b/fs/btrfs/send.c
+index d8ccb62aa7d2..201eb2628aea 100644
+--- a/fs/btrfs/send.c
++++ b/fs/btrfs/send.c
+@@ -4999,6 +4999,10 @@ static int put_file_data(struct send_ctx *sctx, u64 offset, u32 len)
+ 			lock_page(page);
+ 			if (!PageUptodate(page)) {
+ 				unlock_page(page);
++				btrfs_err(fs_info,
++			"send: IO error at offset %llu for inode %llu root %llu",
++					page_offset(page), sctx->cur_ino,
++					sctx->send_root->root_key.objectid);
+ 				put_page(page);
+ 				ret = -EIO;
+ 				break;
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index c43bbc7f623e..c3cfdfd8de9b 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -1981,16 +1981,24 @@ static void btrfs_cleanup_pending_block_groups(struct btrfs_trans_handle *trans)
+ static inline int btrfs_start_delalloc_flush(struct btrfs_fs_info *fs_info)
+ {
+ 	/*
+-	 * We use writeback_inodes_sb here because if we used
++	 * We use try_to_writeback_inodes_sb() here because if we used
+ 	 * btrfs_start_delalloc_roots we would deadlock with fs freeze.
+ 	 * Currently are holding the fs freeze lock, if we do an async flush
+ 	 * we'll do btrfs_join_transaction() and deadlock because we need to
+ 	 * wait for the fs freeze lock.  Using the direct flushing we benefit
+ 	 * from already being in a transaction and our join_transaction doesn't
+ 	 * have to re-take the fs freeze lock.
++	 *
++	 * Note that try_to_writeback_inodes_sb() will only trigger writeback
++	 * if it can read lock sb->s_umount. It will always be able to lock it,
++	 * except when the filesystem is being unmounted or being frozen, but in
++	 * those cases sync_filesystem() is called, which results in calling
++	 * writeback_inodes_sb() while holding a write lock on sb->s_umount.
++	 * Note that we don't call writeback_inodes_sb() directly, because it
++	 * will emit a warning if sb->s_umount is not locked.
+ 	 */
+ 	if (btrfs_test_opt(fs_info, FLUSHONCOMMIT))
+-		writeback_inodes_sb(fs_info->sb, WB_REASON_SYNC);
++		try_to_writeback_inodes_sb(fs_info->sb, WB_REASON_SYNC);
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
+index f565a8938836..fe2e0179ed51 100644
+--- a/include/linux/hyperv.h
++++ b/include/linux/hyperv.h
+@@ -1262,6 +1262,7 @@ struct hv_device {
+ 	struct vmbus_channel *channel;
+ 	struct kset	     *channels_kset;
+ 	struct device_dma_parameters dma_parms;
++	u64 dma_mask;
+ 
+ 	/* place holder to keep track of the dir for hv device in debugfs */
+ 	struct dentry *debug_dir;

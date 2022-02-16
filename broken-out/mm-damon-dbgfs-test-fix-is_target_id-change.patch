@@ -1,0 +1,41 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon/dbgfs-test: fix is_target_id() change
+
+DAMON kunit tests for DAMON debugfs interface fails because it still
+assumes setting empty monitoring operations makes DAMON debugfs interface
+believe the target of the context don't have pid.  This commit fixes the
+kunit test fails by explicitly setting the context's monitoring operations
+with the operations for the physical address space, which let debugfs
+knows the target will not have pid.
+
+Link: https://lkml.kernel.org/r/20220215184603.1479-8-sj@kernel.org
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Xin Hao <xhao@linux.alibaba.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/dbgfs-test.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/mm/damon/dbgfs-test.h~mm-damon-dbgfs-test-fix-is_target_id-change
++++ a/mm/damon/dbgfs-test.h
+@@ -74,7 +74,7 @@ static void damon_dbgfs_test_set_targets
+ 	char buf[64];
+ 
+ 	/* Make DAMON consider target has no pid */
+-	ctx->ops = (struct damon_operations){};
++	damon_select_ops(ctx, DAMON_OPS_PADDR);
+ 
+ 	dbgfs_set_targets(ctx, 0, NULL);
+ 	sprint_target_ids(ctx, buf, 64);
+@@ -111,6 +111,8 @@ static void damon_dbgfs_test_set_init_re
+ 	int i, rc;
+ 	char buf[256];
+ 
++	damon_select_ops(ctx, DAMON_OPS_PADDR);
++
+ 	dbgfs_set_targets(ctx, 3, NULL);
+ 
+ 	/* Put valid inputs and check the results */
+_

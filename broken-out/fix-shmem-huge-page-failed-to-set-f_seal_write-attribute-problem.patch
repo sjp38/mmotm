@@ -1,0 +1,90 @@
+From: wangyong <wang.yong12@zte.com.cn>
+Subject: memfd: fix shmem huge page failed to set F_SEAL_WRITE attribute problem
+
+After enabling tmpfs filesystem to support transparent hugepage with the
+following command:
+
+ echo always > /sys/kernel/mm/transparent_hugepage/shmem_enabled
+
+The docker program adds F_SEAL_WRITE through the following command which
+will prompt EBUSY.
+
+ fcntl(5, F_ADD_SEALS, F_SEAL_WRITE)=-1.
+
+It is found that in memfd_wait_for_pins function, the page_count of
+hugepage is 512 and page_mapcount is 0, which does not meet the
+conditions:
+
+ page_count(page) - page_mapcount(page) != 1.
+
+But the page is not busy at this time, therefore, the page_order of
+hugepage should be taken into account in the calculation.
+
+Link: https://lkml.kernel.org/r/20220215073743.1769979-1-cgel.zte@gmail.com
+Signed-off-by: wangyong <wang.yong12@zte.com.cn>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Song Liu <songliubraving@fb.com>
+Cc: Yang Yang <yang.yang29@zte.com.cn>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memfd.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+--- a/mm/memfd.c~fix-shmem-huge-page-failed-to-set-f_seal_write-attribute-problem
++++ a/mm/memfd.c
+@@ -31,6 +31,7 @@
+ static void memfd_tag_pins(struct xa_state *xas)
+ {
+ 	struct page *page;
++	int count = 0;
+ 	unsigned int tagged = 0;
+ 
+ 	lru_add_drain();
+@@ -39,8 +40,12 @@ static void memfd_tag_pins(struct xa_sta
+ 	xas_for_each(xas, page, ULONG_MAX) {
+ 		if (xa_is_value(page))
+ 			continue;
++
+ 		page = find_subpage(page, xas->xa_index);
+-		if (page_count(page) - page_mapcount(page) > 1)
++		count = page_count(page);
++		if (PageTransCompound(page))
++			count -= (1 << compound_order(compound_head(page))) - 1;
++		if (count - page_mapcount(page) > 1)
+ 			xas_set_mark(xas, MEMFD_TAG_PINNED);
+ 
+ 		if (++tagged % XA_CHECK_SCHED)
+@@ -67,11 +72,12 @@ static int memfd_wait_for_pins(struct ad
+ {
+ 	XA_STATE(xas, &mapping->i_pages, 0);
+ 	struct page *page;
+-	int error, scan;
++	int error, scan, count;
+ 
+ 	memfd_tag_pins(&xas);
+ 
+ 	error = 0;
++	count = 0;
+ 	for (scan = 0; scan <= LAST_SCAN; scan++) {
+ 		unsigned int tagged = 0;
+ 
+@@ -89,8 +95,12 @@ static int memfd_wait_for_pins(struct ad
+ 			bool clear = true;
+ 			if (xa_is_value(page))
+ 				continue;
++
+ 			page = find_subpage(page, xas.xa_index);
+-			if (page_count(page) - page_mapcount(page) != 1) {
++			count = page_count(page);
++			if (PageTransCompound(page))
++				count -= (1 << compound_order(compound_head(page))) - 1;
++			if (count - page_mapcount(page) != 1) {
+ 				/*
+ 				 * On the last scan, we clean up all those tags
+ 				 * we inserted; but make a note that we still
+_

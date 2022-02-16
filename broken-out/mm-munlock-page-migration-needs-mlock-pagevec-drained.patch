@@ -18,10 +18,9 @@ page, but necessary when hoping to retry after failure.
 
 Any new pagevec runs the risk of adding a new way of stranding, and we
 might discover other corners where mlock_page_drain() or lru_add_drain()
-would now help.  If the mlock pagevec raises doubts, we can easily add a
-sysctl to tune its length to 1, which reverts to synchronous operation.
+would now help.
 
-Link: https://lkml.kernel.org/r/90c8962-d188-8687-dc70-628293316343@google.com
+Link: https://lkml.kernel.org/r/9e2ed861-951a-6e86-e298-a09d2d8e9b9f@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
@@ -51,11 +50,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		if (vma->vm_flags & VM_LOCKED)
 +			mlock_page_drain(smp_processor_id());
  
- 		trace_remove_migration_pte(pvmw.address, pte_val(pte),
- 					   compound_order(new));
+ 		/* No need to invalidate - it was non-present before */
+ 		update_mmu_cache(vma, pvmw.address, pvmw.pte);
 --- a/mm/rmap.c~mm-munlock-page-migration-needs-mlock-pagevec-drained
 +++ a/mm/rmap.c
-@@ -1681,6 +1681,8 @@ discard:
+@@ -1656,6 +1656,8 @@ discard:
  		 * See Documentation/vm/mmu_notifier.rst
  		 */
  		page_remove_rmap(subpage, vma, PageHuge(page));
@@ -64,7 +63,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		put_page(page);
  	}
  
-@@ -1959,6 +1961,8 @@ static bool try_to_migrate_one(struct pa
+@@ -1930,6 +1932,8 @@ static bool try_to_migrate_one(struct pa
  		 * See Documentation/vm/mmu_notifier.rst
  		 */
  		page_remove_rmap(subpage, vma, PageHuge(page));

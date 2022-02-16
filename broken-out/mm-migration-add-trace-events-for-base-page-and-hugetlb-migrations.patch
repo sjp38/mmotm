@@ -87,9 +87,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <trace/events/migrate.h>
  
  #include "internal.h"
-@@ -257,6 +256,9 @@ static bool remove_migration_pte(struct
- 		if (PageTransHuge(page) && PageMlocked(page))
- 			clear_page_mlock(page);
+@@ -254,6 +253,9 @@ static bool remove_migration_pte(struct
+ 		if (vma->vm_flags & VM_LOCKED)
+ 			mlock_page_drain(smp_processor_id());
  
 +		trace_remove_migration_pte(pvmw.address, pte_val(pte),
 +					   compound_order(new));
@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include "internal.h"
  
-@@ -1861,6 +1863,8 @@ static bool try_to_migrate_one(struct pa
+@@ -1853,6 +1855,8 @@ static bool try_to_migrate_one(struct pa
  			if (pte_swp_uffd_wp(pteval))
  				swp_pte = pte_swp_mkuffd_wp(swp_pte);
  			set_pte_at(mm, pvmw.address, pvmw.pte, swp_pte);
@@ -118,7 +118,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			/*
  			 * No need to invalidate here it will synchronize on
  			 * against the special swap migration pte.
-@@ -1929,6 +1933,8 @@ static bool try_to_migrate_one(struct pa
+@@ -1921,6 +1925,8 @@ static bool try_to_migrate_one(struct pa
  			if (pte_uffd_wp(pteval))
  				swp_pte = pte_swp_mkuffd_wp(swp_pte);
  			set_pte_at(mm, address, pvmw.pte, swp_pte);

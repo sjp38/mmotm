@@ -1,0 +1,34 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon/reclaim: use damon_select_ops() instead of damon_{v,p}a_set_operations()
+
+This commit makes DAMON_RECLAIM to select the registered monitoring
+operations for the physical address space instead of setting it on its
+own.  This allows DAMON_RECLAIM be independent of DAMON_PADDR, but leave
+the dependency as is, because it's the only one monitoring operations it
+use, and therefore it makes no sense to build DAMON_RECLAIM without
+DAMON_PADDR.
+
+Link: https://lkml.kernel.org/r/20220215184603.1479-5-sj@kernel.org
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Xin Hao <xhao@linux.alibaba.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/reclaim.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/mm/damon/reclaim.c~mm-damon-reclaim-use-damon_select_ops-instead-of-damon_vpa_set_operations
++++ a/mm/damon/reclaim.c
+@@ -384,7 +384,9 @@ static int __init damon_reclaim_init(voi
+ 	if (!ctx)
+ 		return -ENOMEM;
+ 
+-	damon_pa_set_operations(ctx);
++	if (damon_select_ops(ctx, DAMON_OPS_PADDR))
++		return -EINVAL;
++
+ 	ctx->callback.after_aggregation = damon_reclaim_after_aggregation;
+ 
+ 	target = damon_new_target();
+_

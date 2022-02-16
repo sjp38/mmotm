@@ -16,7 +16,7 @@ __unmap_and_move(): a small adjustment to where the successful new page is
 put back on LRU, and its mlock_count (if any) is built back up by
 remove_migration_ptes().
 
-Link: https://lkml.kernel.org/r/33fb71cf-ea55-123a-bf9d-fdad297cae1@google.com
+Link: https://lkml.kernel.org/r/269eec24-978a-984a-8a85-1d29f36ad343@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>

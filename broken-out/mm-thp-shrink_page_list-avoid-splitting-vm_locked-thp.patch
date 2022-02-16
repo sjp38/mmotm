@@ -25,7 +25,7 @@ pte mapping in page_referenced_one() as if not VM_LOCKED, and if no
 VM_LOCKED pmd mapping is found later in the walk, and lack of reference
 permits, then PAGEREF_RECLAIM take it to attempted splitting as before.
 
-Link: https://lkml.kernel.org/r/6df82db0-0e6-ef83-6925-4fa3f834133d@google.com
+Link: https://lkml.kernel.org/r/531d13ee-bc7d-329a-9748-5e272f699d78@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>

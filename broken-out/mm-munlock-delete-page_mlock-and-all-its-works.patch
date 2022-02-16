@@ -1,7 +1,7 @@
 From: Hugh Dickins <hughd@google.com>
 Subject: mm/munlock: delete page_mlock() and all its works
 
-Patch series "mm/munlock: rework of mlock+munlock page handling".
+Patch series "mm/munlock: rework of mlock+munlock page handling", v2.
 
 
 This patch (of 13):
@@ -41,9 +41,19 @@ PGMUNLOCKED), and likewise a stub for munlock_vma_pages_range().  Move
 unchanged __mlock_posix_error_return() out of the way, down to above its
 caller: this series then makes no further change after mlock_fixup().
 
-Link: https://lkml.kernel.org/r/8e4356d-9622-a7f0-b2c-f116b5f2efea@google.com
-Link: https://lkml.kernel.org/r/5ed1f01-3e7e-7e26-cc1-2b7a574e2147@google.com
+After this and each following commit, the kernel builds, boots and runs;
+but with deficiencies which may show up in testing of mlock and munlock. 
+The system calls succeed or fail as before, and mlock remains effective in
+preventing page reclaim; but meminfo's Unevictable and Mlocked amounts may
+be shown too low after mlock, grow, then stay too high after munlock: with
+previously mlocked pages remaining unevictable for too long, until finally
+unmapped and freed and counts corrected.  Normal service will be resumed
+in "mm/munlock: mlock_pte_range() when mlocking or munlocking".
+
+Link: https://lkml.kernel.org/r/55a49083-37f9-3766-1de9-9feea7428ac@google.com
+Link: https://lkml.kernel.org/r/48c44eae-4cf0-a8ce-454c-5ec88457ffea@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
@@ -61,9 +71,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
  include/linux/rmap.h |    6 
  mm/internal.h        |    2 
- mm/mlock.c           |  377 ++---------------------------------------
+ mm/mlock.c           |  375 ++---------------------------------------
  mm/rmap.c            |   80 --------
- 4 files changed, 25 insertions(+), 440 deletions(-)
+ 4 files changed, 25 insertions(+), 438 deletions(-)
 
 --- a/include/linux/rmap.h~mm-munlock-delete-page_mlock-and-all-its-works
 +++ a/include/linux/rmap.h
@@ -235,7 +245,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -
 -	return false;
 -}
--
+ 
 -/*
 - * Putback multiple evictable pages to the LRU
 - *
@@ -293,7 +303,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -		} else {
 -			delta_munlocked++;
 -		}
- 
+-
 -		/*
 -		 * We won't be munlocking this page in the next phase
 -		 * but we still need to release the follow_page_mask()
@@ -417,7 +427,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -413,75 +136,11 @@ static unsigned long __munlock_pagevec_f
+@@ -413,75 +136,13 @@ static unsigned long __munlock_pagevec_f
   *
   * Returns with VM_LOCKED cleared.  Callers must be prepared to
   * deal with this.
@@ -430,8 +440,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  void munlock_vma_pages_range(struct vm_area_struct *vma,
  			     unsigned long start, unsigned long end)
  {
--	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
--
+ 	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
+ 
 -	while (start < end) {
 -		struct page *page;
 -		unsigned int page_mask = 0;
@@ -494,7 +504,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -645,6 +304,18 @@ static unsigned long count_mm_mlocked_pa
+@@ -645,6 +306,18 @@ static unsigned long count_mm_mlocked_pa
  	return count >> PAGE_SHIFT;
  }
  

@@ -1,0 +1,53 @@
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: mm/page_alloc: track range of active PCP lists during bulk free
+
+free_pcppages_bulk() frees pages in a round-robin fashion.  Originally,
+this was dealing only with migratetypes but storing high-order pages means
+that there can be many more empty lists that are uselessly checked.  Track
+the minimum and maximum active pindex to reduce the search space.
+
+Link: https://lkml.kernel.org/r/20220215145111.27082-3-mgorman@techsingularity.net
+Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+Cc: Aaron Lu <aaron.lu@intel.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Jesper Dangaard Brouer <brouer@redhat.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+--- a/mm/page_alloc.c~mm-page_alloc-track-range-of-active-pcp-lists-during-bulk-free
++++ a/mm/page_alloc.c
+@@ -1450,6 +1450,8 @@ static void free_pcppages_bulk(struct zo
+ 					struct per_cpu_pages *pcp)
+ {
+ 	int pindex = 0;
++	int min_pindex = 0;
++	int max_pindex = NR_PCP_LISTS - 1;
+ 	int batch_free = 0;
+ 	int nr_freed = 0;
+ 	unsigned int order;
+@@ -1478,10 +1480,17 @@ static void free_pcppages_bulk(struct zo
+ 			if (++pindex == NR_PCP_LISTS)
+ 				pindex = 0;
+ 			list = &pcp->lists[pindex];
+-		} while (list_empty(list));
++			if (!list_empty(list))
++				break;
++
++			if (pindex == max_pindex)
++				max_pindex--;
++			if (pindex == min_pindex)
++				min_pindex++;
++		} while (1);
+ 
+ 		/* This is the only non-empty list. Free them all. */
+-		if (batch_free == NR_PCP_LISTS)
++		if (batch_free >= max_pindex - min_pindex)
+ 			batch_free = count;
+ 
+ 		order = pindex_to_order(pindex);
+_

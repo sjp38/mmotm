@@ -19,7 +19,7 @@ delete the check - the race is very rare, this is an ordinary small page
 so we don't need to be so paranoid about mapcount surprises, and the
 page_ref_freeze() just below already handles the case adequately.
 
-Link: https://lkml.kernel.org/r/cc3ad3e4-7045-f00-5a81-de3e3de6b69@google.com
+Link: https://lkml.kernel.org/r/c390e7b-7648-b3e9-9ae1-87c9b9e95ed4@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: David Hildenbrand <david@redhat.com>

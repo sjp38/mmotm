@@ -1,0 +1,65 @@
+From: Shakeel Butt <shakeelb@google.com>
+Subject: memcg: unify force charging conditions
+
+Currently the kernel force charges the allocations which have __GFP_HIGH
+flag without triggering the memory reclaim.  __GFP_HIGH indicates that the
+caller is high priority and since commit 869712fd3de5 ("mm: memcontrol:
+fix network errors from failing __GFP_ATOMIC charges") the kernel lets
+such allocations do force charging.  Please note that __GFP_ATOMIC has
+been replaced by __GFP_HIGH.
+
+__GFP_HIGH does not tell if the caller can block or can trigger reclaim. 
+There are separate checks to determine that.  So, there is no need to skip
+reclaiming for __GFP_HIGH allocations.  So, handle __GFP_HIGH together
+with __GFP_NOFAIL which also does force charging.
+
+Please note that this is a noop change as there are no __GFP_HIGH
+allocators in the kernel which also have __GFP_ACCOUNT (or SLAB_ACCOUNT)
+and does not allow reclaim for now.
+
+Link: https://lkml.kernel.org/r/20220211064917.2028469-3-shakeelb@google.com
+Signed-off-by: Shakeel Butt <shakeelb@google.com>
+Reviewed-by: Roman Gushchin <guro@fb.com>
+Cc: Chris Down <chris@chrisdown.name>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |   17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
+
+--- a/mm/memcontrol.c~memcg-unify-force-charging-conditions
++++ a/mm/memcontrol.c
+@@ -2566,15 +2566,6 @@ retry:
+ 	}
+ 
+ 	/*
+-	 * Memcg doesn't have a dedicated reserve for atomic
+-	 * allocations. But like the global atomic pool, we need to
+-	 * put the burden of reclaim on regular allocation requests
+-	 * and let these go through as privileged allocations.
+-	 */
+-	if (gfp_mask & __GFP_ATOMIC)
+-		goto force;
+-
+-	/*
+ 	 * Prevent unbounded recursion when reclaim operations need to
+ 	 * allocate memory. This might exceed the limits temporarily,
+ 	 * but we prefer facilitating memory reclaim and getting back
+@@ -2647,7 +2638,13 @@ retry:
+ 		goto retry;
+ 	}
+ nomem:
+-	if (!(gfp_mask & __GFP_NOFAIL))
++	/*
++	 * Memcg doesn't have a dedicated reserve for atomic
++	 * allocations. But like the global atomic pool, we need to
++	 * put the burden of reclaim on regular allocation requests
++	 * and let these go through as privileged allocations.
++	 */
++	if (!(gfp_mask & (__GFP_NOFAIL | __GFP_HIGH)))
+ 		return -ENOMEM;
+ force:
+ 	/*
+_

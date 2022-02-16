@@ -26,7 +26,7 @@ indefinitely though the area is munlocked afterwards.  Guard against it by
 setting the (inappropriate) VM_IO flag, and modifying mlock_vma_page() to
 decline such vmas.
 
-Link: https://lkml.kernel.org/r/8bc3ee8c-7f1-d812-7f22-4f9f6d436bc@google.com
+Link: https://lkml.kernel.org/r/d39f6e4d-aa4f-731a-68ee-e77cdbf1d7bb@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
@@ -44,8 +44,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
  mm/internal.h |    3 -
- mm/mlock.c    |  108 +++++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 90 insertions(+), 21 deletions(-)
+ mm/mlock.c    |  111 ++++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 91 insertions(+), 23 deletions(-)
 
 --- a/mm/internal.h~mm-munlock-mlock_pte_range-when-mlocking-or-munlocking
 +++ a/mm/internal.h
@@ -69,7 +69,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #include <linux/mempolicy.h>
  #include <linux/syscalls.h>
  #include <linux/sched.h>
-@@ -127,23 +128,90 @@ out:
+@@ -127,25 +128,91 @@ out:
  	unlock_page_memcg(page);
  }
  
@@ -142,11 +142,12 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +static void mlock_vma_pages_range(struct vm_area_struct *vma,
 +	unsigned long start, unsigned long end, vm_flags_t newflags)
  {
--	/* Reimplementation to follow in later commit */
+-	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
 +	static const struct mm_walk_ops mlock_walk_ops = {
 +		.pmd_entry = mlock_pte_range,
 +	};
-+
+ 
+-	/* Reimplementation to follow in later commit */
 +	/*
 +	 * There is a slight chance that concurrent page migration,
 +	 * or page reclaim finding a page of this now-VM_LOCKED vma,
@@ -155,7 +156,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	 * Communicate this danger to mlock_vma_page() with VM_IO,
 +	 * which is a VM_SPECIAL flag not allowed on VM_LOCKED vmas.
 +	 * mmap_lock is held in write mode here, so this weird
-+	 * combination should not be visible to others.
++	 * combination should not be visible to other mmap_lock users;
++	 * but WRITE_ONCE so rmap walkers must see VM_IO if VM_LOCKED.
 +	 */
 +	if (newflags & VM_LOCKED)
 +		newflags |= VM_IO;
@@ -172,7 +174,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -162,8 +230,7 @@ static int mlock_fixup(struct vm_area_st
+@@ -164,10 +231,9 @@ static int mlock_fixup(struct vm_area_st
  	pgoff_t pgoff;
  	int nr_pages;
  	int ret = 0;
@@ -180,9 +182,12 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -	vm_flags_t old_flags = vma->vm_flags;
 +	vm_flags_t oldflags = vma->vm_flags;
  
- 	if (newflags == vma->vm_flags || (vma->vm_flags & VM_SPECIAL) ||
+-	if (newflags == vma->vm_flags || (vma->vm_flags & VM_SPECIAL) ||
++	if (newflags == oldflags || (oldflags & VM_SPECIAL) ||
  	    is_vm_hugetlb_page(vma) || vma == get_gate_vma(current->mm) ||
-@@ -197,9 +264,9 @@ success:
+ 	    vma_is_dax(vma) || vma_is_secretmem(vma))
+ 		/* don't set VM_LOCKED or VM_LOCKONFAULT and don't count */
+@@ -199,9 +265,9 @@ success:
  	 * Keep track of amount of locked VM.
  	 */
  	nr_pages = (end - start) >> PAGE_SHIFT;
@@ -194,7 +199,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		nr_pages = 0;
  	mm->locked_vm += nr_pages;
  
-@@ -209,11 +276,12 @@ success:
+@@ -211,11 +277,12 @@ success:
  	 * set VM_LOCKED, populate_vma_page_range will bring it back.
  	 */
  

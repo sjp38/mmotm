@@ -52,11 +52,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  include/trace/events/mmflags.h       |    1 -
  lib/test_printf.c                    |    8 ++++----
  mm/internal.h                        |    2 +-
- mm/memcontrol.c                      |    2 +-
  mm/page_alloc.c                      |   16 ++++------------
  tools/perf/builtin-kmem.c            |    1 -
  tools/testing/radix-tree/linux/gfp.h |    3 +--
- 10 files changed, 18 insertions(+), 33 deletions(-)
+ 9 files changed, 17 insertions(+), 32 deletions(-)
 
 --- a/Documentation/vm/balance.rst~mm-discard-__gfp_atomic
 +++ a/Documentation/vm/balance.rst
@@ -173,17 +172,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  /* The GFP flags allowed during early boot */
  #define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM|__GFP_IO|__GFP_FS))
---- a/mm/memcontrol.c~mm-discard-__gfp_atomic
-+++ a/mm/memcontrol.c
-@@ -2580,7 +2580,7 @@ retry:
- 	 * put the burden of reclaim on regular allocation requests
- 	 * and let these go through as privileged allocations.
- 	 */
--	if (gfp_mask & __GFP_ATOMIC)
-+	if (gfp_mask & __GFP_HIGH)
- 		goto force;
- 
- 	/*
 --- a/mm/page_alloc.c~mm-discard-__gfp_atomic
 +++ a/mm/page_alloc.c
 @@ -4002,12 +4002,12 @@ static inline bool zone_watermark_fast(s

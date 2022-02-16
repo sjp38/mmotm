@@ -25,7 +25,7 @@ if we have taken lruvec lock to get the page off its present list, then we
 save everyone trouble (and however many extra atomic ops) by putting it on
 its destination list immediately.
 
-Link: https://lkml.kernel.org/r/3d204af4-664f-e4b0-4781-16718a2efb9c@google.com
+Link: https://lkml.kernel.org/r/cd14eda-5be0-b8b9-4273-cf28818cfef9@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>

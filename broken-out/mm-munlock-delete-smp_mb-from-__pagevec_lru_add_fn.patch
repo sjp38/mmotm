@@ -5,7 +5,7 @@ My reading of comment on smp_mb__after_atomic() in __pagevec_lru_add_fn()
 says that it can now be deleted; and that remains so when the next patch
 is added.
 
-Link: https://lkml.kernel.org/r/9121d34d-4889-51f1-56c7-255138f43b8d@google.com
+Link: https://lkml.kernel.org/r/28a7c6ff-6270-9060-8df0-862bdcaac366@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>

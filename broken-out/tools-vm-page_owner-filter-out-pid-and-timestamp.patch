@@ -1,0 +1,36 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: tools/vm/page_owner: filter out pid and timestamp
+
+Commit 9cc7e96aa846 ("mm/page_owner: record timestamp and pid") introduces
+timestamp and pid for page owner.  However, it is hard to aggregate the
+stack since those are specific (especially timestamp).  Filter out those
+information when aggregating.
+
+Link: https://lkml.kernel.org/r/20220215134045.12004-1-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Liam Mark <lmark@codeaurora.org>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner-filter-out-pid-and-timestamp
++++ a/tools/vm/page_owner_sort.c
+@@ -50,6 +50,12 @@ int read_block(char *buf, int buf_size,
+ 			return curr - buf;
+ 		if (!strncmp(curr, "PFN", 3))
+ 			continue;
++		if (!strncmp(curr, "Page allocated via order", 24)) {
++			char *end = strstr(curr, ", pid ");
++
++			if (end)
++				memcpy(end, "\n", 2);
++		}
+ 		curr += strlen(curr);
+ 	}
+ 
+_

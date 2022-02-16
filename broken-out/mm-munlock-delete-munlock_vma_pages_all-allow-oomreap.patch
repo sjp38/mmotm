@@ -16,7 +16,7 @@ And wasn't I the one who forbade the OOM reaper to attack mlocked vmas,
 because of the uncertainty in blocking on all those page locks?  No fear
 of that now, so permit the OOM reaper on mlocked vmas.
 
-Link: https://lkml.kernel.org/r/8dddb3d4-361-da5-538-3f3ae1b326b@google.com
+Link: https://lkml.kernel.org/r/d9a9f8c3-1ee0-4c81-7017-6ecb78554a7@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Alistair Popple <apopple@nvidia.com>
@@ -104,8 +104,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +static void munlock_vma_pages_range(struct vm_area_struct *vma,
 +				    unsigned long start, unsigned long end)
  {
- 	/* Reimplementation to follow in later commit */
- }
+ 	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
+ 
 --- a/mm/mmap.c~mm-munlock-delete-munlock_vma_pages_all-allow-oomreap
 +++ a/mm/mmap.c
 @@ -2674,6 +2674,8 @@ detach_vmas_to_be_unmapped(struct mm_str
@@ -176,7 +176,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	vma = mm->mmap;
 --- a/mm/oom_kill.c~mm-munlock-delete-munlock_vma_pages_all-allow-oomreap
 +++ a/mm/oom_kill.c
-@@ -526,7 +526,7 @@ bool __oom_reap_task_mm(struct mm_struct
+@@ -554,7 +554,7 @@ bool __oom_reap_task_mm(struct mm_struct
  	set_bit(MMF_UNSTABLE, &mm->flags);
  
  	for (vma = mm->mmap ; vma; vma = vma->vm_next) {

@@ -33,10 +33,16 @@ mm-hugetlb-fix-kernel-crash-with-hugetlb-mremap.patch
 kasan-test-prevent-cache-merging-in-kmem_cache_double_destroy.patch
 #
 #mm/pagemap
+#mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch: mhocko alternative
 mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
+#
+mm-fix-use-after-free-bug-when-mm-mmap-is-reused-after-being-freed.patch
 #
 #mm/hugetlbfs
 hugetlbfs-fix-a-truncation-issue-in-hugepages-parameter.patch
+#
+#binfnt
+fs-file_table-fix-adding-missing-kmemleak_not_leak.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -399,8 +405,10 @@ arm64-select-kasan_vmalloc-for-sw-hw_tags-modes.patch
 kasan-documentation-updates.patch
 kasan-improve-vmalloc-tests.patch
 kasan-improve-vmalloc-tests-fix.patch
+kasan-improve-vmalloc-tests-fix-2.patch
 #
 mm-memremap-avoid-calling-kasan_remove_zero_shadow-for-device-private-memory.patch
+#
 #
 #mm/debug
 tools-vm-page_owner_sortc-sort-by-stacktrace-before-culling.patch
@@ -425,6 +433,8 @@ mm-page_owner-use-scnprintf-to-avoid-excessive-buffer-overrun-check.patch
 #mm-page_owner-print-memcg-information.patch: check review, TBU
 mm-page_owner-print-memcg-information.patch
 mm-page_owner-record-task-command-name.patch
+#
+tools-vm-page_owner-filter-out-pid-and-timestamp.patch
 #
 mm-unexport-page_init_poison.patch
 #
@@ -460,6 +470,12 @@ memcg-add-per-memcg-total-kernel-memory-stat-v2.patch
 mm-memcg-mem_cgroup_per_node-is-already-set-to-0-on-allocation.patch
 mm-memcg-retrieve-parent-memcg-from-cssparent.patch
 #
+#memcg-refactor-mem_cgroup_oom.patch+N: more acks?
+memcg-refactor-mem_cgroup_oom.patch
+memcg-unify-force-charging-conditions.patch
+selftests-memcg-test-high-limit-for-single-entry-allocation.patch
+memcg-synchronously-enforce-memoryhigh-for-large-overcharges.patch
+#
 #mm/selftests
 #mm/pagemap
 mm-generalize-arch_has_filter_pgprot.patch
@@ -489,6 +505,9 @@ mm-replace-multiple-dcache-flush-with-flush_dcache_folio.patch
 #mm/mprotect
 #mm/mremap
 #mm/memfd
+#fix-shmem-huge-page-failed-to-set-f_seal_write-attribute-problem.patch: -stable?
+fix-shmem-huge-page-failed-to-set-f_seal_write-attribute-problem.patch
+#
 #mm/infrastructure
 #mm/mincore
 #mm/drivers
@@ -538,16 +557,26 @@ mm-page_alloc-dont-pass-pfn-to-free_unref_page_commit.patch
 cma-factor-out-minimum-alignment-requirement.patch
 mm-enforce-pageblock_order-max_order.patch
 #
+mm-page_alloc-mark-pagesets-as-__maybe_unused.patch
+#
+mm-page_alloc-fetch-the-correct-pcp-buddy-during-bulk-free.patch
+mm-page_alloc-track-range-of-active-pcp-lists-during-bulk-free.patch
+mm-page_alloc-simplify-how-many-pages-are-selected-per-pcp-list-during-bulk-free.patch
+mm-page_alloc-free-pages-in-a-single-pass-during-bulk-free.patch
+mm-page_alloc-limit-number-of-high-order-pages-on-pcp-during-bulk-free.patch
+#
+mm-pages_allocc-dont-create-zone_movable-beyond-the-end-of-a-node.patch
+#
 #mm/memory-failure
 mm-hwpoison-remove-obsolete-comment.patch
 #
 mm-hwpoison-fix-error-page-recovered-but-reported-not-recovered.patch
 #
 mm-memory-failurec-minor-clean-up-for-memory_failure_dev_pagemap.patch
-#mm-memory-failurec-avoid-walking-page-table-when-vma_address-return-efault.patch: -stable?
+#mm-memory-failurec-avoid-walking-page-table-when-vma_address-return-efault.patch: -stable? TBU
 mm-memory-failurec-avoid-walking-page-table-when-vma_address-return-efault.patch
 mm-memory-failurec-rework-the-signaling-logic-in-kill_proc.patch
-#mm-memory-failurec-remove-unneeded-orig_head.patch: check review
+#mm-memory-failurec-remove-unneeded-orig_head.patch: check review, TBU
 mm-memory-failurec-remove-unneeded-orig_head.patch
 mm-memory-failurec-remove-pageslab-check-in-hwpoison_filter_dev.patch
 mm-memory-failurec-rework-the-try_to_unmap-logic-in-hwpoison_user_mappings.patch
@@ -555,6 +584,22 @@ mm-memory-failurec-remove-obsolete-comment-in-__soft_offline_page.patch
 mm-memory-failurec-remove-unnecessary-pagetranstail-check.patch
 #
 mm-clean-up-hwpoison-page-cache-page-in-fault-path.patch
+#
+#mm/mlock
+mm-munlock-delete-page_mlock-and-all-its-works.patch
+mm-munlock-delete-foll_mlock-and-foll_populate.patch
+mm-munlock-delete-munlock_vma_pages_all-allow-oomreap.patch
+mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page.patch
+mm-munlock-replace-clear_page_mlock-by-final-clearance.patch
+mm-munlock-maintain-page-mlock_count-while-unevictable.patch
+mm-munlock-mlock_pte_range-when-mlocking-or-munlocking.patch
+mm-migrate-__unmap_and_move-push-good-newpage-to-lru.patch
+mm-munlock-delete-smp_mb-from-__pagevec_lru_add_fn.patch
+mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch
+mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix.patch
+mm-munlock-page-migration-needs-mlock-pagevec-drained.patch
+mm-thp-collapse_file-do-try_to_unmapttu_batch_flush.patch
+mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp.patch
 #
 #mm/hugetlb
 mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
@@ -564,6 +609,10 @@ selftests-vm-add-a-hugetlb-test-case.patch
 mm-sparsemem-move-vmemmap-related-to-hugetlb-to-config_hugetlb_page_free_vmemmap.patch
 #
 mm-hugetlb-generalize-arch_want_general_hugetlb.patch
+#
+mm-enable-madv_dontneed-for-hugetlb-mappings.patch
+selftests-vm-add-hugetlb-madvise-madv_dontneed-madv_remove-test.patch
+userfaultfd-selftests-enable-hugetlb-remap-and-remove-event-testing.patch
 #
 #mm/userfaultfd
 #mm/vmscan
@@ -582,6 +631,8 @@ mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix.patch
 #mm/mempool
 #mm/memblock
 #mm/oom-kill
+mm-move-oom_kill-sysctls-to-their-own-file.patch
+#
 #mm/hugetlbfs
 #mm/migration
 mm-migration-add-trace-events-for-thp-migrations.patch
@@ -650,24 +701,6 @@ mm-memory_hotplug-fix-misplaced-comment-in-offline_pages.patch
 #
 drivers-base-node-rename-link_mem_sections-to-register_memory_block_under_node.patch
 drivers-base-memory-determine-and-store-zone-for-single-zone-memory-blocks.patch
-#
-#mm/mlock
-mm-munlock-delete-page_mlock-and-all-its-works.patch
-mm-munlock-delete-foll_mlock-and-foll_populate.patch
-mm-munlock-delete-munlock_vma_pages_all-allow-oomreap.patch
-mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page.patch
-mm-munlock-replace-clear_page_mlock-by-final-clearance.patch
-mm-munlock-maintain-page-mlock_count-while-unevictable.patch
-mm-munlock-mlock_pte_range-when-mlocking-or-munlocking.patch
-mm-migrate-__unmap_and_move-push-good-newpage-to-lru.patch
-mm-munlock-delete-smp_mb-from-__pagevec_lru_add_fn.patch
-#mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch: https://lkml.kernel.org/r/202202120048.jS44WAmd-lkp@intel.com
-mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch
-mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix.patch
-mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix-2.patch
-mm-munlock-page-migration-needs-mlock-pagevec-drained.patch
-mm-thp-collapse_file-do-try_to_unmapttu_batch_flush.patch
-mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp.patch
 #
 #mm/rmap
 #mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch: bloat!
@@ -738,6 +771,15 @@ mm-damon-remove-the-target-id-concept.patch
 #
 mm-damon-remove-redundant-page-validation.patch
 #
+#mm-damon-rename-damon_primitives-to-damon_operations.patch: rename
+mm-damon-rename-damon_primitives-to-damon_operations.patch
+mm-damon-let-monitoring-operations-can-be-registered-and-selected.patch
+mm-damon-paddrvaddr-register-themselves-to-damon-in-subsys_initcall.patch
+mm-damon-reclaim-use-damon_select_ops-instead-of-damon_vpa_set_operations.patch
+mm-damon-dbgfs-use-damon_select_ops-instead-of-damon_vpa_set_operations.patch
+mm-damon-dbgfs-use-operations-id-for-knowing-if-the-target-has-pid.patch
+mm-damon-dbgfs-test-fix-is_target_id-change.patch
+mm-damon-paddrvaddr-remove-damon_pva_target_validset_operations.patch
 #
 # mmend
 #
@@ -1352,3 +1394,19 @@ workaround-for-a-pci-restoring-bug.patch
 #[merged]selftests-exec-add-non-regular-to-test_gen_progs.patch
 #[to-be-updated]mm-outline-copy_overflow.patch
 #[to-be-updated]mm-outline-copy_overflow-fix.patch
+#[failures]kasan-test-support-async-again-and-asymm-modes-for-hw_tags.patch
+#[to-be-updated]mm-munlock-delete-page_mlock-and-all-its-works.patch
+#[to-be-updated]mm-munlock-delete-foll_mlock-and-foll_populate.patch
+#[to-be-updated]mm-munlock-delete-munlock_vma_pages_all-allow-oomreap.patch
+#[to-be-updated]mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page.patch
+#[to-be-updated]mm-munlock-replace-clear_page_mlock-by-final-clearance.patch
+#[to-be-updated]mm-munlock-maintain-page-mlock_count-while-unevictable.patch
+#[to-be-updated]mm-munlock-mlock_pte_range-when-mlocking-or-munlocking.patch
+#[to-be-updated]mm-migrate-__unmap_and_move-push-good-newpage-to-lru.patch
+#[to-be-updated]mm-munlock-delete-smp_mb-from-__pagevec_lru_add_fn.patch
+#[to-be-updated]mm-munlock-mlock_page-munlock_page-batch-by-pagevec.patch
+#[to-be-updated]mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix.patch
+#[to-be-updated]mm-munlock-mlock_page-munlock_page-batch-by-pagevec-fix-2.patch
+#[to-be-updated]mm-munlock-page-migration-needs-mlock-pagevec-drained.patch
+#[to-be-updated]mm-thp-collapse_file-do-try_to_unmapttu_batch_flush.patch
+#[to-be-updated]mm-thp-shrink_page_list-avoid-splitting-vm_locked-thp.patch

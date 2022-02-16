@@ -1,0 +1,51 @@
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: mm: fix use-after-free bug when mm->mmap is reused after being freed
+
+After exit_mmap frees all vmas in the mm, mm->mmap needs to be reset,
+otherwise it points to a vma that was freed and when reused leads to a
+use-after-free bug.
+
+Link: https://lore.kernel.org/all/00000000000072ef2c05d7f81950@google.com/
+Link: https://lkml.kernel.org/r/20220215201922.1908156-1-surenb@google.com
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Reported-by: syzbot+2ccf63a4bd07cf39cab0@syzkaller.appspotmail.com
+Suggested-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Rik van Riel <riel@surriel.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Yang Shi <shy828301@gmail.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christian Brauner <brauner@kernel.org>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jann Horn <jannh@google.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+Cc: Florian Weimer <fweimer@redhat.com>
+Cc: Jan Engelhardt <jengelh@inai.de>
+Cc: Tim Murray <timmurray@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mmap.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/mmap.c~mm-fix-use-after-free-bug-when-mm-mmap-is-reused-after-being-freed
++++ a/mm/mmap.c
+@@ -3186,6 +3186,7 @@ void exit_mmap(struct mm_struct *mm)
+ 		vma = remove_vma(vma);
+ 		cond_resched();
+ 	}
++	mm->mmap = NULL;
+ 	mmap_write_unlock(mm);
+ 	vm_unacct_memory(nr_accounted);
+ }
+_
