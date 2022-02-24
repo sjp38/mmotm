@@ -1,0 +1,48 @@
+From: Peter Xu <peterx@redhat.com>
+Subject: mm-dont-skip-swap-entry-even-if-zap_details-specified-v5
+
+comment tweaks
+
+Link: https://lkml.kernel.org/r/20220217060746.71256-2-peterx@redhat.com
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Peter Xu <peterx@redhat.com>
+Reviewed-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory.c |    9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+--- a/mm/memory.c~mm-dont-skip-swap-entry-even-if-zap_details-specified-v5
++++ a/mm/memory.c
+@@ -1335,7 +1335,7 @@ zap_skip_check_mapping(struct zap_detail
+ 	if (should_zap_cows(details))
+ 		return false;
+ 
+-	/* E.g. zero page */
++	/* E.g. the caller passes NULL for the case of a zero page */
+ 	if (!page)
+ 		return false;
+ 
+@@ -1421,11 +1421,7 @@ again:
+ 		}
+ 
+ 		if (!non_swap_entry(entry)) {
+-			/*
+-			 * If this is a genuine swap entry, then it must be an
+-			 * private anon page.  If the caller wants to skip
+-			 * COWed pages, ignore it.
+-			 */
++			/* Genuine swap entry, hence a private anon page */
+ 			if (!should_zap_cows(details))
+ 				continue;
+ 			rss[MM_SWAPENTS]--;
+@@ -1437,7 +1433,6 @@ again:
+ 				continue;
+ 			rss[mm_counter(page)]--;
+ 		} else if (is_hwpoison_entry(entry)) {
+-			/* If the caller wants to skip COWed pages, ignore it */
+ 			if (!should_zap_cows(details))
+ 				continue;
+ 		} else {
+_

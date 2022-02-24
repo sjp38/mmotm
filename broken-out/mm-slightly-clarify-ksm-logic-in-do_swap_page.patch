@@ -27,7 +27,7 @@ Cc: Nadav Amit <nadav.amit@gmail.com>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Peter Xu <peterx@redhat.com>
 Cc: Rik van Riel <riel@surriel.com>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yang Shi <shy828301@gmail.com>
@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-slightly-clarify-ksm-logic-in-do_swap_page
 +++ a/mm/memory.c
-@@ -3615,21 +3615,29 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3611,21 +3611,29 @@ vm_fault_t do_swap_page(struct vm_fault
  		goto out_release;
  	}
  

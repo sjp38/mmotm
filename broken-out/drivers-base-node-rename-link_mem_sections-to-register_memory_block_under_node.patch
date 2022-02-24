@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return error;
 --- a/mm/memory_hotplug.c~drivers-base-node-rename-link_mem_sections-to-register_memory_block_under_node
 +++ a/mm/memory_hotplug.c
-@@ -1383,9 +1383,9 @@ int __ref add_memory_resource(int nid, s
+@@ -1384,9 +1384,9 @@ int __ref add_memory_resource(int nid, s
  		BUG_ON(ret);
  	}
  

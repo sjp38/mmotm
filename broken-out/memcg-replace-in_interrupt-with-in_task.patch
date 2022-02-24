@@ -11,7 +11,7 @@ Signed-off-by: Shakeel Butt <shakeelb@google.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
 Cc: Vasily Averin <vvs@virtuozzo.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

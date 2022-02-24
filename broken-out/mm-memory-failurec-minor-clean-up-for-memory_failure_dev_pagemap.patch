@@ -1,11 +1,12 @@
 From: Miaohe Lin <linmiaohe@huawei.com>
 Subject: mm/memory-failure.c: minor clean up for memory_failure_dev_pagemap
 
-Patch series "mm/memory-failure.c: A few cleanup patches for memory failure".
+Patch series "A few cleanup and fixup patches for memory failure", v3.
 
 This series contains a few patches to simplify the code logic, remove
-unneeded variable and remove obsolete comment.  More details can be found
-in the respective changelogs.
+unneeded variable and remove obsolete comment.  Also we fix race changing
+page more robustly in memory_failure.  More details can be found in the
+respective changelogs.  
 
 
 This patch (of 8):
@@ -13,13 +14,15 @@ This patch (of 8):
 The flags always has MF_ACTION_REQUIRED and MF_MUST_KILL set.  So we do
 not need to check these flags again.
 
-Link: https://lkml.kernel.org/r/20220210141733.1908-1-linmiaohe@huawei.com
-Link: https://lkml.kernel.org/r/20220210141733.1908-2-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220218090118.1105-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220218090118.1105-2-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memory-failure.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 --- a/mm/memory-failure.c~mm-memory-failurec-minor-clean-up-for-memory_failure_dev_pagemap
 +++ a/mm/memory-failure.c

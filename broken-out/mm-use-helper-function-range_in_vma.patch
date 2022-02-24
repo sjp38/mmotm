@@ -1,0 +1,26 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory.c: use helper function range_in_vma()
+
+Use helper function range_in_vma() to check if address, address + size are
+within the vma range.  Minor readability improvement.
+
+Link: https://lkml.kernel.org/r/20220219021441.29173-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memory.c~mm-use-helper-function-range_in_vma
++++ a/mm/memory.c
+@@ -1715,7 +1715,7 @@ static void zap_page_range_single(struct
+ void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned long size)
+ {
+-	if (address < vma->vm_start || address + size > vma->vm_end ||
++	if (!range_in_vma(vma, address, address + size) ||
+ 	    		!(vma->vm_flags & VM_PFNMAP))
+ 		return;
+ 
+_

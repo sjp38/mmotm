@@ -1,40 +1,21 @@
 From: NeilBrown <neilb@suse.de>
-Subject: mm/fs: remove inode_congested()
-
-Patch series "Remove remaining parts of congestions tracking code".
-
-Congestion hasn't been reliably tracked for quite some time.  Most MM uses
-of it for guiding writeback decisions were removed in 5.16.  Some other
-uses were removed in 17-rc1.
-
-This series removes the remaining places that test for congestion, and the
-few places which still set it.
-
-
-This patch (of 9):
+Subject: remove inode_congested()
 
 inode_congested() reports if the backing-device for the inode is
-congested.  Few bdi report congestion any more, only ceph, fuse, and nfs. 
-Having support just for those is unlikely to be useful.
-
-The places which test inode_congested() or it variants like
-inode_write_congested(), avoid initiating IO if congestion is present.  We
-now have to rely on other places in the stack to back off, or abort
-requests - we already do for everything except these 3 filesystems.
+congested.  No bdi reports congestion any more, so this always returns
+'false'.
 
 So remove inode_congested() and related functions, and remove the call
 sites, assuming that inode_congested() always returns 'false'.
 
-Link: https://lkml.kernel.org/r/164325106958.29787.4865219843242892726.stgit@noble.brown
-Link: https://lkml.kernel.org/r/164325158954.29787.7856652136298668100.stgit@noble.brown
+Link: https://lkml.kernel.org/r/164549983741.9187.2174285592262191311.stgit@noble.brown
 Signed-off-by: NeilBrown <neilb@suse.de>
 Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
 Cc: Chao Yu <chao@kernel.org>
-Cc: Christoph Hellwig <hch@lst.de>
 Cc: Darrick J. Wong <djwong@kernel.org>
-Cc: Dave Chinner <david@fromorbit.com>
 Cc: Ilya Dryomov <idryomov@gmail.com>
 Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Jan Kara <jack@suse.cz>
 Cc: Jeff Layton <jlayton@kernel.org>
 Cc: Jens Axboe <axboe@kernel.dk>
 Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
@@ -43,6 +24,7 @@ Cc: Paolo Valente <paolo.valente@linaro.org>
 Cc: Philipp Reisner <philipp.reisner@linbit.com>
 Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
 Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -155,7 +137,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		 * First and last FULL page! Partial pages are deliberately
 --- a/mm/readahead.c~remove-inode_congested
 +++ a/mm/readahead.c
-@@ -595,12 +595,6 @@ void page_cache_async_ra(struct readahea
+@@ -709,12 +709,6 @@ void page_cache_async_ra(struct readahea
  
  	folio_clear_readahead(folio);
  

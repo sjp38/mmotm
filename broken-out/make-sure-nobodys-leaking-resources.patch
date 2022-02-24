@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/kernel/resource.c~make-sure-nobodys-leaking-resources
 +++ a/kernel/resource.c
-@@ -225,6 +225,14 @@ static int __release_resource(struct res
+@@ -200,6 +200,14 @@ static int __release_resource(struct res
  {
  	struct resource *tmp, **p, *chd;
  

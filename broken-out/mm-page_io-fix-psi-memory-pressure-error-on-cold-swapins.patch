@@ -13,6 +13,12 @@ conventional submit_bio() and lock_page() route will not see much pressure
 stall.  ZRAM and ZSWAP do most of the work directly from swap_readpage()
 and will see all swapins reflected as pressure.
 
+IOW, a workload doing cold swapins could see little to no pressure
+reported with on-disk swap, but potentially high pressure with a zram or
+zswap backend.  That confuses any psi-based health monitoring, load
+shedding, proactive reclaim, or userspace OOM killing schemes that might
+be in place for the workload.
+
 Restore consistency by making all swapin stall accounting conditional on
 the page actually being part of the workingset.
 
@@ -23,7 +29,7 @@ the page actually being part of the workingset.
 Link: https://lkml.kernel.org/r/20220214214921.419687-1-hannes@cmpxchg.org
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 Reported-by: CGEL <cgel.zte@gmail.com>
-Cc: Minchan Kim <minchan@google.com>
+Acked-by: Minchan Kim <minchan@kernel.org>
 Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 Cc: Yu Zhao <yuzhao@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

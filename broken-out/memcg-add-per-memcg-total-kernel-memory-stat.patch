@@ -25,6 +25,8 @@ counter, with added benefits such as using rstat infrastructure which
 aggregates stats more efficiently.  Additionally, this provides a lighter
 alternative in case the legacy kmem is deprecated in the future
 
+[yosryahmed@google.com: v2]
+  Link: https://lkml.kernel.org/r/20220203193856.972500-1-yosryahmed@google.com
 Link: https://lkml.kernel.org/r/20220201200823.3283171-1-yosryahmed@google.com
 Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
 Acked-by: Shakeel Butt <shakeelb@google.com>
@@ -36,23 +38,23 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
  Documentation/admin-guide/cgroup-v2.rst |    5 ++++
  include/linux/memcontrol.h              |    1 
- mm/memcontrol.c                         |   24 ++++++++++++++++------
- 3 files changed, 24 insertions(+), 6 deletions(-)
+ mm/memcontrol.c                         |   27 +++++++++++++++++-----
+ 3 files changed, 27 insertions(+), 6 deletions(-)
 
 --- a/Documentation/admin-guide/cgroup-v2.rst~memcg-add-per-memcg-total-kernel-memory-stat
 +++ a/Documentation/admin-guide/cgroup-v2.rst
-@@ -1317,6 +1317,11 @@ PAGE_SIZE multiple when read back.
- 	  vmalloc (npn)
- 		Amount of memory used for vmap backed memory.
+@@ -1301,6 +1301,11 @@ PAGE_SIZE multiple when read back.
+ 		Amount of memory used to cache filesystem data,
+ 		including tmpfs and shared memory.
  
 +	  kernel (npn)
 +		Amount of total kernel memory, including
 +		(kernel_stack, pagetables, percpu, vmalloc, slab) in
 +		addition to other kernel memory use cases.
 +
- 	  shmem
- 		Amount of cached filesystem data that is swap-backed,
- 		such as tmpfs, shm segments, shared anonymous mmap()s
+ 	  kernel_stack
+ 		Amount of memory allocated to kernel stacks.
+ 
 --- a/include/linux/memcontrol.h~memcg-add-per-memcg-total-kernel-memory-stat
 +++ a/include/linux/memcontrol.h
 @@ -34,6 +34,7 @@ enum memcg_stat_item {
@@ -65,20 +67,37 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/memcontrol.c~memcg-add-per-memcg-total-kernel-memory-stat
 +++ a/mm/memcontrol.c
-@@ -1376,6 +1376,7 @@ static const struct memory_stat memory_s
- 	{ "percpu",			MEMCG_PERCPU_B			},
- 	{ "sock",			MEMCG_SOCK			},
- 	{ "vmalloc",			MEMCG_VMALLOC			},
+@@ -1371,6 +1371,7 @@ struct memory_stat {
+ static const struct memory_stat memory_stats[] = {
+ 	{ "anon",			NR_ANON_MAPPED			},
+ 	{ "file",			NR_FILE_PAGES			},
 +	{ "kernel",			MEMCG_KMEM			},
- 	{ "shmem",			NR_SHMEM			},
- 	{ "file_mapped",		NR_FILE_MAPPED			},
- 	{ "file_dirty",			NR_FILE_DIRTY			},
-@@ -2979,6 +2980,19 @@ static void memcg_free_cache_id(int id)
+ 	{ "kernel_stack",		NR_KERNEL_STACK_KB		},
+ 	{ "pagetables",			NR_PAGETABLE			},
+ 	{ "percpu",			MEMCG_PERCPU_B			},
+@@ -2114,6 +2115,7 @@ static DEFINE_MUTEX(percpu_charge_mutex)
+ static void drain_obj_stock(struct obj_stock *stock);
+ static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
+ 				     struct mem_cgroup *root_memcg);
++static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages);
+ 
+ #else
+ static inline void drain_obj_stock(struct obj_stock *stock)
+@@ -2124,6 +2126,9 @@ static bool obj_stock_flush_required(str
+ {
+ 	return false;
+ }
++static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages)
++{
++}
+ #endif
+ 
+ /**
+@@ -2979,6 +2984,18 @@ static void memcg_free_cache_id(int id)
  	ida_simple_remove(&memcg_cache_ida, id);
  }
  
-+static void mem_cgroup_kmem_record(struct mem_cgroup *memcg,
-+				   int nr_pages)
++static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages)
 +{
 +	mod_memcg_state(memcg, MEMCG_KMEM, nr_pages);
 +	if (!cgroup_subsys_on_dfl(memory_cgrp_subsys)) {
@@ -93,34 +112,34 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * obj_cgroup_uncharge_pages: uncharge a number of kernel pages from a objcg
   * @objcg: object cgroup to uncharge
-@@ -2991,8 +3005,7 @@ static void obj_cgroup_uncharge_pages(st
+@@ -2991,8 +3008,7 @@ static void obj_cgroup_uncharge_pages(st
  
  	memcg = get_mem_cgroup_from_objcg(objcg);
  
 -	if (!cgroup_subsys_on_dfl(memory_cgrp_subsys))
 -		page_counter_uncharge(&memcg->kmem, nr_pages);
-+	mem_cgroup_kmem_record(memcg, -nr_pages);
++	memcg_account_kmem(memcg, -nr_pages);
  	refill_stock(memcg, nr_pages);
  
  	css_put(&memcg->css);
-@@ -3018,8 +3031,7 @@ static int obj_cgroup_charge_pages(struc
+@@ -3018,8 +3034,7 @@ static int obj_cgroup_charge_pages(struc
  	if (ret)
  		goto out;
  
 -	if (!cgroup_subsys_on_dfl(memory_cgrp_subsys))
 -		page_counter_charge(&memcg->kmem, nr_pages);
-+	mem_cgroup_kmem_record(memcg, nr_pages);
++	memcg_account_kmem(memcg, nr_pages);
  out:
  	css_put(&memcg->css);
  
-@@ -6801,8 +6813,8 @@ static void uncharge_batch(const struct
+@@ -6801,8 +6816,8 @@ static void uncharge_batch(const struct
  		page_counter_uncharge(&ug->memcg->memory, ug->nr_memory);
  		if (do_memsw_account())
  			page_counter_uncharge(&ug->memcg->memsw, ug->nr_memory);
 -		if (!cgroup_subsys_on_dfl(memory_cgrp_subsys) && ug->nr_kmem)
 -			page_counter_uncharge(&ug->memcg->kmem, ug->nr_kmem);
 +		if (ug->nr_kmem)
-+			mem_cgroup_kmem_record(ug->memcg, -ug->nr_kmem);
++			memcg_account_kmem(ug->memcg, -ug->nr_kmem);
  		memcg_oom_recover(ug->memcg);
  	}
  

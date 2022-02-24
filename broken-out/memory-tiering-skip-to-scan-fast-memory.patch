@@ -12,24 +12,25 @@ the number of the NUMA balancing hint faults for the DRAM node is reduced
 to almost 0 with the patch.  While the benchmark score doesn't change
 visibly.
 
-Link: https://lkml.kernel.org/r/20220128082751.593478-4-ying.huang@intel.com
+Link: https://lkml.kernel.org/r/20220221084529.1052339-4-ying.huang@intel.com
 Signed-off-by: "Huang, Ying" <ying.huang@intel.com>
 Suggested-by: Dave Hansen <dave.hansen@linux.intel.com>
 Tested-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Mel Gorman <mgorman@techsingularity.net>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Yang Shi <shy828301@gmail.com>
-Cc: Shakeel Butt <shakeelb@google.com>
-Cc: zhongjiang-ali <zhongjiang-ali@linux.alibaba.com>
-Cc: Hasan Al Maruf <hasanalmaruf@fb.com>
-Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Feng Tang <feng.tang@intel.com>
 Cc: Zi Yan <ziy@nvidia.com>
 Cc: Wei Xu <weixugc@google.com>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: zhongjiang-ali <zhongjiang-ali@linux.alibaba.com>
+Cc: Feng Tang <feng.tang@intel.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -47,7 +48,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include <asm/tlb.h>
  #include <asm/pgalloc.h>
-@@ -1774,17 +1775,28 @@ int change_huge_pmd(struct vm_area_struc
+@@ -1769,17 +1770,28 @@ int change_huge_pmd(struct vm_area_struc
  	}
  #endif
  

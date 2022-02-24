@@ -1,0 +1,34 @@
+From: tangmeng <tangmeng@uniontech.com>
+Subject: mm/kasan: remove unnecessary CONFIG_KASAN option
+
+In mm/Makefile has:
+obj-$(CONFIG_KASAN)     += kasan/
+
+So that we don't need 'obj-$(CONFIG_KASAN) :=' in mm/kasan/Makefile,
+delete it from mm/kasan/Makefile.
+
+Link: https://lkml.kernel.org/r/20220221065421.20689-1-tangmeng@uniontech.com
+Signed-off-by: tangmeng <tangmeng@uniontech.com>
+Reviewed-by: Marco Elver <elver@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Dmitriy Vyukov <dvyukov@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/kasan/Makefile~mm-kasan-remove-unnecessary-config_kasan-option
++++ a/mm/kasan/Makefile
+@@ -35,7 +35,7 @@ CFLAGS_shadow.o := $(CC_FLAGS_KASAN_RUNT
+ CFLAGS_hw_tags.o := $(CC_FLAGS_KASAN_RUNTIME)
+ CFLAGS_sw_tags.o := $(CC_FLAGS_KASAN_RUNTIME)
+ 
+-obj-$(CONFIG_KASAN) := common.o report.o
++obj-y := common.o report.o
+ obj-$(CONFIG_KASAN_GENERIC) += init.o generic.o report_generic.o shadow.o quarantine.o
+ obj-$(CONFIG_KASAN_HW_TAGS) += hw_tags.o report_hw_tags.o tags.o report_tags.o
+ obj-$(CONFIG_KASAN_SW_TAGS) += init.o report_sw_tags.o shadow.o sw_tags.o tags.o report_tags.o
+_

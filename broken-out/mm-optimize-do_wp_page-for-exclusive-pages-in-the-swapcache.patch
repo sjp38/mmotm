@@ -177,7 +177,7 @@ Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 Cc: Jann Horn <jannh@google.com>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Rik van Riel <riel@surriel.com>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Andrea Arcangeli <aarcange@redhat.com>
 Cc: Peter Xu <peterx@redhat.com>
 Cc: Don Dutile <ddutile@redhat.com>
@@ -192,7 +192,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-optimize-do_wp_page-for-exclusive-pages-in-the-swapcache
 +++ a/mm/memory.c
-@@ -3291,19 +3291,27 @@ static vm_fault_t do_wp_page(struct vm_f
+@@ -3287,19 +3287,27 @@ static vm_fault_t do_wp_page(struct vm_f
  	if (PageAnon(vmf->page)) {
  		struct page *page = vmf->page;
  

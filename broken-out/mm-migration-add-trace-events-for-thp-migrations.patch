@@ -91,15 +91,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * By default, transparent hugepage support is disabled in order to avoid
   * risking an increased memory footprint for applications that are not
-@@ -3071,6 +3074,7 @@ void set_pmd_migration_entry(struct page
+@@ -3173,6 +3176,7 @@ void set_pmd_migration_entry(struct page
  	set_pmd_at(mm, address, pvmw->pmd, pmdswp);
- 	page_remove_rmap(page, vma, true);
+ 	page_remove_rmap(page, true);
  	put_page(page);
 +	trace_set_migration_pmd(address, pmd_val(pmdswp));
  }
  
  void remove_migration_pmd(struct page_vma_mapped_walk *pvmw, struct page *new)
-@@ -3103,5 +3107,6 @@ void remove_migration_pmd(struct page_vm
+@@ -3207,5 +3211,6 @@ void remove_migration_pmd(struct page_vm
  
  	/* No need to invalidate - it was non-present before */
  	update_mmu_cache_pmd(vma, address, pvmw->pmd);

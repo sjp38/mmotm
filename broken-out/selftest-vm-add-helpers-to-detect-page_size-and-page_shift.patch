@@ -1,0 +1,78 @@
+From: Mike Rapoport <rppt@kernel.org>
+Subject: selftest/vm: add helpers to detect PAGE_SIZE and PAGE_SHIFT
+
+PAGE_SIZE is not 4096 in many configurations, particularly ppc64 uses 64K
+pages in majority of cases.
+
+Add helpers to detect PAGE_SIZE and PAGE_SHIFT dynamically.
+
+Without this tests are broken w.r.t reading /proc/self/pagemap
+
+    if (pread(pagemap_fd, ent, sizeof(ent),
+              (uintptr_t)ptr >> (PAGE_SHIFT - 3)) != sizeof(ent))
+              err(2, "read pagemap");
+
+Link: https://lkml.kernel.org/r/20220217083537.374160-2-aneesh.kumar@linux.ibm.com
+Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/vm/gup_test.c |    3 +-
+ tools/testing/selftests/vm/util.h     |   27 +++++++++++++++++++++---
+ 2 files changed, 26 insertions(+), 4 deletions(-)
+
+--- a/tools/testing/selftests/vm/gup_test.c~selftest-vm-add-helpers-to-detect-page_size-and-page_shift
++++ a/tools/testing/selftests/vm/gup_test.c
+@@ -10,8 +10,9 @@
+ #include <assert.h>
+ #include "../../../../mm/gup_test.h"
+ 
++#include "util.h"
++
+ #define MB (1UL << 20)
+-#define PAGE_SIZE sysconf(_SC_PAGESIZE)
+ 
+ /* Just the flags we need, copied from mm.h: */
+ #define FOLL_WRITE	0x01	/* check pte is writable */
+--- a/tools/testing/selftests/vm/util.h~selftest-vm-add-helpers-to-detect-page_size-and-page_shift
++++ a/tools/testing/selftests/vm/util.h
+@@ -6,11 +6,32 @@
+ #include <stdint.h>
+ #include <sys/mman.h>
+ #include <err.h>
++#include <string.h> /* ffsl() */
++#include <unistd.h> /* _SC_PAGESIZE */
+ 
+-#define PAGE_SHIFT	12
+-#define HPAGE_SHIFT	21
++static unsigned int __page_size;
++static unsigned int __page_shift;
+ 
+-#define PAGE_SIZE (1 << PAGE_SHIFT)
++static inline unsigned int page_size(void)
++{
++	if (!__page_size)
++		__page_size = sysconf(_SC_PAGESIZE);
++	return __page_size;
++}
++
++static inline unsigned int page_shift(void)
++{
++	if (!__page_shift)
++		__page_shift = (ffsl(page_size()) - 1);
++	return __page_shift;
++}
++
++#define PAGE_SHIFT	(page_shift())
++#define PAGE_SIZE	(page_size())
++/*
++ * On ppc64 this will only work with radix 2M hugepage size
++ */
++#define HPAGE_SHIFT 21
+ #define HPAGE_SIZE (1 << HPAGE_SHIFT)
+ 
+ #define PAGEMAP_PRESENT(ent)	(((ent) & (1ull << 63)) != 0)
+_

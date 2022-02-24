@@ -1,0 +1,46 @@
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: init/main.c: return 1 from handled __setup() functions
+
+initcall_blacklist() should return 1 to indicate that it handled its
+cmdline arguments.
+
+set_debug_rodata() should return 1 to indicate that it handled its cmdline
+arguments.  Print a warning if the option string is invalid.
+
+This prevents these strings from being added to the 'init' program's
+environment as they are not init arguments/parameters.
+
+Link: https://lkml.kernel.org/r/20220221050901.23985-1-rdunlap@infradead.org
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: Igor Zhbanov <i.zhbanov@omprussia.ru>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ init/main.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- a/init/main.c~init-mainc-return-1-from-handled-__setup-functions
++++ a/init/main.c
+@@ -1190,7 +1190,7 @@ static int __init initcall_blacklist(cha
+ 		}
+ 	} while (str_entry);
+ 
+-	return 0;
++	return 1;
+ }
+ 
+ static bool __init_or_module initcall_blacklisted(initcall_t fn)
+@@ -1448,7 +1448,9 @@ static noinline void __init kernel_init_
+ bool rodata_enabled __ro_after_init = true;
+ static int __init set_debug_rodata(char *str)
+ {
+-	return strtobool(str, &rodata_enabled);
++	if (strtobool(str, &rodata_enabled))
++		pr_warn("Invalid option string for rodata: '%s'\n", str);
++	return 1;
+ }
+ __setup("rodata=", set_debug_rodata);
+ #endif
+_

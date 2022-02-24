@@ -86,7 +86,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static __always_inline int page_is_fake_head(struct page *page)
 --- a/mm/hugetlb_vmemmap.c~mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key
 +++ a/mm/hugetlb_vmemmap.c
-@@ -188,9 +188,9 @@
+@@ -22,9 +22,9 @@
  #define RESERVE_VMEMMAP_NR		1U
  #define RESERVE_VMEMMAP_SIZE		(RESERVE_VMEMMAP_NR << PAGE_SHIFT)
  
@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static int __init early_hugetlb_free_vmemmap_param(char *buf)
  {
-@@ -204,9 +204,9 @@ static int __init early_hugetlb_free_vme
+@@ -38,9 +38,9 @@ static int __init early_hugetlb_free_vme
  		return -EINVAL;
  
  	if (!strcmp(buf, "on"))
@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	else
  		return -EINVAL;
  
-@@ -284,7 +284,7 @@ void __init hugetlb_vmemmap_init(struct
+@@ -118,7 +118,7 @@ void __init hugetlb_vmemmap_init(struct
  	BUILD_BUG_ON(__NR_USED_SUBPAGE >=
  		     RESERVE_VMEMMAP_SIZE / sizeof(struct page));
  
@@ -122,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	vmemmap_pages = (nr_pages * sizeof(struct page)) >> PAGE_SHIFT;
 --- a/mm/memory_hotplug.c~mm-hugetlb-replace-hugetlb_free_vmemmap_enabled-with-a-static_key
 +++ a/mm/memory_hotplug.c
-@@ -1327,7 +1327,7 @@ bool mhp_supports_memmap_on_memory(unsig
+@@ -1328,7 +1328,7 @@ bool mhp_supports_memmap_on_memory(unsig
  	 *       populate a single PMD.
  	 */
  	return memmap_on_memory &&

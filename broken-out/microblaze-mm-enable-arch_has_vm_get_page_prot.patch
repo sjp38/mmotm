@@ -1,0 +1,102 @@
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: microblaze/mm: enable ARCH_HAS_VM_GET_PAGE_PROT
+
+This defines and exports a platform specific custom vm_get_page_prot() via
+subscribing ARCH_HAS_VM_GET_PAGE_PROT.  Subsequently all __SXXX and __PXXX
+macros can be dropped which are no longer needed.
+
+Link: https://lkml.kernel.org/r/1645425519-9034-25-git-send-email-anshuman.khandual@arm.com
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: Michal Simek <monstr@monstr.eu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/microblaze/Kconfig               |    1 
+ arch/microblaze/include/asm/pgtable.h |   17 ---------
+ arch/microblaze/mm/init.c             |   41 ++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 17 deletions(-)
+
+--- a/arch/microblaze/include/asm/pgtable.h~microblaze-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/microblaze/include/asm/pgtable.h
+@@ -204,23 +204,6 @@ extern pte_t *va_to_pte(unsigned long ad
+  * We consider execute permission the same as read.
+  * Also, write permissions imply read permissions.
+  */
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY_X
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY_X
+-#define __P100	PAGE_READONLY
+-#define __P101	PAGE_READONLY_X
+-#define __P110	PAGE_COPY
+-#define __P111	PAGE_COPY_X
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY_X
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED_X
+-#define __S100	PAGE_READONLY
+-#define __S101	PAGE_READONLY_X
+-#define __S110	PAGE_SHARED
+-#define __S111	PAGE_SHARED_X
+ 
+ #ifndef __ASSEMBLY__
+ /*
+--- a/arch/microblaze/Kconfig~microblaze-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/microblaze/Kconfig
+@@ -7,6 +7,7 @@ config MICROBLAZE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
++	select ARCH_HAS_VM_GET_PAGE_PROT
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select BUILDTIME_TABLE_SORT
+--- a/arch/microblaze/mm/init.c~microblaze-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/microblaze/mm/init.c
+@@ -280,3 +280,44 @@ void * __ref zalloc_maybe_bootmem(size_t
+ 
+ 	return p;
+ }
++
++pgprot_t vm_get_page_prot(unsigned long vm_flags)
++{
++	switch (vm_flags & (VM_READ | VM_WRITE | VM_EXEC | VM_SHARED)) {
++	case VM_NONE:
++		return PAGE_NONE;
++	case VM_READ:
++		return PAGE_READONLY_X;
++	case VM_WRITE:
++		return PAGE_COPY;
++	case VM_WRITE | VM_READ:
++		return PAGE_COPY_X;
++	case VM_EXEC:
++		return PAGE_READONLY;
++	case VM_EXEC | VM_READ:
++		return PAGE_READONLY_X;
++	case VM_EXEC | VM_WRITE:
++		return PAGE_COPY;
++	case VM_EXEC | VM_WRITE | VM_READ:
++		return PAGE_COPY_X;
++	case VM_SHARED:
++		return PAGE_NONE;
++	case VM_SHARED | VM_READ:
++		return PAGE_READONLY_X;
++	case VM_SHARED | VM_WRITE:
++		return PAGE_SHARED;
++	case VM_SHARED | VM_WRITE | VM_READ:
++		return PAGE_SHARED_X;
++	case VM_SHARED | VM_EXEC:
++		return PAGE_READONLY;
++	case VM_SHARED | VM_EXEC | VM_READ:
++		return PAGE_READONLY_X;
++	case VM_SHARED | VM_EXEC | VM_WRITE:
++		return PAGE_SHARED;
++	case VM_SHARED | VM_EXEC | VM_WRITE | VM_READ:
++		return PAGE_SHARED_X;
++	default:
++		BUILD_BUG();
++	}
++}
++EXPORT_SYMBOL(vm_get_page_prot);
+_

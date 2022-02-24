@@ -1,0 +1,107 @@
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: nios2/mm: enable ARCH_HAS_VM_GET_PAGE_PROT
+
+This defines and exports a platform specific custom vm_get_page_prot() via
+subscribing ARCH_HAS_VM_GET_PAGE_PROT.  Subsequently all __SXXX and __PXXX
+macros can be dropped which are no longer needed.
+
+Link: https://lkml.kernel.org/r/1645425519-9034-26-git-send-email-anshuman.khandual@arm.com
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Acked-by: Dinh Nguyen <dinguyen@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/nios2/Kconfig               |    1 
+ arch/nios2/include/asm/pgtable.h |   16 ----------
+ arch/nios2/mm/init.c             |   45 +++++++++++++++++++++++++++++
+ 3 files changed, 46 insertions(+), 16 deletions(-)
+
+--- a/arch/nios2/include/asm/pgtable.h~nios2-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/nios2/include/asm/pgtable.h
+@@ -40,24 +40,8 @@ struct mm_struct;
+  */
+ 
+ /* Remove W bit on private pages for COW support */
+-#define __P000	MKP(0, 0, 0)
+-#define __P001	MKP(0, 0, 1)
+-#define __P010	MKP(0, 0, 0)	/* COW */
+-#define __P011	MKP(0, 0, 1)	/* COW */
+-#define __P100	MKP(1, 0, 0)
+-#define __P101	MKP(1, 0, 1)
+-#define __P110	MKP(1, 0, 0)	/* COW */
+-#define __P111	MKP(1, 0, 1)	/* COW */
+ 
+ /* Shared pages can have exact HW mapping */
+-#define __S000	MKP(0, 0, 0)
+-#define __S001	MKP(0, 0, 1)
+-#define __S010	MKP(0, 1, 0)
+-#define __S011	MKP(0, 1, 1)
+-#define __S100	MKP(1, 0, 0)
+-#define __S101	MKP(1, 0, 1)
+-#define __S110	MKP(1, 1, 0)
+-#define __S111	MKP(1, 1, 1)
+ 
+ /* Used all over the kernel */
+ #define PAGE_KERNEL __pgprot(_PAGE_PRESENT | _PAGE_CACHED | _PAGE_READ | \
+--- a/arch/nios2/Kconfig~nios2-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/nios2/Kconfig
+@@ -6,6 +6,7 @@ config NIOS2
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+ 	select ARCH_HAS_DMA_SET_UNCACHED
++	select ARCH_HAS_VM_GET_PAGE_PROT
+ 	select ARCH_NO_SWAP
+ 	select COMMON_CLK
+ 	select TIMER_OF
+--- a/arch/nios2/mm/init.c~nios2-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/nios2/mm/init.c
+@@ -124,3 +124,48 @@ const char *arch_vma_name(struct vm_area
+ {
+ 	return (vma->vm_start == KUSER_BASE) ? "[kuser]" : NULL;
+ }
++
++pgprot_t vm_get_page_prot(unsigned long vm_flags)
++{
++	switch (vm_flags & (VM_READ | VM_WRITE | VM_EXEC | VM_SHARED)) {
++	case VM_NONE:
++		return MKP(0, 0, 0);
++	case VM_READ:
++		return MKP(0, 0, 1);
++	/* COW */
++	case VM_WRITE:
++		return MKP(0, 0, 0);
++	/* COW */
++	case VM_WRITE | VM_READ:
++		return MKP(0, 0, 1);
++	case VM_EXEC:
++		return MKP(1, 0, 0);
++	case VM_EXEC | VM_READ:
++		return MKP(1, 0, 1);
++	/* COW */
++	case VM_EXEC | VM_WRITE:
++		return MKP(1, 0, 0);
++	/* COW */
++	case VM_EXEC | VM_WRITE | VM_READ:
++		return MKP(1, 0, 1);
++	case VM_SHARED:
++		return MKP(0, 0, 0);
++	case VM_SHARED | VM_READ:
++		return MKP(0, 0, 1);
++	case VM_SHARED | VM_WRITE:
++		return MKP(0, 1, 0);
++	case VM_SHARED | VM_WRITE | VM_READ:
++		return MKP(0, 1, 1);
++	case VM_SHARED | VM_EXEC:
++		return MKP(1, 0, 0);
++	case VM_SHARED | VM_EXEC | VM_READ:
++		return MKP(1, 0, 1);
++	case VM_SHARED | VM_EXEC | VM_WRITE:
++		return MKP(1, 1, 0);
++	case VM_SHARED | VM_EXEC | VM_WRITE | VM_READ:
++		return MKP(1, 1, 1);
++	default:
++		BUILD_BUG();
++	}
++}
++EXPORT_SYMBOL(vm_get_page_prot);
+_

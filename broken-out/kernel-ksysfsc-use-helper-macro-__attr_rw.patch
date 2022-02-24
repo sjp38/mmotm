@@ -1,0 +1,28 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: kernel/ksysfs.c: use helper macro __ATTR_RW
+
+Use helper macro __ATTR_RW to define kobj_attribute to make code more
+clear.  Minor readability improvement.
+
+Link: https://lkml.kernel.org/r/20220222112034.48298-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/ksysfs.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/kernel/ksysfs.c~kernel-ksysfsc-use-helper-macro-__attr_rw
++++ a/kernel/ksysfs.c
+@@ -24,8 +24,7 @@
+ static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
+ 
+ #define KERNEL_ATTR_RW(_name) \
+-static struct kobj_attribute _name##_attr = \
+-	__ATTR(_name, 0644, _name##_show, _name##_store)
++static struct kobj_attribute _name##_attr = __ATTR_RW(_name)
+ 
+ /* current uevent sequence number */
+ static ssize_t uevent_seqnum_show(struct kobject *kobj,
+_

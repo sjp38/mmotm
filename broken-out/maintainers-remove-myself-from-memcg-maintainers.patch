@@ -1,0 +1,25 @@
+From: Vladimir Davydov <vdavydov.dev@gmail.com>
+Subject: MAINTAINERS: remove Vladimir from memcg maintainers
+
+Link: https://lkml.kernel.org/r/4ad1f8da49d7b71c84a0c15bd5347f5ce704e730.1645608825.git.vdavydov.dev@gmail.com
+Signed-off-by: Vladimir Davydov <vdavydov.dev@gmail.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Michal Hocko <mhocko@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ MAINTAINERS |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/MAINTAINERS~maintainers-remove-myself-from-memcg-maintainers
++++ a/MAINTAINERS
+@@ -4913,7 +4913,6 @@ F:	kernel/cgroup/cpuset.c
+ CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)
+ M:	Johannes Weiner <hannes@cmpxchg.org>
+ M:	Michal Hocko <mhocko@kernel.org>
+-M:	Vladimir Davydov <vdavydov.dev@gmail.com>
+ M:	Roman Gushchin <roman.gushchin@linux.dev>
+ L:	cgroups@vger.kernel.org
+ L:	linux-mm@kvack.org
+_

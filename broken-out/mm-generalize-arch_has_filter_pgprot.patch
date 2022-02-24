@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	select ARCH_HAS_FORTIFY_SOURCE
  	select ARCH_HAS_GCOV_PROFILE_ALL
  	select ARCH_HAS_GIGANTIC_PAGE
-@@ -1251,9 +1252,6 @@ config HW_PERF_EVENTS
+@@ -1252,9 +1253,6 @@ config HW_PERF_EVENTS
  	def_bool y
  	depends on ARM_PMU
  

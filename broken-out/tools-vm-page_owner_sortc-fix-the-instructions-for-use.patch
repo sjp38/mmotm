@@ -1,0 +1,34 @@
+From: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Subject: tools/vm/page_owner_sort.c: fix the instructions for use
+
+I noticed a discrepancy between the usage method and the code logic.
+
+If we enable the -f option, it should be "Filter out the information of
+blocks whose memory has been released".
+
+Link: https://lkml.kernel.org/r/20220219143106.2805-1-caoyixuan2019@email.szu.edu.cn
+Signed-off-by: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Sean Anderson <seanga2@gmail.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Cc: Tang Bin <tangbin@cmss.chinamobile.com>
+Cc: Yinan Zhang <zhangyinan2019@email.szu.edu.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-fix-the-instructions-for-use
++++ a/tools/vm/page_owner_sort.c
+@@ -246,7 +246,7 @@ static void usage(void)
+ 		"-a	Sort by memory allocate time.\n"
+ 		"-r	Sort by memory release time.\n"
+ 		"-c	Cull by comparing stacktrace instead of total block.\n"
+-		"-f	Filter out the information of blocks whose memory has not been released.\n"
++		"-f	Filter out the information of blocks whose memory has been released.\n"
+ 	);
+ }
+ 
+_

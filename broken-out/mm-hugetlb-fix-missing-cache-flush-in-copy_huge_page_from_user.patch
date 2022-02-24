@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-hugetlb-fix-missing-cache-flush-in-copy_huge_page_from_user
 +++ a/mm/memory.c
-@@ -5499,6 +5499,8 @@ long copy_huge_page_from_user(struct pag
+@@ -5444,6 +5444,8 @@ long copy_huge_page_from_user(struct pag
  		if (rc)
  			break;
  

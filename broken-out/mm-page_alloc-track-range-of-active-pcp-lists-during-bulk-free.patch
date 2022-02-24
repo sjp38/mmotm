@@ -6,18 +6,18 @@ this was dealing only with migratetypes but storing high-order pages means
 that there can be many more empty lists that are uselessly checked.  Track
 the minimum and maximum active pindex to reduce the search space.
 
-Link: https://lkml.kernel.org/r/20220215145111.27082-3-mgorman@techsingularity.net
+Link: https://lkml.kernel.org/r/20220217002227.5739-3-mgorman@techsingularity.net
 Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
-Cc: Aaron Lu <aaron.lu@intel.com>
+Reviewed-by: Vlastimil Babka <vbabka@suse.cz>
+Tested-by: Aaron Lu <aaron.lu@intel.com>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
 Cc: Jesper Dangaard Brouer <brouer@redhat.com>
 Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Vlastimil Babka <vbabka@suse.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/page_alloc.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
 --- a/mm/page_alloc.c~mm-page_alloc-track-range-of-active-pcp-lists-during-bulk-free
 +++ a/mm/page_alloc.c
@@ -30,9 +30,14 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int batch_free = 0;
  	int nr_freed = 0;
  	unsigned int order;
-@@ -1478,10 +1480,17 @@ static void free_pcppages_bulk(struct zo
- 			if (++pindex == NR_PCP_LISTS)
- 				pindex = 0;
+@@ -1475,13 +1477,20 @@ static void free_pcppages_bulk(struct zo
+ 		 */
+ 		do {
+ 			batch_free++;
+-			if (++pindex == NR_PCP_LISTS)
+-				pindex = 0;
++			if (++pindex > max_pindex)
++				pindex = min_pindex;
  			list = &pcp->lists[pindex];
 -		} while (list_empty(list));
 +			if (!list_empty(list))

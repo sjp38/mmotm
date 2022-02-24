@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/userfaultfd.c~mm-userfaultfd-fix-missing-cache-flush-in-mcopy_atomic_pte-and-__mcopy_atomic
 +++ a/mm/userfaultfd.c
-@@ -150,6 +150,8 @@ static int mcopy_atomic_pte(struct mm_st
+@@ -153,6 +153,8 @@ static int mcopy_atomic_pte(struct mm_st
  			/* don't free the page */
  			goto out;
  		}
@@ -38,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	} else {
  		page = *pagep;
  		*pagep = NULL;
-@@ -625,6 +627,7 @@ retry:
+@@ -628,6 +630,7 @@ retry:
  				err = -EFAULT;
  				goto out;
  			}

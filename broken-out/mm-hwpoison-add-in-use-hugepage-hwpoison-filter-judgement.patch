@@ -1,0 +1,42 @@
+From: luofei <luofei@unicloud.com>
+Subject: mm/hwpoison: add in-use hugepage hwpoison filter judgement
+
+After successfully obtaining the reference count of the huge page, it is
+still necessary to call hwpoison_filter() to make a filter judgement,
+otherwise the filter hugepage will be unmaped and the related process may
+be killed.
+
+Link: https://lkml.kernel.org/r/20220223082254.2769757-1-luofei@unicloud.com
+Signed-off-by: luofei <luofei@unicloud.com>
+Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- a/mm/memory-failure.c~mm-hwpoison-add-in-use-hugepage-hwpoison-filter-judgement
++++ a/mm/memory-failure.c
+@@ -1534,6 +1534,14 @@ static int memory_failure_hugetlb(unsign
+ 	lock_page(head);
+ 	page_flags = head->flags;
+ 
++	if (hwpoison_filter(p)) {
++		if (TestClearPageHWPoison(head))
++			num_poisoned_pages_dec();
++		put_page(p);
++		res = -EOPNOTSUPP;
++		goto out;
++	}
++
+ 	/*
+ 	 * TODO: hwpoison for pud-sized hugetlb doesn't work right now, so
+ 	 * simply disable it. In order to make it work properly, we need
+_

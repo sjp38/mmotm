@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/arch/riscv/mm/init.c~riscv-mm-init-use-is_enabledconfig_kexec_core-instead-of-ifdef
 +++ a/arch/riscv/mm/init.c
-@@ -955,7 +955,6 @@ static inline void setup_vm_final(void)
+@@ -957,7 +957,6 @@ static inline void setup_vm_final(void)
  }
  #endif /* CONFIG_MMU */
  
@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * reserve_crashkernel() - reserves memory for crash kernel
   *
-@@ -972,6 +971,8 @@ static void __init reserve_crashkernel(v
+@@ -974,6 +973,8 @@ static void __init reserve_crashkernel(v
  
  	int ret = 0;
  
@@ -48,7 +48,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/*
  	 * Don't reserve a region for a crash kernel on a crash kernel
  	 * since it doesn't make much sense and we have limited memory
-@@ -1021,7 +1022,6 @@ static void __init reserve_crashkernel(v
+@@ -1023,7 +1024,6 @@ static void __init reserve_crashkernel(v
  	crashk_res.start = crash_base;
  	crashk_res.end = crash_base + crash_size - 1;
  }
@@ -56,7 +56,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  void __init paging_init(void)
  {
-@@ -1035,9 +1035,7 @@ void __init misc_mem_init(void)
+@@ -1037,9 +1037,7 @@ void __init misc_mem_init(void)
  	arch_numa_init();
  	sparse_init();
  	zone_sizes_init();

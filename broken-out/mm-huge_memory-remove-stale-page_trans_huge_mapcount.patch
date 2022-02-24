@@ -24,7 +24,7 @@ Cc: Nadav Amit <nadav.amit@gmail.com>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Peter Xu <peterx@redhat.com>
 Cc: Rik van Riel <riel@surriel.com>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yang Shi <shy828301@gmail.com>
@@ -37,10 +37,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/mm.h~mm-huge_memory-remove-stale-page_trans_huge_mapcount
 +++ a/include/linux/mm.h
-@@ -820,16 +820,11 @@ static inline int page_mapcount(struct p
+@@ -828,16 +828,11 @@ static inline int total_mapcount(struct
+ 	return folio_mapcount(page_folio(page));
+ }
  
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- int total_mapcount(struct page *page);
 -int page_trans_huge_mapcount(struct page *page);
  #else
  static inline int total_mapcount(struct page *page)
@@ -56,8 +56,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline struct page *virt_to_head_page(const void *x)
 --- a/mm/huge_memory.c~mm-huge_memory-remove-stale-page_trans_huge_mapcount
 +++ a/mm/huge_memory.c
-@@ -2523,54 +2523,6 @@ int total_mapcount(struct page *page)
- 	return ret;
+@@ -2484,54 +2484,6 @@ static void __split_huge_page(struct pag
+ 	}
  }
  
 -/*
@@ -109,6 +109,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -}
 -
  /* Racy check whether the huge page can be split */
- bool can_split_huge_page(struct page *page, int *pextra_pins)
+ bool can_split_folio(struct folio *folio, int *pextra_pins)
  {
 _

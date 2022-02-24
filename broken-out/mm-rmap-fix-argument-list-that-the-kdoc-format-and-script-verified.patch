@@ -1,0 +1,44 @@
+From: Yang Li <yang.lee@linux.alibaba.com>
+Subject: mm/rmap: fix argument list that the kdoc format and script verified.
+
+The warnings were found by running scripts/kernel-doc, which is
+caused by using 'make W=1'.
+
+mm/rmap.c:1684: warning: Function parameter or member 'folio' not described in 'try_to_unmap'
+mm/rmap.c:1684: warning: Excess function parameter 'page' description in 'try_to_unmap'
+mm/rmap.c:2086: warning: Function parameter or member 'folio' not described in 'folio_make_device_exclusive'
+mm/rmap.c:2086: warning: expecting prototype for page_make_device_exclusive(). Prototype was for folio_make_device_exclusive() instead
+
+Link: https://lkml.kernel.org/r/20220224014344.99537-1-yang.lee@linux.alibaba.com
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/mm/rmap.c~mm-rmap-fix-argument-list-that-the-kdoc-format-and-script-verified
++++ a/mm/rmap.c
+@@ -1696,7 +1696,7 @@ static int page_not_mapped(struct folio
+ 
+ /**
+  * try_to_unmap - try to remove all page table mappings to a page
+- * @page: the page to get unmapped
++ * @folio: The folio we're currently operating on.
+  * @flags: action and flags
+  *
+  * Tries to remove all the page table entries which are mapping this
+@@ -2097,8 +2097,8 @@ static bool page_make_device_exclusive_o
+ }
+ 
+ /**
+- * page_make_device_exclusive - mark the page exclusively owned by a device
+- * @page: the page to replace page table entries for
++ * folio_make_device_exclusive - mark the page exclusively owned by a device
++ * @folio: The folio we're currently operating on.
+  * @mm: the mm_struct where the page is expected to be mapped
+  * @address: address where the page is expected to be mapped
+  * @owner: passed to MMU_NOTIFY_EXCLUSIVE range notifier callbacks
+_

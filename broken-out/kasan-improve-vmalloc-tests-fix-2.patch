@@ -10,7 +10,7 @@ hardcode the number of pages in these tests.
 
 Link: https://lkml.kernel.org/r/865c91ba49b90623ab50c7526b79ccb955f544f0.1644950160.git.andreyknvl@google.com
 Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
-Cc: Marco Elver <elver@google.com>
+Acked-by: Marco Elver <elver@google.com>
 Cc: Alexander Potapenko <glider@google.com>
 Cc: Dmitry Vyukov <dvyukov@google.com>
 Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>

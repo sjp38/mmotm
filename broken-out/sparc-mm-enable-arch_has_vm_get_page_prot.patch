@@ -1,0 +1,249 @@
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: sparc/mm: enable ARCH_HAS_VM_GET_PAGE_PROT
+
+This defines and exports a platform specific custom vm_get_page_prot() via
+subscribing ARCH_HAS_VM_GET_PAGE_PROT.  Subsequently all __SXXX and __PXXX
+macros can be dropped which are no longer needed.  This also localizes the
+helper arch_vm_get_page_prot() as sparc_vm_get_page_prot() and moves near
+vm_get_page_prot().
+
+Link: https://lkml.kernel.org/r/1645425519-9034-7-git-send-email-anshuman.khandual@arm.com
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Reviewed-by: Khalid Aziz <khalid.aziz@oracle.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/sparc/Kconfig                  |    2 
+ arch/sparc/include/asm/mman.h       |    6 --
+ arch/sparc/include/asm/pgtable_32.h |   19 -------
+ arch/sparc/include/asm/pgtable_64.h |   19 -------
+ arch/sparc/mm/init_32.c             |   35 +++++++++++++
+ arch/sparc/mm/init_64.c             |   70 ++++++++++++++++++--------
+ 6 files changed, 88 insertions(+), 63 deletions(-)
+
+--- a/arch/sparc/include/asm/mman.h~sparc-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/sparc/include/asm/mman.h
+@@ -46,12 +46,6 @@ static inline unsigned long sparc_calc_v
+ 	}
+ }
+ 
+-#define arch_vm_get_page_prot(vm_flags) sparc_vm_get_page_prot(vm_flags)
+-static inline pgprot_t sparc_vm_get_page_prot(unsigned long vm_flags)
+-{
+-	return (vm_flags & VM_SPARC_ADI) ? __pgprot(_PAGE_MCD_4V) : __pgprot(0);
+-}
+-
+ #define arch_validate_prot(prot, addr) sparc_validate_prot(prot, addr)
+ static inline int sparc_validate_prot(unsigned long prot, unsigned long addr)
+ {
+--- a/arch/sparc/include/asm/pgtable_32.h~sparc-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/sparc/include/asm/pgtable_32.h
+@@ -64,25 +64,6 @@ void paging_init(void);
+ 
+ extern unsigned long ptr_in_current_pgd;
+ 
+-/*         xwr */
+-#define __P000  PAGE_NONE
+-#define __P001  PAGE_READONLY
+-#define __P010  PAGE_COPY
+-#define __P011  PAGE_COPY
+-#define __P100  PAGE_READONLY
+-#define __P101  PAGE_READONLY
+-#define __P110  PAGE_COPY
+-#define __P111  PAGE_COPY
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY
+-#define __S101	PAGE_READONLY
+-#define __S110	PAGE_SHARED
+-#define __S111	PAGE_SHARED
+-
+ /* First physical page can be anywhere, the following is needed so that
+  * va-->pa and vice versa conversions work properly without performance
+  * hit for all __pa()/__va() operations.
+--- a/arch/sparc/include/asm/pgtable_64.h~sparc-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/sparc/include/asm/pgtable_64.h
+@@ -187,25 +187,6 @@ bool kern_addr_valid(unsigned long addr)
+ #define _PAGE_SZHUGE_4U	_PAGE_SZ4MB_4U
+ #define _PAGE_SZHUGE_4V	_PAGE_SZ4MB_4V
+ 
+-/* These are actually filled in at boot time by sun4{u,v}_pgprot_init() */
+-#define __P000	__pgprot(0)
+-#define __P001	__pgprot(0)
+-#define __P010	__pgprot(0)
+-#define __P011	__pgprot(0)
+-#define __P100	__pgprot(0)
+-#define __P101	__pgprot(0)
+-#define __P110	__pgprot(0)
+-#define __P111	__pgprot(0)
+-
+-#define __S000	__pgprot(0)
+-#define __S001	__pgprot(0)
+-#define __S010	__pgprot(0)
+-#define __S011	__pgprot(0)
+-#define __S100	__pgprot(0)
+-#define __S101	__pgprot(0)
+-#define __S110	__pgprot(0)
+-#define __S111	__pgprot(0)
+-
+ #ifndef __ASSEMBLY__
+ 
+ pte_t mk_pte_io(unsigned long, pgprot_t, int, unsigned long);
+--- a/arch/sparc/Kconfig~sparc-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/sparc/Kconfig
+@@ -59,6 +59,7 @@ config SPARC32
+ 	select HAVE_UID16
+ 	select OLD_SIGACTION
+ 	select ZONE_DMA
++	select ARCH_HAS_VM_GET_PAGE_PROT
+ 
+ config SPARC64
+ 	def_bool 64BIT
+@@ -84,6 +85,7 @@ config SPARC64
+ 	select PERF_USE_VMALLOC
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select HAVE_C_RECORDMCOUNT
++	select ARCH_HAS_VM_GET_PAGE_PROT
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_SUPPORTS_DEBUG_PAGEALLOC
+--- a/arch/sparc/mm/init_32.c~sparc-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/sparc/mm/init_32.c
+@@ -302,3 +302,38 @@ void sparc_flush_page_to_ram(struct page
+ 		__flush_page_to_ram(vaddr);
+ }
+ EXPORT_SYMBOL(sparc_flush_page_to_ram);
++
++pgprot_t vm_get_page_prot(unsigned long vm_flags)
++{
++	switch (vm_flags & (VM_READ | VM_WRITE | VM_EXEC | VM_SHARED)) {
++	case VM_NONE:
++		return PAGE_NONE;
++	case VM_READ:
++		return PAGE_READONLY;
++	case VM_WRITE:
++	case VM_WRITE | VM_READ:
++		return PAGE_COPY;
++	case VM_EXEC:
++	case VM_EXEC | VM_READ:
++		return PAGE_READONLY;
++	case VM_EXEC | VM_WRITE:
++	case VM_EXEC | VM_WRITE | VM_READ:
++		return PAGE_COPY;
++	case VM_SHARED:
++		return PAGE_NONE;
++	case VM_SHARED | VM_READ:
++		return PAGE_READONLY;
++	case VM_SHARED | VM_WRITE:
++	case VM_SHARED | VM_WRITE | VM_READ:
++		return PAGE_SHARED;
++	case VM_SHARED | VM_EXEC:
++	case VM_SHARED | VM_EXEC | VM_READ:
++		return PAGE_READONLY;
++	case VM_SHARED | VM_EXEC | VM_WRITE:
++	case VM_SHARED | VM_EXEC | VM_WRITE | VM_READ:
++		return PAGE_SHARED;
++	default:
++		BUILD_BUG();
++	}
++}
++EXPORT_SYMBOL(vm_get_page_prot);
+--- a/arch/sparc/mm/init_64.c~sparc-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/sparc/mm/init_64.c
+@@ -50,6 +50,7 @@
+ #include <asm/cpudata.h>
+ #include <asm/setup.h>
+ #include <asm/irq.h>
++#include <asm/mman.h>
+ 
+ #include "init_64.h"
+ 
+@@ -2641,29 +2642,13 @@ static void prot_init_common(unsigned lo
+ {
+ 	PAGE_COPY = __pgprot(page_copy);
+ 	PAGE_SHARED = __pgprot(page_shared);
+-
+-	protection_map[0x0] = __pgprot(page_none);
+-	protection_map[0x1] = __pgprot(page_readonly & ~page_exec_bit);
+-	protection_map[0x2] = __pgprot(page_copy & ~page_exec_bit);
+-	protection_map[0x3] = __pgprot(page_copy & ~page_exec_bit);
+-	protection_map[0x4] = __pgprot(page_readonly);
+-	protection_map[0x5] = __pgprot(page_readonly);
+-	protection_map[0x6] = __pgprot(page_copy);
+-	protection_map[0x7] = __pgprot(page_copy);
+-	protection_map[0x8] = __pgprot(page_none);
+-	protection_map[0x9] = __pgprot(page_readonly & ~page_exec_bit);
+-	protection_map[0xa] = __pgprot(page_shared & ~page_exec_bit);
+-	protection_map[0xb] = __pgprot(page_shared & ~page_exec_bit);
+-	protection_map[0xc] = __pgprot(page_readonly);
+-	protection_map[0xd] = __pgprot(page_readonly);
+-	protection_map[0xe] = __pgprot(page_shared);
+-	protection_map[0xf] = __pgprot(page_shared);
+ }
+ 
++static unsigned long page_none, page_shared, page_copy, page_readonly;
++static unsigned long page_exec_bit;
++
+ static void __init sun4u_pgprot_init(void)
+ {
+-	unsigned long page_none, page_shared, page_copy, page_readonly;
+-	unsigned long page_exec_bit;
+ 	int i;
+ 
+ 	PAGE_KERNEL = __pgprot (_PAGE_PRESENT_4U | _PAGE_VALID |
+@@ -3183,3 +3168,50 @@ void copy_highpage(struct page *to, stru
+ 	}
+ }
+ EXPORT_SYMBOL(copy_highpage);
++
++static inline pgprot_t __vm_get_page_prot(unsigned long vm_flags)
++{
++	switch (vm_flags & (VM_READ | VM_WRITE | VM_EXEC | VM_SHARED)) {
++	case VM_NONE:
++		return __pgprot(page_none);
++	case VM_READ:
++		return __pgprot(page_readonly & ~page_exec_bit);
++	case VM_WRITE:
++	case VM_WRITE | VM_READ:
++		return __pgprot(page_copy & ~page_exec_bit);
++	case VM_EXEC:
++	case VM_EXEC | VM_READ:
++		return __pgprot(page_readonly);
++	case VM_EXEC | VM_WRITE:
++	case VM_EXEC | VM_WRITE | VM_READ:
++		return __pgprot(page_copy);
++	case VM_SHARED:
++		return __pgprot(page_none);
++	case VM_SHARED | VM_READ:
++		return __pgprot(page_readonly & ~page_exec_bit);
++	case VM_SHARED | VM_WRITE:
++	case VM_SHARED | VM_WRITE | VM_READ:
++		return __pgprot(page_shared & ~page_exec_bit);
++	case VM_SHARED | VM_EXEC:
++	case VM_SHARED | VM_EXEC | VM_READ:
++		return __pgprot(page_readonly);
++	case VM_SHARED | VM_EXEC | VM_WRITE:
++	case VM_SHARED | VM_EXEC | VM_WRITE | VM_READ:
++		return __pgprot(page_shared);
++	default:
++		BUILD_BUG();
++	}
++}
++
++static pgprot_t sparc_vm_get_page_prot(unsigned long vm_flags)
++{
++	return (vm_flags & VM_SPARC_ADI) ? __pgprot(_PAGE_MCD_4V) : __pgprot(0);
++}
++
++pgprot_t vm_get_page_prot(unsigned long vm_flags)
++{
++	return __pgprot(pgprot_val(__vm_get_page_prot(vm_flags)) |
++	       pgprot_val(sparc_vm_get_page_prot(vm_flags)));
++
++}
++EXPORT_SYMBOL(vm_get_page_prot);
+_

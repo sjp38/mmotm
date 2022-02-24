@@ -20,7 +20,7 @@ Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Petr Mladek <pmladek@suse.com>
 Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Steven Rostedt (Google) <rostedt@goodmis.org>
 Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>

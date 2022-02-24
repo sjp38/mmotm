@@ -1,0 +1,107 @@
+From: NeilBrown <neilb@suse.de>
+Subject: nfs: remove reliance on bdi congestion
+
+The bdi congestion tracking in not widely used and will be removed.
+
+NFS is one of a small number of filesystems that uses it, setting just the
+async (write) congestion flag at what it determines are appropriate times.
+
+The only remaining effect of the async flag is to cause (some)
+WB_SYNC_NONE writes to be skipped.
+
+So instead of setting the flag, set an internal flag and change:
+ - .writepages to do nothing if WB_SYNC_NONE and the flag is set
+ - .writepage to return AOP_WRITEPAGE_ACTIVATE if WB_SYNC_NONE
+    and the flag is set.
+
+The writepages change causes a behavioural change in that pageout() can
+now return PAGE_ACTIVATE instead of PAGE_KEEP, so SetPageActive() will be
+called on the page which (I think) wil further delay the next attempt at
+writeout.  This might be a good thing.
+
+Link: https://lkml.kernel.org/r/164549983738.9187.3972219847989393182.stgit@noble.brown
+Signed-off-by: NeilBrown <neilb@suse.de>
+Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
+Cc: Chao Yu <chao@kernel.org>
+Cc: Darrick J. Wong <djwong@kernel.org>
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Paolo Valente <paolo.valente@linaro.org>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/nfs/write.c            |   14 +++++++++++---
+ include/linux/nfs_fs_sb.h |    1 +
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+--- a/fs/nfs/write.c~nfs-remove-reliance-on-bdi-congestion
++++ a/fs/nfs/write.c
+@@ -417,7 +417,7 @@ static void nfs_set_page_writeback(struc
+ 
+ 	if (atomic_long_inc_return(&nfss->writeback) >
+ 			NFS_CONGESTION_ON_THRESH)
+-		set_bdi_congested(inode_to_bdi(inode), BLK_RW_ASYNC);
++		nfss->write_congested = 1;
+ }
+ 
+ static void nfs_end_page_writeback(struct nfs_page *req)
+@@ -433,7 +433,7 @@ static void nfs_end_page_writeback(struc
+ 
+ 	end_page_writeback(req->wb_page);
+ 	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+-		clear_bdi_congested(inode_to_bdi(inode), BLK_RW_ASYNC);
++		nfss->write_congested = 0;
+ }
+ 
+ /*
+@@ -672,6 +672,10 @@ static int nfs_writepage_locked(struct p
+ 	struct inode *inode = page_file_mapping(page)->host;
+ 	int err;
+ 
++	if (wbc->sync_mode == WB_SYNC_NONE &&
++	    NFS_SERVER(inode)->write_congested)
++		return AOP_WRITEPAGE_ACTIVATE;
++
+ 	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGE);
+ 	nfs_pageio_init_write(&pgio, inode, 0,
+ 				false, &nfs_async_write_completion_ops);
+@@ -719,6 +723,10 @@ int nfs_writepages(struct address_space
+ 	int priority = 0;
+ 	int err;
+ 
++	if (wbc->sync_mode == WB_SYNC_NONE &&
++	    NFS_SERVER(inode)->write_congested)
++		return 0;
++
+ 	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGES);
+ 
+ 	if (!(mntflags & NFS_MOUNT_WRITE_EAGER) || wbc->for_kupdate ||
+@@ -1893,7 +1901,7 @@ static void nfs_commit_release_pages(str
+ 	}
+ 	nfss = NFS_SERVER(data->inode);
+ 	if (atomic_long_read(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+-		clear_bdi_congested(inode_to_bdi(data->inode), BLK_RW_ASYNC);
++		nfss->write_congested = 0;
+ 
+ 	nfs_init_cinfo(&cinfo, data->inode, data->dreq);
+ 	nfs_commit_end(cinfo.mds);
+--- a/include/linux/nfs_fs_sb.h~nfs-remove-reliance-on-bdi-congestion
++++ a/include/linux/nfs_fs_sb.h
+@@ -138,6 +138,7 @@ struct nfs_server {
+ 	struct nlm_host		*nlm_host;	/* NLM client handle */
+ 	struct nfs_iostats __percpu *io_stats;	/* I/O statistics */
+ 	atomic_long_t		writeback;	/* number of writeback pages */
++	unsigned int		write_congested;/* flag set when writeback gets too high */
+ 	unsigned int		flags;		/* various flags */
+ 
+ /* The following are for internal use only. Also see uapi/linux/nfs_mount.h */
+_

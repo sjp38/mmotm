@@ -1,0 +1,26 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-hwpoison-inject-support-injecting-hwpoison-to-free-page-fix
+
+export is_free_buddy_page() to modules
+
+ERROR: modpost: "is_free_buddy_page" [mm/hwpoison-inject.ko] undefined!
+
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/page_alloc.c~mm-hwpoison-inject-support-injecting-hwpoison-to-free-page-fix
++++ a/mm/page_alloc.c
+@@ -9478,6 +9478,7 @@ bool is_free_buddy_page(struct page *pag
+ 
+ 	return order < MAX_ORDER;
+ }
++EXPORT_SYMBOL(is_free_buddy_page);
+ 
+ #ifdef CONFIG_MEMORY_FAILURE
+ /*
+_

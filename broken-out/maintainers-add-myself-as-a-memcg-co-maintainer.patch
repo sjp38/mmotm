@@ -1,0 +1,30 @@
+From: Roman Gushchin <roman.gushchin@linux.dev>
+Subject: MAINTAINERS: add Roman as a memcg co-maintainer
+
+Add myself as a memcg co-maintainer.  My primary focus over last few years
+was the kernel memory accounting stack, but I do work on some other parts
+of the memory controller as well.
+
+Link: https://lkml.kernel.org/r/20220221233951.659048-1-roman.gushchin@linux.dev
+Signed-off-by: Roman Gushchin <roman.gushchin@linux.dev>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ MAINTAINERS |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/MAINTAINERS~maintainers-add-myself-as-a-memcg-co-maintainer
++++ a/MAINTAINERS
+@@ -4914,6 +4914,7 @@ CONTROL GROUP - MEMORY RESOURCE CONTROLL
+ M:	Johannes Weiner <hannes@cmpxchg.org>
+ M:	Michal Hocko <mhocko@kernel.org>
+ M:	Vladimir Davydov <vdavydov.dev@gmail.com>
++M:	Roman Gushchin <roman.gushchin@linux.dev>
+ L:	cgroups@vger.kernel.org
+ L:	linux-mm@kvack.org
+ S:	Maintained
+_

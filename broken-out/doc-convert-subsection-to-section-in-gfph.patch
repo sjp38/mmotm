@@ -1,0 +1,87 @@
+From: NeilBrown <neilb@suse.de>
+Subject: doc: convert 'subsection' to 'section' in gfp.h
+
+Patch series "Remove remaining parts of congestion tracking code", v2.
+
+
+This patch (of 11):
+
+Various DOC: sections in gfp.h have subsection headers (~~~) but the place
+where they are included in mm-api.rst does not have section, only
+chapters.
+
+So convert to section headers (---) to avoid confusion.  Specifically if
+sections are added later in mm-api.rst, an error results.
+
+Link: https://lkml.kernel.org/r/164549971112.9187.16871723439770288255.stgit@noble.brown
+Link: https://lkml.kernel.org/r/164549983733.9187.17894407453436115822.stgit@noble.brown
+Signed-off-by: NeilBrown <neilb@suse.de>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Chao Yu <chao@kernel.org>
+Cc: Jeff Layton <jlayton@kernel.org>
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
+Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
+Cc: Darrick J. Wong <djwong@kernel.org>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
+Cc: Paolo Valente <paolo.valente@linaro.org>
+Cc: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/gfp.h |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- a/include/linux/gfp.h~doc-convert-subsection-to-section-in-gfph
++++ a/include/linux/gfp.h
+@@ -79,7 +79,7 @@ struct vm_area_struct;
+  * DOC: Page mobility and placement hints
+  *
+  * Page mobility and placement hints
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ * ---------------------------------
+  *
+  * These flags provide hints about how mobile the page is. Pages with similar
+  * mobility are placed within the same pageblocks to minimise problems due
+@@ -112,7 +112,7 @@ struct vm_area_struct;
+  * DOC: Watermark modifiers
+  *
+  * Watermark modifiers -- controls access to emergency reserves
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ * ------------------------------------------------------------
+  *
+  * %__GFP_HIGH indicates that the caller is high-priority and that granting
+  * the request is necessary before the system can make forward progress.
+@@ -144,7 +144,7 @@ struct vm_area_struct;
+  * DOC: Reclaim modifiers
+  *
+  * Reclaim modifiers
+- * ~~~~~~~~~~~~~~~~~
++ * -----------------
+  * Please note that all the following flags are only applicable to sleepable
+  * allocations (e.g. %GFP_NOWAIT and %GFP_ATOMIC will ignore them).
+  *
+@@ -224,7 +224,7 @@ struct vm_area_struct;
+  * DOC: Action modifiers
+  *
+  * Action modifiers
+- * ~~~~~~~~~~~~~~~~
++ * ----------------
+  *
+  * %__GFP_NOWARN suppresses allocation failure reports.
+  *
+@@ -256,7 +256,7 @@ struct vm_area_struct;
+  * DOC: Useful GFP flag combinations
+  *
+  * Useful GFP flag combinations
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ * ----------------------------
+  *
+  * Useful GFP flag combinations that are commonly used. It is recommended
+  * that subsystems start with one of these combinations and then set/clear
+_

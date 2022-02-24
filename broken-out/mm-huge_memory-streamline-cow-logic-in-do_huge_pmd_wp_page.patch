@@ -89,7 +89,7 @@ Cc: Nadav Amit <nadav.amit@gmail.com>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Peter Xu <peterx@redhat.com>
 Cc: Rik van Riel <riel@surriel.com>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yang Shi <shy828301@gmail.com>
@@ -101,7 +101,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/huge_memory.c~mm-huge_memory-streamline-cow-logic-in-do_huge_pmd_wp_page
 +++ a/mm/huge_memory.c
-@@ -1303,7 +1303,6 @@ vm_fault_t do_huge_pmd_wp_page(struct vm
+@@ -1304,7 +1304,6 @@ vm_fault_t do_huge_pmd_wp_page(struct vm
  	page = pmd_page(orig_pmd);
  	VM_BUG_ON_PAGE(!PageHead(page), page);
  
@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!trylock_page(page)) {
  		get_page(page);
  		spin_unlock(vmf->ptl);
-@@ -1319,10 +1318,15 @@ vm_fault_t do_huge_pmd_wp_page(struct vm
+@@ -1320,10 +1319,15 @@ vm_fault_t do_huge_pmd_wp_page(struct vm
  	}
  
  	/*
@@ -128,7 +128,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		pmd_t entry;
  		entry = pmd_mkyoung(orig_pmd);
  		entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
-@@ -1333,6 +1337,7 @@ vm_fault_t do_huge_pmd_wp_page(struct vm
+@@ -1334,6 +1338,7 @@ vm_fault_t do_huge_pmd_wp_page(struct vm
  		return VM_FAULT_WRITE;
  	}
  

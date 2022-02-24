@@ -1,0 +1,48 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: print virtual mapping info in reports
+
+Print virtual mapping range and its creator in reports affecting virtual
+mappings.
+
+Also get physical page pointer for such mappings, so page information gets
+printed as well.
+
+Link: https://lkml.kernel.org/r/6ebb11210ae21253198e264d4bb0752c1fad67d7.1645548178.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Dmitriy Vyukov <dvyukov@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/report.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+--- a/mm/kasan/report.c~kasan-print-virtual-mapping-info-in-reports
++++ a/mm/kasan/report.c
+@@ -268,8 +268,21 @@ static void print_address_description(vo
+ 		pr_err(" %pS\n", addr);
+ 	}
+ 
++	if (is_vmalloc_addr(addr)) {
++		struct vm_struct *va = find_vm_area(addr);
++
++		if (va) {
++			pr_err("The buggy address belongs to the virtual mapping at\n"
++			       " [%px, %px) created by:\n"
++			       " %pS\n",
++			       va->addr, va->addr + va->size, va->caller);
++
++			page = vmalloc_to_page(page);
++		}
++	}
++
+ 	if (page) {
+-		pr_err("The buggy address belongs to the page:\n");
++		pr_err("The buggy address belongs to the physical page:\n");
+ 		dump_page(page, "kasan: bad access detected");
+ 	}
+ 
+_

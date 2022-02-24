@@ -1,0 +1,98 @@
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: nds32/mm: enable ARCH_HAS_VM_GET_PAGE_PROT
+
+This defines and exports a platform specific custom vm_get_page_prot() via
+subscribing ARCH_HAS_VM_GET_PAGE_PROT.  Subsequently all __SXXX and __PXXX
+macros can be dropped which are no longer needed.
+
+Link: https://lkml.kernel.org/r/1645425519-9034-28-git-send-email-anshuman.khandual@arm.com
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: Nick Hu <nickhu@andestech.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/nds32/Kconfig               |    1 
+ arch/nds32/include/asm/pgtable.h |   17 -------------
+ arch/nds32/mm/mmap.c             |   37 +++++++++++++++++++++++++++++
+ 3 files changed, 38 insertions(+), 17 deletions(-)
+
+--- a/arch/nds32/include/asm/pgtable.h~nds32-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/nds32/include/asm/pgtable.h
+@@ -152,23 +152,6 @@ extern void __pgd_error(const char *file
+ #endif /* __ASSEMBLY__ */
+ 
+ /*         xwr */
+-#define __P000  (PAGE_NONE | _PAGE_CACHE_SHRD)
+-#define __P001  (PAGE_READ | _PAGE_CACHE_SHRD)
+-#define __P010  (PAGE_COPY | _PAGE_CACHE_SHRD)
+-#define __P011  (PAGE_COPY | _PAGE_CACHE_SHRD)
+-#define __P100  (PAGE_EXEC | _PAGE_CACHE_SHRD)
+-#define __P101  (PAGE_READ | _PAGE_E | _PAGE_CACHE_SHRD)
+-#define __P110  (PAGE_COPY | _PAGE_E | _PAGE_CACHE_SHRD)
+-#define __P111  (PAGE_COPY | _PAGE_E | _PAGE_CACHE_SHRD)
+-
+-#define __S000  (PAGE_NONE | _PAGE_CACHE_SHRD)
+-#define __S001  (PAGE_READ | _PAGE_CACHE_SHRD)
+-#define __S010  (PAGE_RDWR | _PAGE_CACHE_SHRD)
+-#define __S011  (PAGE_RDWR | _PAGE_CACHE_SHRD)
+-#define __S100  (PAGE_EXEC | _PAGE_CACHE_SHRD)
+-#define __S101  (PAGE_READ | _PAGE_E | _PAGE_CACHE_SHRD)
+-#define __S110  (PAGE_RDWR | _PAGE_E | _PAGE_CACHE_SHRD)
+-#define __S111  (PAGE_RDWR | _PAGE_E | _PAGE_CACHE_SHRD)
+ 
+ #ifndef __ASSEMBLY__
+ /*
+--- a/arch/nds32/Kconfig~nds32-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/nds32/Kconfig
+@@ -10,6 +10,7 @@ config NDS32
+ 	select ARCH_HAS_DMA_PREP_COHERENT
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
++	select ARCH_HAS_VM_GET_PAGE_PROT
+ 	select ARCH_WANT_FRAME_POINTERS if FTRACE
+ 	select CLKSRC_MMIO
+ 	select CLONE_BACKWARDS
+--- a/arch/nds32/mm/mmap.c~nds32-mm-enable-arch_has_vm_get_page_prot
++++ a/arch/nds32/mm/mmap.c
+@@ -71,3 +71,40 @@ arch_get_unmapped_area(struct file *filp
+ 	info.align_offset = pgoff << PAGE_SHIFT;
+ 	return vm_unmapped_area(&info);
+ }
++
++pgprot_t vm_get_page_prot(unsigned long vm_flags)
++{
++	switch (vm_flags & (VM_READ | VM_WRITE | VM_EXEC | VM_SHARED)) {
++	case VM_NONE:
++		return (PAGE_NONE | _PAGE_CACHE_SHRD);
++	case VM_READ:
++		return (PAGE_READ | _PAGE_CACHE_SHRD);
++	case VM_WRITE:
++	case VM_WRITE | VM_READ:
++		return (PAGE_COPY | _PAGE_CACHE_SHRD);
++	case VM_EXEC:
++		return (PAGE_EXEC | _PAGE_CACHE_SHRD);
++	case VM_EXEC | VM_READ:
++		return (PAGE_READ | _PAGE_E | _PAGE_CACHE_SHRD);
++	case VM_EXEC | VM_WRITE:
++	case VM_EXEC | VM_WRITE | VM_READ:
++		return (PAGE_COPY | _PAGE_E | _PAGE_CACHE_SHRD);
++	case VM_SHARED:
++		return (PAGE_NONE | _PAGE_CACHE_SHRD);
++	case VM_SHARED | VM_READ:
++		return (PAGE_READ | _PAGE_CACHE_SHRD);
++	case VM_SHARED | VM_WRITE:
++	case VM_SHARED | VM_WRITE | VM_READ:
++		return (PAGE_RDWR | _PAGE_CACHE_SHRD);
++	case VM_SHARED | VM_EXEC:
++		return (PAGE_EXEC | _PAGE_CACHE_SHRD);
++	case VM_SHARED | VM_EXEC | VM_READ:
++		return (PAGE_READ | _PAGE_E | _PAGE_CACHE_SHRD);
++	case VM_SHARED | VM_EXEC | VM_WRITE:
++	case VM_SHARED | VM_EXEC | VM_WRITE | VM_READ:
++		return (PAGE_RDWR | _PAGE_E | _PAGE_CACHE_SHRD);
++	default:
++		BUILD_BUG();
++	}
++}
++EXPORT_SYMBOL(vm_get_page_prot);
+_

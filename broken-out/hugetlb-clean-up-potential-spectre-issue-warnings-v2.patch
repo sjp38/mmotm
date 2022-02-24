@@ -1,0 +1,28 @@
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Subject: hugetlb-clean-up-potential-spectre-issue-warnings-v2
+
+Link: https://lkml.kernel.org/r/20220218212946.35441-1-mike.kravetz@oracle.com
+Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Baolin Wang <baolin.wang@linux.alibaba.com>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Liu Yuntao <liuyuntao10@huawei.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Zhenguo Yao <yaozhenguo1@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/hugetlb.c~hugetlb-clean-up-potential-spectre-issue-warnings-v2
++++ a/mm/hugetlb.c
+@@ -6890,7 +6890,7 @@ static int __init cmdline_parse_hugetlb_
+ 			break;
+ 
+ 		if (s[count] == ':') {
+-			if (tmp < 0 || tmp >= MAX_NUMNODES)
++			if (tmp >= MAX_NUMNODES)
+ 				break;
+ 			nid = array_index_nospec(tmp, MAX_NUMNODES);
+ 
+_

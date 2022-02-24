@@ -37,11 +37,11 @@ Especially patch #1 can be regarded a cleanup before:
 Link: https://lkml.kernel.org/r/20220214174132.219303-2-david@redhat.com
 Signed-off-by: David Hildenbrand <david@redhat.com>
 Reviewed-by: Zi Yan <ziy@nvidia.com>
+Acked-by: Rob Herring <robh@kernel.org>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: Rob Herring <robh+dt@kernel.org>
 Cc: Frank Rowand <frowand.list@gmail.com>
 Cc: Michael S. Tsirkin <mst@redhat.com>
 Cc: Christoph Hellwig <hch@lst.de>

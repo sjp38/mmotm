@@ -64,7 +64,7 @@ Cc: Nadav Amit <nadav.amit@gmail.com>
 Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Peter Xu <peterx@redhat.com>
 Cc: Rik van Riel <riel@surriel.com>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: Vlastimil Babka <vbabka@suse.cz>
 Cc: Yang Shi <shy828301@gmail.com>
@@ -76,7 +76,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-streamline-cow-logic-in-do_swap_page
 +++ a/mm/memory.c
-@@ -3497,6 +3497,25 @@ static vm_fault_t remove_device_exclusiv
+@@ -3493,6 +3493,25 @@ static vm_fault_t remove_device_exclusiv
  	return 0;
  }
  
@@ -102,7 +102,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * We enter with non-exclusive mmap_lock (to exclude vma changes,
   * but allow concurrent faults), and pte mapped but not yet locked.
-@@ -3638,6 +3657,16 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3634,6 +3653,16 @@ vm_fault_t do_swap_page(struct vm_fault
  			page = swapcache;
  			goto out_page;
  		}
@@ -119,7 +119,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	cgroup_throttle_swaprate(page, GFP_KERNEL);
-@@ -3656,19 +3685,25 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3652,19 +3681,25 @@ vm_fault_t do_swap_page(struct vm_fault
  	}
  
  	/*
@@ -153,7 +153,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
  		vmf->flags &= ~FAULT_FLAG_WRITE;
  		ret |= VM_FAULT_WRITE;
-@@ -3694,10 +3729,6 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3690,10 +3725,6 @@ vm_fault_t do_swap_page(struct vm_fault
  	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, pte);
  	arch_do_swap_page(vma->vm_mm, vma, vmf->address, pte, vmf->orig_pte);
  

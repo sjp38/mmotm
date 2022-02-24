@@ -4,16 +4,18 @@ Subject: mm/memory-failure.c: rework the try_to_unmap logic in hwpoison_user_map
 Only for hugetlb pages in shared mappings, try_to_unmap should take
 semaphore in write mode here.  Rework the code to make it clear.
 
-Link: https://lkml.kernel.org/r/20220210141733.1908-7-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220218090118.1105-7-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memory-failure.c |   34 +++++++++++++++-------------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
 --- a/mm/memory-failure.c~mm-memory-failurec-rework-the-try_to_unmap-logic-in-hwpoison_user_mappings
 +++ a/mm/memory-failure.c
-@@ -1405,26 +1405,22 @@ static bool hwpoison_user_mappings(struc
+@@ -1404,26 +1404,22 @@ static bool hwpoison_user_mappings(struc
  	if (kill)
  		collect_procs(hpage, &tokill, flags & MF_ACTION_REQUIRED);
  

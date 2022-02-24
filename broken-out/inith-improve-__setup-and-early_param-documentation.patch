@@ -1,0 +1,67 @@
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: init.h: improve __setup and early_param documentation
+
+Igor noted in [1] that there are quite a few __setup() handling functions
+that return incorrect values.  Doing this can be harmless, but it can also
+cause strings to be added to init's argument or environment list,
+polluting them.
+
+Since __setup() handling and return values are not documented, first add
+documentation for that.  Also add more documentation for early_param()
+handling and return values.
+
+For __setup() functions, returning 0 (not handled) has questionable
+value if it is just a malformed option value, as in
+  rodata=junk
+since returning 0 would just cause "rodata=junk" to be added to init's
+environment unnecessarily:
+  Run /sbin/init as init process
+    with arguments:
+      /sbin/init
+    with environment:
+      HOME=/
+      TERM=linux
+      splash=native
+      rodata=junk
+
+Also, there are no recommendations on whether to print a warning when an
+unknown parameter value is seen.  I am not addressing that here.
+
+[1] lore.kernel.org/r/64644a2f-4a20-bab3-1e15-3b2cdd0defe3@omprussia.ru
+
+Link: https://lkml.kernel.org/r/20220221050852.1147-1-rdunlap@infradead.org
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: Igor Zhbanov <i.zhbanov@omprussia.ru>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/init.h |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+--- a/include/linux/init.h~inith-improve-__setup-and-early_param-documentation
++++ a/include/linux/init.h
+@@ -320,12 +320,19 @@ struct obs_kernel_param {
+ 		__aligned(__alignof__(struct obs_kernel_param))		\
+ 		= { __setup_str_##unique_id, fn, early }
+ 
++/*
++ * NOTE: __setup functions return values:
++ * @fn returns 1 (or non-zero) if the option argument is "handled"
++ * and returns 0 if the option argument is "not handled".
++ */
+ #define __setup(str, fn)						\
+ 	__setup_param(str, fn, fn, 0)
+ 
+ /*
+- * NOTE: fn is as per module_param, not __setup!
+- * Emits warning if fn returns non-zero.
++ * NOTE: @fn is as per module_param, not __setup!
++ * I.e., @fn returns 0 for no error or non-zero for error
++ * (possibly @fn returns a -errno value, but it does not matter).
++ * Emits warning if @fn returns non-zero.
+  */
+ #define early_param(str, fn)						\
+ 	__setup_param(str, fn, fn, 1)
+_

@@ -23,7 +23,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/drivers/base/memory.c~drivers-base-memory-add-memory-block-to-memory-group-after-registration-succeeded
 +++ a/drivers/base/memory.c
-@@ -663,14 +663,16 @@ static int init_memory_block(unsigned lo
+@@ -665,14 +665,16 @@ static int init_memory_block(unsigned lo
  	mem->nr_vmemmap_pages = nr_vmemmap_pages;
  	INIT_LIST_HEAD(&mem->group_next);
  

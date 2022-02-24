@@ -1,0 +1,31 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: x86-mm-enable-arch_has_vm_get_page_prot-fix
+
+fix build
+
+arch/x86/mm/mem_encrypt_amd.c: In function 'sme_early_init':
+arch/x86/mm/mem_encrypt_amd.c:182:22: error: unused variable 'i' [-Werror=unused-variable]
+  182 |         unsigned int i;
+
+Cc: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/mm/mem_encrypt_amd.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- a/arch/x86/mm/mem_encrypt_amd.c~x86-mm-enable-arch_has_vm_get_page_prot-fix
++++ a/arch/x86/mm/mem_encrypt_amd.c
+@@ -179,8 +179,6 @@ void __init sme_map_bootdata(char *real_
+ 
+ void __init sme_early_init(void)
+ {
+-	unsigned int i;
+-
+ 	if (!sme_me_mask)
+ 		return;
+ 
+_

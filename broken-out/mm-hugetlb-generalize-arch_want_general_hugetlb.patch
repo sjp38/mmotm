@@ -64,7 +64,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/arch/x86/Kconfig~mm-hugetlb-generalize-arch_want_general_hugetlb
 +++ a/arch/x86/Kconfig
-@@ -118,6 +118,7 @@ config X86
+@@ -117,6 +117,7 @@ config X86
  	select ARCH_WANT_DEFAULT_BPF_JIT	if X86_64
  	select ARCH_WANTS_DYNAMIC_TASK_STRUCT
  	select ARCH_WANTS_NO_INSTR
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	select ARCH_WANT_HUGE_PMD_SHARE
  	select ARCH_WANT_LD_ORPHAN_WARN
  	select ARCH_WANTS_THP_SWAP		if X86_64
-@@ -344,9 +345,6 @@ config ARCH_NR_GPIO
+@@ -343,9 +344,6 @@ config ARCH_NR_GPIO
  config ARCH_SUSPEND_POSSIBLE
  	def_bool y
  
@@ -84,7 +84,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/Kconfig~mm-hugetlb-generalize-arch_want_general_hugetlb
 +++ a/mm/Kconfig
-@@ -411,6 +411,9 @@ choice
+@@ -414,6 +414,9 @@ choice
  	  benefit.
  endchoice
  

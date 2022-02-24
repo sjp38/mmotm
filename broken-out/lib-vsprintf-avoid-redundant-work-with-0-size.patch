@@ -67,6 +67,7 @@ Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
 Acked-by: Roman Gushchin <guro@fb.com>
 Acked-by: Rafael Aquini <aquini@redhat.com>
 Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Vladimir Davydov <vdavydov.dev@gmail.com>

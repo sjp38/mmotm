@@ -1,6 +1,8 @@
 From: Huang Ying <ying.huang@intel.com>
 Subject: NUMA Balancing: add page promotion counter
 
+Patch series "NUMA balancing: optimize memory placement for memory tiering system", v13
+
 With the advent of various new memory types, some machines will have
 multiple types of memory, e.g.  DRAM and PMEM (persistent memory).  The
 memory subsystem of these machines can be called memory tiering system,
@@ -53,13 +55,14 @@ the inter-socket migrated pages.  A new vmstat count is added.  The
 counter is per-node (count in the target node).  So this can be used to
 identify promotion imbalance among the NUMA nodes.
 
-Link: https://lkml.kernel.org/r/20220128082751.593478-1-ying.huang@intel.com
-Link: https://lkml.kernel.org/r/20220128082751.593478-2-ying.huang@intel.com
+Link: https://lkml.kernel.org/r/20220221084529.1052339-1-ying.huang@intel.com
+Link: https://lkml.kernel.org/r/20220221084529.1052339-2-ying.huang@intel.com
 Signed-off-by: "Huang, Ying" <ying.huang@intel.com>
 Reviewed-by: Yang Shi <shy828301@gmail.com>
 Tested-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Reviewed-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: Rik van Riel <riel@surriel.com>
 Cc: Mel Gorman <mgorman@techsingularity.net>
@@ -69,9 +72,8 @@ Cc: Zi Yan <ziy@nvidia.com>
 Cc: Wei Xu <weixugc@google.com>
 Cc: Shakeel Butt <shakeelb@google.com>
 Cc: zhongjiang-ali <zhongjiang-ali@linux.alibaba.com>
-Cc: Oscar Salvador <osalvador@suse.de>
 Cc: Feng Tang <feng.tang@intel.com>
-Cc: Hasan Al Maruf <hasanalmaruf@fb.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -111,7 +113,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	pg_data_t *pgdat = NODE_DATA(node);
  	int isolated;
  	int nr_remaining;
-+	int nr_succeeded;
++	unsigned int nr_succeeded;
  	LIST_HEAD(migratepages);
  	new_page_t *new;
  	bool compound;
@@ -135,7 +137,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	if (nr_succeeded) {
 +		count_vm_numa_events(NUMA_PAGE_MIGRATE, nr_succeeded);
 +		if (!node_is_toptier(page_to_nid(page)) && node_is_toptier(node))
-+			mod_node_page_state(NODE_DATA(node), PGPROMOTE_SUCCESS,
++			mod_node_page_state(pgdat, PGPROMOTE_SUCCESS,
 +					    nr_succeeded);
 +	}
  	BUG_ON(!list_empty(&migratepages));

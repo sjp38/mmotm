@@ -1,0 +1,37 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: Docs/vm/damon/design: update DAMON-Idle Page Tracking interference handling
+
+In DAMON's early development stage before it be merged in the mainline, it
+was first designed to work exclusively with Idle page tracking to avoid
+any interference between each other.  Later, but still before be merged in
+the mainline, because Idle page tracking is fully under the control of
+sysadmins, we made the resolving of conflict as the responsibility of
+sysadmins.  The document is not updated for the change, though.  This
+commit updates the document for that.
+
+Link: https://lkml.kernel.org/r/20220222170100.17068-3-sj@kernel.org
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/vm/damon/design.rst |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+--- a/Documentation/vm/damon/design.rst~docs-vm-damon-design-update-damon-idle-page-tracking-interference-handling
++++ a/Documentation/vm/damon/design.rst
+@@ -84,9 +84,10 @@ table having a mapping to the address.
+ and clear the bit(s) for next sampling target address and checks whether the
+ bit(s) set again after one sampling period.  This could disturb other kernel
+ subsystems using the Accessed bits, namely Idle page tracking and the reclaim
+-logic.  To avoid such disturbances, DAMON makes it mutually exclusive with Idle
+-page tracking and uses ``PG_idle`` and ``PG_young`` page flags to solve the
+-conflict with the reclaim logic, as Idle page tracking does.
++logic.  DAMON does nothing to avoid disturbing Idle page tracking, so handling
++the interference is the responsibility of sysadmins.  However, it solves the
++conflict with the reclaim logic using ``PG_idle`` and ``PG_young`` page flags,
++as Idle page tracking does.
+ 
+ 
+ Address Space Independent Core Mechanisms
+_

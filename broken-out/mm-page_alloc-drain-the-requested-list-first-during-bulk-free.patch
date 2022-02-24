@@ -1,0 +1,39 @@
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: mm/page_alloc: drain the requested list first during bulk free
+
+Prior to the series, pindex 0 (order-0 MIGRATE_UNMOVABLE) was always
+skipped first and the precise reason is forgotten.  A potential reason may
+have been to artificially preserve MIGRATE_UNMOVABLE but there is no
+reason why that would be optimal as it depends on the workload.  The more
+likely reason is that it was less complicated to do a pre-increment
+instead of a post-increment in terms of overall code flow.  As
+free_pcppages_bulk() now typically receives the pindex of the PCP list
+that exceeded high, always start draining that list.
+
+Link: https://lkml.kernel.org/r/20220217002227.5739-5-mgorman@techsingularity.net
+Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+Reviewed-by: Vlastimil Babka <vbabka@suse.cz>
+Tested-by: Aaron Lu <aaron.lu@intel.com>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Jesper Dangaard Brouer <brouer@redhat.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/mm/page_alloc.c~mm-page_alloc-drain-the-requested-list-first-during-bulk-free
++++ a/mm/page_alloc.c
+@@ -1463,6 +1463,10 @@ static void free_pcppages_bulk(struct zo
+ 	 * below while (list_empty(list)) loop.
+ 	 */
+ 	count = min(pcp->count, count);
++
++	/* Ensure requested pindex is drained first. */
++	pindex = pindex - 1;
++
+ 	while (count > 0) {
+ 		struct list_head *list;
+ 		int nr_pages;
+_

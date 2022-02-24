@@ -1,0 +1,58 @@
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: mm/memcg: disable migration instead of preemption in drain_all_stock().
+
+Before the for-each-CPU loop, preemption is disabled so that so that
+drain_local_stock() can be invoked directly instead of scheduling a
+worker.  Ensuring that drain_local_stock() completed on the local CPU is
+not correctness problem.  It _could_ be that the charging path will be
+forced to reclaim memory because cached charges are still waiting for
+their draining.
+
+Disabling preemption before invoking drain_local_stock() is problematic on
+PREEMPT_RT due to the sleeping locks involved.  To ensure that no CPU
+migrations happens across the for_each_online_cpu() it is enouhg to use
+migrate_disable() which disables migration and keeps context preemptible
+to a sleeping lock can be acquired.
+
+Use migrate_disable() instead of get_cpu() around the
+for_each_online_cpu() loop.
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: kernel test robot <oliver.sang@intel.com>
+Cc: Michal Koutný <mkoutny@suse.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Roman Gushchin <guro@fb.com>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Waiman Long <longman@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/memcontrol.c~mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock
++++ a/mm/memcontrol.c
+@@ -2293,7 +2293,8 @@ static void drain_all_stock(struct mem_c
+ 	 * as well as workers from this path always operate on the local
+ 	 * per-cpu data. CPU up doesn't touch memcg_stock at all.
+ 	 */
+-	curcpu = get_cpu();
++	migrate_disable();
++	curcpu = smp_processor_id();
+ 	for_each_online_cpu(cpu) {
+ 		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
+ 		struct mem_cgroup *memcg;
+@@ -2316,7 +2317,7 @@ static void drain_all_stock(struct mem_c
+ 				schedule_work_on(cpu, &stock->work);
+ 		}
+ 	}
+-	put_cpu();
++	migrate_enable();
+ 	mutex_unlock(&percpu_charge_mutex);
+ }
+ 
+_

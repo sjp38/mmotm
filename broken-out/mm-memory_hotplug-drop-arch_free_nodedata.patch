@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	pgdat_list[update_node] = update_pgdat;
 --- a/include/linux/memory_hotplug.h~mm-memory_hotplug-drop-arch_free_nodedata
 +++ a/include/linux/memory_hotplug.h
-@@ -24,17 +24,14 @@ struct vmem_altmap;
+@@ -25,17 +25,14 @@ struct dev_pagemap;
   * node_data[nid] = kzalloc() works well. But it depends on the architecture.
   *
   * In general, generic_alloc_nodedata() is used.
@@ -70,7 +70,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-drop-arch_free_nodedata
 +++ a/mm/memory_hotplug.c
-@@ -1217,16 +1217,6 @@ static pg_data_t __ref *hotadd_init_pgda
+@@ -1218,16 +1218,6 @@ static pg_data_t __ref *hotadd_init_pgda
  	return pgdat;
  }
  

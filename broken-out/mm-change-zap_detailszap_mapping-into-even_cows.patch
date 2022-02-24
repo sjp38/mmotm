@@ -1,0 +1,107 @@
+From: Peter Xu <peterx@redhat.com>
+Subject: mm: change zap_details.zap_mapping into even_cows
+
+Currently we have a zap_mapping pointer maintained in zap_details, when it
+is specified we only want to zap the pages that has the same mapping with
+what the caller has specified.
+
+But what we want to do is actually simpler: we want to skip zapping
+private (COW-ed) pages in some cases.  We can refer to
+unmap_mapping_pages() callers where we could have passed in different
+even_cows values.  The other user is unmap_mapping_folio() where we always
+want to skip private pages.
+
+According to Hugh, we used a mapping pointer for historical reason, as
+explained here:
+
+  https://lore.kernel.org/lkml/391aa58d-ce84-9d4-d68d-d98a9c533255@google.com/
+
+Quoting partly from Hugh:
+
+  Which raises the question again of why I did not just use a boolean flag
+  there originally: aah, I think I've found why.  In those days there was a
+  horrible "optimization", for better performance on some benchmark I guess,
+  which when you read from /dev/zero into a private mapping, would map the zero
+  page there (look up read_zero_pagealigned() and zeromap_page_range() if you
+  dare).  So there was another category of page to be skipped along with the
+  anon COWs, and I didn't want multiple tests in the zap loop, so checking
+  check_mapping against page->mapping did both.  I think nowadays you could do
+  it by checking for PageAnon page (or genuine swap entry) instead.
+
+This patch replaces the zap_details.zap_mapping pointer into the even_cows
+boolean, then we check it against PageAnon.
+
+Link: https://lkml.kernel.org/r/20220216094810.60572-4-peterx@redhat.com
+Signed-off-by: Peter Xu <peterx@redhat.com>
+Suggested-by: Hugh Dickins <hughd@google.com>
+Reviewed-by: John Hubbard <jhubbard@nvidia.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: "Kirill A . Shutemov" <kirill@shutemov.name>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory.c |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+--- a/mm/memory.c~mm-change-zap_detailszap_mapping-into-even_cows
++++ a/mm/memory.c
+@@ -1309,8 +1309,8 @@ copy_page_range(struct vm_area_struct *d
+  * Parameter block passed down to zap_pte_range in exceptional cases.
+  */
+ struct zap_details {
+-	struct address_space *zap_mapping;	/* Check page->mapping if set */
+ 	struct folio *single_folio;	/* Locked folio to be unmapped */
++	bool even_cows;			/* Zap COWed private pages too? */
+ };
+ 
+ /* Whether we should zap all COWed (private) pages too */
+@@ -1321,13 +1321,10 @@ static inline bool should_zap_cows(struc
+ 		return true;
+ 
+ 	/* Or, we zap COWed pages only if the caller wants to */
+-	return !details->zap_mapping;
++	return details->even_cows;
+ }
+ 
+-/*
+- * We set details->zap_mapping when we want to unmap shared but keep private
+- * pages. Return true if we should zap this page, false otherwise.
+- */
++/* Decides whether we should zap this page with the page pointer specified */
+ static inline bool should_zap_page(struct zap_details *details, struct page *page)
+ {
+ 	/* If we can make a decision without *page.. */
+@@ -1338,7 +1335,8 @@ static inline bool should_zap_page(struc
+ 	if (!page)
+ 		return true;
+ 
+-	return details->zap_mapping == page_rmapping(page);
++	/* Otherwise we should only zap non-anon pages */
++	return !PageAnon(page);
+ }
+ 
+ static unsigned long zap_pte_range(struct mmu_gather *tlb,
+@@ -3398,7 +3396,7 @@ void unmap_mapping_folio(struct folio *f
+ 	first_index = folio->index;
+ 	last_index = folio->index + folio_nr_pages(folio) - 1;
+ 
+-	details.zap_mapping = mapping;
++	details.even_cows = false;
+ 	details.single_folio = folio;
+ 
+ 	i_mmap_lock_write(mapping);
+@@ -3427,7 +3425,7 @@ void unmap_mapping_pages(struct address_
+ 	pgoff_t	first_index = start;
+ 	pgoff_t	last_index = start + nr - 1;
+ 
+-	details.zap_mapping = even_cows ? NULL : mapping;
++	details.even_cows = even_cows;
+ 	if (last_index < first_index)
+ 		last_index = ULONG_MAX;
+ 
+_

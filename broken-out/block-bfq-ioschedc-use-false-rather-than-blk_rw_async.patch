@@ -4,23 +4,23 @@ Subject: block/bfq-iosched.c: use "false" rather than "BLK_RW_ASYNC"
 bfq_get_queue() expects a "bool" for the third arg, so pass "false" rather
 than "BLK_RW_ASYNC" which will soon be removed.
 
-Link: https://lkml.kernel.org/r/164325158959.29787.11286416793279041497.stgit@noble.brown
+Link: https://lkml.kernel.org/r/164549983746.9187.7949730109246767909.stgit@noble.brown
 Signed-off-by: NeilBrown <neilb@suse.de>
+Acked-by: Jens Axboe <axboe@kernel.dk>
 Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
 Cc: Chao Yu <chao@kernel.org>
-Cc: Christoph Hellwig <hch@lst.de>
 Cc: Darrick J. Wong <djwong@kernel.org>
-Cc: Dave Chinner <david@fromorbit.com>
 Cc: Ilya Dryomov <idryomov@gmail.com>
 Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Jan Kara <jack@suse.cz>
 Cc: Jeff Layton <jlayton@kernel.org>
-Cc: Jens Axboe <axboe@kernel.dk>
 Cc: Lars Ellenberg <lars.ellenberg@linbit.com>
 Cc: Miklos Szeredi <miklos@szeredi.hu>
 Cc: Paolo Valente <paolo.valente@linaro.org>
 Cc: Philipp Reisner <philipp.reisner@linbit.com>
 Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
 Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

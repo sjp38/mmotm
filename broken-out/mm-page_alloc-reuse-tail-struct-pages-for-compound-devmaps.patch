@@ -1,0 +1,70 @@
+From: Joao Martins <joao.m.martins@oracle.com>
+Subject: mm/page_alloc: reuse tail struct pages for compound devmaps
+
+Currently memmap_init_zone_device() ends up initializing 32768 pages when
+it only needs to initialize 128 given tail page reuse.  That number is
+worse with 1GB compound pages, 262144 instead of 128.  Update
+memmap_init_zone_device() to skip redundant initialization, detailed
+below.
+
+When a pgmap @vmemmap_shift is set, all pages are mapped at a given huge
+page alignment and use compound pages to describe them as opposed to a
+struct per 4K.
+
+With @vmemmap_shift > 0 and when struct pages are stored in ram (!altmap)
+most tail pages are reused.  Consequently, the amount of unique struct
+pages is a lot smaller that the total amount of struct pages being mapped.
+
+The altmap path is left alone since it does not support memory savings
+based on compound pages devmap.
+
+Link: https://lkml.kernel.org/r/20220223194807.12070-6-joao.m.martins@oracle.com
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Jane Chu <jane.chu@oracle.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Vishal Verma <vishal.l.verma@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+--- a/mm/page_alloc.c~mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps
++++ a/mm/page_alloc.c
+@@ -6622,6 +6622,20 @@ static void __ref __init_zone_device_pag
+ 	}
+ }
+ 
++/*
++ * With compound page geometry and when struct pages are stored in ram most
++ * tail pages are reused. Consequently, the amount of unique struct pages to
++ * initialize is a lot smaller that the total amount of struct pages being
++ * mapped. This is a paired / mild layering violation with explicit knowledge
++ * of how the sparse_vmemmap internals handle compound pages in the lack
++ * of an altmap. See vmemmap_populate_compound_pages().
++ */
++static inline unsigned long compound_nr_pages(struct vmem_altmap *altmap,
++					      unsigned long nr_pages)
++{
++	return !altmap ? 2 * (PAGE_SIZE/sizeof(struct page)) : nr_pages;
++}
++
+ static void __ref memmap_init_compound(struct page *head,
+ 				       unsigned long head_pfn,
+ 				       unsigned long zone_idx, int nid,
+@@ -6686,7 +6700,7 @@ void __ref memmap_init_zone_device(struc
+ 			continue;
+ 
+ 		memmap_init_compound(page, pfn, zone_idx, nid, pgmap,
+-				     pfns_per_compound);
++				     compound_nr_pages(altmap, pfns_per_compound));
+ 	}
+ 
+ 	pr_info("%s initialised %lu pages in %ums\n", __func__,
+_

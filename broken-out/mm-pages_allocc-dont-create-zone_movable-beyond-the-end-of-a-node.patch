@@ -71,13 +71,14 @@ the end of the node, and if it does skip creating a movable zone on this
 node.
 
 Link: https://lkml.kernel.org/r/20220215025831.2113067-1-apopple@nvidia.com
-Signed-off-by: Alistair Popple <apopple@nvidia.com>
 Fixes: 2a1e274acf0b ("Create the ZONE_MOVABLE zone")
+Signed-off-by: Alistair Popple <apopple@nvidia.com>
+Acked-by: David Hildenbrand <david@redhat.com>
+Acked-by: Mel Gorman <mgorman@techsingularity.net>
 Cc: John Hubbard <jhubbard@nvidia.com>
 Cc: Zi Yan <ziy@nvidia.com>
 Cc: Anshuman Khandual <anshuman.khandual@arm.com>
 Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Mel Gorman <mgorman@techsingularity.net>
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
@@ -87,7 +88,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-pages_allocc-dont-create-zone_movable-beyond-the-end-of-a-node
 +++ a/mm/page_alloc.c
-@@ -7998,10 +7998,17 @@ restart:
+@@ -8012,10 +8012,17 @@ restart:
  
  out2:
  	/* Align start of ZONE_MOVABLE on all nids to MAX_ORDER_NR_PAGES */

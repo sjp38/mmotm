@@ -1,0 +1,31 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/hwpoison-inject: support injecting hwpoison to free page
+
+memory_failure() can handle free buddy page.  Support injecting hwpoison
+to free page by adding is_free_buddy_page check when hwpoison filter is
+disabled.
+
+Link: https://lkml.kernel.org/r/20220218092052.3853-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hwpoison-inject.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/hwpoison-inject.c~mm-hwpoison-inject-support-injecting-hwpoison-to-free-page
++++ a/mm/hwpoison-inject.c
+@@ -32,9 +32,9 @@ static int hwpoison_inject(void *data, u
+ 
+ 	shake_page(hpage);
+ 	/*
+-	 * This implies unable to support non-LRU pages.
++	 * This implies unable to support non-LRU pages except free page.
+ 	 */
+-	if (!PageLRU(hpage) && !PageHuge(p))
++	if (!PageLRU(hpage) && !PageHuge(p) && !is_free_buddy_page(p))
+ 		return 0;
+ 
+ 	/*
+_

@@ -1,0 +1,49 @@
+From: Oscar Salvador <osalvador@suse.de>
+Subject: arch-x86-mm-numa-do-not-initialize-nodes-twice-v2
+
+add comments
+
+Link: https://lkml.kernel.org/r/20220221142649.3457-1-osalvador@suse.de
+Signed-off-by: Oscar Salvador <osalvador@suse.de>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/mm/numa.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+--- a/arch/x86/mm/numa.c~arch-x86-mm-numa-do-not-initialize-nodes-twice-v2
++++ a/arch/x86/mm/numa.c
+@@ -755,6 +755,15 @@ void __init init_gi_nodes(void)
+ {
+ 	int nid;
+ 
++	/*
++	 * Exclude this node from
++	 * bringup_nonboot_cpus
++	 *  cpu_up
++	 *   __try_online_node
++	 *    register_one_node
++	 * because node_subsys is not initialized yet.
++	 * TODO remove dependency on node_online
++	 */
+ 	for_each_node_state(nid, N_GENERIC_INITIATOR)
+ 		if (!node_online(nid))
+ 			node_set_online(nid);
+@@ -787,6 +796,15 @@ void __init init_cpu_to_node(void)
+ 		if (node == NUMA_NO_NODE)
+ 			continue;
+ 
++		/*
++		 * Exclude this node from
++		 * bringup_nonboot_cpus
++		 *  cpu_up
++		 *   __try_online_node
++		 *    register_one_node
++		 * because node_subsys is not initialized yet.
++		 * TODO remove dependency on node_online
++		 */
+ 		if (!node_online(node))
+ 			node_set_online(node);
+ 
+_

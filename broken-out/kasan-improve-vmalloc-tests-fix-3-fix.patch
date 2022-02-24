@@ -1,0 +1,52 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: kasan-improve-vmalloc-tests-fix-3-fix
+
+fix build
+
+lib/test_kasan.c: In function 'vmalloc_helpers_tags':
+lib/test_kasan.c:1073:13: error: unused variable 'rv' [-Werror=unused-variable]
+ 1073 |         int rv;
+      |             ^~
+cc1: all warnings being treated as errors
+
+Cc: Andrey Konovalov <andreyknvl@google.com>
+Cc: kernel test robot <lkp@intel.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/test_kasan.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+--- a/lib/test_kasan.c~kasan-improve-vmalloc-tests-fix-3-fix
++++ a/lib/test_kasan.c
+@@ -1061,7 +1061,6 @@ static void kmalloc_double_kzfree(struct
+ static void vmalloc_helpers_tags(struct kunit *test)
+ {
+ 	void *ptr;
+-	int rv;
+ 
+ 	/* This test is intended for tag-based modes. */
+ 	KASAN_TEST_NEEDS_CONFIG_OFF(test, CONFIG_KASAN_GENERIC);
+@@ -1080,11 +1079,15 @@ static void vmalloc_helpers_tags(struct
+ 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, vmalloc_to_page(ptr));
+ 
+ #if !IS_MODULE(CONFIG_KASAN_KUNIT_TEST)
+-	/* Make sure vmalloc'ed memory permissions can be changed. */
+-	rv = set_memory_ro((unsigned long)ptr, 1);
+-	KUNIT_ASSERT_GE(test, rv, 0);
+-	rv = set_memory_rw((unsigned long)ptr, 1);
+-	KUNIT_ASSERT_GE(test, rv, 0);
++	{
++		int rv;
++
++		/* Make sure vmalloc'ed memory permissions can be changed. */
++		rv = set_memory_ro((unsigned long)ptr, 1);
++		KUNIT_ASSERT_GE(test, rv, 0);
++		rv = set_memory_rw((unsigned long)ptr, 1);
++		KUNIT_ASSERT_GE(test, rv, 0);
++	}
+ #endif
+ 
+ 	vfree(ptr);
+_

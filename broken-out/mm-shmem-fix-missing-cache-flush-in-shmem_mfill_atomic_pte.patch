@@ -13,12 +13,12 @@ Link: https://lkml.kernel.org/r/20220210123058.79206-6-songmuchun@bytedance.com
 Fixes: 8d1039634206 ("userfaultfd: shmem: add shmem_mfill_zeropage_pte for userfaultfd support")
 Fixes: 4c27fe4c4c84 ("userfaultfd: shmem: add shmem_mcopy_atomic_pte for userfaultfd support")
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Axel Rasmussen <axelrasmussen@google.com>
 Cc: David Rientjes <rientjes@google.com>
 Cc: Fam Zheng <fam.zheng@bytedance.com>
 Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 Cc: Lars Persson <lars.persson@axis.com>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Peter Xu <peterx@redhat.com>
 Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
 Cc: Zi Yan <ziy@nvidia.com>

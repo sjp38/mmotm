@@ -21,7 +21,7 @@ Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Mike Rapoport <rppt@kernel.org>
 Cc: Petr Mladek <pmladek@suse.com>
 Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Roman Gushchin <guro@fb.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Sergey Senozhatsky <senozhatsky@chromium.org>
 Cc: Steven Rostedt (Google) <rostedt@goodmis.org>
 Cc: Vladimir Davydov <vdavydov.dev@gmail.com>

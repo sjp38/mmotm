@@ -1,0 +1,27 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/ksm: use helper macro __ATTR_RW
+
+Use helper macro __ATTR_RW to define KSM_ATTR to make code more clear. 
+Minor readability improvement.
+
+Link: https://lkml.kernel.org/r/20220221115809.26381-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/ksm.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/ksm.c~mm-ksm-use-helper-macro-__attr_rw
++++ a/mm/ksm.c
+@@ -2829,8 +2829,7 @@ static void wait_while_offlining(void)
+ #define KSM_ATTR_RO(_name) \
+ 	static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
+ #define KSM_ATTR(_name) \
+-	static struct kobj_attribute _name##_attr = \
+-		__ATTR(_name, 0644, _name##_show, _name##_store)
++	static struct kobj_attribute _name##_attr = __ATTR_RW(_name)
+ 
+ static ssize_t sleep_millisecs_show(struct kobject *kobj,
+ 				    struct kobj_attribute *attr, char *buf)
+_

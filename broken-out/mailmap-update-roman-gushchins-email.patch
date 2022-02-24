@@ -1,0 +1,26 @@
+From: Roman Gushchin <roman.gushchin@linux.dev>
+Subject: mailmap: update Roman Gushchin's email
+
+I'm moving to a @linux.dev account. Map my old addresses.
+
+Link: https://lkml.kernel.org/r/20220221200006.416377-1-roman.gushchin@linux.dev
+Signed-off-by: Roman Gushchin <roman.gushchin@linux.dev>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ .mailmap |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/.mailmap~mailmap-update-roman-gushchins-email
++++ a/.mailmap
+@@ -333,6 +333,9 @@ Rémi Denis-Courmont <rdenis@simphalempi
+ Ricardo Ribalda <ribalda@kernel.org> <ricardo@ribalda.com>
+ Ricardo Ribalda <ribalda@kernel.org> Ricardo Ribalda Delgado <ribalda@kernel.org>
+ Ricardo Ribalda <ribalda@kernel.org> <ricardo.ribalda@gmail.com>
++Roman Gushchin <roman.gushchin@linux.dev> <guro@fb.com>
++Roman Gushchin <roman.gushchin@linux.dev> <guroan@gmail.com>
++Roman Gushchin <roman.gushchin@linux.dev> <klamm@yandex-team.ru>
+ Ross Zwisler <zwisler@kernel.org> <ross.zwisler@linux.intel.com>
+ Rudolf Marek <R.Marek@sh.cvut.cz>
+ Rui Saraiva <rmps@joel.ist.utl.pt>
+_

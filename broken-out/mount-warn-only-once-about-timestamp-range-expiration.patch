@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/namespace.c~mount-warn-only-once-about-timestamp-range-expiration
 +++ a/fs/namespace.c
-@@ -2567,6 +2567,7 @@ static void mnt_warn_timestamp_expiry(st
+@@ -2597,6 +2597,7 @@ static void mnt_warn_timestamp_expiry(st
  	struct super_block *sb = mnt->mnt_sb;
  
  	if (!__mnt_is_readonly(mnt) &&
@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	   (ktime_get_real_seconds() + TIME_UPTIME_SEC_MAX > sb->s_time_max)) {
  		char *buf = (char *)__get_free_page(GFP_KERNEL);
  		char *mntpath = buf ? d_path(mountpoint, buf, PAGE_SIZE) : ERR_PTR(-ENOMEM);
-@@ -2581,6 +2582,7 @@ static void mnt_warn_timestamp_expiry(st
+@@ -2611,6 +2612,7 @@ static void mnt_warn_timestamp_expiry(st
  			tm.tm_year+1900, (unsigned long long)sb->s_time_max);
  
  		free_page((unsigned long)buf);
@@ -49,7 +49,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/include/linux/fs.h~mount-warn-only-once-about-timestamp-range-expiration
 +++ a/include/linux/fs.h
-@@ -1435,6 +1435,7 @@ extern int send_sigurg(struct fown_struc
+@@ -1440,6 +1440,7 @@ extern int send_sigurg(struct fown_struc
  
  #define SB_I_SKIP_SYNC	0x00000100	/* Skip superblock at global sync */
  #define SB_I_PERSB_BDI	0x00000200	/* has a per-sb bdi */

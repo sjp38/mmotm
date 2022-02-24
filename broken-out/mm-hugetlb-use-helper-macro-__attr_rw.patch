@@ -1,0 +1,28 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/hugetlb: use helper macro __ATTR_RW
+
+Use helper macro __ATTR_RW to define HSTATE_ATTR to make code more clear. 
+Minor readability improvement.
+
+Link: https://lkml.kernel.org/r/20220222112731.33479-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/hugetlb.c~mm-hugetlb-use-helper-macro-__attr_rw
++++ a/mm/hugetlb.c
+@@ -3499,8 +3499,7 @@ static int demote_pool_huge_page(struct
+ 	static struct kobj_attribute _name##_attr = __ATTR_WO(_name)
+ 
+ #define HSTATE_ATTR(_name) \
+-	static struct kobj_attribute _name##_attr = \
+-		__ATTR(_name, 0644, _name##_show, _name##_store)
++	static struct kobj_attribute _name##_attr = __ATTR_RW(_name)
+ 
+ static struct kobject *hugepages_kobj;
+ static struct kobject *hstate_kobjs[HUGE_MAX_HSTATE];
+_

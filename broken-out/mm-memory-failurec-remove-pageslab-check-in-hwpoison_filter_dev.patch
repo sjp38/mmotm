@@ -5,12 +5,14 @@ Since commit 03e5ac2fc3bf ("mm: fix crash when using XFS on loopback"),
 page_mapping() can handle the Slab pages.  So remove this unnecessary
 PageSlab check and obsolete comment.
 
-Link: https://lkml.kernel.org/r/20220210141733.1908-6-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220218090118.1105-6-linmiaohe@huawei.com
 Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Acked-by: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
+ mm/memory-failure.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
 --- a/mm/memory-failure.c~mm-memory-failurec-remove-pageslab-check-in-hwpoison_filter_dev
 +++ a/mm/memory-failure.c

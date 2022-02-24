@@ -1,0 +1,54 @@
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: mm/mmap: drop arch_filter_pgprot()
+
+There are no platforms left which subscribe ARCH_HAS_FILTER_PGPROT.  Hence
+just drop arch_filter_pgprot() and also the config ARCH_HAS_FILTER_PGPROT.
+
+Link: https://lkml.kernel.org/r/1645425519-9034-13-git-send-email-anshuman.khandual@arm.com
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/Kconfig |    3 ---
+ mm/mmap.c  |   10 +---------
+ 2 files changed, 1 insertion(+), 12 deletions(-)
+
+--- a/mm/Kconfig~mm-mmap-drop-arch_filter_pgprot
++++ a/mm/Kconfig
+@@ -744,9 +744,6 @@ config IDLE_PAGE_TRACKING
+ config ARCH_HAS_CACHE_LINE_SIZE
+ 	bool
+ 
+-config ARCH_HAS_FILTER_PGPROT
+-	bool
+-
+ config ARCH_HAS_VM_GET_PAGE_PROT
+ 	bool
+ 
+--- a/mm/mmap.c~mm-mmap-drop-arch_filter_pgprot
++++ a/mm/mmap.c
+@@ -102,14 +102,6 @@ static void unmap_region(struct mm_struc
+  *								w: (no) no
+  *								x: (yes) yes
+  */
+-
+-#ifndef CONFIG_ARCH_HAS_FILTER_PGPROT
+-static inline pgprot_t arch_filter_pgprot(pgprot_t prot)
+-{
+-	return prot;
+-}
+-#endif
+-
+ static inline pgprot_t __vm_get_page_prot(unsigned long vm_flags)
+ {
+ 	switch (vm_flags & (VM_READ | VM_WRITE | VM_EXEC | VM_SHARED)) {
+@@ -155,7 +147,7 @@ pgprot_t vm_get_page_prot(unsigned long
+ 	pgprot_t ret = __pgprot(pgprot_val(__vm_get_page_prot(vm_flags)) |
+ 			pgprot_val(arch_vm_get_page_prot(vm_flags)));
+ 
+-	return arch_filter_pgprot(ret);
++	return ret;
+ }
+ EXPORT_SYMBOL(vm_get_page_prot);
+ #endif	/* CONFIG_ARCH_HAS_VM_GET_PAGE_PROT */
+_
