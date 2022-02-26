@@ -40,15 +40,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kasan.h~kasan-page_alloc-merge-kasan_free_pages-into-free_pages_prepare
 +++ a/include/linux/kasan.h
-@@ -96,7 +96,6 @@ static inline bool kasan_hw_tags_enabled
- }
+@@ -85,7 +85,6 @@ static inline void kasan_disable_current
+ #ifdef CONFIG_KASAN_HW_TAGS
  
  void kasan_alloc_pages(struct page *page, unsigned int order, gfp_t flags);
 -void kasan_free_pages(struct page *page, unsigned int order);
  
  #else /* CONFIG_KASAN_HW_TAGS */
  
-@@ -115,13 +114,6 @@ static __always_inline void kasan_alloc_
+@@ -94,13 +93,6 @@ static __always_inline void kasan_alloc_
  {
  	/* Only available for integrated init. */
  	BUILD_BUG();
@@ -95,7 +95,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  void kasan_enable_tagging_sync(void)
 --- a/mm/page_alloc.c~kasan-page_alloc-merge-kasan_free_pages-into-free_pages_prepare
 +++ a/mm/page_alloc.c
-@@ -1368,15 +1368,17 @@ static __always_inline bool free_pages_p
+@@ -1364,15 +1364,17 @@ static __always_inline bool free_pages_p
  
  	/*
  	 * As memory initialization might be integrated into KASAN,

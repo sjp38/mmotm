@@ -1,0 +1,45 @@
+From: Wei Yang <richard.weiyang@gmail.com>
+Subject: mm/memcg: set pos to prev unconditionally
+
+Current code sets pos to prev based on condition (prev && !reclaim), while
+we can do this unconditionally.
+
+Since:
+
+  * If !reclaim, pos is the same as prev no matter it is NULL or not.
+  * If reclaim, pos would be set properly from iter->position.
+
+Link: https://lkml.kernel.org/r/20220225003437.12620-3-richard.weiyang@gmail.com
+Signed-off-by: Wei Yang <richard.weiyang@gmail.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Shakeel Butt <shakeelb@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/mm/memcontrol.c~mm-memcg-set-pos-to-prev-unconditionally
++++ a/mm/memcontrol.c
+@@ -1029,7 +1029,7 @@ struct mem_cgroup *mem_cgroup_iter(struc
+ 	struct mem_cgroup_reclaim_iter *iter;
+ 	struct cgroup_subsys_state *css = NULL;
+ 	struct mem_cgroup *memcg = NULL;
+-	struct mem_cgroup *pos = NULL;
++	struct mem_cgroup *pos = prev;
+ 
+ 	if (mem_cgroup_disabled())
+ 		return NULL;
+@@ -1037,9 +1037,6 @@ struct mem_cgroup *mem_cgroup_iter(struc
+ 	if (!root)
+ 		root = root_mem_cgroup;
+ 
+-	if (prev && !reclaim)
+-		pos = prev;
+-
+ 	rcu_read_lock();
+ 
+ 	if (reclaim) {
+_

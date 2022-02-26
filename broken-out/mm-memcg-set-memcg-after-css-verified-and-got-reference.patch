@@ -1,0 +1,47 @@
+From: Wei Yang <richard.weiyang@gmail.com>
+Subject: mm/memcg: set memcg after css verified and got reference
+
+Patch series "mm/memcg: some cleanup for mem_cgroup_iter()".
+
+
+This patch (of 3):
+
+Instead of resetting memcg when css is either not verified or has no
+reference, we can set it after these are processed.
+
+No functional change, just simplified the code a little.
+
+Link: https://lkml.kernel.org/r/20220225003437.12620-2-richard.weiyang@gmail.com
+Signed-off-by: Wei Yang <richard.weiyang@gmail.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Shakeel Butt <shakeelb@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memcontrol.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+--- a/mm/memcontrol.c~mm-memcg-set-memcg-after-css-verified-and-got-reference
++++ a/mm/memcontrol.c
+@@ -1089,15 +1089,10 @@ struct mem_cgroup *mem_cgroup_iter(struc
+ 		 * is provided by the caller, so we know it's alive
+ 		 * and kicking, and don't take an extra reference.
+ 		 */
+-		memcg = mem_cgroup_from_css(css);
+-
+-		if (css == &root->css)
+-			break;
+-
+-		if (css_tryget(css))
++		if (css == &root->css || css_tryget(css)) {
++			memcg = mem_cgroup_from_css(css);
+ 			break;
+-
+-		memcg = NULL;
++		}
+ 	}
+ 
+ 	if (reclaim) {
+_

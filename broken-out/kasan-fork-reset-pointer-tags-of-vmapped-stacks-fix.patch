@@ -20,12 +20,12 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/fork.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ kernel/fork.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 --- a/kernel/fork.c~kasan-fork-reset-pointer-tags-of-vmapped-stacks-fix
 +++ a/kernel/fork.c
-@@ -226,15 +226,17 @@ static unsigned long *alloc_thread_stack
+@@ -285,11 +285,13 @@ static int alloc_thread_stack_node(struc
  		if (!s)
  			continue;
  
@@ -39,12 +39,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -		memset(s->addr, 0, THREAD_SIZE);
 +		memset(stack, 0, THREAD_SIZE);
  
+ 		if (memcg_charge_kernel_stack(s)) {
+ 			vfree(s->addr);
+@@ -297,7 +299,7 @@ static int alloc_thread_stack_node(struc
+ 		}
+ 
  		tsk->stack_vm_area = s;
 -		tsk->stack = s->addr;
--		return s->addr;
 +		tsk->stack = stack;
-+		return stack;
+ 		return 0;
  	}
  
- 	/*
 _

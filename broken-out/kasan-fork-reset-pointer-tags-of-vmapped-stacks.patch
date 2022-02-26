@@ -32,17 +32,18 @@ Cc: Will Deacon <will@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- kernel/fork.c |    1 +
- 1 file changed, 1 insertion(+)
+ kernel/fork.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 --- a/kernel/fork.c~kasan-fork-reset-pointer-tags-of-vmapped-stacks
 +++ a/kernel/fork.c
-@@ -254,6 +254,7 @@ static unsigned long *alloc_thread_stack
+@@ -325,6 +325,8 @@ static int alloc_thread_stack_node(struc
  	 * so cache the vm_struct.
  	 */
- 	if (stack) {
+ 	tsk->stack_vm_area = vm;
++	if (stack)
 +		stack = kasan_reset_tag(stack);
- 		tsk->stack_vm_area = find_vm_area(stack);
- 		tsk->stack = stack;
- 	}
+ 	tsk->stack = stack;
+ 	return 0;
+ }
 _

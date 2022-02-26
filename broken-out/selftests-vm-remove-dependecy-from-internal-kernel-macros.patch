@@ -44,9 +44,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/tools/testing/selftests/vm/userfaultfd.c~selftests-vm-remove-dependecy-from-internal-kernel-macros
 +++ a/tools/testing/selftests/vm/userfaultfd.c
-@@ -119,6 +119,9 @@ struct uffd_stats {
- 				 ~(unsigned long)(sizeof(unsigned long long) \
- 						  -  1)))
+@@ -121,6 +121,9 @@ struct uffd_stats {
+ #define swap(a, b) \
+ 	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
  
 +#define swap(a, b) \
 +	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
