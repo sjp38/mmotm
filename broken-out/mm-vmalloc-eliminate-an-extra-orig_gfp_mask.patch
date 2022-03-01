@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-eliminate-an-extra-orig_gfp_mask
 +++ a/mm/vmalloc.c
-@@ -2965,7 +2965,6 @@ static void *__vmalloc_area_node(struct
+@@ -2946,7 +2946,6 @@ static void *__vmalloc_area_node(struct
  				 int node)
  {
  	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
@@ -33,7 +33,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	bool nofail = gfp_mask & __GFP_NOFAIL;
  	unsigned long addr = (unsigned long)area->addr;
  	unsigned long size = get_vm_area_size(area);
-@@ -2989,7 +2988,7 @@ static void *__vmalloc_area_node(struct
+@@ -2970,7 +2969,7 @@ static void *__vmalloc_area_node(struct
  	}
  
  	if (!area->pages) {
@@ -42,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			"vmalloc error: size %lu, failed to allocated page array size %lu",
  			nr_small_pages * PAGE_SIZE, array_size);
  		free_vm_area(area);
-@@ -2999,8 +2998,8 @@ static void *__vmalloc_area_node(struct
+@@ -2980,8 +2979,8 @@ static void *__vmalloc_area_node(struct
  	set_vm_area_page_order(area, page_shift - PAGE_SHIFT);
  	page_order = vm_area_page_order(area);
  
@@ -53,7 +53,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
  	if (gfp_mask & __GFP_ACCOUNT) {
-@@ -3016,7 +3015,7 @@ static void *__vmalloc_area_node(struct
+@@ -2997,7 +2996,7 @@ static void *__vmalloc_area_node(struct
  	 * allocation request, free them via __vfree() if any.
  	 */
  	if (area->nr_pages != nr_small_pages) {
@@ -62,7 +62,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			"vmalloc error: size %lu, page order %u, failed to allocate pages",
  			area->nr_pages * PAGE_SIZE, page_order);
  		goto fail;
-@@ -3044,7 +3043,7 @@ static void *__vmalloc_area_node(struct
+@@ -3025,7 +3024,7 @@ static void *__vmalloc_area_node(struct
  		memalloc_noio_restore(flags);
  
  	if (ret < 0) {

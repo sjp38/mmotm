@@ -43,7 +43,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kasan.h~kasan-vmalloc-add-vmalloc-tagging-for-sw_tags
 +++ a/include/linux/kasan.h
-@@ -424,12 +424,13 @@ void kasan_release_vmalloc(unsigned long
+@@ -403,12 +403,13 @@ void kasan_release_vmalloc(unsigned long
  			   unsigned long free_region_start,
  			   unsigned long free_region_end);
  
@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  void __kasan_poison_vmalloc(const void *start, unsigned long size);
-@@ -454,8 +455,11 @@ static inline void kasan_release_vmalloc
+@@ -433,8 +434,11 @@ static inline void kasan_release_vmalloc
  					 unsigned long free_region_start,
  					 unsigned long free_region_end) { }
  
@@ -96,7 +96,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
 --- a/mm/vmalloc.c~kasan-vmalloc-add-vmalloc-tagging-for-sw_tags
 +++ a/mm/vmalloc.c
-@@ -2210,7 +2210,7 @@ void *vm_map_ram(struct page **pages, un
+@@ -2233,7 +2233,7 @@ void *vm_map_ram(struct page **pages, un
  		mem = (void *)addr;
  	}
  
@@ -105,7 +105,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (vmap_pages_range(addr, addr + size, PAGE_KERNEL,
  				pages, PAGE_SHIFT) < 0) {
-@@ -2443,10 +2443,10 @@ static struct vm_struct *__get_vm_area_n
+@@ -2466,10 +2466,10 @@ static struct vm_struct *__get_vm_area_n
  		return NULL;
  	}
  
@@ -118,7 +118,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return area;
  }
  
-@@ -3795,9 +3795,6 @@ retry:
+@@ -3817,9 +3817,6 @@ retry:
  	for (area = 0; area < nr_vms; area++) {
  		if (kasan_populate_vmalloc(vas[area]->va_start, sizes[area]))
  			goto err_free_shadow;
@@ -128,7 +128,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	/* insert all vm's */
-@@ -3810,6 +3807,11 @@ retry:
+@@ -3832,6 +3829,11 @@ retry:
  	}
  	spin_unlock(&vmap_area_lock);
  

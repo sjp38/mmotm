@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		for (type = 0; type < MIGRATE_TYPES; type++)
 --- a/mm/page_alloc.c~mm-page_alloc-avoid-merging-non-fallbackable-pageblocks-with-others
 +++ a/mm/page_alloc.c
-@@ -1099,25 +1099,24 @@ continue_merging:
+@@ -1117,25 +1117,24 @@ continue_merging:
  	}
  	if (order < MAX_ORDER - 1) {
  		/* If we are here, it means order is >= pageblock_order.
@@ -89,7 +89,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		max_order = order + 1;
  		goto continue_merging;
  	}
-@@ -2535,17 +2534,13 @@ struct page *__rmqueue_smallest(struct z
+@@ -2479,17 +2478,13 @@ struct page *__rmqueue_smallest(struct z
  /*
   * This array describes the order lists are fallen back to when
   * the free lists for the desirable migrate type are depleted
@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  };
  
  #ifdef CONFIG_CMA
-@@ -2851,8 +2846,8 @@ static void reserve_highatomic_pageblock
+@@ -2795,8 +2790,8 @@ static void reserve_highatomic_pageblock
  
  	/* Yoink! */
  	mt = get_pageblock_migratetype(page);
@@ -120,7 +120,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		zone->nr_reserved_highatomic += pageblock_nr_pages;
  		set_pageblock_migratetype(page, MIGRATE_HIGHATOMIC);
  		move_freepages_block(zone, page, MIGRATE_HIGHATOMIC, NULL);
-@@ -3601,8 +3596,11 @@ int __isolate_free_page(struct page *pag
+@@ -3545,8 +3540,11 @@ int __isolate_free_page(struct page *pag
  		struct page *endpage = page + (1 << order) - 1;
  		for (; page < endpage; page += pageblock_nr_pages) {
  			int mt = get_pageblock_migratetype(page);

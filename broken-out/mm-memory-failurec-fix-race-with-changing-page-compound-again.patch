@@ -1,0 +1,47 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: fix race with changing page compound again
+
+Patch series "A few fixup patches for memory failure".
+
+This series contains a few patches to fix the race with changing page
+compound page, fix potential VM_BUG_ON_PAGE and so on.  More details can
+be found in the respective changelogs.
+
+
+This patch (of 4):
+
+There is a race window where we got the compound_head, the hugetlb page
+could be freed to buddy, or even changed to another compound page just
+before we try to get hwpoison page.  If this happens, just bail out.
+
+Link: https://lkml.kernel.org/r/20220228140245.24552-1-linmiaohe@huawei.com
+Link: https://lkml.kernel.org/r/20220228140245.24552-2-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+--- a/mm/memory-failure.c~mm-memory-failurec-fix-race-with-changing-page-compound-again
++++ a/mm/memory-failure.c
+@@ -1532,6 +1532,17 @@ static int memory_failure_hugetlb(unsign
+ 	}
+ 
+ 	lock_page(head);
++
++	/**
++	 * The page could have changed compound pages due to race window.
++	 * If this happens just bail out.
++	 */
++	if (!PageHuge(p) || compound_head(p) != head) {
++		action_result(pfn, MF_MSG_DIFFERENT_COMPOUND, MF_IGNORED);
++		res = -EBUSY;
++		goto out;
++	}
++
+ 	page_flags = head->flags;
+ 
+ 	if (hwpoison_filter(p)) {
+_

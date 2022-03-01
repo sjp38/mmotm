@@ -1,26 +1,23 @@
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: mm/memcg: Opencode the inner part of obj_cgroup_uncharge_pages() in drain_obj_stock()
+
 From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: mm/memcg: opencode the inner part of obj_cgroup_uncharge_pages() in drain_obj_stock()
 
 Provide the inner part of refill_stock() as __refill_stock() without
-disabling interrupts.  This eases the integration of local_lock_t where
-recursive locking must be avoided.  Open code obj_cgroup_uncharge_pages()
-in drain_obj_stock() and use __refill_stock().  The caller of
-drain_obj_stock() already disables interrupts.
+disabling interrupts. This eases the integration of local_lock_t where
+recursive locking must be avoided.
+Open code obj_cgroup_uncharge_pages() in drain_obj_stock() and use
+__refill_stock(). The caller of drain_obj_stock() already disables
+interrupts.
 
-[bigeasy@linutronix.de: patch body around Johannes' diff]
-Link: https://lkml.kernel.org/r/20220221182540.380526-5-bigeasy@linutronix.de
+[bigeasy: Patch body around Johannes' diff ]
+
+Link: https://lkml.kernel.org/r/20220226204144.1008339-5-bigeasy@linutronix.de
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
 Reviewed-by: Roman Gushchin <guro@fb.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
-Cc: kernel test robot <oliver.sang@intel.com>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Michal Koutný <mkoutny@suse.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
-Cc: Waiman Long <longman@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -29,7 +26,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-opencode-the-inner-part-of-obj_cgroup_uncharge_pages-in-drain_obj_stock
 +++ a/mm/memcontrol.c
-@@ -2244,12 +2244,9 @@ static void drain_local_stock(struct wor
+@@ -2248,12 +2248,9 @@ static void drain_local_stock(struct wor
   * Cache charges(val) to local per_cpu area.
   * This will be consumed by consume_stock() function, later.
   */
@@ -43,7 +40,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	stock = this_cpu_ptr(&memcg_stock);
  	if (stock->cached != memcg) { /* reset if necessary */
-@@ -2261,7 +2258,14 @@ static void refill_stock(struct mem_cgro
+@@ -2265,7 +2262,14 @@ static void refill_stock(struct mem_cgro
  
  	if (stock->nr_pages > MEMCG_CHARGE_BATCH)
  		drain_stock(stock);
@@ -58,7 +55,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	local_irq_restore(flags);
  }
  
-@@ -3178,8 +3182,16 @@ static void drain_obj_stock(struct memcg
+@@ -3182,8 +3186,16 @@ static void drain_obj_stock(struct memcg
  		unsigned int nr_pages = stock->nr_bytes >> PAGE_SHIFT;
  		unsigned int nr_bytes = stock->nr_bytes & (PAGE_SIZE - 1);
  

@@ -49,7 +49,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-count-time-in-drain_all_pages-during-direct-reclaim-as-memory-pressure
 +++ a/mm/page_alloc.c
-@@ -4610,13 +4610,12 @@ __perform_reclaim(gfp_t gfp_mask, unsign
+@@ -4554,13 +4554,12 @@ __perform_reclaim(gfp_t gfp_mask, unsign
  					const struct alloc_context *ac)
  {
  	unsigned int noreclaim_flag;
@@ -64,7 +64,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	fs_reclaim_acquire(gfp_mask);
  	noreclaim_flag = memalloc_noreclaim_save();
  
-@@ -4625,7 +4624,6 @@ __perform_reclaim(gfp_t gfp_mask, unsign
+@@ -4569,7 +4568,6 @@ __perform_reclaim(gfp_t gfp_mask, unsign
  
  	memalloc_noreclaim_restore(noreclaim_flag);
  	fs_reclaim_release(gfp_mask);
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	cond_resched();
  
-@@ -4639,11 +4637,13 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
+@@ -4583,11 +4581,13 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
  		unsigned long *did_some_progress)
  {
  	struct page *page = NULL;
@@ -87,7 +87,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  retry:
  	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
-@@ -4659,6 +4659,8 @@ retry:
+@@ -4603,6 +4603,8 @@ retry:
  		drained = true;
  		goto retry;
  	}

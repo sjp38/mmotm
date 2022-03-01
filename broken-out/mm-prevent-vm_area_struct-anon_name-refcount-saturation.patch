@@ -15,7 +15,10 @@ processes).
 
 kref refcounting interface used in anon_vma_name structure will detect a
 counter overflow when it reaches REFCOUNT_SATURATED value but will only
-generate a warning about broken refcounter.
+generate a warning and freeze the ref counter.  This would lead to the
+refcounted object never being freed.  A determined attacker could leak
+memory like that but it would be rather expensive and inefficient way to
+do so.
 
 To ensure anon_vma_name refcount does not overflow, stop anon_vma_name
 sharing when the refcount reaches REFCOUNT_MAX (2147483647), which still
@@ -24,8 +27,10 @@ REFCOUNT_SATURATED.  This should provide enough headroom for raising the
 refcounts temporarily.
 
 Link: https://lkml.kernel.org/r/20220223153613.835563-2-surenb@google.com
+Link: https://lkml.kernel.org/r/20220223153613.835563-2-surenb@google.com
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 Suggested-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
 Cc: Alexey Gladkov <legion@kernel.org>
 Cc: Chris Hyser <chris.hyser@oracle.com>
 Cc: Christian Brauner <brauner@kernel.org>

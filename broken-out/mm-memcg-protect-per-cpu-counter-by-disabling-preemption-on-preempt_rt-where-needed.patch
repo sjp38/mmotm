@@ -1,44 +1,36 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: protect per-CPU counter by disabling preemption on PREEMPT_RT where needed.
+Subject: mm/memcg: Protect per-CPU counter by disabling preemption on PREEMPT_RT where needed.
 
-The per-CPU counter are modified with the non-atomic modifier.  The
-consistency is ensured by disabling interrupts for the update.  On non
-PREEMPT_RT configuration this works because acquiring a spinlock_t typed
-lock with the _irq() suffix disables interrupts.  On PREEMPT_RT
-configurations the RMW operation can be interrupted.
+The per-CPU counter are modified with the non-atomic modifier. The
+consistency is ensured by disabling interrupts for the update.
+On non PREEMPT_RT configuration this works because acquiring a
+spinlock_t typed lock with the _irq() suffix disables interrupts. On
+PREEMPT_RT configurations the RMW operation can be interrupted.
 
 Another problem is that mem_cgroup_swapout() expects to be invoked with
 disabled interrupts because the caller has to acquire a spinlock_t which
-is acquired with disabled interrupts.  Since spinlock_t never disables
-interrupts on PREEMPT_RT the interrupts are never disabled at this point.
+is acquired with disabled interrupts. Since spinlock_t never disables
+interrupts on PREEMPT_RT the interrupts are never disabled at this
+point.
 
 The code is never called from in_irq() context on PREEMPT_RT therefore
-disabling preemption during the update is sufficient on PREEMPT_RT.  The
-sections which explicitly disable interrupts can remain on PREEMPT_RT
-because the sections remain short and they don't involve sleeping locks
-(memcg_check_events() is doing nothing on PREEMPT_RT).
+disabling preemption during the update is sufficient on PREEMPT_RT.
+The sections which explicitly disable interrupts can remain on
+PREEMPT_RT because the sections remain short and they don't involve
+sleeping locks (memcg_check_events() is doing nothing on PREEMPT_RT).
 
 Disable preemption during update of the per-CPU variables which do not
 explicitly disable interrupts.
 
-Link: https://lkml.kernel.org/r/20220221182540.380526-4-bigeasy@linutronix.de
+Link: https://lkml.kernel.org/r/20220226204144.1008339-4-bigeasy@linutronix.de
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Acked-by: Roman Gushchin <guro@fb.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: kernel test robot <oliver.sang@intel.com>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Michal Koutný <mkoutny@suse.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Shakeel Butt <shakeelb@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
-Cc: Waiman Long <longman@redhat.com>
+Reviewed-by: Shakeel Butt <shakeelb@google.com
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memcontrol.c |   49 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
+ mm/memcontrol.c |   56 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 55 insertions(+), 1 deletion(-)
 
 --- a/mm/memcontrol.c~mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed
 +++ a/mm/memcontrol.c
@@ -78,7 +70,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline void memcg_rstat_updated(struct mem_cgroup *memcg, int val)
  {
  	unsigned int x;
-@@ -705,6 +734,20 @@ void __mod_memcg_lruvec_state(struct lru
+@@ -705,6 +734,27 @@ void __mod_memcg_lruvec_state(struct lru
  	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
  	memcg = pn->memcg;
  
@@ -89,17 +81,24 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	 * interrupt context while other caller need to have disabled interrupt.
 +	 */
 +	__memcg_stats_lock();
-+	if (IS_ENABLED(CONFIG_DEBUG_VM)) {
-+		if (idx == NR_ANON_MAPPED || idx == NR_FILE_MAPPED)
++	if (IS_ENABLED(CONFIG_DEBUG_VM) && !IS_ENABLED(CONFIG_PREEMPT_RT)) {
++		switch (idx) {
++		case NR_ANON_MAPPED:
++		case NR_FILE_MAPPED:
++		case NR_ANON_THPS:
++		case NR_SHMEM_PMDMAPPED:
++		case NR_FILE_PMDMAPPED:
 +			WARN_ON_ONCE(!in_task());
-+		else
++			break;
++		default:
 +			WARN_ON_ONCE(!irqs_disabled());
++		}
 +	}
 +
  	/* Update memcg */
  	__this_cpu_add(memcg->vmstats_percpu->state[idx], val);
  
-@@ -712,6 +755,7 @@ void __mod_memcg_lruvec_state(struct lru
+@@ -712,6 +762,7 @@ void __mod_memcg_lruvec_state(struct lru
  	__this_cpu_add(pn->lruvec_stats_percpu->state[idx], val);
  
  	memcg_rstat_updated(memcg, val);
@@ -107,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /**
-@@ -794,8 +838,10 @@ void __count_memcg_events(struct mem_cgr
+@@ -794,8 +845,10 @@ void __count_memcg_events(struct mem_cgr
  	if (mem_cgroup_disabled())
  		return;
  
@@ -118,7 +117,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static unsigned long memcg_events(struct mem_cgroup *memcg, int event)
-@@ -7154,8 +7200,9 @@ void mem_cgroup_swapout(struct page *pag
+@@ -7151,8 +7204,9 @@ void mem_cgroup_swapout(struct page *pag
  	 * important here to have the interrupts disabled because it is the
  	 * only synchronisation we have for updating the per-CPU variables.
  	 */

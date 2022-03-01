@@ -1,0 +1,90 @@
+From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Subject: panic: move panic_print before kmsg dumpers
+
+The panic_print setting allows users to collect more information in a
+panic event, like memory stats, tasks, CPUs backtraces, etc.
+This is an interesting debug mechanism, but currently the print event
+happens *after* kmsg_dump(), meaning that pstore, for example, cannot
+collect a dmesg with the panic_print extra information.
+
+This patch changes that in 2 steps:
+
+(a) The panic_print setting allows to replay the existing kernel log
+    buffer to the console (bit 5), besides the extra information dump. 
+    This functionality makes sense only at the end of the panic()
+    function.  So, we hereby allow to distinguish the two situations by a
+    new boolean parameter in the function panic_print_sys_info().
+
+(b) With the above change, we can safely call panic_print_sys_info()
+    before kmsg_dump(), allowing to dump the extra information when using
+    pstore or other kmsg dumpers.
+
+The additional messages from panic_print could overwrite the oldest
+messages when the buffer is full.  The only reasonable solution is to use
+a large enough log buffer, hence we added an advice into the kernel
+parameters documentation about that.
+
+Link: https://lkml.kernel.org/r/20220214141308.841525-1-gpiccoli@igalia.com
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+Acked-by: Baoquan He <bhe@redhat.com>
+Reviewed-by: Petr Mladek <pmladek@suse.com>
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Cc: Feng Tang <feng.tang@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/admin-guide/kernel-parameters.txt |    4 ++++
+ kernel/panic.c                                  |   13 +++++++++----
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+--- a/Documentation/admin-guide/kernel-parameters.txt~panic-move-panic_print-before-kmsg-dumpers
++++ a/Documentation/admin-guide/kernel-parameters.txt
+@@ -3727,6 +3727,10 @@
+ 			bit 4: print ftrace buffer
+ 			bit 5: print all printk messages in buffer
+ 			bit 6: print all CPUs backtrace (if available in the arch)
++			*Be aware* that this option may print a _lot_ of lines,
++			so there are risks of losing older messages in the log.
++			Use this option carefully, maybe worth to setup a
++			bigger log buffer with "log_buf_len" along with this.
+ 
+ 	panic_on_taint=	Bitmask for conditionally calling panic() in add_taint()
+ 			Format: <hex>[,nousertaint]
+--- a/kernel/panic.c~panic-move-panic_print-before-kmsg-dumpers
++++ a/kernel/panic.c
+@@ -148,10 +148,13 @@ void nmi_panic(struct pt_regs *regs, con
+ }
+ EXPORT_SYMBOL(nmi_panic);
+ 
+-static void panic_print_sys_info(void)
++static void panic_print_sys_info(bool console_flush)
+ {
+-	if (panic_print & PANIC_PRINT_ALL_PRINTK_MSG)
+-		console_flush_on_panic(CONSOLE_REPLAY_ALL);
++	if (console_flush) {
++		if (panic_print & PANIC_PRINT_ALL_PRINTK_MSG)
++			console_flush_on_panic(CONSOLE_REPLAY_ALL);
++		return;
++	}
+ 
+ 	if (panic_print & PANIC_PRINT_ALL_CPU_BT)
+ 		trigger_all_cpu_backtrace();
+@@ -286,6 +289,8 @@ void panic(const char *fmt, ...)
+ 	 */
+ 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+ 
++	panic_print_sys_info(false);
++
+ 	kmsg_dump(KMSG_DUMP_PANIC);
+ 
+ 	/*
+@@ -316,7 +321,7 @@ void panic(const char *fmt, ...)
+ 	debug_locks_off();
+ 	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
+ 
+-	panic_print_sys_info();
++	panic_print_sys_info(true);
+ 
+ 	if (!panic_blink)
+ 		panic_blink = no_blink;
+_

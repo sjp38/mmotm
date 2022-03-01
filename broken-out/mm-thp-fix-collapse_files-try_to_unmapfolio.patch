@@ -1,0 +1,30 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: mm/thp: fix collapse_file()'s try_to_unmap(folio,)
+
+The foliation of THP collapse_file()'s call to try_to_unmap() is currently
+wrong, crashing on a test in rmap_walk() when xas_next() delivered a value
+(after which page has been loaded independently).
+
+Link: https://lkml.kernel.org/r/3f187b6c-e5e8-e66d-e0c0-7455ca6abb4c@google.com
+Fixes: c3b522d9a698 ("mm/rmap: Convert try_to_unmap() to take a folio")
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/khugepaged.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/khugepaged.c~mm-thp-fix-collapse_files-try_to_unmapfolio
++++ a/mm/khugepaged.c
+@@ -1835,7 +1835,8 @@ static void collapse_file(struct mm_stru
+ 		}
+ 
+ 		if (page_mapped(page))
+-			try_to_unmap(folio, TTU_IGNORE_MLOCK | TTU_BATCH_FLUSH);
++			try_to_unmap(page_folio(page),
++				     TTU_IGNORE_MLOCK | TTU_BATCH_FLUSH);
+ 
+ 		xas_lock_irq(&xas);
+ 		xas_set(&xas, index);
+_

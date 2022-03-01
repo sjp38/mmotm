@@ -1,0 +1,59 @@
+From: Mauricio Faria de Oliveira <mfo@canonical.com>
+Subject: mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read-v4
+
+v4: - fixed Fixes: tag to first support, after tests on v4.5;
+      updated commit message/reproducer section with results.
+    - tested on v5.17-rc3 and v4.5.
+    - shorten comment line; remove inner braces in the check.
+      (Thanks: Christoph Hellwig <hch@infradead.org>)
+    - clarify comment about __remove_mapping()
+      (Thanks: Yu Zhao <yuzhao@google.com>)
+
+Link: https://lkml.kernel.org/r/20220209202659.183418-1-mfo@canonical.com
+Fixes: 854e9ed09ded ("mm: support madvise(MADV_FREE)")
+Signed-off-by: Mauricio Faria de Oliveira <mfo@canonical.com>
+Reviewed-by: "Huang, Ying" <ying.huang@intel.com>
+Cc: Dan Hill <daniel.hill@canonical.com>
+Cc: Dan Streetman <dan.streetman@canonical.com>
+Cc: Dongdong Tao <dongdong.tao@canonical.com>
+Cc: Gavin Guo <gavin.guo@canonical.com>
+Cc: Gerald Yang <gerald.yang@canonical.com>
+Cc: Heitor Alves de Siqueira <halves@canonical.com>
+Cc: Ioanna Alifieraki <ioanna-maria.alifieraki@canonical.com>
+Cc: Jay Vosburgh <jay.vosburgh@canonical.com>
+Cc: Matthew Ruffell <matthew.ruffell@canonical.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Minchan Kim <minchan@kernel.org>
+Cc: Ponnuvel Palaniyappan <ponnuvel.palaniyappan@canonical.com>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- a/mm/rmap.c~mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read-v4
++++ a/mm/rmap.c
+@@ -1591,16 +1591,16 @@ static bool try_to_unmap_one(struct foli
+ 				map_count = folio_mapcount(folio);
+ 
+ 				/*
+-				 * Order reads for page refcount and dirty flag;
+-				 * see __remove_mapping().
++				 * Order reads for page refcount and dirty flag
++				 * (see comments in __remove_mapping()).
+ 				 */
+ 				smp_rmb();
+ 
+ 				/*
+-				 * The only page refs must be from the isolation
+-				 * plus one or more rmap's (dropped by discard:).
++				 * The only page refs must be one from isolation
++				 * plus the rmap(s) (dropped by discard:).
+ 				 */
+-				if ((ref_count == 1 + map_count) &&
++				if (ref_count == 1 + map_count &&
+ 				    !folio_test_dirty(folio)) {
+ 					/* Invalidate as we cleared the pte */
+ 					mmu_notifier_invalidate_range(mm,
+_

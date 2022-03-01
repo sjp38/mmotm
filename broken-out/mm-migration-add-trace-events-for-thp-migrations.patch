@@ -81,7 +81,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /* This part must be outside protection */
 --- a/mm/huge_memory.c~mm-migration-add-trace-events-for-thp-migrations
 +++ a/mm/huge_memory.c
-@@ -39,6 +39,9 @@
+@@ -40,6 +40,9 @@
  #include <asm/pgalloc.h>
  #include "internal.h"
  
@@ -91,15 +91,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * By default, transparent hugepage support is disabled in order to avoid
   * risking an increased memory footprint for applications that are not
-@@ -3173,6 +3176,7 @@ void set_pmd_migration_entry(struct page
+@@ -3133,6 +3136,7 @@ void set_pmd_migration_entry(struct page
  	set_pmd_at(mm, address, pvmw->pmd, pmdswp);
- 	page_remove_rmap(page, true);
+ 	page_remove_rmap(page, vma, true);
  	put_page(page);
 +	trace_set_migration_pmd(address, pmd_val(pmdswp));
  }
  
  void remove_migration_pmd(struct page_vma_mapped_walk *pvmw, struct page *new)
-@@ -3207,5 +3211,6 @@ void remove_migration_pmd(struct page_vm
+@@ -3165,5 +3169,6 @@ void remove_migration_pmd(struct page_vm
  
  	/* No need to invalidate - it was non-present before */
  	update_mmu_cache_pmd(vma, address, pvmw->pmd);

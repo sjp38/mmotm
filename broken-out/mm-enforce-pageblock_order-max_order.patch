@@ -119,7 +119,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/page_alloc.c~mm-enforce-pageblock_order-max_order
 +++ a/mm/page_alloc.c
-@@ -1054,14 +1054,12 @@ static inline void __free_one_page(struc
+@@ -1072,14 +1072,12 @@ static inline void __free_one_page(struc
  		int migratetype, fpi_t fpi_flags)
  {
  	struct capture_control *capc = task_capc(zone);
@@ -135,7 +135,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	VM_BUG_ON(!zone_is_initialized(zone));
  	VM_BUG_ON_PAGE(page->flags & PAGE_FLAGS_CHECK_AT_PREP, page);
  
-@@ -2262,19 +2260,8 @@ void __init init_cma_reserved_pageblock(
+@@ -2259,19 +2257,8 @@ void __init init_cma_reserved_pageblock(
  	} while (++p, --i);
  
  	set_pageblock_migratetype(page, MIGRATE_CMA);
@@ -157,7 +157,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	adjust_managed_page_count(page, pageblock_nr_pages);
  	page_zone(page)->cma_pages += pageblock_nr_pages;
-@@ -7443,16 +7430,15 @@ static inline void setup_usemap(struct z
+@@ -7387,16 +7374,15 @@ static inline void setup_usemap(struct z
  /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
  void __init set_pageblock_order(void)
  {
@@ -177,7 +177,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Assume the largest contiguous order of interest is a huge page.
-@@ -9040,14 +9026,12 @@ struct page *has_unmovable_pages(struct
+@@ -8984,14 +8970,12 @@ struct page *has_unmovable_pages(struct
  #ifdef CONFIG_CONTIG_ALLOC
  static unsigned long pfn_max_align_down(unsigned long pfn)
  {

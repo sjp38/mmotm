@@ -6,7 +6,10 @@ originally passed to madvise_update_vma being destroyed.  In the current
 implementation, the name parameter passed to madvise_update_vma points
 directly to vma->anon_name and it is used after the call to vma_merge.  In
 the cases when vma_merge merges the original vma and destroys it, this
-will result in use-after-free bug as shown below:
+might result in UAF.  For that the original vma would have to hold the
+anon_vma_name with the last reference.  The following vma would need to
+contain a different anon_vma_name object with the same string.  Such
+scenario is shown below:
 
 madvise_vma_behavior(vma)
   madvise_update_vma(vma, ..., anon_name == vma->anon_name)
@@ -17,10 +20,12 @@ madvise_vma_behavior(vma)
 
 Fix this by raising the name refcount and stabilizing it.
 
+Link: https://lkml.kernel.org/r/20220224231834.1481408-3-surenb@google.com
 Link: https://lkml.kernel.org/r/20220223153613.835563-3-surenb@google.com
 Fixes: 9a10064f5625 ("mm: add a field to store names for private anonymous memory")
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 Reported-by: syzbot+aa7b3d4b35f9dc46a366@syzkaller.appspotmail.com
+Acked-by: Michal Hocko <mhocko@suse.com>
 Cc: Alexey Gladkov <legion@kernel.org>
 Cc: Chris Hyser <chris.hyser@oracle.com>
 Cc: Christian Brauner <brauner@kernel.org>

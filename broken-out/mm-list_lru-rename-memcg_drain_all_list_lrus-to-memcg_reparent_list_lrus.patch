@@ -1,0 +1,137 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: list_lru: rename memcg_drain_all_list_lrus to memcg_reparent_list_lrus
+
+The purpose of the memcg_drain_all_list_lrus() is list_lrus reparenting. 
+It is very similar to memcg_reparent_objcgs().  Rename it to
+memcg_reparent_list_lrus() so that the name can more consistent with
+memcg_reparent_objcgs().
+
+Link: https://lkml.kernel.org/r/20220228122126.37293-12-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Alex Shi <alexs@kernel.org>
+Cc: Anna Schumaker <Anna.Schumaker@Netapp.com>
+Cc: Chao Yu <chao@kernel.org>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: Fam Zheng <fam.zheng@bytedance.com>
+Cc: Jaegeuk Kim <jaegeuk@kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Kari Argillander <kari.argillander@gmail.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Qi Zheng <zhengqi.arch@bytedance.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Theodore Ts'o <tytso@mit.edu>
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Wei Yang <richard.weiyang@gmail.com>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/list_lru.h |    2 +-
+ mm/list_lru.c            |   24 ++++++++++++------------
+ mm/memcontrol.c          |    6 +++---
+ 3 files changed, 16 insertions(+), 16 deletions(-)
+
+--- a/include/linux/list_lru.h~mm-list_lru-rename-memcg_drain_all_list_lrus-to-memcg_reparent_list_lrus
++++ a/include/linux/list_lru.h
+@@ -78,7 +78,7 @@ int __list_lru_init(struct list_lru *lru
+ int memcg_list_lru_alloc(struct mem_cgroup *memcg, struct list_lru *lru,
+ 			 gfp_t gfp);
+ int memcg_update_all_list_lrus(int num_memcgs);
+-void memcg_drain_all_list_lrus(struct mem_cgroup *src, struct mem_cgroup *dst);
++void memcg_reparent_list_lrus(struct mem_cgroup *memcg, struct mem_cgroup *parent);
+ 
+ /**
+  * list_lru_add: add an element to the lru list's tail
+--- a/mm/list_lru.c~mm-list_lru-rename-memcg_drain_all_list_lrus-to-memcg_reparent_list_lrus
++++ a/mm/list_lru.c
+@@ -457,8 +457,8 @@ int memcg_update_all_list_lrus(int new_s
+ 	return ret;
+ }
+ 
+-static void memcg_drain_list_lru_node(struct list_lru *lru, int nid,
+-				      int src_idx, struct mem_cgroup *dst_memcg)
++static void memcg_reparent_list_lru_node(struct list_lru *lru, int nid,
++					 int src_idx, struct mem_cgroup *dst_memcg)
+ {
+ 	struct list_lru_node *nlru = &lru->node[nid];
+ 	int dst_idx = dst_memcg->kmemcg_id;
+@@ -486,22 +486,22 @@ out:
+ 	spin_unlock_irq(&nlru->lock);
+ }
+ 
+-static void memcg_drain_list_lru(struct list_lru *lru,
+-				 int src_idx, struct mem_cgroup *dst_memcg)
++static void memcg_reparent_list_lru(struct list_lru *lru,
++				    int src_idx, struct mem_cgroup *dst_memcg)
+ {
+ 	int i;
+ 
+ 	for_each_node(i)
+-		memcg_drain_list_lru_node(lru, i, src_idx, dst_memcg);
++		memcg_reparent_list_lru_node(lru, i, src_idx, dst_memcg);
+ 
+ 	memcg_list_lru_free(lru, src_idx);
+ }
+ 
+-void memcg_drain_all_list_lrus(struct mem_cgroup *src, struct mem_cgroup *dst)
++void memcg_reparent_list_lrus(struct mem_cgroup *memcg, struct mem_cgroup *parent)
+ {
+ 	struct cgroup_subsys_state *css;
+ 	struct list_lru *lru;
+-	int src_idx = src->kmemcg_id;
++	int src_idx = memcg->kmemcg_id;
+ 
+ 	/*
+ 	 * Change kmemcg_id of this cgroup and all its descendants to the
+@@ -517,17 +517,17 @@ void memcg_drain_all_list_lrus(struct me
+ 	 * call.
+ 	 */
+ 	rcu_read_lock();
+-	css_for_each_descendant_pre(css, &src->css) {
+-		struct mem_cgroup *memcg;
++	css_for_each_descendant_pre(css, &memcg->css) {
++		struct mem_cgroup *child;
+ 
+-		memcg = mem_cgroup_from_css(css);
+-		memcg->kmemcg_id = dst->kmemcg_id;
++		child = mem_cgroup_from_css(css);
++		child->kmemcg_id = parent->kmemcg_id;
+ 	}
+ 	rcu_read_unlock();
+ 
+ 	mutex_lock(&list_lrus_mutex);
+ 	list_for_each_entry(lru, &memcg_list_lrus, list)
+-		memcg_drain_list_lru(lru, src_idx, dst);
++		memcg_reparent_list_lru(lru, src_idx, parent);
+ 	mutex_unlock(&list_lrus_mutex);
+ }
+ 
+--- a/mm/memcontrol.c~mm-list_lru-rename-memcg_drain_all_list_lrus-to-memcg_reparent_list_lrus
++++ a/mm/memcontrol.c
+@@ -3707,7 +3707,7 @@ static void memcg_offline_kmem(struct me
+ 	memcg_reparent_objcgs(memcg, parent);
+ 
+ 	/*
+-	 * memcg_drain_all_list_lrus() can change memcg->kmemcg_id.
++	 * memcg_reparent_list_lrus() can change memcg->kmemcg_id.
+ 	 * Cache it to local @kmemcg_id.
+ 	 */
+ 	kmemcg_id = memcg->kmemcg_id;
+@@ -3716,9 +3716,9 @@ static void memcg_offline_kmem(struct me
+ 	 * After we have finished memcg_reparent_objcgs(), all list_lrus
+ 	 * corresponding to this cgroup are guaranteed to remain empty.
+ 	 * The ordering is imposed by list_lru_node->lock taken by
+-	 * memcg_drain_all_list_lrus().
++	 * memcg_reparent_list_lrus().
+ 	 */
+-	memcg_drain_all_list_lrus(memcg, parent);
++	memcg_reparent_list_lrus(memcg, parent);
+ 
+ 	memcg_free_cache_id(kmemcg_id);
+ }
+_

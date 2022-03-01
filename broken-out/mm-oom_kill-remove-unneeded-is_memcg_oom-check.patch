@@ -1,0 +1,29 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/oom_kill: remove unneeded is_memcg_oom check
+
+oom_cpuset_eligible() is always called when !is_memcg_oom().  Remove this
+unnecessary check.
+
+Link: https://lkml.kernel.org/r/20220224115933.20154-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Acked-by: David Rientjes <rientjes@google.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/oom_kill.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/mm/oom_kill.c~mm-oom_kill-remove-unneeded-is_memcg_oom-check
++++ a/mm/oom_kill.c
+@@ -93,9 +93,6 @@ static bool oom_cpuset_eligible(struct t
+ 	bool ret = false;
+ 	const nodemask_t *mask = oc->nodemask;
+ 
+-	if (is_memcg_oom(oc))
+-		return true;
+-
+ 	rcu_read_lock();
+ 	for_each_thread(start, tsk) {
+ 		if (mask) {
+_

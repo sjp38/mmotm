@@ -51,7 +51,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #else
  #define ___GFP_NOLOCKDEP	0
  #endif
-@@ -241,22 +243,25 @@ struct vm_area_struct;
+@@ -237,22 +239,25 @@ struct vm_area_struct;
   * intended for optimization: setting memory tags at the same time as zeroing
   * memory has minimal additional performace impact.
   *
@@ -85,7 +85,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/include/trace/events/mmflags.h~kasan-page_alloc-allow-skipping-unpoisoning-for-hw_tags
 +++ a/include/trace/events/mmflags.h
-@@ -52,8 +52,9 @@
+@@ -51,8 +51,9 @@
  	{(unsigned long)__GFP_ZEROTAGS,		"__GFP_ZEROTAGS"}	\
  
  #ifdef CONFIG_KASAN_HW_TAGS
@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/mm/page_alloc.c~kasan-page_alloc-allow-skipping-unpoisoning-for-hw_tags
 +++ a/mm/page_alloc.c
-@@ -2395,6 +2395,26 @@ static bool check_new_pages(struct page
+@@ -2343,6 +2343,26 @@ static bool check_new_pages(struct page
  	return false;
  }
  
@@ -126,7 +126,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  inline void post_alloc_hook(struct page *page, unsigned int order,
  				gfp_t gfp_flags)
  {
-@@ -2434,15 +2454,8 @@ inline void post_alloc_hook(struct page
+@@ -2382,15 +2402,8 @@ inline void post_alloc_hook(struct page
  		/* Note that memory is already initialized by the loop above. */
  		init = false;
  	}

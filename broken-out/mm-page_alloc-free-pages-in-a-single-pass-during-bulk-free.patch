@@ -80,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-free-pages-in-a-single-pass-during-bulk-free
 +++ a/mm/page_alloc.c
-@@ -1455,8 +1455,7 @@ static void free_pcppages_bulk(struct zo
+@@ -1452,8 +1452,7 @@ static void free_pcppages_bulk(struct zo
  	unsigned int order;
  	int prefetch_nr = READ_ONCE(pcp->batch);
  	bool isolated_pageblocks;
@@ -90,7 +90,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Ensure proper count is passed which otherwise would stuck in the
-@@ -1467,6 +1466,13 @@ static void free_pcppages_bulk(struct zo
+@@ -1464,6 +1463,13 @@ static void free_pcppages_bulk(struct zo
  	/* Ensure requested pindex is drained first. */
  	pindex = pindex - 1;
  
@@ -104,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	while (count > 0) {
  		struct list_head *list;
  		int nr_pages;
-@@ -1489,7 +1495,11 @@ static void free_pcppages_bulk(struct zo
+@@ -1486,7 +1492,11 @@ static void free_pcppages_bulk(struct zo
  		nr_pages = 1 << order;
  		BUILD_BUG_ON(MAX_ORDER >= (1<<NR_PCP_ORDER_WIDTH));
  		do {
@@ -116,7 +116,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			/* must delete to avoid corrupting pcp list */
  			list_del(&page->lru);
  			count -= nr_pages;
-@@ -1498,12 +1508,6 @@ static void free_pcppages_bulk(struct zo
+@@ -1495,12 +1505,6 @@ static void free_pcppages_bulk(struct zo
  			if (bulkfree_pcp_prepare(page))
  				continue;
  
@@ -129,7 +129,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			/*
  			 * We are going to put the page back to the global
  			 * pool, prefetch its buddy to speed up later access
-@@ -1517,36 +1521,18 @@ static void free_pcppages_bulk(struct zo
+@@ -1514,36 +1518,18 @@ static void free_pcppages_bulk(struct zo
  				prefetch_buddy(page, order);
  				prefetch_nr--;
  			}

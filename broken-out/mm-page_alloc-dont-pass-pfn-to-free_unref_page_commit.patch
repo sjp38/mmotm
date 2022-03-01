@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-dont-pass-pfn-to-free_unref_page_commit
 +++ a/mm/page_alloc.c
-@@ -3422,8 +3422,8 @@ static int nr_pcp_high(struct per_cpu_pa
+@@ -3366,8 +3366,8 @@ static int nr_pcp_high(struct per_cpu_pa
  	return min(READ_ONCE(pcp->batch) << 2, high);
  }
  
@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct zone *zone = page_zone(page);
  	struct per_cpu_pages *pcp;
-@@ -3472,7 +3472,7 @@ void free_unref_page(struct page *page,
+@@ -3416,7 +3416,7 @@ void free_unref_page(struct page *page,
  	}
  
  	local_lock_irqsave(&pagesets.lock, flags);
@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	local_unlock_irqrestore(&pagesets.lock, flags);
  }
  
-@@ -3482,13 +3482,13 @@ void free_unref_page(struct page *page,
+@@ -3426,13 +3426,13 @@ void free_unref_page(struct page *page,
  void free_unref_page_list(struct list_head *list)
  {
  	struct page *page, *next;
@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		if (!free_unref_page_prepare(page, pfn, 0)) {
  			list_del(&page->lru);
  			continue;
-@@ -3504,15 +3504,10 @@ void free_unref_page_list(struct list_he
+@@ -3448,15 +3448,10 @@ void free_unref_page_list(struct list_he
  			free_one_page(page_zone(page), page, pfn, 0, migratetype, FPI_NONE);
  			continue;
  		}
@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		/*
  		 * Non-isolated types over MIGRATE_PCPTYPES get added
  		 * to the MIGRATE_MOVABLE pcp list.
-@@ -3522,7 +3517,7 @@ void free_unref_page_list(struct list_he
+@@ -3466,7 +3461,7 @@ void free_unref_page_list(struct list_he
  			migratetype = MIGRATE_MOVABLE;
  
  		trace_mm_page_free_batched(page);

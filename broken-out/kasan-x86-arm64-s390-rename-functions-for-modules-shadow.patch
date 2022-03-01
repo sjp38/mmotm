@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
 --- a/include/linux/kasan.h~kasan-x86-arm64-s390-rename-functions-for-modules-shadow
 +++ a/include/linux/kasan.h
-@@ -454,17 +454,17 @@ static inline void kasan_populate_early_
+@@ -433,17 +433,17 @@ static inline void kasan_populate_early_
  		!defined(CONFIG_KASAN_VMALLOC)
  
  /*
@@ -115,7 +115,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		vfree(kasan_mem_to_shadow(vm->addr));
 --- a/mm/vmalloc.c~kasan-x86-arm64-s390-rename-functions-for-modules-shadow
 +++ a/mm/vmalloc.c
-@@ -2526,7 +2526,7 @@ struct vm_struct *remove_vm_area(const v
+@@ -2549,7 +2549,7 @@ struct vm_struct *remove_vm_area(const v
  		va->vm = NULL;
  		spin_unlock(&vmap_area_lock);
  

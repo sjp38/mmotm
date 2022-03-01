@@ -1,0 +1,30 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: mm/migrate: fix remove_migration_pte() of hugetlb entry
+
+The foliation of remove_migration_pte() is currently wrong on hugetlb anon
+entries, causing LTP move_pages12 to crash on BUG_ON(!PageLocked) in
+hugepage_add_anon_rmap().
+
+Link: https://lkml.kernel.org/r/bd28ebcf-4d42-7184-8189-ffed6fe7d4dc@google.com
+Fixes: b4010e88f071 ("mm/migrate: Convert remove_migration_ptes() to folios")
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/migrate.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/migrate.c~mm-migrate-fix-remove_migration_pte-of-hugetlb-entry
++++ a/mm/migrate.c
+@@ -183,7 +183,8 @@ static bool remove_migration_pte(struct
+ 		struct page *new;
+ 		unsigned long idx = 0;
+ 
+-		if (!folio_test_ksm(folio))
++		/* Skip call in common case, plus .pgoff is invalid for KSM */
++		if (pvmw.nr_pages != 1 && !folio_test_hugetlb(folio))
+ 			idx = linear_page_index(vma, pvmw.address) - pvmw.pgoff;
+ 		new = folio_page(folio, idx);
+ 
+_

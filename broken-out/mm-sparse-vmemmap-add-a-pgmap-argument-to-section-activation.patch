@@ -59,7 +59,7 @@ pages (with bigger vmemmap_shift).
     NVDIMM namespace bootstrap improves from ~268-358 ms to
     ~80-110/<1ms on 128G NVDIMMs with 2M and 1G respectivally.  And struct
     page needed capacity will be 3.8x / 1071x smaller for 2M and 1G
-    respectivelly.  Tested on x86 with 1Tb+ of pmem,
+    respectively.  Tested on x86 with 1Tb+ of pmem,
 
 
 This patch (of 5):

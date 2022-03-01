@@ -26,7 +26,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~kasan-page_alloc-simplify-kasan_poison_pages-call-site
 +++ a/mm/page_alloc.c
-@@ -1302,6 +1302,7 @@ static __always_inline bool free_pages_p
+@@ -1298,6 +1298,7 @@ static __always_inline bool free_pages_p
  {
  	int bad = 0;
  	bool skip_kasan_poison = should_skip_kasan_poison(page, fpi_flags);
@@ -34,7 +34,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	VM_BUG_ON_PAGE(PageTail(page), page);
  
-@@ -1374,19 +1375,10 @@ static __always_inline bool free_pages_p
+@@ -1370,19 +1371,10 @@ static __always_inline bool free_pages_p
  	 * With hardware tag-based KASAN, memory tags must be set before the
  	 * page becomes unavailable via debug_pagealloc or arch_free_page.
  	 */

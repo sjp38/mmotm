@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~kasan-page_alloc-init-memory-of-skipped-pages-on-free
 +++ a/mm/page_alloc.c
-@@ -1375,11 +1375,16 @@ static __always_inline bool free_pages_p
+@@ -1371,11 +1371,16 @@ static __always_inline bool free_pages_p
  	 * With hardware tag-based KASAN, memory tags must be set before the
  	 * page becomes unavailable via debug_pagealloc or arch_free_page.
  	 */

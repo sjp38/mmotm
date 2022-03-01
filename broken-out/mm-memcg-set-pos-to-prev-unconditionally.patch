@@ -23,7 +23,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-set-pos-to-prev-unconditionally
 +++ a/mm/memcontrol.c
-@@ -1029,7 +1029,7 @@ struct mem_cgroup *mem_cgroup_iter(struc
+@@ -980,7 +980,7 @@ struct mem_cgroup *mem_cgroup_iter(struc
  	struct mem_cgroup_reclaim_iter *iter;
  	struct cgroup_subsys_state *css = NULL;
  	struct mem_cgroup *memcg = NULL;
@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (mem_cgroup_disabled())
  		return NULL;
-@@ -1037,9 +1037,6 @@ struct mem_cgroup *mem_cgroup_iter(struc
+@@ -988,9 +988,6 @@ struct mem_cgroup *mem_cgroup_iter(struc
  	if (!root)
  		root = root_mem_cgroup;
  

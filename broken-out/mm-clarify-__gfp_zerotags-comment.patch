@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/gfp.h~mm-clarify-__gfp_zerotags-comment
 +++ a/include/linux/gfp.h
-@@ -232,8 +232,10 @@ struct vm_area_struct;
+@@ -228,8 +228,10 @@ struct vm_area_struct;
   *
   * %__GFP_ZERO returns a zeroed page on success.
   *

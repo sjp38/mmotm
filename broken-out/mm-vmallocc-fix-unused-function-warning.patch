@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
  	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
  
-@@ -977,6 +966,17 @@ unlink_va(struct vmap_area *va, struct r
+@@ -973,6 +962,17 @@ unlink_va(struct vmap_area *va, struct r
  }
  
  #if DEBUG_AUGMENT_PROPAGATE_CHECK

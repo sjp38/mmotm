@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~kasan-page_alloc-refactor-init-checks-in-post_alloc_hook
 +++ a/mm/page_alloc.c
-@@ -2420,19 +2420,21 @@ inline void post_alloc_hook(struct page
+@@ -2368,19 +2368,21 @@ inline void post_alloc_hook(struct page
  		kasan_alloc_pages(page, order, gfp_flags);
  	} else {
  		bool init = !want_init_on_free() && want_init_on_alloc(gfp_flags);

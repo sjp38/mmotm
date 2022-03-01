@@ -1,36 +1,31 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: disable threshold event handlers on PREEMPT_RT
+Subject: mm/memcg: Disable threshold event handlers on PREEMPT_RT
 
 During the integration of PREEMPT_RT support, the code flow around
-memcg_check_events() resulted in `twisted code'.  Moving the code around
-and avoiding then would then lead to an additional local-irq-save section
-within memcg_check_events().  While looking better, it adds a
+memcg_check_events() resulted in `twisted code'. Moving the code around
+and avoiding then would then lead to an additional local-irq-save
+section within memcg_check_events(). While looking better, it adds a
 local-irq-save section to code flow which is usually within an
 local-irq-off block on non-PREEMPT_RT configurations.
 
-The threshold event handler is a deprecated memcg v1 feature.  Instead of
-trying to get it to work under PREEMPT_RT just disable it.  There should
-be no users on PREEMPT_RT.  From that perspective it makes even less sense
-to get it to work under PREEMPT_RT while having zero users.
+The threshold event handler is a deprecated memcg v1 feature. Instead of
+trying to get it to work under PREEMPT_RT just disable it. There should
+be no users on PREEMPT_RT. From that perspective it makes even less
+sense to get it to work under PREEMPT_RT while having zero users.
 
 Make memory.soft_limit_in_bytes and cgroup.event_control return
--EOPNOTSUPP on PREEMPT_RT.  Make an empty memcg_check_events() and
-memcg_write_event_control() which return only -EOPNOTSUPP on PREEMPT_RT. 
+-EOPNOTSUPP on PREEMPT_RT. Make an empty memcg_check_events() and
+memcg_write_event_control() which return only -EOPNOTSUPP on PREEMPT_RT.
 Document that the two knobs are disabled on PREEMPT_RT.
 
-Link: https://lkml.kernel.org/r/20220221182540.380526-3-bigeasy@linutronix.de
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Link: https://lkml.kernel.org/r/20220226204144.1008339-3-bigeasy@linutronix.de
 Suggested-by: Michal Hocko <mhocko@kernel.org>
 Suggested-by: Michal Koutný <mkoutny@suse.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Acked-by: Roman Gushchin <guro@fb.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
-Cc: kernel test robot <oliver.sang@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
-Cc: Waiman Long <longman@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -68,7 +63,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* threshold event is triggered in finer grain than soft limit */
  	if (unlikely(mem_cgroup_event_ratelimit(memcg,
  						MEM_CGROUP_TARGET_THRESH))) {
-@@ -3731,8 +3734,12 @@ static ssize_t mem_cgroup_write(struct k
+@@ -3728,8 +3731,12 @@ static ssize_t mem_cgroup_write(struct k
  		}
  		break;
  	case RES_SOFT_LIMIT:
@@ -83,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		break;
  	}
  	return ret ?: nbytes;
-@@ -4708,6 +4715,9 @@ static ssize_t memcg_write_event_control
+@@ -4705,6 +4712,9 @@ static ssize_t memcg_write_event_control
  	char *endp;
  	int ret;
  

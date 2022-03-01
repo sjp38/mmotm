@@ -25,7 +25,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-set-memcg-after-css-verified-and-got-reference
 +++ a/mm/memcontrol.c
-@@ -1089,15 +1089,10 @@ struct mem_cgroup *mem_cgroup_iter(struc
+@@ -1040,15 +1040,10 @@ struct mem_cgroup *mem_cgroup_iter(struc
  		 * is provided by the caller, so we know it's alive
  		 * and kicking, and don't take an extra reference.
  		 */

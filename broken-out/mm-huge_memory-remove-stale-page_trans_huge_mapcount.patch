@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/mm.h~mm-huge_memory-remove-stale-page_trans_huge_mapcount
 +++ a/include/linux/mm.h
-@@ -828,16 +828,11 @@ static inline int total_mapcount(struct
+@@ -859,16 +859,11 @@ static inline int total_mapcount(struct
  	return folio_mapcount(page_folio(page));
  }
  

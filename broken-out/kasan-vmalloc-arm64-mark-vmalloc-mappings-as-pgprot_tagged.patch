@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   */
 --- a/mm/vmalloc.c~kasan-vmalloc-arm64-mark-vmalloc-mappings-as-pgprot_tagged
 +++ a/mm/vmalloc.c
-@@ -3108,6 +3108,15 @@ again:
+@@ -3130,6 +3130,15 @@ again:
  		goto fail;
  	}
  

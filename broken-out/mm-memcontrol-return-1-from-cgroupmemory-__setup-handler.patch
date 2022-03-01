@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcontrol-return-1-from-cgroupmemory-__setup-handler
 +++ a/mm/memcontrol.c
-@@ -7100,7 +7100,7 @@ static int __init cgroup_memory(char *s)
+@@ -7058,7 +7058,7 @@ static int __init cgroup_memory(char *s)
  		if (!strcmp(token, "nokmem"))
  			cgroup_memory_nokmem = true;
  	}

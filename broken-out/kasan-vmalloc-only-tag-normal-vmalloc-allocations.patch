@@ -34,7 +34,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kasan.h~kasan-vmalloc-only-tag-normal-vmalloc-allocations
 +++ a/include/linux/kasan.h
-@@ -27,9 +27,10 @@ struct kunit_kasan_expectation {
+@@ -28,9 +28,10 @@ struct kunit_kasan_expectation {
  
  typedef unsigned int __bitwise kasan_vmalloc_flags_t;
  
@@ -82,7 +82,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return (void *)start;
 --- a/mm/vmalloc.c~kasan-vmalloc-only-tag-normal-vmalloc-allocations
 +++ a/mm/vmalloc.c
-@@ -2221,7 +2221,7 @@ void *vm_map_ram(struct page **pages, un
+@@ -2244,7 +2244,7 @@ void *vm_map_ram(struct page **pages, un
  	 * With hardware tag-based KASAN, marking is skipped for
  	 * non-VM_ALLOC mappings, see __kasan_unpoison_vmalloc().
  	 */
@@ -91,7 +91,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return mem;
  }
-@@ -2460,7 +2460,7 @@ static struct vm_struct *__get_vm_area_n
+@@ -2483,7 +2483,7 @@ static struct vm_struct *__get_vm_area_n
  	 */
  	if (!(flags & VM_ALLOC))
  		area->addr = kasan_unpoison_vmalloc(area->addr, requested_size,
@@ -100,7 +100,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return area;
  }
-@@ -3071,7 +3071,7 @@ void *__vmalloc_node_range(unsigned long
+@@ -3093,7 +3093,7 @@ void *__vmalloc_node_range(unsigned long
  {
  	struct vm_struct *area;
  	void *ret;
@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long real_size = size;
  	unsigned long real_align = align;
  	unsigned int shift = PAGE_SHIFT;
-@@ -3124,21 +3124,28 @@ again:
+@@ -3146,21 +3146,28 @@ again:
  		goto fail;
  	}
  
@@ -152,7 +152,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	/* Allocate physical pages and map them into vmalloc space. */
-@@ -3152,10 +3159,13 @@ again:
+@@ -3174,10 +3181,13 @@ again:
  	 * (except for the should_skip_init() check) to make sure that memory
  	 * is initialized under the same conditions regardless of the enabled
  	 * KASAN mode.
@@ -167,7 +167,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	area->addr = kasan_unpoison_vmalloc(area->addr, real_size, kasan_flags);
  
  	/*
-@@ -3861,8 +3871,7 @@ retry:
+@@ -3883,8 +3893,7 @@ retry:
  	 */
  	for (area = 0; area < nr_vms; area++)
  		vms[area]->addr = kasan_unpoison_vmalloc(vms[area]->addr,

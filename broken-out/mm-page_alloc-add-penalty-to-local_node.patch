@@ -83,7 +83,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-add-penalty-to-local_node
 +++ a/mm/page_alloc.c
-@@ -6334,8 +6334,9 @@ static void build_zonelists(pg_data_t *p
+@@ -6278,8 +6278,9 @@ static void build_zonelists(pg_data_t *p
  		 * So adding penalty to the first node in same
  		 * distance group to make it round-robin.
  		 */

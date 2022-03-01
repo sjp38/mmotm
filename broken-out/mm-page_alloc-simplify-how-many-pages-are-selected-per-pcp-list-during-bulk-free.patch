@@ -23,7 +23,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-simplify-how-many-pages-are-selected-per-pcp-list-during-bulk-free
 +++ a/mm/page_alloc.c
-@@ -1447,13 +1447,11 @@ static inline void prefetch_buddy(struct
+@@ -1444,13 +1444,11 @@ static inline void prefetch_buddy(struct
   * count is the number of pages to free.
   */
  static void free_pcppages_bulk(struct zone *zone, int count,
@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned int order;
  	int prefetch_nr = READ_ONCE(pcp->batch);
  	bool isolated_pageblocks;
-@@ -1467,16 +1465,10 @@ static void free_pcppages_bulk(struct zo
+@@ -1464,16 +1462,10 @@ static void free_pcppages_bulk(struct zo
  	count = min(pcp->count, count);
  	while (count > 0) {
  		struct list_head *list;
@@ -58,7 +58,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			if (++pindex > max_pindex)
  				pindex = min_pindex;
  			list = &pcp->lists[pindex];
-@@ -1489,18 +1481,15 @@ static void free_pcppages_bulk(struct zo
+@@ -1486,18 +1478,15 @@ static void free_pcppages_bulk(struct zo
  				min_pindex++;
  		} while (1);
  
@@ -80,7 +80,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  			if (bulkfree_pcp_prepare(page))
  				continue;
-@@ -1524,9 +1513,8 @@ static void free_pcppages_bulk(struct zo
+@@ -1521,9 +1510,8 @@ static void free_pcppages_bulk(struct zo
  				prefetch_buddy(page, order);
  				prefetch_nr--;
  			}
@@ -91,7 +91,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * local_lock_irq held so equivalent to spin_lock_irqsave for
-@@ -3133,7 +3121,7 @@ void drain_zone_pages(struct zone *zone,
+@@ -3077,7 +3065,7 @@ void drain_zone_pages(struct zone *zone,
  	batch = READ_ONCE(pcp->batch);
  	to_drain = min(pcp->count, batch);
  	if (to_drain > 0)
@@ -100,7 +100,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	local_unlock_irqrestore(&pagesets.lock, flags);
  }
  #endif
-@@ -3154,7 +3142,7 @@ static void drain_pages_zone(unsigned in
+@@ -3098,7 +3086,7 @@ static void drain_pages_zone(unsigned in
  
  	pcp = per_cpu_ptr(zone->per_cpu_pageset, cpu);
  	if (pcp->count)
@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	local_unlock_irqrestore(&pagesets.lock, flags);
  }
-@@ -3435,7 +3423,7 @@ static void free_unref_page_commit(struc
+@@ -3379,7 +3367,7 @@ static void free_unref_page_commit(struc
  	if (pcp->count >= high) {
  		int batch = READ_ONCE(pcp->batch);
  

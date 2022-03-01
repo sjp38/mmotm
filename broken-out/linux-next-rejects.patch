@@ -12,12 +12,11 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  mm/memory-failure.c                         |    4 -
  mm/memory.c                                 |    2 
  mm/memremap.c                               |   11 ---
- mm/mmap.c                                   |   26 ++++++---
- mm/rmap.c                                   |   30 +++++-----
- mm/vmscan.c                                 |    8 +-
+ mm/rmap.c                                   |   18 +++---
+ mm/vmscan.c                                 |    2 
  tools/include/linux/gfp.h                   |    3 -
  tools/testing/radix-tree/linux/gfp.h        |   32 -----------
- 13 files changed, 45 insertions(+), 129 deletions(-)
+ 12 files changed, 18 insertions(+), 112 deletions(-)
 
 --- a/Documentation/admin-guide/sysctl/kernel.rst~linux-next-rejects
 +++ a/Documentation/admin-guide/sysctl/kernel.rst
@@ -78,6 +77,16 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  oops_all_cpu_backtrace
  ======================
+--- a/kernel/fork.c~linux-next-rejects
++++ a/kernel/fork.c
+@@ -472,7 +472,6 @@ struct vm_area_struct *vm_area_dup(struc
+ 		 */
+ 		*new = data_race(*orig);
+ 		INIT_LIST_HEAD(&new->anon_vma_chain);
+-		new->vm_next = new->vm_prev = NULL;
+ 		dup_anon_vma_name(orig, new);
+ 	}
+ 	return new;
 --- a/lib/Kconfig.debug~linux-next-rejects
 +++ a/lib/Kconfig.debug
 @@ -275,6 +275,7 @@ config DEBUG_INFO_DWARF5
@@ -90,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	  5.0+ accepts the -gdwarf-5 flag but only had partial support for some
 --- a/mm/huge_memory.c~linux-next-rejects
 +++ a/mm/huge_memory.c
-@@ -3164,10 +3164,8 @@ void remove_migration_pmd(struct page_vm
+@@ -3160,10 +3160,8 @@ void remove_migration_pmd(struct page_vm
  	if (PageAnon(new))
  		page_add_anon_rmap(new, vma, mmun_start, true);
  	else
@@ -104,7 +113,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	update_mmu_cache_pmd(vma, address, pvmw->pmd);
 --- a/mm/memcontrol.c~linux-next-rejects
 +++ a/mm/memcontrol.c
-@@ -7210,7 +7210,7 @@ void mem_cgroup_swapout(struct folio *fo
+@@ -7107,7 +7107,7 @@ void mem_cgroup_swapout(struct folio *fo
  	memcg_stats_lock();
  	mem_cgroup_charge_statistics(memcg, -nr_entries);
  	memcg_stats_unlock();
@@ -115,7 +124,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 --- a/mm/memory.c~linux-next-rejects
 +++ a/mm/memory.c
-@@ -1414,7 +1414,7 @@ again:
+@@ -1405,7 +1405,7 @@ again:
  				continue;
  			rss[mm_counter(page)]--;
  			if (is_device_private_entry(entry))
@@ -126,7 +135,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			/* Genuine swap entry, hence a private anon page */
 --- a/mm/memory-failure.c~linux-next-rejects
 +++ a/mm/memory-failure.c
-@@ -1416,12 +1416,12 @@ static bool hwpoison_user_mappings(struc
+@@ -1412,12 +1412,12 @@ static bool hwpoison_user_mappings(struc
  		 */
  		mapping = hugetlb_page_mapping_lock_write(hpage);
  		if (mapping) {
@@ -170,7 +179,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct range *range = &pgmap->ranges[range_id];
 --- a/mm/rmap.c~linux-next-rejects
 +++ a/mm/rmap.c
-@@ -1526,22 +1526,22 @@ static bool try_to_unmap_one(struct foli
+@@ -1524,22 +1524,22 @@ static bool try_to_unmap_one(struct foli
  			pteval = ptep_clear_flush(vma, address, pvmw.pte);
  		}
  
@@ -198,45 +207,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				set_pte_at(mm, address, pvmw.pte, pteval);
  			}
  
-@@ -1579,7 +1579,7 @@ static bool try_to_unmap_one(struct foli
- 			}
- 
- 			/* MADV_FREE page check */
--			if (!PageSwapBacked(page)) {
-+			if (!folio_test_swapbacked(folio)) {
- 				int ref_count, map_count;
- 
- 				/*
-@@ -1589,8 +1589,8 @@ static bool try_to_unmap_one(struct foli
- 				 */
- 				smp_mb();
- 
--				ref_count = page_count(page);
--				map_count = page_mapcount(page);
-+				ref_count = folio_ref_count(folio);
-+				map_count = folio_mapcount(folio);
- 
- 				/*
- 				 * Order reads for page refcount and dirty flag;
-@@ -1603,7 +1603,7 @@ static bool try_to_unmap_one(struct foli
- 				 * plus one or more rmap's (dropped by discard:).
- 				 */
- 				if ((ref_count == 1 + map_count) &&
--				    !PageDirty(page)) {
-+				    !folio_test_dirty(folio)) {
- 					/* Invalidate as we cleared the pte */
- 					mmu_notifier_invalidate_range(mm,
- 						address, address + PAGE_SIZE);
-@@ -1867,7 +1867,7 @@ static bool try_to_migrate_one(struct fo
- 				swp_pte = pte_swp_mkuffd_wp(swp_pte);
- 			set_pte_at(mm, pvmw.address, pvmw.pte, swp_pte);
- 			trace_set_migration_pte(pvmw.address, pte_val(swp_pte),
--						compound_order(page));
-+						folio_order(folio));
- 			/*
- 			 * No need to invalidate here it will synchronize on
- 			 * against the special swap migration pte.
-@@ -1879,16 +1879,16 @@ static bool try_to_migrate_one(struct fo
+@@ -1852,16 +1852,16 @@ static bool try_to_migrate_one(struct fo
  			 * changed when hugepage migrations to device private
  			 * memory are supported.
  			 */
@@ -257,15 +228,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				set_pte_at(mm, address, pvmw.pte, pteval);
  			}
  
-@@ -1937,7 +1937,7 @@ static bool try_to_migrate_one(struct fo
- 				swp_pte = pte_swp_mkuffd_wp(swp_pte);
- 			set_pte_at(mm, address, pvmw.pte, swp_pte);
- 			trace_set_migration_pte(address, pte_val(swp_pte),
--						compound_order(page));
-+						folio_order(folio));
- 			/*
- 			 * No need to invalidate here it will synchronize on
- 			 * against the special swap migration pte.
 --- a/mm/vmscan.c~linux-next-rejects
 +++ a/mm/vmscan.c
 @@ -1575,7 +1575,7 @@ retry:
@@ -277,19 +239,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  		/*
  		 * If a page at the tail of the LRU is under writeback, there
-@@ -1724,9 +1724,9 @@ retry:
- 				/* Adding to swap updated mapping */
- 				mapping = page_mapping(page);
- 			}
--		} else if (unlikely(PageTransHuge(page))) {
--			/* Split file/lazyfree THP */
--			if (split_huge_page_to_list(page, page_list))
-+		} else if (PageSwapBacked(page) && PageTransHuge(page)) {
-+			/* Split shmem THP */
-+			if (split_folio_to_list(folio, page_list))
- 				goto keep_locked;
- 		}
- 
 --- a/tools/include/linux/gfp.h~linux-next-rejects
 +++ a/tools/include/linux/gfp.h
 @@ -12,7 +12,6 @@
@@ -344,54 +293,4 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 -}
 -
 -#endif
---- a/kernel/fork.c~linux-next-rejects
-+++ a/kernel/fork.c
-@@ -471,7 +471,6 @@ struct vm_area_struct *vm_area_dup(struc
- 		 */
- 		*new = data_race(*orig);
- 		INIT_LIST_HEAD(&new->anon_vma_chain);
--		new->vm_next = new->vm_prev = NULL;
- 		dup_anon_vma_name(orig, new);
- 	}
- 	return new;
---- a/mm/mmap.c~linux-next-rejects
-+++ a/mm/mmap.c
-@@ -3104,19 +3104,29 @@ void exit_mmap(struct mm_struct *mm)
- 	tlb_gather_mmu_fullmm(&tlb, mm);
- 	/* update_hiwater_rss(mm) here? but nobody should be looking */
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
--	unmap_vmas(&tlb, vma, 0, -1);
--	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, USER_PGTABLES_CEILING);
-+	unmap_vmas(&tlb, &mm->mm_mt, vma, 0, ULONG_MAX);
-+	free_pgtables(&tlb, &mm->mm_mt, vma, FIRST_USER_ADDRESS, USER_PGTABLES_CEILING);
- 	tlb_finish_mmu(&tlb);
- 
--	/* Walk the list again, actually closing and freeing it. */
--	while (vma) {
-+	/*
-+	 * Walk the list again, actually closing and freeing it, with preemption
-+	 * enabled, without holding any MM locks besides the unreachable
-+	 * mmap_write_lock.
-+	 */
-+	do {
- 		if (vma->vm_flags & VM_ACCOUNT)
- 			nr_accounted += vma_pages(vma);
--		vma = remove_vma(vma);
-+		remove_vma(vma);
-+		count++;
- 		cond_resched();
--	}
--	mm->mmap = NULL;
--	mmap_write_unlock(mm);
-+	} while ((vma = mas_find(&mas, ULONG_MAX)) != NULL);
-+
-+	BUG_ON(count != mm->map_count);
-+
-+	trace_exit_mmap(mm);
-+	__mt_destroy(&mm->mm_mt);
-+	rwsem_release(&mm->mmap_lock.dep_map, _THIS_IP_);
-+
- 	vm_unacct_memory(nr_accounted);
- }
- 
 _

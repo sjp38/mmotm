@@ -53,7 +53,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kasan.h~kasan-vmalloc-add-vmalloc-tagging-for-hw_tags
 +++ a/include/linux/kasan.h
-@@ -25,6 +25,12 @@ struct kunit_kasan_expectation {
+@@ -26,6 +26,12 @@ struct kunit_kasan_expectation {
  
  #endif
  
@@ -66,7 +66,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #if defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)
  
  #include <linux/pgtable.h>
-@@ -418,18 +424,39 @@ static inline void kasan_init_hw_tags(vo
+@@ -397,18 +403,39 @@ static inline void kasan_init_hw_tags(vo
  
  #ifdef CONFIG_KASAN_VMALLOC
  
@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return (void *)start;
  }
  
-@@ -456,7 +483,8 @@ static inline void kasan_release_vmalloc
+@@ -435,7 +462,8 @@ static inline void kasan_release_vmalloc
  					 unsigned long free_region_end) { }
  
  static inline void *kasan_unpoison_vmalloc(const void *start,
@@ -262,7 +262,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/vmalloc.c~kasan-vmalloc-add-vmalloc-tagging-for-hw_tags
 +++ a/mm/vmalloc.c
-@@ -2216,8 +2216,12 @@ void *vm_map_ram(struct page **pages, un
+@@ -2239,8 +2239,12 @@ void *vm_map_ram(struct page **pages, un
  		return NULL;
  	}
  
@@ -277,7 +277,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return mem;
  }
-@@ -2451,9 +2455,12 @@ static struct vm_struct *__get_vm_area_n
+@@ -2474,9 +2478,12 @@ static struct vm_struct *__get_vm_area_n
  	 * best-effort approach, as they can be mapped outside of vmalloc code.
  	 * For VM_ALLOC mappings, the pages are marked as accessible after
  	 * getting mapped in __vmalloc_node_range().
@@ -291,7 +291,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return area;
  }
-@@ -3064,6 +3071,7 @@ void *__vmalloc_node_range(unsigned long
+@@ -3086,6 +3093,7 @@ void *__vmalloc_node_range(unsigned long
  {
  	struct vm_struct *area;
  	void *ret;
@@ -299,7 +299,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long real_size = size;
  	unsigned long real_align = align;
  	unsigned int shift = PAGE_SHIFT;
-@@ -3116,21 +3124,39 @@ again:
+@@ -3138,21 +3146,39 @@ again:
  		goto fail;
  	}
  
@@ -346,7 +346,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * In this function, newly allocated vm_struct has VM_UNINITIALIZED
-@@ -3830,10 +3856,13 @@ retry:
+@@ -3852,10 +3878,13 @@ retry:
  	/*
  	 * Mark allocated areas as accessible. Do it now as a best-effort
  	 * approach, as they can be mapped outside of vmalloc code.

@@ -159,7 +159,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  error_mem_hotplug_end:
 --- a/mm/page_alloc.c~mm-handle-uninitialized-numa-nodes-gracefully
 +++ a/mm/page_alloc.c
-@@ -6388,7 +6388,7 @@ static void per_cpu_pages_init(struct pe
+@@ -6332,7 +6332,7 @@ static void per_cpu_pages_init(struct pe
  #define BOOT_PAGESET_BATCH	1
  static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
  static DEFINE_PER_CPU(struct per_cpu_zonestat, boot_zonestats);
@@ -168,7 +168,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static void __build_all_zonelists(void *data)
  {
-@@ -6410,7 +6410,11 @@ static void __build_all_zonelists(void *
+@@ -6354,7 +6354,11 @@ static void __build_all_zonelists(void *
  	if (self && !node_online(self->node_id)) {
  		build_zonelists(self);
  	} else {
@@ -181,7 +181,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			pg_data_t *pgdat = NODE_DATA(nid);
  
  			build_zonelists(pgdat);
-@@ -8124,8 +8128,32 @@ void __init free_area_init(unsigned long
+@@ -8068,8 +8072,32 @@ void __init free_area_init(unsigned long
  	/* Initialise every node */
  	mminit_verify_pageflags_layout();
  	setup_nr_node_ids();

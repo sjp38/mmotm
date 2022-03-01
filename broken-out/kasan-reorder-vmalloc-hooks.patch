@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kasan.h~kasan-reorder-vmalloc-hooks
 +++ a/include/linux/kasan.h
-@@ -418,34 +418,32 @@ static inline void kasan_init_hw_tags(vo
+@@ -397,34 +397,32 @@ static inline void kasan_init_hw_tags(vo
  
  #ifdef CONFIG_KASAN_VMALLOC
  

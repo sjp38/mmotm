@@ -1,0 +1,65 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: tmpfs: three tweaks to creation time patch
+
+Thank you to Xavier Roche for his tmpfs file creation time patch.  Please
+apply these 3 tweaks on top (and fold in when sending to Linus):
+
+1. Move vfs_inode back to being last element of shmem_inode_info.
+2. Remove unnecessary parentheses from condition in shmem_getattr().
+3. Using shmem_getattr() on other file types than regular requires that
+   shmem_is_huge() check type, to stop incorrect HPAGE_PMD_SIZE blksize.
+
+Link: https://lkml.kernel.org/r/b954973a-b8d1-cab8-63bd-6ea8063de3@google.com
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Cc: Xavier Roche <xavier.roche@algolia.com>
+Cc: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/shmem_fs.h |    2 +-
+ mm/shmem.c               |    7 +++----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+--- a/include/linux/shmem_fs.h~tmpfs-support-for-file-creation-time-fix
++++ a/include/linux/shmem_fs.h
+@@ -24,8 +24,8 @@ struct shmem_inode_info {
+ 	struct shared_policy	policy;		/* NUMA memory alloc policy */
+ 	struct simple_xattrs	xattrs;		/* list of xattrs */
+ 	atomic_t		stop_eviction;	/* hold when working on inode */
+-	struct inode		vfs_inode;
+ 	struct timespec64	i_crtime;	/* file creation time */
++	struct inode		vfs_inode;
+ };
+ 
+ struct shmem_sb_info {
+--- a/mm/shmem.c~tmpfs-support-for-file-creation-time-fix
++++ a/mm/shmem.c
+@@ -476,6 +476,8 @@ bool shmem_is_huge(struct vm_area_struct
+ {
+ 	loff_t i_size;
+ 
++	if (!S_ISREG(inode->i_mode))
++		return false;
+ 	if (shmem_huge == SHMEM_HUGE_DENY)
+ 		return false;
+ 	if (vma && ((vma->vm_flags & VM_NOHUGEPAGE) ||
+@@ -1061,7 +1063,7 @@ static int shmem_getattr(struct user_nam
+ 	if (shmem_is_huge(NULL, inode, 0))
+ 		stat->blksize = HPAGE_PMD_SIZE;
+ 
+-	if ((request_mask & STATX_BTIME)) {
++	if (request_mask & STATX_BTIME) {
+ 		stat->result_mask |= STATX_BTIME;
+ 		stat->btime.tv_sec = info->i_crtime.tv_sec;
+ 		stat->btime.tv_nsec = info->i_crtime.tv_nsec;
+@@ -1860,9 +1862,6 @@ repeat:
+ 		return 0;
+ 	}
+ 
+-	/* Never use a huge page for shmem_symlink() */
+-	if (S_ISLNK(inode->i_mode))
+-		goto alloc_nohuge;
+ 	if (!shmem_is_huge(vma, inode, index))
+ 		goto alloc_nohuge;
+ 
+_

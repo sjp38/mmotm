@@ -94,7 +94,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-limit-number-of-high-order-pages-on-pcp-during-bulk-free
 +++ a/mm/page_alloc.c
-@@ -3355,10 +3355,15 @@ static bool free_unref_page_prepare(stru
+@@ -3299,10 +3299,15 @@ static bool free_unref_page_prepare(stru
  	return true;
  }
  
@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Check for PCP disabled or boot pageset */
  	if (unlikely(high < batch))
  		return 1;
-@@ -3379,11 +3384,12 @@ static int nr_pcp_free(struct per_cpu_pa
+@@ -3323,11 +3328,12 @@ static int nr_pcp_free(struct per_cpu_pa
  	return batch;
  }
  
@@ -126,7 +126,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return 0;
  
  	if (!test_bit(ZONE_RECLAIM_ACTIVE, &zone->flags))
-@@ -3403,17 +3409,27 @@ static void free_unref_page_commit(struc
+@@ -3347,17 +3353,27 @@ static void free_unref_page_commit(struc
  	struct per_cpu_pages *pcp;
  	int high;
  	int pindex;

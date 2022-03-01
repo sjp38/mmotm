@@ -40,7 +40,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifdef CONFIG_LOCKDEP
  #define ___GFP_NOLOCKDEP	0x2000000u
  #else
-@@ -251,7 +255,9 @@ struct vm_area_struct;
+@@ -247,7 +251,9 @@ struct vm_area_struct;
  #define __GFP_NOLOCKDEP ((__force gfp_t)___GFP_NOLOCKDEP)
  
  /* Room for N __GFP_FOO bits */
@@ -53,7 +53,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
 --- a/include/trace/events/mmflags.h~kasan-mm-only-define-___gfp_skip_kasan_poison-with-hw_tags
 +++ a/include/trace/events/mmflags.h
-@@ -49,12 +49,18 @@
+@@ -48,12 +48,18 @@
  	{(unsigned long)__GFP_RECLAIM,		"__GFP_RECLAIM"},	\
  	{(unsigned long)__GFP_DIRECT_RECLAIM,	"__GFP_DIRECT_RECLAIM"},\
  	{(unsigned long)__GFP_KSWAPD_RECLAIM,	"__GFP_KSWAPD_RECLAIM"},\

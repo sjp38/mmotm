@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static atomic_long_t nr_vmalloc_pages;
  
-@@ -1722,18 +1724,6 @@ static bool __purge_vmap_area_lazy(unsig
+@@ -1718,18 +1720,6 @@ static bool __purge_vmap_area_lazy(unsig
  }
  
  /*
@@ -71,7 +71,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * Kick off a purge of the outstanding lazy areas.
   */
  static void purge_vmap_area_lazy(void)
-@@ -1744,6 +1734,20 @@ static void purge_vmap_area_lazy(void)
+@@ -1740,6 +1730,20 @@ static void purge_vmap_area_lazy(void)
  	mutex_unlock(&vmap_purge_lock);
  }
  
@@ -92,7 +92,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Free a vmap area, caller ensuring that the area has been unmapped
   * and flush_cache_vunmap had been called for the correct range
-@@ -1770,7 +1774,7 @@ static void free_vmap_area_noflush(struc
+@@ -1766,7 +1770,7 @@ static void free_vmap_area_noflush(struc
  
  	/* After this point, we may free va at any time */
  	if (unlikely(nr_lazy > lazy_max_pages()))

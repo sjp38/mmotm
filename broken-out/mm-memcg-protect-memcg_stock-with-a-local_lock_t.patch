@@ -1,23 +1,26 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: protect memcg_stock with a local_lock_t
+Subject: mm/memcg: Protect memcg_stock with a local_lock_t
 
 The members of the per-CPU structure memcg_stock_pcp are protected by
-disabling interrupts.  This is not working on PREEMPT_RT because it
+disabling interrupts. This is not working on PREEMPT_RT because it
 creates atomic context in which actions are performed which require
-preemptible context.  One example is obj_cgroup_release().
+preemptible context. One example is obj_cgroup_release().
 
-The IRQ-disable sections can be replaced with local_lock_t which preserves
-the explicit disabling of interrupts while keeps the code preemptible on
-PREEMPT_RT.
+The IRQ-disable sections can be replaced with local_lock_t which
+preserves the explicit disabling of interrupts while keeps the code
+preemptible on PREEMPT_RT.
 
-drain_obj_stock() drops a reference on obj_cgroup which leads to an
-invocat= ion of obj_cgroup_release() if it is the last object.  This in
-turn leads to recursive locking of the local_lock_t.  To avoid this,
-obj_cgroup_release() = is invoked outside of the locked section.
+drain_obj_stock() drops a reference on obj_cgroup which leads to an invocat=
+ion
+of obj_cgroup_release() if it is the last object. This in turn leads to
+recursive locking of the local_lock_t. To avoid this, obj_cgroup_release() =
+is
+invoked outside of the locked section.
 
-obj_cgroup_uncharge_pages() can be invoked with the local_lock_t acquired
-a= nd without it.  This will lead later to a recursion in refill_stock(). 
-To avoid the locking recursion provide obj_cgroup_uncharge_pages_locked()
+obj_cgroup_uncharge_pages() can be invoked with the local_lock_t acquired a=
+nd
+without it. This will lead later to a recursion in refill_stock(). To
+avoid the locking recursion provide obj_cgroup_uncharge_pages_locked()
 which uses the locked version of refill_stock().
 
 - Replace disabling interrupts for memcg_stock with a local_lock_t.
@@ -30,27 +33,18 @@ which uses the locked version of refill_stock().
   drain_obj_stock().
 
 Link: https://lkml.kernel.org/r/20220209014709.GA26885@xsang-OptiPlex-9020
-Link: https://lkml.kernel.org/r/20220221182540.380526-6-bigeasy@linutronix.de
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Link: https://lkml.kernel.org/r/20220226204144.1008339-6-bigeasy@linutronix.de
 Reported-by: kernel test robot <oliver.sang@intel.com>
-Acked-by: Michal Hocko <mhocko@suse.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Michal Koutný <mkoutny@suse.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Roman Gushchin <guro@fb.com>
-Cc: Shakeel Butt <shakeelb@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
-Cc: Waiman Long <longman@redhat.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/memcontrol.c |   55 ++++++++++++++++++++++++++++------------------
- 1 file changed, 34 insertions(+), 21 deletions(-)
+ mm/memcontrol.c |   59 +++++++++++++++++++++++++++++-----------------
+ 1 file changed, 38 insertions(+), 21 deletions(-)
 
 --- a/mm/memcontrol.c~mm-memcg-protect-memcg_stock-with-a-local_lock_t
 +++ a/mm/memcontrol.c
-@@ -2128,6 +2128,7 @@ void unlock_page_memcg(struct page *page
+@@ -2132,6 +2132,7 @@ void unlock_page_memcg(struct page *page
  }
  
  struct memcg_stock_pcp {
@@ -58,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct mem_cgroup *cached; /* this never be root cgroup */
  	unsigned int nr_pages;
  
-@@ -2143,18 +2144,21 @@ struct memcg_stock_pcp {
+@@ -2147,18 +2148,21 @@ struct memcg_stock_pcp {
  	unsigned long flags;
  #define FLUSHING_CACHED_CHARGE	0
  };
@@ -83,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
  				     struct mem_cgroup *root_memcg)
-@@ -2186,7 +2190,7 @@ static bool consume_stock(struct mem_cgr
+@@ -2190,7 +2194,7 @@ static bool consume_stock(struct mem_cgr
  	if (nr_pages > MEMCG_CHARGE_BATCH)
  		return ret;
  
@@ -92,7 +86,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	stock = this_cpu_ptr(&memcg_stock);
  	if (memcg == stock->cached && stock->nr_pages >= nr_pages) {
-@@ -2194,7 +2198,7 @@ static bool consume_stock(struct mem_cgr
+@@ -2198,7 +2202,7 @@ static bool consume_stock(struct mem_cgr
  		ret = true;
  	}
  
@@ -101,7 +95,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return ret;
  }
-@@ -2223,6 +2227,7 @@ static void drain_stock(struct memcg_sto
+@@ -2227,6 +2231,7 @@ static void drain_stock(struct memcg_sto
  static void drain_local_stock(struct work_struct *dummy)
  {
  	struct memcg_stock_pcp *stock;
@@ -109,7 +103,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long flags;
  
  	/*
-@@ -2230,14 +2235,16 @@ static void drain_local_stock(struct wor
+@@ -2234,14 +2239,16 @@ static void drain_local_stock(struct wor
  	 * drain_stock races is that we always operate on local CPU stock
  	 * here with IRQ disabled
  	 */
@@ -129,7 +123,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -2264,9 +2271,9 @@ static void refill_stock(struct mem_cgro
+@@ -2268,9 +2275,9 @@ static void refill_stock(struct mem_cgro
  {
  	unsigned long flags;
  
@@ -141,7 +135,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /*
-@@ -3093,10 +3100,11 @@ void mod_objcg_state(struct obj_cgroup *
+@@ -3097,10 +3104,11 @@ void mod_objcg_state(struct obj_cgroup *
  		     enum node_stat_item idx, int nr)
  {
  	struct memcg_stock_pcp *stock;
@@ -154,7 +148,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	stock = this_cpu_ptr(&memcg_stock);
  
  	/*
-@@ -3105,7 +3113,7 @@ void mod_objcg_state(struct obj_cgroup *
+@@ -3109,7 +3117,7 @@ void mod_objcg_state(struct obj_cgroup *
  	 * changes.
  	 */
  	if (stock->cached_objcg != objcg) {
@@ -163,7 +157,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		obj_cgroup_get(objcg);
  		stock->nr_bytes = atomic_read(&objcg->nr_charged_bytes)
  				? atomic_xchg(&objcg->nr_charged_bytes, 0) : 0;
-@@ -3149,7 +3157,9 @@ void mod_objcg_state(struct obj_cgroup *
+@@ -3153,7 +3161,9 @@ void mod_objcg_state(struct obj_cgroup *
  	if (nr)
  		mod_objcg_mlstate(objcg, pgdat, idx, nr);
  
@@ -174,7 +168,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static bool consume_obj_stock(struct obj_cgroup *objcg, unsigned int nr_bytes)
-@@ -3158,7 +3168,7 @@ static bool consume_obj_stock(struct obj
+@@ -3162,7 +3172,7 @@ static bool consume_obj_stock(struct obj
  	unsigned long flags;
  	bool ret = false;
  
@@ -183,7 +177,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	stock = this_cpu_ptr(&memcg_stock);
  	if (objcg == stock->cached_objcg && stock->nr_bytes >= nr_bytes) {
-@@ -3166,17 +3176,17 @@ static bool consume_obj_stock(struct obj
+@@ -3170,17 +3180,17 @@ static bool consume_obj_stock(struct obj
  		ret = true;
  	}
  
@@ -204,17 +198,21 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (stock->nr_bytes) {
  		unsigned int nr_pages = stock->nr_bytes >> PAGE_SHIFT;
-@@ -3226,8 +3236,8 @@ static void drain_obj_stock(struct memcg
+@@ -3230,8 +3240,12 @@ static void drain_obj_stock(struct memcg
  		stock->cached_pgdat = NULL;
  	}
  
 -	obj_cgroup_put(old);
  	stock->cached_objcg = NULL;
++	/*
++	 * The `old' objects needs to be released by the caller via
++	 * obj_cgroup_put() outside of memcg_stock_pcp::stock_lock.
++	 */
 +	return old;
  }
  
  static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
-@@ -3248,14 +3258,15 @@ static void refill_obj_stock(struct obj_
+@@ -3252,14 +3266,15 @@ static void refill_obj_stock(struct obj_
  			     bool allow_uncharge)
  {
  	struct memcg_stock_pcp *stock;
@@ -232,7 +230,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		obj_cgroup_get(objcg);
  		stock->cached_objcg = objcg;
  		stock->nr_bytes = atomic_read(&objcg->nr_charged_bytes)
-@@ -3269,7 +3280,9 @@ static void refill_obj_stock(struct obj_
+@@ -3273,7 +3288,9 @@ static void refill_obj_stock(struct obj_
  		stock->nr_bytes &= (PAGE_SIZE - 1);
  	}
  

@@ -1,0 +1,39 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/writeback: minor clean up for highmem_dirtyable_memory
+
+Since commit a804552b9a15 ("mm/page-writeback.c: fix dirty_balance_reserve
+subtraction from dirtyable memory"), local variable x can not be negative.
+And it can not overflow when it is the total number of dirtyable highmem
+pages.  Thus remove the unneeded comment and overflow check.
+
+Link: https://lkml.kernel.org/r/20220224115416.46089-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page-writeback.c |   12 ------------
+ 1 file changed, 12 deletions(-)
+
+--- a/mm/page-writeback.c~mm-writeback-minor-clean-up-for-highmem_dirtyable_memory
++++ a/mm/page-writeback.c
+@@ -324,18 +324,6 @@ static unsigned long highmem_dirtyable_m
+ 	}
+ 
+ 	/*
+-	 * Unreclaimable memory (kernel memory or anonymous memory
+-	 * without swap) can bring down the dirtyable pages below
+-	 * the zone's dirty balance reserve and the above calculation
+-	 * will underflow.  However we still want to add in nodes
+-	 * which are below threshold (negative values) to get a more
+-	 * accurate calculation but make sure that the total never
+-	 * underflows.
+-	 */
+-	if ((long)x < 0)
+-		x = 0;
+-
+-	/*
+ 	 * Make sure that the number of highmem pages is never larger
+ 	 * than the number of the total dirtyable memory. This can only
+ 	 * occur in very strange VM situations but we want to make sure
+_

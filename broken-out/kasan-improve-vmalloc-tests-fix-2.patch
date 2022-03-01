@@ -22,7 +22,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/test_kasan.c~kasan-improve-vmalloc-tests-fix-2
 +++ a/lib/test_kasan.c
-@@ -1140,7 +1140,6 @@ static void vmap_tags(struct kunit *test
+@@ -1144,7 +1144,6 @@ static void vmap_tags(struct kunit *test
  {
  	char *p_ptr, *v_ptr;
  	struct page *p_page, *v_page;
@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * This test is specifically crafted for the software tag-based mode,
-@@ -1150,12 +1149,12 @@ static void vmap_tags(struct kunit *test
+@@ -1154,12 +1153,12 @@ static void vmap_tags(struct kunit *test
  
  	KASAN_TEST_NEEDS_CONFIG_ON(test, CONFIG_KASAN_VMALLOC);
  
@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, v_ptr);
  
  	/*
-@@ -1177,14 +1176,13 @@ static void vmap_tags(struct kunit *test
+@@ -1181,14 +1180,13 @@ static void vmap_tags(struct kunit *test
  	KUNIT_EXPECT_PTR_EQ(test, p_page, v_page);
  
  	vunmap(v_ptr);
@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * This test is specifically crafted for the software tag-based mode,
-@@ -1192,12 +1190,12 @@ static void vm_map_ram_tags(struct kunit
+@@ -1196,12 +1194,12 @@ static void vm_map_ram_tags(struct kunit
  	 */
  	KASAN_TEST_NEEDS_CONFIG_ON(test, CONFIG_KASAN_SW_TAGS);
  
@@ -76,7 +76,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, v_ptr);
  
  	KUNIT_EXPECT_GE(test, (u8)get_tag(v_ptr), (u8)KASAN_TAG_MIN);
-@@ -1207,8 +1205,8 @@ static void vm_map_ram_tags(struct kunit
+@@ -1211,8 +1209,8 @@ static void vm_map_ram_tags(struct kunit
  	*p_ptr = 0;
  	*v_ptr = 0;
  

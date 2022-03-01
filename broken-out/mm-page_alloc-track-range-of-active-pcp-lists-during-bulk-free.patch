@@ -21,7 +21,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-track-range-of-active-pcp-lists-during-bulk-free
 +++ a/mm/page_alloc.c
-@@ -1450,6 +1450,8 @@ static void free_pcppages_bulk(struct zo
+@@ -1447,6 +1447,8 @@ static void free_pcppages_bulk(struct zo
  					struct per_cpu_pages *pcp)
  {
  	int pindex = 0;
@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	int batch_free = 0;
  	int nr_freed = 0;
  	unsigned int order;
-@@ -1475,13 +1477,20 @@ static void free_pcppages_bulk(struct zo
+@@ -1472,13 +1474,20 @@ static void free_pcppages_bulk(struct zo
  		 */
  		do {
  			batch_free++;

@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~kasan-page_alloc-rework-kasan_unpoison_pages-call-site
 +++ a/mm/page_alloc.c
-@@ -2434,15 +2434,20 @@ inline void post_alloc_hook(struct page
+@@ -2382,15 +2382,20 @@ inline void post_alloc_hook(struct page
  		/* Note that memory is already initialized by the loop above. */
  		init = false;
  	}

@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static inline bool early_page_uninitialised(unsigned long pfn)
-@@ -1271,6 +1253,35 @@ out:
+@@ -1267,6 +1249,35 @@ out:
  	return ret;
  }
  

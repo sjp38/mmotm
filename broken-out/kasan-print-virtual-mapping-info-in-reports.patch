@@ -22,7 +22,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/kasan/report.c~kasan-print-virtual-mapping-info-in-reports
 +++ a/mm/kasan/report.c
-@@ -268,8 +268,21 @@ static void print_address_description(vo
+@@ -260,8 +260,21 @@ static void print_address_description(vo
  		pr_err(" %pS\n", addr);
  	}
  

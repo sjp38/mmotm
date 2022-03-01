@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/vmalloc.c~mm-vmalloc-add-adjust_search_size-parameter
 +++ a/mm/vmalloc.c
-@@ -1193,22 +1193,28 @@ is_within_this_va(struct vmap_area *va,
+@@ -1189,22 +1189,28 @@ is_within_this_va(struct vmap_area *va,
  /*
   * Find the first free block(lowest start address) in the tree,
   * that will accomplish the request corresponding to passing
@@ -62,7 +62,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				vstart < va->va_start) {
  			node = node->rb_left;
  		} else {
-@@ -1218,9 +1224,9 @@ find_vmap_lowest_match(unsigned long siz
+@@ -1214,9 +1220,9 @@ find_vmap_lowest_match(unsigned long siz
  			/*
  			 * Does not make sense to go deeper towards the right
  			 * sub-tree if it does not have a free block that is
@@ -74,7 +74,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				node = node->rb_right;
  				continue;
  			}
-@@ -1236,7 +1242,7 @@ find_vmap_lowest_match(unsigned long siz
+@@ -1232,7 +1238,7 @@ find_vmap_lowest_match(unsigned long siz
  				if (is_within_this_va(va, size, align, vstart))
  					return va;
  
@@ -83,7 +83,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  						vstart <= va->va_start) {
  					/*
  					 * Shift the vstart forward. Please note, we update it with
-@@ -1284,7 +1290,7 @@ find_vmap_lowest_match_check(unsigned lo
+@@ -1280,7 +1286,7 @@ find_vmap_lowest_match_check(unsigned lo
  	get_random_bytes(&rnd, sizeof(rnd));
  	vstart = VMALLOC_START + rnd;
  
@@ -92,7 +92,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	va_2 = find_vmap_lowest_linear_match(size, align, vstart);
  
  	if (va_1 != va_2)
-@@ -1435,12 +1441,25 @@ static __always_inline unsigned long
+@@ -1431,12 +1437,25 @@ static __always_inline unsigned long
  __alloc_vmap_area(unsigned long size, unsigned long align,
  	unsigned long vstart, unsigned long vend)
  {

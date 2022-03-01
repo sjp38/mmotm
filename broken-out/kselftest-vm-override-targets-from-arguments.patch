@@ -1,0 +1,29 @@
+From: Chengming Zhou <zhouchengming@bytedance.com>
+Subject: kselftest/vm: override TARGETS from arguments
+
+We can specify which testcases to build using TARGETS argument, for
+example: make -C tools/testing/selftests TARGETS=vm, cause the ordinary
+assignment of TARGETS in Makefile will be ignored.  So we need to use
+override directive to change that.
+
+Link: https://lkml.kernel.org/r/20220227055330.43087-1-zhouchengming@bytedance.com
+Signed-off-by: Chengming Zhou <zhouchengming@bytedance.com>
+Cc: Shuah Khan <shuah@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/testing/selftests/vm/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/tools/testing/selftests/vm/Makefile~kselftest-vm-override-targets-from-arguments
++++ a/tools/testing/selftests/vm/Makefile
+@@ -56,7 +56,7 @@ CAN_BUILD_I386 := $(shell ./../x86/check
+ CAN_BUILD_X86_64 := $(shell ./../x86/check_cc.sh $(CC) ../x86/trivial_64bit_program.c)
+ CAN_BUILD_WITH_NOPIE := $(shell ./../x86/check_cc.sh $(CC) ../x86/trivial_program.c -no-pie)
+ 
+-TARGETS := protection_keys
++override TARGETS := protection_keys
+ BINARIES_32 := $(TARGETS:%=%_32)
+ BINARIES_64 := $(TARGETS:%=%_64)
+ 
+_

@@ -1,0 +1,42 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: fix potential VM_BUG_ON_PAGE in split_huge_page_to_list
+
+The huge zero page could reach here and if we ever try to split it, the
+VM_BUG_ON_PAGE will be triggered in split_huge_page_to_list().  Also the
+non-lru compound movable pages could be taken for transhuge pages.  Skip
+these pages by checking PageLRU because huge zero page isn't lru page as
+non-lru compound movable pages.
+
+Link: https://lkml.kernel.org/r/20220228140245.24552-5-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+--- a/mm/memory-failure.c~mm-memory-failurec-fix-potential-vm_bug_on_page-in-split_huge_page_to_list
++++ a/mm/memory-failure.c
+@@ -1787,6 +1787,20 @@ try_again:
+ 
+ 	if (PageTransHuge(hpage)) {
+ 		/*
++		 * The non-lru compound movable pages could be taken for
++		 * transhuge pages. Also huge zero page could reach here
++		 * and if we ever try to split it, the VM_BUG_ON_PAGE will
++		 * be triggered in split_huge_page_to_list(). Skip these
++		 * pages by checking PageLRU because huge zero page isn't
++		 * lru page as non-lru compound movable pages.
++		 */
++		if (!PageLRU(hpage)) {
++			put_page(p);
++			action_result(pfn, MF_MSG_UNSPLIT_THP, MF_IGNORED);
++			res = -EBUSY;
++			goto unlock_mutex;
++		}
++		/*
+ 		 * The flag must be set after the refcount is bumped
+ 		 * otherwise it may race with THP split.
+ 		 * And the flag can't be set in get_hwpoison_page() since
+_

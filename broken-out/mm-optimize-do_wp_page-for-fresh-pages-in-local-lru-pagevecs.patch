@@ -78,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-optimize-do_wp_page-for-fresh-pages-in-local-lru-pagevecs
 +++ a/mm/memory.c
-@@ -3294,7 +3294,15 @@ static vm_fault_t do_wp_page(struct vm_f
+@@ -3309,7 +3309,15 @@ static vm_fault_t do_wp_page(struct vm_f
  		 *
  		 * PageKsm() doesn't necessarily raise the page refcount.
  		 */

@@ -1,0 +1,35 @@
+From: David Howells <dhowells@redhat.com>
+Subject: mm/hugetlb.c: export PageHeadHuge()
+
+Export PageHeadHuge() - it's used by folio_test_hugetlb() and thence by
+such as folio_file_page() and folio_contains().  Matthew suggested I use
+the first of those instead of doing the same calculation manually - but I
+can't call it from a module.
+
+Kirill suggested rearranging things to put it in a header, but that
+introduces header dependencies because of where constants are defined.
+
+Link: https://lkml.kernel.org/r/2494562.1646054576@warthog.procyon.org.uk
+Link: https://lore.kernel.org/r/163707085314.3221130.14783857863702203440.stgit@warthog.procyon.org.uk/
+Signed-off-by: David Howells <dhowells@redhat.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/hugetlb.c~mm-export-pageheadhuge
++++ a/mm/hugetlb.c
+@@ -1855,6 +1855,7 @@ int PageHeadHuge(struct page *page_head)
+ 
+ 	return page_head[1].compound_dtor == HUGETLB_PAGE_DTOR;
+ }
++EXPORT_SYMBOL(PageHeadHuge);
+ 
+ /*
+  * Find and lock address space (mapping) in write mode.
+_

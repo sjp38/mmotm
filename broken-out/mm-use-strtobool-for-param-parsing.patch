@@ -1,0 +1,33 @@
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+Subject: mm/page_table_check.c: use strtobool for param parsing
+
+Use strtobool rather than open coding "on" and "off" parsing.
+
+Link: https://lkml.kernel.org/r/20220227181038.126926-1-linux@treblig.org
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_table_check.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+--- a/mm/page_table_check.c~mm-use-strtobool-for-param-parsing
++++ a/mm/page_table_check.c
+@@ -23,15 +23,7 @@ EXPORT_SYMBOL(page_table_check_disabled)
+ 
+ static int __init early_page_table_check_param(char *buf)
+ {
+-	if (!buf)
+-		return -EINVAL;
+-
+-	if (strcmp(buf, "on") == 0)
+-		__page_table_check_enabled = true;
+-	else if (strcmp(buf, "off") == 0)
+-		__page_table_check_enabled = false;
+-
+-	return 0;
++	return strtobool(buf, &__page_table_check_enabled);
+ }
+ 
+ early_param("page_table_check", early_page_table_check_param);
+_

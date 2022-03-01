@@ -56,7 +56,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #else
  #define ___GFP_NOLOCKDEP	0
  #endif
-@@ -239,9 +241,10 @@ struct vm_area_struct;
+@@ -235,9 +237,10 @@ struct vm_area_struct;
   * %__GFP_ZERO returns a zeroed page on success.
   *
   * %__GFP_ZEROTAGS zeroes memory tags at allocation time if the memory itself
@@ -70,7 +70,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   *
   * %__GFP_SKIP_KASAN_UNPOISON makes KASAN skip unpoisoning on page allocation.
   * Only effective in HW_TAGS mode.
-@@ -253,6 +256,7 @@ struct vm_area_struct;
+@@ -249,6 +252,7 @@ struct vm_area_struct;
  #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
  #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
  #define __GFP_ZEROTAGS	((__force gfp_t)___GFP_ZEROTAGS)
@@ -78,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #define __GFP_SKIP_KASAN_UNPOISON ((__force gfp_t)___GFP_SKIP_KASAN_UNPOISON)
  #define __GFP_SKIP_KASAN_POISON   ((__force gfp_t)___GFP_SKIP_KASAN_POISON)
  
-@@ -261,7 +265,7 @@ struct vm_area_struct;
+@@ -257,7 +261,7 @@ struct vm_area_struct;
  
  /* Room for N __GFP_FOO bits */
  #define __GFP_BITS_SHIFT (24 +						\
@@ -89,7 +89,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/include/trace/events/mmflags.h~kasan-page_alloc-allow-skipping-memory-init-for-hw_tags
 +++ a/include/trace/events/mmflags.h
-@@ -53,6 +53,7 @@
+@@ -52,6 +52,7 @@
  
  #ifdef CONFIG_KASAN_HW_TAGS
  #define __def_gfpflag_names_kasan ,					       \
@@ -99,7 +99,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #else
 --- a/mm/page_alloc.c~kasan-page_alloc-allow-skipping-memory-init-for-hw_tags
 +++ a/mm/page_alloc.c
-@@ -2415,10 +2415,21 @@ static inline bool should_skip_kasan_unp
+@@ -2363,10 +2363,21 @@ static inline bool should_skip_kasan_unp
  	return init_tags || (flags & __GFP_SKIP_KASAN_UNPOISON);
  }
  

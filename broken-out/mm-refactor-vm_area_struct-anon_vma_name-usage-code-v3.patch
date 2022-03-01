@@ -1,0 +1,29 @@
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: mm-refactor-vm_area_struct-anon_vma_name-usage-code-v3
+
+fix comment
+
+Link: https://lkml.kernel.org/r/20220223153613.835563-1-surenb@google.com
+Link: https://lkml.kernel.org/r/20220224231834.1481408-1-surenb@google.com
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Suggested-by: Matthew Wilcox <willy@infradead.org>
+Suggested-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mm_inline.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/mm_inline.h~mm-refactor-vm_area_struct-anon_vma_name-usage-code-v3
++++ a/include/linux/mm_inline.h
+@@ -175,7 +175,7 @@ static inline void dup_anon_vma_name(str
+ static inline void free_anon_vma_name(struct vm_area_struct *vma)
+ {
+ 	/*
+-	 * Not using anon_vma_name because it generates a warning if vma->vm_mm
++	 * Not using anon_vma_name because it generates a warning if mmap_lock
+ 	 * is not held, which might be the case here.
+ 	 */
+ 	if (!vma->vm_file)
+_

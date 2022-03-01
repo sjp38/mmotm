@@ -19,7 +19,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/test_kasan.c~kasan-improve-vmalloc-tests-fix-3
 +++ a/lib/test_kasan.c
-@@ -1079,11 +1079,13 @@ static void vmalloc_helpers_tags(struct
+@@ -1083,11 +1083,13 @@ static void vmalloc_helpers_tags(struct
  	KUNIT_ASSERT_TRUE(test, is_vmalloc_addr(ptr));
  	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, vmalloc_to_page(ptr));
  

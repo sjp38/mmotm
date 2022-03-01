@@ -1,0 +1,36 @@
+From: Maninder Singh <maninder1.s@samsung.com>
+Subject: scripts/checkpatch.pl: remove _deferred and _deferred_once false warning
+
+With commit 98e35f5894cf ("printk: git rid of [sched_delayed] message for
+printk_deferred") printk_deferred and printk_deferred_once requires
+LOGLEVEL in argument, but checkpatch.pl was not fixed and still reports it
+as warning:
+
+WARNING: Possible unnecessary KERN_ALERT
+printk_deferred(KERN_ALERT "checking deferred\n");
+
+Link: https://lkml.kernel.org/r/20220228073708.1610603-1-maninder1.s@samsung.com
+Co-developed-by: Vaneet Narang <v.narang@samsung.com>
+Signed-off-by: Vaneet Narang <v.narang@samsung.com>
+Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
+Cc: Joe Perches <joe@perches.com>
+Cc: Dwaipayan Ray <dwaipayanray1@gmail.com>
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ scripts/checkpatch.pl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/scripts/checkpatch.pl~scripts-checkpatchpl-remove-_deferred-and-_deferred_once-false-warning
++++ a/scripts/checkpatch.pl
+@@ -6312,7 +6312,7 @@ sub process {
+ 		}
+ 
+ # check for logging functions with KERN_<LEVEL>
+-		if ($line !~ /printk(?:_ratelimited|_once)?\s*\(/ &&
++		if ($line !~ /printk(?:_ratelimited|_once|_deferred|_deferred_once)?\s*\(/ &&
+ 		    $line =~ /\b$logFunctions\s*\(.*\b(KERN_[A-Z]+)\b/) {
+ 			my $level = $1;
+ 			if (WARN("UNNECESSARY_KERN_LEVEL",
+_

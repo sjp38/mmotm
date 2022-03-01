@@ -1,0 +1,32 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: arch/x86/kernel/resource.c: needs spinlock.h
+
+fix recent breaking in -next.  x86_64 allnoconfig.
+
+In file included from arch/x86/kernel/resource.c:4:
+./arch/x86/include/asm/pci_x86.h:105:8: error: unknown type name 'raw_spinlock_t'
+  105 | extern raw_spinlock_t pci_config_lock;
+      |        ^~~~~~~~~~~~~~
+
+am too lazy to hunt down the offending commit.
+
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/kernel/resource.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/arch/x86/kernel/resource.c~arch-x86-kernel-resourcec-needs-spinlockh
++++ a/arch/x86/kernel/resource.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/ioport.h>
++#include <linux/spinlock.h>
+ #include <asm/e820/api.h>
+ #include <asm/pci_x86.h>
+ 
+_

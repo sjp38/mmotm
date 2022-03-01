@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/kasan.h~kasan-add-wrappers-for-vmalloc-hooks
 +++ a/include/linux/kasan.h
-@@ -424,8 +424,21 @@ void kasan_release_vmalloc(unsigned long
+@@ -403,8 +403,21 @@ void kasan_release_vmalloc(unsigned long
  			   unsigned long free_region_start,
  			   unsigned long free_region_end);
  

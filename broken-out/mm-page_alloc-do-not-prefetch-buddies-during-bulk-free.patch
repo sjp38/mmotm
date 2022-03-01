@@ -55,7 +55,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-do-not-prefetch-buddies-during-bulk-free
 +++ a/mm/page_alloc.c
-@@ -1432,15 +1432,6 @@ static bool bulkfree_pcp_prepare(struct
+@@ -1429,15 +1429,6 @@ static bool bulkfree_pcp_prepare(struct
  }
  #endif /* CONFIG_DEBUG_VM */
  
@@ -71,7 +71,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * Frees a number of pages from the PCP lists
   * Assumes all pages on list are in same zone.
-@@ -1453,7 +1444,6 @@ static void free_pcppages_bulk(struct zo
+@@ -1450,7 +1441,6 @@ static void free_pcppages_bulk(struct zo
  	int min_pindex = 0;
  	int max_pindex = NR_PCP_LISTS - 1;
  	unsigned int order;
@@ -79,7 +79,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	bool isolated_pageblocks;
  	struct page *page;
  
-@@ -1508,20 +1498,6 @@ static void free_pcppages_bulk(struct zo
+@@ -1505,20 +1495,6 @@ static void free_pcppages_bulk(struct zo
  			if (bulkfree_pcp_prepare(page))
  				continue;
  
