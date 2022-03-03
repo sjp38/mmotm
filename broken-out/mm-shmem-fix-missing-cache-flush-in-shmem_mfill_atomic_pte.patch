@@ -30,7 +30,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/shmem.c~mm-shmem-fix-missing-cache-flush-in-shmem_mfill_atomic_pte
 +++ a/mm/shmem.c
-@@ -2364,8 +2364,10 @@ int shmem_mfill_atomic_pte(struct mm_str
+@@ -2363,8 +2363,10 @@ int shmem_mfill_atomic_pte(struct mm_str
  				/* don't free the page */
  				goto out_unacct_blocks;
  			}

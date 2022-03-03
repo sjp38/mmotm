@@ -1,15 +1,24 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: Revert ("mm/memcg: optimize user context object stock access")
-
 From: Michal Hocko <mhocko@suse.com>
+Subject: mm/memcg: revert ("mm/memcg: optimize user context object stock access")
+
+Patch series "mm/memcg: Address PREEMPT_RT problems instead of disabling it", v5.
+
+This series aims to address the memcg related problem on PREEMPT_RT.
+
+I tested them on CONFIG_PREEMPT and CONFIG_PREEMPT_RT with the
+tools/testing/selftests/cgroup/* tests and I haven't observed any
+regressions (other than the lockdep report that is already there).
+
+
+This patch (of 6):
 
 The optimisation is based on a micro benchmark where local_irq_save() is
-more expensive than a preempt_disable(). There is no evidence that it is
+more expensive than a preempt_disable().  There is no evidence that it is
 visible in a real-world workload and there are CPUs where the opposite is
 true (local_irq_save() is cheaper than preempt_disable()).
 
 Based on micro benchmarks, the optimisation makes sense on PREEMPT_NONE
-where preempt_disable() is optimized away. There is no improvement with
+where preempt_disable() is optimized away.  There is no improvement with
 PREEMPT_DYNAMIC since the preemption counter is always available.
 
 The optimization makes also the PREEMPT_RT integration more complicated
@@ -18,8 +27,8 @@ since most of the assumption are not true on PREEMPT_RT.
 Revert the optimisation since it complicates the PREEMPT_RT integration
 and the improvement is hardly visible.
 
-[ bigeasy: Patch body around Michal's diff ]
-
+[bigeasy@linutronix.de: patch body around Michal's diff]
+Link: https://lkml.kernel.org/r/20220226204144.1008339-1-bigeasy@linutronix.de
 Link: https://lore.kernel.org/all/YgOGkXXCrD%2F1k+p4@dhcp22.suse.cz
 Link: https://lkml.kernel.org/r/YdX+INO9gQje6d0S@linutronix.de
 Link: https://lkml.kernel.org/r/20220226204144.1008339-2-bigeasy@linutronix.de
@@ -29,6 +38,14 @@ Acked-by: Roman Gushchin <guro@fb.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Waiman Long <longman@redhat.com>
+Cc: kernel test robot <oliver.sang@intel.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Michal Koutný <mkoutny@suse.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

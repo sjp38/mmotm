@@ -104,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	reset_node_present_pages(pgdat);
 --- a/mm/page_alloc.c~mm-memory_hotplug-reorganize-new-pgdat-initialization
 +++ a/mm/page_alloc.c
-@@ -7471,12 +7471,33 @@ static void __meminit zone_init_internal
+@@ -7474,12 +7474,33 @@ static void __meminit zone_init_internal
   * NOTE: this function is only called during memory hotplug
   */
  #ifdef CONFIG_MEMORY_HOTPLUG

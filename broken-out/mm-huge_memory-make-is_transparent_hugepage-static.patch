@@ -1,0 +1,71 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/huge_memory: make is_transparent_hugepage() static
+
+It's only used inside the huge_memory.c now. Don't export it and make
+it static. We can thus reduce the size of huge_memory.o a bit.
+
+Without this patch:
+   text	   data	    bss	    dec	    hex	filename
+  32319	   2965	      4	  35288	   89d8	mm/huge_memory.o
+
+With this patch:
+   text	   data	    bss	    dec	    hex	filename
+  32042	   2957	      4	  35003	   88bb	mm/huge_memory.o
+
+Link: https://lkml.kernel.org/r/20220302082145.12028-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: William Kucharski <william.kucharski@oracle.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Peter Xu <peterx@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/huge_mm.h |    6 ------
+ mm/huge_memory.c        |    3 +--
+ 2 files changed, 1 insertion(+), 8 deletions(-)
+
+--- a/include/linux/huge_mm.h~mm-huge_memory-make-is_transparent_hugepage-static
++++ a/include/linux/huge_mm.h
+@@ -183,7 +183,6 @@ unsigned long thp_get_unmapped_area(stru
+ 
+ void prep_transhuge_page(struct page *page);
+ void free_transhuge_page(struct page *page);
+-bool is_transparent_hugepage(struct page *page);
+ 
+ bool can_split_folio(struct folio *folio, int *pextra_pins);
+ int split_huge_page_to_list(struct page *page, struct list_head *list);
+@@ -341,11 +340,6 @@ static inline bool transhuge_vma_enabled
+ 
+ static inline void prep_transhuge_page(struct page *page) {}
+ 
+-static inline bool is_transparent_hugepage(struct page *page)
+-{
+-	return false;
+-}
+-
+ #define transparent_hugepage_flags 0UL
+ 
+ #define thp_get_unmapped_area	NULL
+--- a/mm/huge_memory.c~mm-huge_memory-make-is_transparent_hugepage-static
++++ a/mm/huge_memory.c
+@@ -533,7 +533,7 @@ void prep_transhuge_page(struct page *pa
+ 	set_compound_page_dtor(page, TRANSHUGE_PAGE_DTOR);
+ }
+ 
+-bool is_transparent_hugepage(struct page *page)
++static inline bool is_transparent_hugepage(struct page *page)
+ {
+ 	if (!PageCompound(page))
+ 		return false;
+@@ -542,7 +542,6 @@ bool is_transparent_hugepage(struct page
+ 	return is_huge_zero_page(page) ||
+ 	       page[1].compound_dtor == TRANSHUGE_PAGE_DTOR;
+ }
+-EXPORT_SYMBOL_GPL(is_transparent_hugepage);
+ 
+ static unsigned long __thp_get_unmapped_area(struct file *filp,
+ 		unsigned long addr, unsigned long len,
+_

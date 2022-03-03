@@ -1,0 +1,45 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: pvmw: add support for walking devmap pages
+
+The devmap pages can not use page_vma_mapped_walk() to check if a huge
+devmap page is mapped into a vma.  Add support for walking huge devmap
+pages so that DAX can use it in the next patch.
+
+Link: https://lkml.kernel.org/r/20220302082718.32268-5-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
+Cc: Ross Zwisler <zwisler@kernel.org>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_vma_mapped.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/page_vma_mapped.c~mm-pvmw-add-support-for-walking-devmap-pages
++++ a/mm/page_vma_mapped.c
+@@ -210,10 +210,11 @@ restart:
+ 		 */
+ 		pmde = READ_ONCE(*pvmw->pmd);
+ 
+-		if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde)) {
++		if (pmd_trans_huge(pmde) || pmd_devmap(pmde) ||
++		    is_pmd_migration_entry(pmde)) {
+ 			pvmw->ptl = pmd_lock(mm, pvmw->pmd);
+ 			pmde = *pvmw->pmd;
+-			if (likely(pmd_trans_huge(pmde))) {
++			if (likely(pmd_trans_huge(pmde) || pmd_devmap(pmde))) {
+ 				if (pvmw->flags & PVMW_MIGRATION)
+ 					return not_found(pvmw);
+ 				if (!check_pmd(pmd_pfn(pmde), pvmw))
+_

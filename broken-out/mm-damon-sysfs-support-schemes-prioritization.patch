@@ -225,7 +225,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kobject_put(&scheme->quotas->kobj);
  }
  
-@@ -1657,13 +1802,14 @@ static struct damos *damon_sysfs_mk_sche
+@@ -1659,13 +1804,14 @@ static struct damos *damon_sysfs_mk_sche
  	struct damon_sysfs_access_pattern *pattern =
  		sysfs_scheme->access_pattern;
  	struct damon_sysfs_quotas *sysfs_quotas = sysfs_scheme->quotas;

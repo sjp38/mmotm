@@ -1,0 +1,34 @@
+From: Jiajian Ye <yejiajian2018@email.szu.edu.cn>
+Subject: tools/vm/page_owner_sort.c: add a security check
+
+Add a security check after using malloc() to allocate memory.
+
+Link: https://lkml.kernel.org/r/20220301151438.166118-2-yejiajian2018@email.szu.edu.cn
+Signed-off-by: Jiajian Ye <yejiajian2018@email.szu.edu.cn>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Yinan Zhang <zhangyinan2019@email.szu.edu.cn>
+Cc: Yixuan Cao <caoyixuan2019@email.szu.edu.cn>
+Cc: Zhenliang Wei <weizhenliang@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/vm/page_owner_sort.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+--- a/tools/vm/page_owner_sort.c~tools-vm-page_owner_sortc-add-a-security-check
++++ a/tools/vm/page_owner_sort.c
+@@ -217,7 +217,13 @@ static void add_list(char *buf, int len)
+ 		printf("max_size too small??\n");
+ 		exit(1);
+ 	}
++
+ 	list[list_size].txt = malloc(len+1);
++	if (!list[list_size].txt) {
++		printf("Out of memory\n");
++		exit(1);
++	}
++
+ 	list[list_size].len = len;
+ 	list[list_size].num = 1;
+ 	list[list_size].page_num = get_page_num(buf);
+_

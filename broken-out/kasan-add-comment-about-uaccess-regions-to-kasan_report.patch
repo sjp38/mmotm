@@ -1,0 +1,33 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: add comment about UACCESS regions to kasan_report
+
+Add a comment explaining why kasan_report() is the only reporting function
+that uses user_access_save/restore().
+
+Link: https://lkml.kernel.org/r/1201ca3c2be42c7bd077c53d2e46f4a51dd1476a.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/report.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- a/mm/kasan/report.c~kasan-add-comment-about-uaccess-regions-to-kasan_report
++++ a/mm/kasan/report.c
+@@ -430,6 +430,11 @@ void kasan_report_invalid_free(void *ptr
+ 	end_report(&flags, ptr);
+ }
+ 
++/*
++ * kasan_report() is the only reporting function that uses
++ * user_access_save/restore(): kasan_report_invalid_free() cannot be called
++ * from a UACCESS region, and kasan_report_async() is not used on x86.
++ */
+ bool kasan_report(unsigned long addr, size_t size, bool is_write,
+ 			unsigned long ip)
+ {
+_

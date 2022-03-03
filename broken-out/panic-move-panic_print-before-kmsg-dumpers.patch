@@ -1,11 +1,11 @@
 From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
 Subject: panic: move panic_print before kmsg dumpers
 
-The panic_print setting allows users to collect more information in a
-panic event, like memory stats, tasks, CPUs backtraces, etc.
-This is an interesting debug mechanism, but currently the print event
-happens *after* kmsg_dump(), meaning that pstore, for example, cannot
-collect a dmesg with the panic_print extra information.
+The panic_print setting allows users to collect more information in a
+panic event, like memory stats, tasks, CPUs backtraces, etc.  This is an
+interesting debug mechanism, but currently the print event happens *after*
+kmsg_dump(), meaning that pstore, for example, cannot collect a dmesg with
+the panic_print extra information.
 
 This patch changes that in 2 steps:
 

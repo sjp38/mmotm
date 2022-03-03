@@ -1,0 +1,29 @@
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: mm: remove unnecessary check in alloc_thread_stack_node()
+
+The "stack" pointer cannot be NULL at this point so there is no
+need to check.
+
+Link: https://lkml.kernel.org/r/20220301080706.GB17208@kili
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Andrey Konovalov <andreyknvl@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/fork.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/kernel/fork.c~kasan-fork-reset-pointer-tags-of-vmapped-stacks-fix-2
++++ a/kernel/fork.c
+@@ -328,8 +328,7 @@ static int alloc_thread_stack_node(struc
+ 	 * so cache the vm_struct.
+ 	 */
+ 	tsk->stack_vm_area = vm;
+-	if (stack)
+-		stack = kasan_reset_tag(stack);
++	stack = kasan_reset_tag(stack);
+ 	tsk->stack = stack;
+ 	return 0;
+ }
+_

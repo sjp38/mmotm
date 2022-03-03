@@ -192,7 +192,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-optimize-do_wp_page-for-exclusive-pages-in-the-swapcache
 +++ a/mm/memory.c
-@@ -3302,19 +3302,27 @@ static vm_fault_t do_wp_page(struct vm_f
+@@ -3287,19 +3287,27 @@ static vm_fault_t do_wp_page(struct vm_f
  	if (PageAnon(vmf->page)) {
  		struct page *page = vmf->page;
  

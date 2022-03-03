@@ -412,7 +412,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/rmap.c~mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read
 +++ a/mm/rmap.c
-@@ -1578,7 +1578,30 @@ static bool try_to_unmap_one(struct foli
+@@ -1622,7 +1622,30 @@ static bool try_to_unmap_one(struct foli
  
  			/* MADV_FREE page check */
  			if (!folio_test_swapbacked(folio)) {

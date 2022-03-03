@@ -35,11 +35,11 @@ Link: https://lkml.kernel.org/r/20220223194812.1299646-1-surenb@google.com
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 Reported-by: Tim Murray <timmurray@google.com>
 Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Michal Hocko <mhocko@suse.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Shakeel Butt <shakeelb@google.com>
 Cc: Petr Mladek <pmladek@suse.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Roman Gushchin <guro@fb.com>
-Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
 Cc: Minchan Kim <minchan@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
@@ -49,7 +49,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-count-time-in-drain_all_pages-during-direct-reclaim-as-memory-pressure
 +++ a/mm/page_alloc.c
-@@ -4554,13 +4554,12 @@ __perform_reclaim(gfp_t gfp_mask, unsign
+@@ -4557,13 +4557,12 @@ __perform_reclaim(gfp_t gfp_mask, unsign
  					const struct alloc_context *ac)
  {
  	unsigned int noreclaim_flag;
@@ -64,7 +64,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	fs_reclaim_acquire(gfp_mask);
  	noreclaim_flag = memalloc_noreclaim_save();
  
-@@ -4569,7 +4568,6 @@ __perform_reclaim(gfp_t gfp_mask, unsign
+@@ -4572,7 +4571,6 @@ __perform_reclaim(gfp_t gfp_mask, unsign
  
  	memalloc_noreclaim_restore(noreclaim_flag);
  	fs_reclaim_release(gfp_mask);
@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	cond_resched();
  
-@@ -4583,11 +4581,13 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
+@@ -4586,11 +4584,13 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m
  		unsigned long *did_some_progress)
  {
  	struct page *page = NULL;
@@ -87,7 +87,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  retry:
  	page = get_page_from_freelist(gfp_mask, order, alloc_flags, ac);
-@@ -4603,6 +4603,8 @@ retry:
+@@ -4606,6 +4606,8 @@ retry:
  		drained = true;
  		goto retry;
  	}

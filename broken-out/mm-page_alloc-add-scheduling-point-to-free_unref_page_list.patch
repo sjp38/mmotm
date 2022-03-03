@@ -1,0 +1,43 @@
+From: wangjianxing <wangjianxing@loongson.cn>
+Subject: mm/page_alloc: add scheduling point to free_unref_page_list
+
+Freeing a large list of pages may cause rcu_sched starvatoin on
+non-preemptible kernels
+
+rcu: rcu_sched kthread starved for 5359 jiffies! g454793 f0x0
+RCU_GP_WAIT_FQS(5) ->state=0x0 ->cpu=19
+[...]
+Call Trace:
+  free_unref_page_list+0x19c/0x270
+  release_pages+0x3cc/0x498
+  tlb_flush_mmu_free+0x44/0x70
+  zap_pte_range+0x450/0x738
+  unmap_page_range+0x108/0x240
+  unmap_vmas+0x74/0xf0
+  unmap_region+0xb0/0x120
+  do_munmap+0x264/0x438
+  vm_munmap+0x58/0xa0
+  sys_munmap+0x10/0x20
+  syscall_common+0x24/0x38
+
+Link: https://lkml.kernel.org/r/20220302013825.2290315-1-wangjianxing@loongson.cn
+Signed-off-by: wangjianxing <wangjianxing@loongson.cn>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/mm/page_alloc.c~mm-page_alloc-add-scheduling-point-to-free_unref_page_list
++++ a/mm/page_alloc.c
+@@ -3479,6 +3479,9 @@ void free_unref_page_list(struct list_he
+ 		 */
+ 		if (++batch_count == SWAP_CLUSTER_MAX) {
+ 			local_unlock_irqrestore(&pagesets.lock, flags);
++
++			cond_resched();
++
+ 			batch_count = 0;
+ 			local_lock_irqsave(&pagesets.lock, flags);
+ 		}
+_

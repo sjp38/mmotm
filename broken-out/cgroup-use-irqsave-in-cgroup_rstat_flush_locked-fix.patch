@@ -1,0 +1,35 @@
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: cgroup: add a comment to cgroup_rstat_flush_locked().
+
+Add a comment why spin_lock_irq() -> raw_spin_lock_irqsave() is needed.
+
+Link: https://lkml.kernel.org/r/Yh+DOK73hfVV5ThX@linutronix.de
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Acked-by: Tejun Heo <tj@kernel.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Zefan Li <lizefan.x@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/cgroup/rstat.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- a/kernel/cgroup/rstat.c~cgroup-use-irqsave-in-cgroup_rstat_flush_locked-fix
++++ a/kernel/cgroup/rstat.c
+@@ -155,6 +155,14 @@ static void cgroup_rstat_flush_locked(st
+ 		struct cgroup *pos = NULL;
+ 		unsigned long flags;
+ 
++		/*
++		 * The _irqsave() is needed because cgroup_rstat_lock is
++		 * spinlock_t which is a sleeping lock on PREEMPT_RT. Acquiring
++		 * this lock with the _irq() suffix only disables interrupts on
++		 * a non-PREEMPT_RT kernel. The raw_spinlock_t below disables
++		 * interrupts on both configurations. The _irqsave() ensures
++		 * that interrupts are always disabled and later restored.
++		 */
+ 		raw_spin_lock_irqsave(cpu_lock, flags);
+ 		while ((pos = cgroup_rstat_cpu_pop_updated(pos, cgrp, cpu))) {
+ 			struct cgroup_subsys_state *css;
+_

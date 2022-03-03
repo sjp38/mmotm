@@ -15,7 +15,7 @@ Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 Reviewed-by: Shuah Khan <skhan@linuxfoundation.org>
 Acked-by: Yosry Ahmed <yosryahmed@google.com>
 Reviewed-by: Muchun Song <songmuchun@bytedance.com>
-Cc: Mina Almasry <almasrymina@google.com>
+Reviewed-by: Mina Almasry <almasrymina@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

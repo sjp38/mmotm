@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/mm.h~mm-huge_memory-remove-stale-page_trans_huge_mapcount
 +++ a/include/linux/mm.h
-@@ -859,16 +859,11 @@ static inline int total_mapcount(struct
+@@ -834,16 +834,11 @@ static inline int total_mapcount(struct
  	return folio_mapcount(page_folio(page));
  }
  
@@ -56,7 +56,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline struct page *virt_to_head_page(const void *x)
 --- a/mm/huge_memory.c~mm-huge_memory-remove-stale-page_trans_huge_mapcount
 +++ a/mm/huge_memory.c
-@@ -2484,54 +2484,6 @@ static void __split_huge_page(struct pag
+@@ -2483,54 +2483,6 @@ static void __split_huge_page(struct pag
  	}
  }
  

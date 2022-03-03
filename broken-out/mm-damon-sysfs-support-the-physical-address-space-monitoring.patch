@@ -314,7 +314,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		targets_arr[i] = target;
  		targets->nr++;
  	}
-@@ -608,9 +845,6 @@ static ssize_t operations_store(struct k
+@@ -610,9 +847,6 @@ static ssize_t operations_store(struct k
  
  	for (id = 0; id < NR_DAMON_OPS; id++) {
  		if (sysfs_streq(buf, damon_sysfs_ops_strs[id])) {
@@ -324,7 +324,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			context->ops_id = id;
  			return count;
  		}
-@@ -855,10 +1089,37 @@ static void damon_sysfs_destroy_targets(
+@@ -857,10 +1091,37 @@ static void damon_sysfs_destroy_targets(
  	}
  }
  
@@ -363,7 +363,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for (i = 0; i < sysfs_targets->nr; i++) {
  		struct damon_sysfs_target *sys_target =
-@@ -877,6 +1138,11 @@ static int damon_sysfs_set_targets(struc
+@@ -879,6 +1140,11 @@ static int damon_sysfs_set_targets(struc
  			}
  		}
  		damon_add_target(ctx, t);

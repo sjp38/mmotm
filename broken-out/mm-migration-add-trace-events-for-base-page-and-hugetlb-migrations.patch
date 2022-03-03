@@ -109,7 +109,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include "internal.h"
  
-@@ -1864,6 +1866,8 @@ static bool try_to_migrate_one(struct fo
+@@ -1908,6 +1910,8 @@ static bool try_to_migrate_one(struct fo
  			if (pte_swp_uffd_wp(pteval))
  				swp_pte = pte_swp_mkuffd_wp(swp_pte);
  			set_pte_at(mm, pvmw.address, pvmw.pte, swp_pte);
@@ -118,7 +118,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			/*
  			 * No need to invalidate here it will synchronize on
  			 * against the special swap migration pte.
-@@ -1932,6 +1936,8 @@ static bool try_to_migrate_one(struct fo
+@@ -1976,6 +1980,8 @@ static bool try_to_migrate_one(struct fo
  			if (pte_uffd_wp(pteval))
  				swp_pte = pte_swp_mkuffd_wp(swp_pte);
  			set_pte_at(mm, address, pvmw.pte, swp_pte);

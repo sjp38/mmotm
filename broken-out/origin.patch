@@ -1,0 +1,1023 @@
+GIT fb184c4af9b9f4563e7a126219389986a71d5b5b
+
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ CREDITS                                                                 |    6 +
+ Documentation/devicetree/bindings/arm/atmel-at91.yaml                   |    3 
+ Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-dcfg.txt |    2 
+ Documentation/devicetree/bindings/clock/qoriq-clock.txt                 |    1 
+ Documentation/devicetree/bindings/usb/dwc2.yaml                         |    1 
+ MAINTAINERS                                                             |    6 -
+ arch/arm/boot/dts/omap3-devkit8000-common.dtsi                          |   18 +++++
+ arch/arm/boot/dts/omap3-devkit8000.dts                                  |   33 ----------
+ arch/arm/boot/dts/rk322x.dtsi                                           |    4 -
+ arch/arm/boot/dts/rk3288.dtsi                                           |    2 
+ arch/arm/boot/dts/tegra124-nyan-big.dts                                 |   15 ++--
+ arch/arm/boot/dts/tegra124-nyan-blaze.dts                               |   15 ++--
+ arch/arm/boot/dts/tegra124-venice2.dts                                  |   14 ++--
+ arch/arm64/boot/dts/arm/juno-base.dtsi                                  |    3 
+ arch/arm64/boot/dts/freescale/imx8mm.dtsi                               |    1 
+ arch/arm64/boot/dts/freescale/imx8ulp.dtsi                              |    2 
+ arch/arm64/boot/dts/intel/socfpga_agilex.dtsi                           |    4 -
+ arch/arm64/boot/dts/rockchip/px30.dtsi                                  |    2 
+ arch/arm64/boot/dts/rockchip/rk3328.dtsi                                |    2 
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi                            |   17 +++--
+ arch/arm64/boot/dts/rockchip/rk3399-puma-haikou.dts                     |    1 
+ arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi                           |   20 ++++++
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi                                |    6 -
+ arch/arm64/boot/dts/rockchip/rk3566-quartz64-a.dts                      |    2 
+ arch/arm64/boot/dts/rockchip/rk3568.dtsi                                |    6 -
+ arch/arm64/boot/dts/rockchip/rk356x.dtsi                                |    4 -
+ arch/arm64/kvm/psci.c                                                   |    3 
+ arch/x86/kvm/vmx/nested.c                                               |   11 ++-
+ arch/x86/kvm/vmx/vmx.c                                                  |   28 +++++---
+ arch/x86/kvm/vmx/vmx.h                                                  |    5 -
+ drivers/clocksource/timer-ti-dm-systimer.c                              |    3 
+ drivers/firmware/arm_scmi/driver.c                                      |    2 
+ drivers/firmware/efi/libstub/riscv-stub.c                               |   17 +++--
+ drivers/firmware/efi/vars.c                                             |    5 +
+ drivers/soc/fsl/guts.c                                                  |   14 ++--
+ drivers/soc/fsl/qe/qe.c                                                 |    4 -
+ drivers/soc/fsl/qe/qe_io.c                                              |    2 
+ drivers/soc/imx/gpcv2.c                                                 |    3 
+ drivers/tee/optee/ffa_abi.c                                             |    4 -
+ drivers/tee/optee/smc_abi.c                                             |    4 -
+ fs/binfmt_elf.c                                                         |   25 +++++--
+ include/soc/fsl/dpaa2-fd.h                                              |    3 
+ include/soc/fsl/qe/immap_qe.h                                           |    3 
+ include/soc/fsl/qe/qe_tdm.h                                             |    4 -
+ include/soc/fsl/qe/ucc_fast.h                                           |    2 
+ include/soc/fsl/qe/ucc_slow.h                                           |    2 
+ tools/testing/selftests/kvm/aarch64/arch_timer.c                        |    7 +-
+ tools/testing/selftests/kvm/aarch64/vgic_irq.c                          |    4 +
+ tools/testing/selftests/kvm/lib/aarch64/vgic.c                          |    4 -
+ 49 files changed, 211 insertions(+), 138 deletions(-)
+
+--- a/arch/arm64/boot/dts/arm/juno-base.dtsi~origin
++++ a/arch/arm64/boot/dts/arm/juno-base.dtsi
+@@ -543,8 +543,7 @@
+ 			 <0x02000000 0x00 0x50000000 0x00 0x50000000 0x0 0x08000000>,
+ 			 <0x42000000 0x40 0x00000000 0x40 0x00000000 0x1 0x00000000>;
+ 		/* Standard AXI Translation entries as programmed by EDK2 */
+-		dma-ranges = <0x02000000 0x0 0x2c1c0000 0x0 0x2c1c0000 0x0 0x00040000>,
+-			     <0x02000000 0x0 0x80000000 0x0 0x80000000 0x0 0x80000000>,
++		dma-ranges = <0x02000000 0x0 0x80000000 0x0 0x80000000 0x0 0x80000000>,
+ 			     <0x43000000 0x8 0x00000000 0x8 0x00000000 0x2 0x00000000>;
+ 		#interrupt-cells = <1>;
+ 		interrupt-map-mask = <0 0 0 7>;
+--- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi~origin
++++ a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+@@ -707,7 +707,6 @@
+ 						clocks = <&clk IMX8MM_CLK_VPU_DEC_ROOT>;
+ 						assigned-clocks = <&clk IMX8MM_CLK_VPU_BUS>;
+ 						assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_800M>;
+-						resets = <&src IMX8MQ_RESET_VPU_RESET>;
+ 					};
+ 
+ 					pgc_vpu_g1: power-domain@7 {
+--- a/arch/arm64/boot/dts/freescale/imx8ulp.dtsi~origin
++++ a/arch/arm64/boot/dts/freescale/imx8ulp.dtsi
+@@ -132,7 +132,7 @@
+ 
+ 			scmi_sensor: protocol@15 {
+ 				reg = <0x15>;
+-				#thermal-sensor-cells = <0>;
++				#thermal-sensor-cells = <1>;
+ 			};
+ 		};
+ 	};
+--- a/arch/arm64/boot/dts/intel/socfpga_agilex.dtsi~origin
++++ a/arch/arm64/boot/dts/intel/socfpga_agilex.dtsi
+@@ -502,7 +502,7 @@
+ 		};
+ 
+ 		usb0: usb@ffb00000 {
+-			compatible = "snps,dwc2";
++			compatible = "intel,socfpga-agilex-hsotg", "snps,dwc2";
+ 			reg = <0xffb00000 0x40000>;
+ 			interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
+ 			phys = <&usbphy0>;
+@@ -515,7 +515,7 @@
+ 		};
+ 
+ 		usb1: usb@ffb40000 {
+-			compatible = "snps,dwc2";
++			compatible = "intel,socfpga-agilex-hsotg", "snps,dwc2";
+ 			reg = <0xffb40000 0x40000>;
+ 			interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
+ 			phys = <&usbphy0>;
+--- a/arch/arm64/boot/dts/rockchip/px30.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/px30.dtsi
+@@ -711,7 +711,7 @@
+ 		clock-names = "pclk", "timer";
+ 	};
+ 
+-	dmac: dmac@ff240000 {
++	dmac: dma-controller@ff240000 {
+ 		compatible = "arm,pl330", "arm,primecell";
+ 		reg = <0x0 0xff240000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>,
+--- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
+@@ -489,7 +489,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	dmac: dmac@ff1f0000 {
++	dmac: dma-controller@ff1f0000 {
+ 		compatible = "arm,pl330", "arm,primecell";
+ 		reg = <0x0 0xff1f0000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>,
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1881,10 +1881,10 @@
+ 		interrupts = <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH 0>;
+ 		clocks = <&cru PCLK_HDMI_CTRL>,
+ 			 <&cru SCLK_HDMI_SFR>,
+-			 <&cru PLL_VPLL>,
++			 <&cru SCLK_HDMI_CEC>,
+ 			 <&cru PCLK_VIO_GRF>,
+-			 <&cru SCLK_HDMI_CEC>;
+-		clock-names = "iahb", "isfr", "vpll", "grf", "cec";
++			 <&cru PLL_VPLL>;
++		clock-names = "iahb", "isfr", "cec", "grf", "vpll";
+ 		power-domains = <&power RK3399_PD_HDCP>;
+ 		reg-io-width = <4>;
+ 		rockchip,grf = <&grf>;
+--- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+@@ -286,7 +286,7 @@
+ 
+ 	sound: sound {
+ 		compatible = "rockchip,rk3399-gru-sound";
+-		rockchip,cpu = <&i2s0 &i2s2>;
++		rockchip,cpu = <&i2s0 &spdif>;
+ 	};
+ };
+ 
+@@ -437,10 +437,6 @@ ap_i2c_audio: &i2c8 {
+ 	status = "okay";
+ };
+ 
+-&i2s2 {
+-	status = "okay";
+-};
+-
+ &io_domains {
+ 	status = "okay";
+ 
+@@ -537,6 +533,17 @@ ap_i2c_audio: &i2c8 {
+ 	vqmmc-supply = <&ppvar_sd_card_io>;
+ };
+ 
++&spdif {
++	status = "okay";
++
++	/*
++	 * SPDIF is routed internally to DP; we either don't use these pins, or
++	 * mux them to something else.
++	 */
++	/delete-property/ pinctrl-0;
++	/delete-property/ pinctrl-names;
++};
++
+ &spi1 {
+ 	status = "okay";
+ 
+--- a/arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi
+@@ -25,6 +25,13 @@
+ 		};
+ 	};
+ 
++	extcon_usb3: extcon-usb3 {
++		compatible = "linux,extcon-usb-gpio";
++		id-gpio = <&gpio1 RK_PC2 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&usb3_id>;
++	};
++
+ 	clkin_gmac: external-gmac-clock {
+ 		compatible = "fixed-clock";
+ 		clock-frequency = <125000000>;
+@@ -422,9 +429,22 @@
+ 			  <4 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
+ 		};
+ 	};
++
++	usb3 {
++		usb3_id: usb3-id {
++			rockchip,pins =
++			  <1 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
+ };
+ 
+ &sdhci {
++	/*
++	 * Signal integrity isn't great at 200MHz but 100MHz has proven stable
++	 * enough.
++	 */
++	max-frequency = <100000000>;
++
+ 	bus-width = <8>;
+ 	mmc-hs400-1_8v;
+ 	mmc-hs400-enhanced-strobe;
+--- a/arch/arm64/boot/dts/rockchip/rk3399-puma-haikou.dts~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3399-puma-haikou.dts
+@@ -232,6 +232,7 @@
+ 
+ &usbdrd_dwc3_0 {
+ 	dr_mode = "otg";
++	extcon = <&extcon_usb3>;
+ 	status = "okay";
+ };
+ 
+--- a/arch/arm64/boot/dts/rockchip/rk3566-quartz64-a.dts~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3566-quartz64-a.dts
+@@ -285,8 +285,6 @@
+ 			vcc_ddr: DCDC_REG3 {
+ 				regulator-always-on;
+ 				regulator-boot-on;
+-				regulator-min-microvolt = <1100000>;
+-				regulator-max-microvolt = <1100000>;
+ 				regulator-initial-mode = <0x2>;
+ 				regulator-name = "vcc_ddr";
+ 				regulator-state-mem {
+--- a/arch/arm64/boot/dts/rockchip/rk3568.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/rk3568.dtsi
+@@ -32,13 +32,11 @@
+ 		clocks = <&cru SCLK_GMAC0>, <&cru SCLK_GMAC0_RX_TX>,
+ 			 <&cru SCLK_GMAC0_RX_TX>, <&cru CLK_MAC0_REFOUT>,
+ 			 <&cru ACLK_GMAC0>, <&cru PCLK_GMAC0>,
+-			 <&cru SCLK_GMAC0_RX_TX>, <&cru CLK_GMAC0_PTP_REF>,
+-			 <&cru PCLK_XPCS>;
++			 <&cru SCLK_GMAC0_RX_TX>, <&cru CLK_GMAC0_PTP_REF>;
+ 		clock-names = "stmmaceth", "mac_clk_rx",
+ 			      "mac_clk_tx", "clk_mac_refout",
+ 			      "aclk_mac", "pclk_mac",
+-			      "clk_mac_speed", "ptp_ref",
+-			      "pclk_xpcs";
++			      "clk_mac_speed", "ptp_ref";
+ 		resets = <&cru SRST_A_GMAC0>;
+ 		reset-names = "stmmaceth";
+ 		rockchip,grf = <&grf>;
+--- a/arch/arm64/boot/dts/rockchip/rk356x.dtsi~origin
++++ a/arch/arm64/boot/dts/rockchip/rk356x.dtsi
+@@ -651,7 +651,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	dmac0: dmac@fe530000 {
++	dmac0: dma-controller@fe530000 {
+ 		compatible = "arm,pl330", "arm,primecell";
+ 		reg = <0x0 0xfe530000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>,
+@@ -662,7 +662,7 @@
+ 		#dma-cells = <1>;
+ 	};
+ 
+-	dmac1: dmac@fe550000 {
++	dmac1: dma-controller@fe550000 {
+ 		compatible = "arm,pl330", "arm,primecell";
+ 		reg = <0x0 0xfe550000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>,
+--- a/arch/arm64/kvm/psci.c~origin
++++ a/arch/arm64/kvm/psci.c
+@@ -46,8 +46,7 @@ static unsigned long kvm_psci_vcpu_suspe
+ 	 * specification (ARM DEN 0022A). This means all suspend states
+ 	 * for KVM will preserve the register state.
+ 	 */
+-	kvm_vcpu_halt(vcpu);
+-	kvm_clear_request(KVM_REQ_UNHALT, vcpu);
++	kvm_vcpu_wfi(vcpu);
+ 
+ 	return PSCI_RET_SUCCESS;
+ }
+--- a/arch/arm/boot/dts/omap3-devkit8000-common.dtsi~origin
++++ a/arch/arm/boot/dts/omap3-devkit8000-common.dtsi
+@@ -158,6 +158,24 @@
+ 	status = "disabled";
+ };
+ 
++/* Unusable as clockevent because if unreliable oscillator, allow to idle */
++&timer1_target {
++	/delete-property/ti,no-reset-on-init;
++	/delete-property/ti,no-idle;
++	timer@0 {
++		/delete-property/ti,timer-alwon;
++	};
++};
++
++/* Preferred timer for clockevent */
++&timer12_target {
++	ti,no-reset-on-init;
++	ti,no-idle;
++	timer@0 {
++		/* Always clocked by secure_32k_fck */
++	};
++};
++
+ &twl_gpio {
+ 	ti,use-leds;
+ 	/*
+--- a/arch/arm/boot/dts/omap3-devkit8000.dts~origin
++++ a/arch/arm/boot/dts/omap3-devkit8000.dts
+@@ -14,36 +14,3 @@
+ 		display2 = &tv0;
+ 	};
+ };
+-
+-/* Unusable as clocksource because of unreliable oscillator */
+-&counter32k {
+-	status = "disabled";
+-};
+-
+-/* Unusable as clockevent because if unreliable oscillator, allow to idle */
+-&timer1_target {
+-	/delete-property/ti,no-reset-on-init;
+-	/delete-property/ti,no-idle;
+-	timer@0 {
+-		/delete-property/ti,timer-alwon;
+-	};
+-};
+-
+-/* Preferred always-on timer for clocksource */
+-&timer12_target {
+-	ti,no-reset-on-init;
+-	ti,no-idle;
+-	timer@0 {
+-		/* Always clocked by secure_32k_fck */
+-	};
+-};
+-
+-/* Preferred timer for clockevent */
+-&timer2_target {
+-	ti,no-reset-on-init;
+-	ti,no-idle;
+-	timer@0 {
+-		assigned-clocks = <&gpt2_fck>;
+-		assigned-clock-parents = <&sys_ck>;
+-	};
+-};
+--- a/arch/arm/boot/dts/rk322x.dtsi~origin
++++ a/arch/arm/boot/dts/rk322x.dtsi
+@@ -718,8 +718,8 @@
+ 		interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+ 		assigned-clocks = <&cru SCLK_HDMI_PHY>;
+ 		assigned-clock-parents = <&hdmi_phy>;
+-		clocks = <&cru SCLK_HDMI_HDCP>, <&cru PCLK_HDMI_CTRL>, <&cru SCLK_HDMI_CEC>;
+-		clock-names = "isfr", "iahb", "cec";
++		clocks = <&cru PCLK_HDMI_CTRL>, <&cru SCLK_HDMI_HDCP>, <&cru SCLK_HDMI_CEC>;
++		clock-names = "iahb", "isfr", "cec";
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&hdmii2c_xfer &hdmi_hpd &hdmi_cec>;
+ 		resets = <&cru SRST_HDMI_P>;
+--- a/arch/arm/boot/dts/rk3288.dtsi~origin
++++ a/arch/arm/boot/dts/rk3288.dtsi
+@@ -971,7 +971,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	crypto: cypto-controller@ff8a0000 {
++	crypto: crypto@ff8a0000 {
+ 		compatible = "rockchip,rk3288-crypto";
+ 		reg = <0x0 0xff8a0000 0x0 0x4000>;
+ 		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+--- a/arch/arm/boot/dts/tegra124-nyan-big.dts~origin
++++ a/arch/arm/boot/dts/tegra124-nyan-big.dts
+@@ -13,12 +13,15 @@
+ 		     "google,nyan-big-rev1", "google,nyan-big-rev0",
+ 		     "google,nyan-big", "google,nyan", "nvidia,tegra124";
+ 
+-	panel: panel {
+-		compatible = "auo,b133xtn01";
+-
+-		power-supply = <&vdd_3v3_panel>;
+-		backlight = <&backlight>;
+-		ddc-i2c-bus = <&dpaux>;
++	host1x@50000000 {
++		dpaux@545c0000 {
++			aux-bus {
++				panel: panel {
++					compatible = "auo,b133xtn01";
++					backlight = <&backlight>;
++				};
++			};
++		};
+ 	};
+ 
+ 	mmc@700b0400 { /* SD Card on this bus */
+--- a/arch/arm/boot/dts/tegra124-nyan-blaze.dts~origin
++++ a/arch/arm/boot/dts/tegra124-nyan-blaze.dts
+@@ -15,12 +15,15 @@
+ 		     "google,nyan-blaze-rev0", "google,nyan-blaze",
+ 		     "google,nyan", "nvidia,tegra124";
+ 
+-	panel: panel {
+-		compatible = "samsung,ltn140at29-301";
+-
+-		power-supply = <&vdd_3v3_panel>;
+-		backlight = <&backlight>;
+-		ddc-i2c-bus = <&dpaux>;
++	host1x@50000000 {
++		dpaux@545c0000 {
++			aux-bus {
++				panel: panel {
++					compatible = "samsung,ltn140at29-301";
++					backlight = <&backlight>;
++				};
++			};
++		};
+ 	};
+ 
+ 	sound {
+--- a/arch/arm/boot/dts/tegra124-venice2.dts~origin
++++ a/arch/arm/boot/dts/tegra124-venice2.dts
+@@ -48,6 +48,13 @@
+ 		dpaux@545c0000 {
+ 			vdd-supply = <&vdd_3v3_panel>;
+ 			status = "okay";
++
++			aux-bus {
++				panel: panel {
++					compatible = "lg,lp129qe";
++					backlight = <&backlight>;
++				};
++			};
+ 		};
+ 	};
+ 
+@@ -1080,13 +1087,6 @@
+ 		};
+ 	};
+ 
+-	panel: panel {
+-		compatible = "lg,lp129qe";
+-		power-supply = <&vdd_3v3_panel>;
+-		backlight = <&backlight>;
+-		ddc-i2c-bus = <&dpaux>;
+-	};
+-
+ 	vdd_mux: regulator-mux {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "+VDD_MUX";
+--- a/arch/x86/kvm/vmx/nested.c~origin
++++ a/arch/x86/kvm/vmx/nested.c
+@@ -246,8 +246,7 @@ static void vmx_sync_vmcs_host_state(str
+ 	src = &prev->host_state;
+ 	dest = &vmx->loaded_vmcs->host_state;
+ 
+-	vmx_set_vmcs_host_state(dest, src->cr3, src->fs_sel, src->gs_sel,
+-				src->fs_base, src->gs_base);
++	vmx_set_host_fs_gs(dest, src->fs_sel, src->gs_sel, src->fs_base, src->gs_base);
+ 	dest->ldt_sel = src->ldt_sel;
+ #ifdef CONFIG_X86_64
+ 	dest->ds_sel = src->ds_sel;
+@@ -3056,7 +3055,7 @@ static int nested_vmx_check_guest_state(
+ static int nested_vmx_check_vmentry_hw(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	unsigned long cr4;
++	unsigned long cr3, cr4;
+ 	bool vm_fail;
+ 
+ 	if (!nested_early_check)
+@@ -3079,6 +3078,12 @@ static int nested_vmx_check_vmentry_hw(s
+ 	 */
+ 	vmcs_writel(GUEST_RFLAGS, 0);
+ 
++	cr3 = __get_current_cr3_fast();
++	if (unlikely(cr3 != vmx->loaded_vmcs->host_state.cr3)) {
++		vmcs_writel(HOST_CR3, cr3);
++		vmx->loaded_vmcs->host_state.cr3 = cr3;
++	}
++
+ 	cr4 = cr4_read_shadow();
+ 	if (unlikely(cr4 != vmx->loaded_vmcs->host_state.cr4)) {
+ 		vmcs_writel(HOST_CR4, cr4);
+--- a/arch/x86/kvm/vmx/vmx.c~origin
++++ a/arch/x86/kvm/vmx/vmx.c
+@@ -1080,14 +1080,9 @@ static void pt_guest_exit(struct vcpu_vm
+ 		wrmsrl(MSR_IA32_RTIT_CTL, vmx->pt_desc.host.ctl);
+ }
+ 
+-void vmx_set_vmcs_host_state(struct vmcs_host_state *host, unsigned long cr3,
+-			     u16 fs_sel, u16 gs_sel,
+-			     unsigned long fs_base, unsigned long gs_base)
++void vmx_set_host_fs_gs(struct vmcs_host_state *host, u16 fs_sel, u16 gs_sel,
++			unsigned long fs_base, unsigned long gs_base)
+ {
+-	if (unlikely(cr3 != host->cr3)) {
+-		vmcs_writel(HOST_CR3, cr3);
+-		host->cr3 = cr3;
+-	}
+ 	if (unlikely(fs_sel != host->fs_sel)) {
+ 		if (!(fs_sel & 7))
+ 			vmcs_write16(HOST_FS_SELECTOR, fs_sel);
+@@ -1182,9 +1177,7 @@ void vmx_prepare_switch_to_guest(struct
+ 	gs_base = segment_base(gs_sel);
+ #endif
+ 
+-	vmx_set_vmcs_host_state(host_state, __get_current_cr3_fast(),
+-				fs_sel, gs_sel, fs_base, gs_base);
+-
++	vmx_set_host_fs_gs(host_state, fs_sel, gs_sel, fs_base, gs_base);
+ 	vmx->guest_state_loaded = true;
+ }
+ 
+@@ -6791,7 +6784,7 @@ static noinstr void vmx_vcpu_enter_exit(
+ static fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	unsigned long cr4;
++	unsigned long cr3, cr4;
+ 
+ 	/* Record the guest's net vcpu time for enforced NMI injections. */
+ 	if (unlikely(!enable_vnmi &&
+@@ -6834,6 +6827,19 @@ static fastpath_t vmx_vcpu_run(struct kv
+ 		vmcs_writel(GUEST_RIP, vcpu->arch.regs[VCPU_REGS_RIP]);
+ 	vcpu->arch.regs_dirty = 0;
+ 
++	/*
++	 * Refresh vmcs.HOST_CR3 if necessary.  This must be done immediately
++	 * prior to VM-Enter, as the kernel may load a new ASID (PCID) any time
++	 * it switches back to the current->mm, which can occur in KVM context
++	 * when switching to a temporary mm to patch kernel code, e.g. if KVM
++	 * toggles a static key while handling a VM-Exit.
++	 */
++	cr3 = __get_current_cr3_fast();
++	if (unlikely(cr3 != vmx->loaded_vmcs->host_state.cr3)) {
++		vmcs_writel(HOST_CR3, cr3);
++		vmx->loaded_vmcs->host_state.cr3 = cr3;
++	}
++
+ 	cr4 = cr4_read_shadow();
+ 	if (unlikely(cr4 != vmx->loaded_vmcs->host_state.cr4)) {
+ 		vmcs_writel(HOST_CR4, cr4);
+--- a/arch/x86/kvm/vmx/vmx.h~origin
++++ a/arch/x86/kvm/vmx/vmx.h
+@@ -374,9 +374,8 @@ int allocate_vpid(void);
+ void free_vpid(int vpid);
+ void vmx_set_constant_host_state(struct vcpu_vmx *vmx);
+ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu);
+-void vmx_set_vmcs_host_state(struct vmcs_host_state *host, unsigned long cr3,
+-			     u16 fs_sel, u16 gs_sel,
+-			     unsigned long fs_base, unsigned long gs_base);
++void vmx_set_host_fs_gs(struct vmcs_host_state *host, u16 fs_sel, u16 gs_sel,
++			unsigned long fs_base, unsigned long gs_base);
+ int vmx_get_cpl(struct kvm_vcpu *vcpu);
+ bool vmx_emulation_required(struct kvm_vcpu *vcpu);
+ unsigned long vmx_get_rflags(struct kvm_vcpu *vcpu);
+--- a/CREDITS~origin
++++ a/CREDITS
+@@ -895,6 +895,12 @@ S: 3000 FORE Drive
+ S: Warrendale, Pennsylvania 15086
+ S: USA
+ 
++N: Ludovic Desroches
++E: ludovic.desroches@microchip.com
++D: Maintainer for ARM/Microchip (AT91) SoC support
++D: Author of ADC, pinctrl, XDMA and SDHCI drivers for this platform
++S: France
++
+ N: Martin Devera
+ E: devik@cdi.cz
+ W: http://luxik.cdi.cz/~devik/qos/
+--- a/Documentation/devicetree/bindings/arm/atmel-at91.yaml~origin
++++ a/Documentation/devicetree/bindings/arm/atmel-at91.yaml
+@@ -8,7 +8,8 @@ title: Atmel AT91 device tree bindings.
+ 
+ maintainers:
+   - Alexandre Belloni <alexandre.belloni@bootlin.com>
+-  - Ludovic Desroches <ludovic.desroches@microchip.com>
++  - Claudiu Beznea <claudiu.beznea@microchip.com>
++  - Nicolas Ferre <nicolas.ferre@microchip.com>
+ 
+ description: |
+   Boards with a SoC of the Atmel AT91 or SMART family shall have the following
+--- a/Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-dcfg.txt~origin
++++ a/Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-dcfg.txt
+@@ -8,7 +8,7 @@ Required properties:
+   - compatible: Should contain a chip-specific compatible string,
+ 	Chip-specific strings are of the form "fsl,<chip>-dcfg",
+ 	The following <chip>s are known to be supported:
+-	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a.
++	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a, lx2160a
+ 
+   - reg : should contain base address and length of DCFG memory-mapped registers
+ 
+--- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt~origin
++++ a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -44,6 +44,7 @@ Required properties:
+ 	* "fsl,ls1046a-clockgen"
+ 	* "fsl,ls1088a-clockgen"
+ 	* "fsl,ls2080a-clockgen"
++	* "fsl,lx2160a-clockgen"
+ 	Chassis-version clock strings include:
+ 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
+ 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
+--- a/Documentation/devicetree/bindings/usb/dwc2.yaml~origin
++++ a/Documentation/devicetree/bindings/usb/dwc2.yaml
+@@ -53,6 +53,7 @@ properties:
+           - const: st,stm32mp15-hsotg
+           - const: snps,dwc2
+       - const: samsung,s3c6400-hsotg
++      - const: intel,socfpga-agilex-hsotg
+ 
+   reg:
+     maxItems: 1
+--- a/drivers/clocksource/timer-ti-dm-systimer.c~origin
++++ a/drivers/clocksource/timer-ti-dm-systimer.c
+@@ -241,8 +241,7 @@ static void __init dmtimer_systimer_assi
+ 	bool quirk_unreliable_oscillator = false;
+ 
+ 	/* Quirk unreliable 32 KiHz oscillator with incomplete dts */
+-	if (of_machine_is_compatible("ti,omap3-beagle-ab4") ||
+-	    of_machine_is_compatible("timll,omap3-devkit8000")) {
++	if (of_machine_is_compatible("ti,omap3-beagle-ab4")) {
+ 		quirk_unreliable_oscillator = true;
+ 		counter_32k = -ENODEV;
+ 	}
+--- a/drivers/firmware/arm_scmi/driver.c~origin
++++ a/drivers/firmware/arm_scmi/driver.c
+@@ -2112,7 +2112,7 @@ static void __exit scmi_driver_exit(void
+ }
+ module_exit(scmi_driver_exit);
+ 
+-MODULE_ALIAS("platform: arm-scmi");
++MODULE_ALIAS("platform:arm-scmi");
+ MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
+ MODULE_DESCRIPTION("ARM SCMI protocol driver");
+ MODULE_LICENSE("GPL v2");
+--- a/drivers/firmware/efi/libstub/riscv-stub.c~origin
++++ a/drivers/firmware/efi/libstub/riscv-stub.c
+@@ -25,7 +25,7 @@ typedef void __noreturn (*jump_kernel_fu
+ 
+ static u32 hartid;
+ 
+-static u32 get_boot_hartid_from_fdt(void)
++static int get_boot_hartid_from_fdt(void)
+ {
+ 	const void *fdt;
+ 	int chosen_node, len;
+@@ -33,23 +33,26 @@ static u32 get_boot_hartid_from_fdt(void
+ 
+ 	fdt = get_efi_config_table(DEVICE_TREE_GUID);
+ 	if (!fdt)
+-		return U32_MAX;
++		return -EINVAL;
+ 
+ 	chosen_node = fdt_path_offset(fdt, "/chosen");
+ 	if (chosen_node < 0)
+-		return U32_MAX;
++		return -EINVAL;
+ 
+ 	prop = fdt_getprop((void *)fdt, chosen_node, "boot-hartid", &len);
+ 	if (!prop || len != sizeof(u32))
+-		return U32_MAX;
++		return -EINVAL;
+ 
+-	return fdt32_to_cpu(*prop);
++	hartid = fdt32_to_cpu(*prop);
++	return 0;
+ }
+ 
+ efi_status_t check_platform_features(void)
+ {
+-	hartid = get_boot_hartid_from_fdt();
+-	if (hartid == U32_MAX) {
++	int ret;
++
++	ret = get_boot_hartid_from_fdt();
++	if (ret) {
+ 		efi_err("/chosen/boot-hartid missing or invalid!\n");
+ 		return EFI_UNSUPPORTED;
+ 	}
+--- a/drivers/firmware/efi/vars.c~origin
++++ a/drivers/firmware/efi/vars.c
+@@ -742,6 +742,7 @@ int efivar_entry_set_safe(efi_char16_t *
+ {
+ 	const struct efivar_operations *ops;
+ 	efi_status_t status;
++	unsigned long varsize;
+ 
+ 	if (!__efivars)
+ 		return -EINVAL;
+@@ -764,15 +765,17 @@ int efivar_entry_set_safe(efi_char16_t *
+ 		return efivar_entry_set_nonblocking(name, vendor, attributes,
+ 						    size, data);
+ 
++	varsize = size + ucs2_strsize(name, 1024);
+ 	if (!block) {
+ 		if (down_trylock(&efivars_lock))
+ 			return -EBUSY;
++		status = check_var_size_nonblocking(attributes, varsize);
+ 	} else {
+ 		if (down_interruptible(&efivars_lock))
+ 			return -EINTR;
++		status = check_var_size(attributes, varsize);
+ 	}
+ 
+-	status = check_var_size(attributes, size + ucs2_strsize(name, 1024));
+ 	if (status != EFI_SUCCESS) {
+ 		up(&efivars_lock);
+ 		return -ENOSPC;
+--- a/drivers/soc/fsl/guts.c~origin
++++ a/drivers/soc/fsl/guts.c
+@@ -28,7 +28,6 @@ struct fsl_soc_die_attr {
+ static struct guts *guts;
+ static struct soc_device_attribute soc_dev_attr;
+ static struct soc_device *soc_dev;
+-static struct device_node *root;
+ 
+ 
+ /* SoC die attribute definition for QorIQ platform */
+@@ -138,7 +137,7 @@ static u32 fsl_guts_get_svr(void)
+ 
+ static int fsl_guts_probe(struct platform_device *pdev)
+ {
+-	struct device_node *np = pdev->dev.of_node;
++	struct device_node *root, *np = pdev->dev.of_node;
+ 	struct device *dev = &pdev->dev;
+ 	const struct fsl_soc_die_attr *soc_die;
+ 	const char *machine;
+@@ -159,8 +158,14 @@ static int fsl_guts_probe(struct platfor
+ 	root = of_find_node_by_path("/");
+ 	if (of_property_read_string(root, "model", &machine))
+ 		of_property_read_string_index(root, "compatible", 0, &machine);
+-	if (machine)
+-		soc_dev_attr.machine = machine;
++	if (machine) {
++		soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
++		if (!soc_dev_attr.machine) {
++			of_node_put(root);
++			return -ENOMEM;
++		}
++	}
++	of_node_put(root);
+ 
+ 	svr = fsl_guts_get_svr();
+ 	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
+@@ -195,7 +200,6 @@ static int fsl_guts_probe(struct platfor
+ static int fsl_guts_remove(struct platform_device *dev)
+ {
+ 	soc_device_unregister(soc_dev);
+-	of_node_put(root);
+ 	return 0;
+ }
+ 
+--- a/drivers/soc/fsl/qe/qe.c~origin
++++ a/drivers/soc/fsl/qe/qe.c
+@@ -147,7 +147,7 @@ EXPORT_SYMBOL(qe_issue_cmd);
+  * memory mapped space.
+  * The BRG clock is the QE clock divided by 2.
+  * It was set up long ago during the initial boot phase and is
+- * is given to us.
++ * given to us.
+  * Baud rate clocks are zero-based in the driver code (as that maps
+  * to port numbers). Documentation uses 1-based numbering.
+  */
+@@ -421,7 +421,7 @@ static void qe_upload_microcode(const vo
+ 
+ 	for (i = 0; i < be32_to_cpu(ucode->count); i++)
+ 		iowrite32be(be32_to_cpu(code[i]), &qe_immr->iram.idata);
+-	
++
+ 	/* Set I-RAM Ready Register */
+ 	iowrite32be(QE_IRAM_READY, &qe_immr->iram.iready);
+ }
+--- a/drivers/soc/fsl/qe/qe_io.c~origin
++++ a/drivers/soc/fsl/qe/qe_io.c
+@@ -35,6 +35,8 @@ int par_io_init(struct device_node *np)
+ 	if (ret)
+ 		return ret;
+ 	par_io = ioremap(res.start, resource_size(&res));
++	if (!par_io)
++		return -ENOMEM;
+ 
+ 	if (!of_property_read_u32(np, "num-ports", &num_ports))
+ 		num_par_io_ports = num_ports;
+--- a/drivers/soc/imx/gpcv2.c~origin
++++ a/drivers/soc/imx/gpcv2.c
+@@ -382,7 +382,8 @@ static int imx_pgc_power_down(struct gen
+ 	return 0;
+ 
+ out_clk_disable:
+-	clk_bulk_disable_unprepare(domain->num_clks, domain->clks);
++	if (!domain->keep_clocks)
++		clk_bulk_disable_unprepare(domain->num_clks, domain->clks);
+ 
+ 	return ret;
+ }
+--- a/drivers/tee/optee/ffa_abi.c~origin
++++ a/drivers/tee/optee/ffa_abi.c
+@@ -869,8 +869,10 @@ static int optee_ffa_probe(struct ffa_de
+ 	optee_supp_init(&optee->supp);
+ 	ffa_dev_set_drvdata(ffa_dev, optee);
+ 	ctx = teedev_open(optee->teedev);
+-	if (IS_ERR(ctx))
++	if (IS_ERR(ctx)) {
++		rc = PTR_ERR(ctx);
+ 		goto err_rhashtable_free;
++	}
+ 	optee->ctx = ctx;
+ 	rc = optee_notif_init(optee, OPTEE_DEFAULT_MAX_NOTIF_VALUE);
+ 	if (rc)
+--- a/drivers/tee/optee/smc_abi.c~origin
++++ a/drivers/tee/optee/smc_abi.c
+@@ -1417,8 +1417,10 @@ static int optee_probe(struct platform_d
+ 
+ 	platform_set_drvdata(pdev, optee);
+ 	ctx = teedev_open(optee->teedev);
+-	if (IS_ERR(ctx))
++	if (IS_ERR(ctx)) {
++		rc = PTR_ERR(ctx);
+ 		goto err_supp_uninit;
++	}
+ 	optee->ctx = ctx;
+ 	rc = optee_notif_init(optee, max_notif_value);
+ 	if (rc)
+--- a/fs/binfmt_elf.c~origin
++++ a/fs/binfmt_elf.c
+@@ -1135,14 +1135,25 @@ out_free_interp:
+ 			 * is then page aligned.
+ 			 */
+ 			load_bias = ELF_PAGESTART(load_bias - vaddr);
+-		}
+ 
+-		/*
+-		 * Calculate the entire size of the ELF mapping (total_size).
+-		 * (Note that load_addr_set is set to true later once the
+-		 * initial mapping is performed.)
+-		 */
+-		if (!load_addr_set) {
++			/*
++			 * Calculate the entire size of the ELF mapping
++			 * (total_size), used for the initial mapping,
++			 * due to load_addr_set which is set to true later
++			 * once the initial mapping is performed.
++			 *
++			 * Note that this is only sensible when the LOAD
++			 * segments are contiguous (or overlapping). If
++			 * used for LOADs that are far apart, this would
++			 * cause the holes between LOADs to be mapped,
++			 * running the risk of having the mapping fail,
++			 * as it would be larger than the ELF file itself.
++			 *
++			 * As a result, only ET_DYN does this, since
++			 * some ET_EXEC (e.g. ia64) may have large virtual
++			 * memory holes between LOADs.
++			 *
++			 */
+ 			total_size = total_mapping_size(elf_phdata,
+ 							elf_ex->e_phnum);
+ 			if (!total_size) {
+--- a/include/soc/fsl/dpaa2-fd.h~origin
++++ a/include/soc/fsl/dpaa2-fd.h
+@@ -7,7 +7,8 @@
+ #ifndef __FSL_DPAA2_FD_H
+ #define __FSL_DPAA2_FD_H
+ 
+-#include <linux/kernel.h>
++#include <linux/byteorder/generic.h>
++#include <linux/types.h>
+ 
+ /**
+  * DOC: DPAA2 FD - Frame Descriptor APIs for DPAA2
+--- a/include/soc/fsl/qe/immap_qe.h~origin
++++ a/include/soc/fsl/qe/immap_qe.h
+@@ -13,7 +13,8 @@
+ #define _ASM_POWERPC_IMMAP_QE_H
+ #ifdef __KERNEL__
+ 
+-#include <linux/kernel.h>
++#include <linux/types.h>
++
+ #include <asm/io.h>
+ 
+ #define QE_IMMAP_SIZE	(1024 * 1024)	/* 1MB from 1MB+IMMR */
+--- a/include/soc/fsl/qe/qe_tdm.h~origin
++++ a/include/soc/fsl/qe/qe_tdm.h
+@@ -10,8 +10,8 @@
+ #ifndef _QE_TDM_H_
+ #define _QE_TDM_H_
+ 
+-#include <linux/kernel.h>
+ #include <linux/list.h>
++#include <linux/types.h>
+ 
+ #include <soc/fsl/qe/immap_qe.h>
+ #include <soc/fsl/qe/qe.h>
+@@ -19,6 +19,8 @@
+ #include <soc/fsl/qe/ucc.h>
+ #include <soc/fsl/qe/ucc_fast.h>
+ 
++struct device_node;
++
+ /* SI RAM entries */
+ #define SIR_LAST	0x0001
+ #define SIR_BYTE	0x0002
+--- a/include/soc/fsl/qe/ucc_fast.h~origin
++++ a/include/soc/fsl/qe/ucc_fast.h
+@@ -10,7 +10,7 @@
+ #ifndef __UCC_FAST_H__
+ #define __UCC_FAST_H__
+ 
+-#include <linux/kernel.h>
++#include <linux/types.h>
+ 
+ #include <soc/fsl/qe/immap_qe.h>
+ #include <soc/fsl/qe/qe.h>
+--- a/include/soc/fsl/qe/ucc_slow.h~origin
++++ a/include/soc/fsl/qe/ucc_slow.h
+@@ -11,7 +11,7 @@
+ #ifndef __UCC_SLOW_H__
+ #define __UCC_SLOW_H__
+ 
+-#include <linux/kernel.h>
++#include <linux/types.h>
+ 
+ #include <soc/fsl/qe/immap_qe.h>
+ #include <soc/fsl/qe/qe.h>
+--- a/MAINTAINERS~origin
++++ a/MAINTAINERS
+@@ -2254,7 +2254,7 @@ F:	drivers/phy/mediatek/
+ ARM/Microchip (AT91) SoC support
+ M:	Nicolas Ferre <nicolas.ferre@microchip.com>
+ M:	Alexandre Belloni <alexandre.belloni@bootlin.com>
+-M:	Ludovic Desroches <ludovic.desroches@microchip.com>
++M:	Claudiu Beznea <claudiu.beznea@microchip.com>
+ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+ S:	Supported
+ W:	http://www.linux4sam.org
+@@ -7744,8 +7744,7 @@ M:	Qiang Zhao <qiang.zhao@nxp.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Maintained
+ F:	drivers/soc/fsl/qe/
+-F:	include/soc/fsl/*qe*.h
+-F:	include/soc/fsl/*ucc*.h
++F:	include/soc/fsl/qe/
+ 
+ FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
+ M:	Li Yang <leoyang.li@nxp.com>
+@@ -7776,6 +7775,7 @@ F:	Documentation/devicetree/bindings/mis
+ F:	Documentation/devicetree/bindings/soc/fsl/
+ F:	drivers/soc/fsl/
+ F:	include/linux/fsl/
++F:	include/soc/fsl/
+ 
+ FREESCALE SOC FS_ENET DRIVER
+ M:	Pantelis Antoniou <pantelis.antoniou@gmail.com>
+--- a/tools/testing/selftests/kvm/aarch64/arch_timer.c~origin
++++ a/tools/testing/selftests/kvm/aarch64/arch_timer.c
+@@ -366,6 +366,7 @@ static struct kvm_vm *test_vm_create(voi
+ {
+ 	struct kvm_vm *vm;
+ 	unsigned int i;
++	int ret;
+ 	int nr_vcpus = test_args.nr_vcpus;
+ 
+ 	vm = vm_create_default_with_vcpus(nr_vcpus, 0, 0, guest_code, NULL);
+@@ -382,7 +383,11 @@ static struct kvm_vm *test_vm_create(voi
+ 
+ 	ucall_init(vm, NULL);
+ 	test_init_timer_irq(vm);
+-	vgic_v3_setup(vm, nr_vcpus, 64, GICD_BASE_GPA, GICR_BASE_GPA);
++	ret = vgic_v3_setup(vm, nr_vcpus, 64, GICD_BASE_GPA, GICR_BASE_GPA);
++	if (ret < 0) {
++		print_skip("Failed to create vgic-v3");
++		exit(KSFT_SKIP);
++	}
+ 
+ 	/* Make all the test's cmdline args visible to the guest */
+ 	sync_global_to_guest(vm, test_args);
+--- a/tools/testing/selftests/kvm/aarch64/vgic_irq.c~origin
++++ a/tools/testing/selftests/kvm/aarch64/vgic_irq.c
+@@ -761,6 +761,10 @@ static void test_vgic(uint32_t nr_irqs,
+ 
+ 	gic_fd = vgic_v3_setup(vm, 1, nr_irqs,
+ 			GICD_BASE_GPA, GICR_BASE_GPA);
++	if (gic_fd < 0) {
++		print_skip("Failed to create vgic-v3, skipping");
++		exit(KSFT_SKIP);
++	}
+ 
+ 	vm_install_exception_handler(vm, VECTOR_IRQ_CURRENT,
+ 		guest_irq_handlers[args.eoi_split][args.level_sensitive]);
+--- a/tools/testing/selftests/kvm/lib/aarch64/vgic.c~origin
++++ a/tools/testing/selftests/kvm/lib/aarch64/vgic.c
+@@ -52,7 +52,9 @@ int vgic_v3_setup(struct kvm_vm *vm, uns
+ 			nr_vcpus, nr_vcpus_created);
+ 
+ 	/* Distributor setup */
+-	gic_fd = kvm_create_device(vm, KVM_DEV_TYPE_ARM_VGIC_V3, false);
++	if (_kvm_create_device(vm, KVM_DEV_TYPE_ARM_VGIC_V3,
++			       false, &gic_fd) != 0)
++		return -1;
+ 
+ 	kvm_device_access(gic_fd, KVM_DEV_ARM_VGIC_GRP_NR_IRQS,
+ 			0, &nr_irqs, true);
+_

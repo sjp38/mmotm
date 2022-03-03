@@ -398,7 +398,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * init region directory
   */
  
-@@ -746,6 +1087,7 @@ struct damon_sysfs_context {
+@@ -748,6 +1089,7 @@ struct damon_sysfs_context {
  	enum damon_ops_id ops_id;
  	struct damon_sysfs_attrs *attrs;
  	struct damon_sysfs_targets *targets;
@@ -406,7 +406,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  };
  
  static struct damon_sysfs_context *damon_sysfs_context_alloc(
-@@ -800,6 +1142,23 @@ static int damon_sysfs_context_set_targe
+@@ -802,6 +1144,23 @@ static int damon_sysfs_context_set_targe
  	return 0;
  }
  
@@ -430,7 +430,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static int damon_sysfs_context_add_dirs(struct damon_sysfs_context *context)
  {
  	int err;
-@@ -811,8 +1170,15 @@ static int damon_sysfs_context_add_dirs(
+@@ -813,8 +1172,15 @@ static int damon_sysfs_context_add_dirs(
  	err = damon_sysfs_context_set_targets(context);
  	if (err)
  		goto put_attrs_out;
@@ -446,7 +446,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  put_attrs_out:
  	kobject_put(&context->attrs->kobj);
  	context->attrs = NULL;
-@@ -825,6 +1191,8 @@ static void damon_sysfs_context_rm_dirs(
+@@ -827,6 +1193,8 @@ static void damon_sysfs_context_rm_dirs(
  	kobject_put(&context->attrs->kobj);
  	damon_sysfs_targets_rm_dirs(context->targets);
  	kobject_put(&context->targets->kobj);
@@ -455,7 +455,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static ssize_t operations_show(struct kobject *kobj,
-@@ -1147,6 +1515,45 @@ static int damon_sysfs_set_targets(struc
+@@ -1149,6 +1517,45 @@ static int damon_sysfs_set_targets(struc
  	return 0;
  }
  
@@ -501,7 +501,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void damon_sysfs_before_terminate(struct damon_ctx *ctx)
  {
  	struct damon_target *t, *next;
-@@ -1180,6 +1587,9 @@ static struct damon_ctx *damon_sysfs_bui
+@@ -1182,6 +1589,9 @@ static struct damon_ctx *damon_sysfs_bui
  	err = damon_sysfs_set_targets(ctx, sys_ctx->targets);
  	if (err)
  		goto out;

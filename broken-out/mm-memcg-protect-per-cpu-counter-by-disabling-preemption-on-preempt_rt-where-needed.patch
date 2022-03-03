@@ -1,23 +1,22 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: Protect per-CPU counter by disabling preemption on PREEMPT_RT where needed.
+Subject: mm/memcg: protect per-CPU counter by disabling preemption on PREEMPT_RT where needed.
 
-The per-CPU counter are modified with the non-atomic modifier. The
-consistency is ensured by disabling interrupts for the update.
-On non PREEMPT_RT configuration this works because acquiring a
-spinlock_t typed lock with the _irq() suffix disables interrupts. On
-PREEMPT_RT configurations the RMW operation can be interrupted.
+The per-CPU counter are modified with the non-atomic modifier.  The
+consistency is ensured by disabling interrupts for the update.  On non
+PREEMPT_RT configuration this works because acquiring a spinlock_t typed
+lock with the _irq() suffix disables interrupts.  On PREEMPT_RT
+configurations the RMW operation can be interrupted.
 
 Another problem is that mem_cgroup_swapout() expects to be invoked with
 disabled interrupts because the caller has to acquire a spinlock_t which
-is acquired with disabled interrupts. Since spinlock_t never disables
-interrupts on PREEMPT_RT the interrupts are never disabled at this
-point.
+is acquired with disabled interrupts.  Since spinlock_t never disables
+interrupts on PREEMPT_RT the interrupts are never disabled at this point.
 
 The code is never called from in_irq() context on PREEMPT_RT therefore
-disabling preemption during the update is sufficient on PREEMPT_RT.
-The sections which explicitly disable interrupts can remain on
-PREEMPT_RT because the sections remain short and they don't involve
-sleeping locks (memcg_check_events() is doing nothing on PREEMPT_RT).
+disabling preemption during the update is sufficient on PREEMPT_RT.  The
+sections which explicitly disable interrupts can remain on PREEMPT_RT
+because the sections remain short and they don't involve sleeping locks
+(memcg_check_events() is doing nothing on PREEMPT_RT).
 
 Disable preemption during update of the per-CPU variables which do not
 explicitly disable interrupts.
@@ -26,6 +25,15 @@ Link: https://lkml.kernel.org/r/20220226204144.1008339-4-bigeasy@linutronix.de
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Acked-by: Roman Gushchin <guro@fb.com>
 Reviewed-by: Shakeel Butt <shakeelb@google.com
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: kernel test robot <oliver.sang@intel.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Michal Koutný <mkoutny@suse.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Waiman Long <longman@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

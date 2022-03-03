@@ -61,7 +61,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/rmap.c~mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount
 +++ a/mm/rmap.c
-@@ -91,7 +91,7 @@ static inline struct anon_vma *anon_vma_
+@@ -89,7 +89,7 @@ static inline struct anon_vma *anon_vma_
  
  	anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
  	if (anon_vma) {
@@ -70,7 +70,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		anon_vma->degree = 1;	/* Reference for first vma */
  		anon_vma->parent = anon_vma;
  		/*
-@@ -106,7 +106,7 @@ static inline struct anon_vma *anon_vma_
+@@ -104,7 +104,7 @@ static inline struct anon_vma *anon_vma_
  
  static inline void anon_vma_free(struct anon_vma *anon_vma)
  {
@@ -79,7 +79,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Synchronize against page_lock_anon_vma_read() such that
-@@ -448,7 +448,7 @@ static void anon_vma_ctor(void *data)
+@@ -446,7 +446,7 @@ static void anon_vma_ctor(void *data)
  	struct anon_vma *anon_vma = data;
  
  	init_rwsem(&anon_vma->rwsem);
@@ -88,7 +88,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	anon_vma->rb_root = RB_ROOT_CACHED;
  }
  
-@@ -498,7 +498,7 @@ struct anon_vma *page_get_anon_vma(struc
+@@ -496,7 +496,7 @@ struct anon_vma *page_get_anon_vma(struc
  		goto out;
  
  	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
@@ -97,7 +97,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		anon_vma = NULL;
  		goto out;
  	}
-@@ -557,7 +557,7 @@ struct anon_vma *page_lock_anon_vma_read
+@@ -555,7 +555,7 @@ struct anon_vma *page_lock_anon_vma_read
  	}
  
  	/* trylock failed, we got to sleep */
@@ -106,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		anon_vma = NULL;
  		goto out;
  	}
-@@ -572,7 +572,7 @@ struct anon_vma *page_lock_anon_vma_read
+@@ -570,7 +570,7 @@ struct anon_vma *page_lock_anon_vma_read
  	rcu_read_unlock();
  	anon_vma_lock_read(anon_vma);
  
@@ -115,7 +115,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		/*
  		 * Oops, we held the last refcount, release the lock
  		 * and bail -- can't simply use put_anon_vma() because
-@@ -2286,7 +2286,7 @@ void __put_anon_vma(struct anon_vma *ano
+@@ -2257,7 +2257,7 @@ void __put_anon_vma(struct anon_vma *ano
  	struct anon_vma *root = anon_vma->root;
  
  	anon_vma_free(anon_vma);

@@ -1,62 +1,40 @@
 origin.patch
 #NEXT_PATCHES_START linus
-#MAINTAINERS
-maintainers-add-sysctl-next-git-tree.patch
-#
-#mm/hugetlb
-mm-hugetlb-fix-kernel-crash-with-hugetlb-mremap.patch
-#
-#mm/kasan
-kasan-test-prevent-cache-merging-in-kmem_cache_double_destroy.patch
-#
-#mm/hugetlbfs
-hugetlbfs-fix-a-truncation-issue-in-hugepages-parameter.patch
-#
-#mm/pagemap
-mm-fix-use-after-free-bug-when-mm-mmap-is-reused-after-being-freed.patch
-#
-#mm/selftests
-selftest-vm-fix-map_fixed_noreplace-test-failure.patch
-#
-#mm/memcg
-maintainers-add-myself-as-a-memcg-co-maintainer.patch
-#
-maintainers-remove-myself-from-memcg-maintainers.patch
-#
-#m/slab
-maintainers-slab-add-roman-as-reviewer-git-tree.patch
-#
-#mailmap
-mailmap-update-roman-gushchins-email.patch
-#
-#memfd
-selftests-memfd-clean-up-mapping-in-mfd_fail_write.patch
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
-#NEXT_PATCHES_END
-#NEXT_PATCHES_START mainline-later (next week, approximately)
-#
-#coredump
-#coredump-also-dump-first-pages-of-non-executable-elf-libraries.patch: TBU? check review
-coredump-also-dump-first-pages-of-non-executable-elf-libraries.patch
-#
-#mm/pagealloc
-#mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
-mm-fix-panic-in-__alloc_pages.patch
-#
 #mm/hugetlb
-#selftests-vm-cleanup-hugetlb-file-after-mremap-test.patch: TBU?
 selftests-vm-cleanup-hugetlb-file-after-mremap-test.patch
 #
 #mm/pagemap
 mm-refactor-vm_area_struct-anon_vma_name-usage-code.patch
+mm-refactor-vm_area_struct-anon_vma_name-usage-code-v3.patch
 mm-prevent-vm_area_struct-anon_name-refcount-saturation.patch
 mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
+#
+#memfd
+memfd-fix-f_seal_write-after-shmem-huge-page-allocated.patch
+#
+#NEXT_PATCHES_END
+#NEXT_PATCHES_START mainline-later (next week, approximately)
+#mm/pagealloc
+#mm-fix-panic-in-__alloc_pages.patch: more acks? https://lkml.kernel.org/r/2e191db3-286f-90c6-bf96-3f89891e9926@gmail.com
+mm-fix-panic-in-__alloc_pages.patch
 #
 #mm/userfaultfd
 #userfaultfd-mark-uffd_wp-regardless-of-vm_write-flag.patch: acks? check review
 userfaultfd-mark-uffd_wp-regardless-of-vm_write-flag.patch
+#
+proc-fix-documentation-and-description-of-pagemap.patch
+#
+#mm/swap
+mm-swap-get-rid-of-deadloop-in-swapin-readahead.patch
+#
+#kconfig
+configs-debug-set-config_debug_info=y-properly.patch
+#
+#mm/pagealloc
+#mm-page_alloc-add-scheduling-point-to-free_unref_page_list.patch: -stable?
+mm-page_alloc-add-scheduling-point-to-free_unref_page_list.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -332,6 +310,7 @@ ocfs2-fix-ocfs2-corrupt-when-iputting-an-inode.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START block
 doc-convert-subsection-to-section-in-gfph.patch
+#mm-document-and-polish-read-ahead-code.patch: check Jan review
 mm-document-and-polish-read-ahead-code.patch
 mm-improve-cleanup-when-readpages-doesnt-process-all-pages.patch
 fuse-remove-reliance-on-bdi-congestion.patch
@@ -385,6 +364,7 @@ mm.patch
 mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation.patch
 mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper.patch
 mm-hugetlb_vmemmap-move-comment-block-to-documentation-vm.patch
+#mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch: TBU?
 mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch
 mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
 #
@@ -423,9 +403,15 @@ tools-vm-page_owner_sortc-fix-the-instructions-for-use.patch
 #
 mm-unexport-page_init_poison.patch
 #
+tools-vm-page_owner_sortc-fix-comments.patch
+tools-vm-page_owner_sortc-add-a-security-check.patch
+tools-vm-page_owner_sortc-support-sorting-by-tgid-and-update-documentation.patch
+#
 #mm/folios
 #mm/pagecache
 filemap-remove-find_get_pages.patch
+#
+mm-writeback-minor-clean-up-for-highmem_dirtyable_memory.patch
 #
 #mm/msync
 #mm/fadvise
@@ -439,6 +425,7 @@ mm-gup-remove-unused-get_user_pages_locked.patch
 #mm/swap
 #mm/shmem
 tmpfs-support-for-file-creation-time.patch
+tmpfs-support-for-file-creation-time-fix.patch
 #
 #mm/frontswap
 #mm/memremap
@@ -456,6 +443,14 @@ memcg-unify-force-charging-conditions.patch
 selftests-memcg-test-high-limit-for-single-entry-allocation.patch
 memcg-synchronously-enforce-memoryhigh-for-large-overcharges.patch
 #
+#mm-memcontrol-return-1-from-cgroupmemory-__setup-handler.patch: check review
+mm-memcontrol-return-1-from-cgroupmemory-__setup-handler.patch
+#
+#mm-memcg-set-memcg-after-css-verified-and-got-reference.patch: mhocko nack
+mm-memcg-set-memcg-after-css-verified-and-got-reference.patch
+mm-memcg-set-pos-to-prev-unconditionally.patch
+mm-memcg-move-generation-assignment-and-comparison-together.patch
+#
 mm-memcg-revert-mm-memcg-optimize-user-context-object-stock-access.patch
 mm-memcg-disable-threshold-event-handlers-on-preempt_rt.patch
 mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed.patch
@@ -463,11 +458,25 @@ mm-memcg-opencode-the-inner-part-of-obj_cgroup_uncharge_pages-in-drain_obj_stock
 mm-memcg-protect-memcg_stock-with-a-local_lock_t.patch
 mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock.patch
 #
-mm-memcontrol-return-1-from-cgroupmemory-__setup-handler.patch
+mm-list_lru-transpose-the-array-of-per-node-per-memcg-lru-lists.patch
+mm-introduce-kmem_cache_alloc_lru.patch
+fs-introduce-alloc_inode_sb-to-allocate-filesystems-specific-inode.patch
+fs-allocate-inode-by-using-alloc_inode_sb.patch
+f2fs-allocate-inode-by-using-alloc_inode_sb.patch
+#nfs42-use-a-specific-kmem_cache-to-allocate-nfs4_xattr_entry.patch
+mm-dcache-use-kmem_cache_alloc_lru-to-allocate-dentry.patch
+xarray-use-kmem_cache_alloc_lru-to-allocate-xa_node.patch
+mm-memcontrol-move-memcg_online_kmem-to-mem_cgroup_css_online.patch
+mm-list_lru-allocate-list_lru_one-only-when-needed.patch
+mm-list_lru-rename-memcg_drain_all_list_lrus-to-memcg_reparent_list_lrus.patch
+mm-list_lru-replace-linear-array-with-xarray.patch
+mm-list_lru-replace-linear-array-with-xarray-fix.patch
+mm-memcontrol-reuse-memory-cgroup-id-for-kmem-id.patch
+mm-memcontrol-fix-cannot-alloc-the-maximum-memcg-id.patch
+mm-list_lru-rename-list_lru_per_memcg-to-list_lru_memcg.patch
+mm-memcontrol-rename-memcg_cache_id-to-memcg_kmem_id.patch
 #
-mm-memcg-set-memcg-after-css-verified-and-got-reference.patch
-mm-memcg-set-pos-to-prev-unconditionally.patch
-mm-memcg-move-generation-assignment-and-comparison-together.patch
+memcg-enable-accounting-for-tty-related-objects.patch
 #
 #mm/selftests
 #mm/pagemap
@@ -493,45 +502,14 @@ mm-rework-swap-handling-of-zap_pte_range.patch
 #
 mm-mmap-return-1-from-stack_guard_gap-__setup-handler.patch
 #
-mm-debug_vm_pgtable-drop-protection_map-usage.patch
-mm-mmap-clarify-protection_map-indices.patch
-mm-mmap-add-new-config-arch_has_vm_get_page_prot.patch
-powerpc-mm-enable-arch_has_vm_get_page_prot.patch
-arm64-mm-enable-arch_has_vm_get_page_prot.patch
-sparc-mm-enable-arch_has_vm_get_page_prot.patch
-mips-mm-enable-arch_has_vm_get_page_prot.patch
-m68k-mm-enable-arch_has_vm_get_page_prot.patch
-arm-mm-enable-arch_has_vm_get_page_prot.patch
-x86-mm-enable-arch_has_vm_get_page_prot.patch
-x86-mm-enable-arch_has_vm_get_page_prot-fix.patch
-mm-mmap-drop-protection_map.patch
-mm-mmap-drop-arch_filter_pgprot.patch
-mm-mmap-drop-arch_vm_get_page_pgprot.patch
-s390-mm-enable-arch_has_vm_get_page_prot.patch
-riscv-mm-enable-arch_has_vm_get_page_prot.patch
-alpha-mm-enable-arch_has_vm_get_page_prot.patch
-sh-mm-enable-arch_has_vm_get_page_prot.patch
-arc-mm-enable-arch_has_vm_get_page_prot.patch
-csky-mm-enable-arch_has_vm_get_page_prot.patch
-extensa-mm-enable-arch_has_vm_get_page_prot.patch
-parisc-mm-enable-arch_has_vm_get_page_prot.patch
-openrisc-mm-enable-arch_has_vm_get_page_prot.patch
-um-mm-enable-arch_has_vm_get_page_prot.patch
-microblaze-mm-enable-arch_has_vm_get_page_prot.patch
-nios2-mm-enable-arch_has_vm_get_page_prot.patch
-hexagon-mm-enable-arch_has_vm_get_page_prot.patch
-nds32-mm-enable-arch_has_vm_get_page_prot.patch
-ia64-mm-enable-arch_has_vm_get_page_prot.patch
-mm-mmap-drop-generic-vm_get_page_prot.patch
-mm-mmap-drop-arch_has_vm_get_page_prot.patch
 #
 mm-use-helper-function-range_in_vma.patch
+#
+mm-use-helper-macro-min-and-max-in-unmap_mapping_range_tree.patch
 #
 #mm/mprotect
 #mm/mremap
 #mm/memfd
-#fix-shmem-huge-page-failed-to-set-f_seal_write-attribute-problem.patch: -stable? check review
-fix-shmem-huge-page-failed-to-set-f_seal_write-attribute-problem.patch
 #
 #mm/infrastructure
 #mm/mincore
@@ -623,6 +601,11 @@ mm-hwpoison-inject-support-injecting-hwpoison-to-free-page-fix.patch
 mm-hwpoison-avoid-the-impact-of-hwpoison_filter-return-value-on-mce-handler.patch
 mm-hwpoison-add-in-use-hugepage-hwpoison-filter-judgement.patch
 #
+mm-memory-failurec-fix-race-with-changing-page-compound-again.patch
+mm-memory-failurec-fix-wrong-user-reference-report.patch
+mm-memory-failurec-avoid-calling-invalidate_inode_page-with-unexpected-pages.patch
+mm-memory-failurec-fix-potential-vm_bug_on_page-in-split_huge_page_to_list.patch
+#
 #mm/mlock
 #mm/hugetlb
 mm-hugetlb-free-the-2nd-vmemmap-page-associated-with-each-hugetlb-page.patch
@@ -638,11 +621,17 @@ hugetlb-clean-up-potential-spectre-issue-warnings-v2.patch
 #
 mm-hugetlb-use-helper-macro-__attr_rw.patch
 #
+mm-export-pageheadhuge.patch
+mm-export-pageheadhuge-fix.patch
+#
 #mm/userfaultfd
+#
 #userfaultfd-provide-unmasked-address-on-page-fault.patch: https://lkml.kernel.org/r/20220222090002.24lg2fdhrihquzaj@quack3.lan TBU
 userfaultfd-provide-unmasked-address-on-page-fault.patch
 #
 #mm/vmscan
+mm-workingset-replace-irq-off-check-with-a-lockdep-assert.patch
+#
 #mm/tools
 #mm/proc
 #mm/z3fold
@@ -658,11 +647,10 @@ mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt-fix.patch
 #mm/mempool
 #mm/memblock
 #mm/oom-kill
+mm-oom_kill-remove-unneeded-is_memcg_oom-check.patch
+#
 #mm/hugetlbfs
 #mm/migration
-mm-migration-add-trace-events-for-thp-migrations.patch
-mm-migration-add-trace-events-for-base-page-and-hugetlb-migrations.patch
-#
 mmmigrate-fix-establishing-demotion-target.patch
 #
 #
@@ -697,13 +685,11 @@ mm-balloon_compaction-make-balloon-page-compaction-callbacks-static.patch
 #
 #mm/mmap
 #mm/madvise
-#mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch: TBU, check review
-mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch
-#
 #mm/virtio
 #mm/util
 #mm/memory-hotplug
 mm-memory_hotplug-make-arch_alloc_nodedata-independent-on-config_memory_hotplug.patch
+#mm-handle-uninitialized-numa-nodes-gracefully.patch: https://lkml.kernel.org/r/202202280318.MgRzHCNb-lkp@intel.com
 mm-handle-uninitialized-numa-nodes-gracefully.patch
 mm-handle-uninitialized-numa-nodes-gracefully-fix.patch
 mm-memory_hotplug-drop-arch_free_nodedata.patch
@@ -751,6 +737,8 @@ mm-highmem-remove-unnecessary-done-label.patch
 #mm/support
 #mm/zram
 #mm/cleanups
+mm-use-strtobool-for-param-parsing.patch
+#
 #mm/secretmem
 #mm/kfence
 mm-kfence-remove-unnecessary-config_kfence-option.patch
@@ -782,6 +770,22 @@ mm-damon-remove-unnecessary-config_damon-option.patch
 docs-vm-damon-call-low-level-monitoring-primitives-the-operations.patch
 docs-vm-damon-design-update-damon-idle-page-tracking-interference-handling.patch
 docs-damon-update-outdated-term-regions-update-interval.patch
+#
+mm-damon-core-allow-non-exclusive-damon-start-stop.patch
+mm-damon-core-add-number-of-each-enum-type-values.patch
+mm-damon-implement-a-minimal-stub-for-sysfs-based-damon-interface.patch
+mm-damon-implement-a-minimal-stub-for-sysfs-based-damon-interface-fix.patch
+mm-damon-sysfs-link-damon-for-virtual-address-spaces-monitoring.patch
+mm-damon-sysfs-support-the-physical-address-space-monitoring.patch
+mm-damon-sysfs-support-damon-based-operation-schemes.patch
+mm-damon-sysfs-support-damos-quotas.patch
+mm-damon-sysfs-support-schemes-prioritization.patch
+mm-damon-sysfs-support-damos-watermarks.patch
+mm-damon-sysfs-support-damos-watermarks-fix.patch
+mm-damon-sysfs-support-damos-stats.patch
+selftests-damon-add-a-test-for-damon-sysfs-interface.patch
+docs-admin-guide-mm-damon-usage-document-damon-sysfs-interface.patch
+docs-abi-testing-add-damon-sysfs-interface-abi-document.patch
 #
 # mmend
 #
@@ -922,13 +926,8 @@ checkpatch-add-early_param-exception-to-blank-line-after-struct-function-test.pa
 #NEXT_PATCHES_START epoll
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START binfmt
-fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files.patch
-fs-binfmt_elf-fix-at_phdr-for-unusual-elf-files-v5.patch
-fs-binfmt_elf-refactor-load_elf_binary-function.patch
 #
-elf-fix-overflow-in-total-mapping-size-calculation.patch
 #
-binfmt-move-more-stuff-undef-config_coredump.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START list
@@ -939,6 +938,8 @@ binfmt-move-more-stuff-undef-config_coredump.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kallsyms
 kallsyms-print-module-name-in-%ps-s-case-when-kallsyms-is-disabled.patch
+#
+#kallsyms-enhance-%ps-s-b-printing-when-kallsysms-is-disabled.patch: acks? TBU
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START ramfs
@@ -1034,6 +1035,9 @@ fat-use-pointer-to-simple-type-in-put_user.patch
 #NEXT_PATCHES_START cpusets
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START cgroups
+cgroup-use-irqsave-in-cgroup_rstat_flush_locked.patch
+cgroup-use-irqsave-in-cgroup_rstat_flush_locked-fix.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START crash_dump
 #NEXT_PATCHES_END
@@ -1059,9 +1063,6 @@ fat-use-pointer-to-simple-type-in-put_user.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START exec
-exec-force-single-empty-string-when-argv-is-empty.patch
-exec-force-single-empty-string-when-argv-is-empty-fix.patch
-selftests-exec-test-for-empty-string-on-null-argv.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START wait
@@ -1168,6 +1169,8 @@ kasan-no-need-to-unset-panic_on_warn-in-end_report.patch
 docs-sysctl-kernel-add-missing-bit-to-panic_print.patch
 docs-sysctl-kernel-add-missing-bit-to-panic_print-fix.patch
 panic-add-option-to-dump-all-cpus-backtraces-in-panic_print.patch
+#
+panic-move-panic_print-before-kmsg-dumpers.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START parport
@@ -1309,15 +1312,37 @@ ipc-mqueue-use-get_tree_nodev-in-mqueue_get_tree.patch
 # next
 linux-next.patch
 linux-next-rejects.patch
-linux-next-git-rejects.patch
 drivers-gpu-drm-dp-drm_dpc-fix-build.patch
 #NEXT_PATCHES_START linux-next-post
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-urgent
+arch-x86-kernel-resourcec-needs-spinlockh.patch
+#
+mm-oom_killc-fix-vm_oom_kill_table-ifdeffery.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-resolution
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START post-linux-next
+#
+#
+#mm/rmap
+mm-rmap-fix-cache-flush-on-thp-pages.patch
+dax-fix-cache-flush-on-pmd-mapped-pages.patch
+mm-rmap-introduce-pfn_mkclean_range-to-cleans-ptes.patch
+mm-pvmw-add-support-for-walking-devmap-pages.patch
+dax-fix-missing-writeprotect-the-pte-entry.patch
+mm-remove-range-parameter-from-follow_invalidate_pte.patch
+#
+#mm/madvise
+#mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch: check review
+mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch
+mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read-v4.patch
+#
+#mm/folios
+#
+#mm/migration
+mm-migration-add-trace-events-for-thp-migrations.patch
+mm-migration-add-trace-events-for-base-page-and-hugetlb-migrations.patch
 #
 #mm/kasan
 kasan-page_alloc-deduplicate-should_skip_kasan_poison.patch
@@ -1344,6 +1369,7 @@ kasan-vmalloc-reset-tags-in-vmalloc-functions.patch
 kasan-fork-reset-pointer-tags-of-vmapped-stacks.patch
 kasan-arm64-reset-pointer-tags-of-vmapped-stacks.patch
 kasan-fork-reset-pointer-tags-of-vmapped-stacks-fix.patch
+kasan-fork-reset-pointer-tags-of-vmapped-stacks-fix-2.patch
 kasan-vmalloc-add-vmalloc-tagging-for-sw_tags.patch
 kasan-vmalloc-arm64-mark-vmalloc-mappings-as-pgprot_tagged.patch
 kasan-vmalloc-unpoison-vm_alloc-pages-after-mapping.patch
@@ -1352,6 +1378,8 @@ kasan-page_alloc-allow-skipping-unpoisoning-for-hw_tags.patch
 kasan-page_alloc-allow-skipping-memory-init-for-hw_tags.patch
 kasan-vmalloc-add-vmalloc-tagging-for-hw_tags.patch
 kasan-vmalloc-only-tag-normal-vmalloc-allocations.patch
+kasan-vmalloc-only-tag-normal-vmalloc-allocations-fix.patch
+kasan-vmalloc-only-tag-normal-vmalloc-allocations-fix-fix.patch
 kasan-arm64-dont-tag-executable-vmalloc-allocations.patch
 kasan-mark-kasan_arg_stacktrace-as-__initdata.patch
 kasan-clean-up-feature-flags-for-hw_tags-mode.patch
@@ -1373,8 +1401,29 @@ kasan-update-function-name-in-comments.patch
 #
 kasan-print-virtual-mapping-info-in-reports.patch
 #
-#mm/rmap
-mm-rmap-fix-argument-list-that-the-kdoc-format-and-script-verified.patch
+kasan-drop-addr-check-from-describe_object_addr.patch
+kasan-more-line-breaks-in-reports.patch
+kasan-rearrange-stack-frame-info-in-reports.patch
+kasan-improve-stack-frame-info-in-reports.patch
+kasan-print-basic-stack-frame-info-for-sw_tags.patch
+#kasan-simplify-async-check-in-end_report.patch: check review
+kasan-simplify-async-check-in-end_report.patch
+kasan-simplify-kasan_update_kunit_status-and-call-sites.patch
+kasan-check-config_kasan_kunit_test-instead-of-config_kunit.patch
+kasan-move-update_kunit_status-to-start_report.patch
+kasan-move-disable_trace_on_warning-to-start_report.patch
+kasan-split-out-print_report-from-__kasan_report.patch
+kasan-simplify-kasan_find_first_bad_addr-call-sites.patch
+kasan-restructure-kasan_report.patch
+kasan-merge-__kasan_report-into-kasan_report.patch
+kasan-call-print_report-from-kasan_report_invalid_free.patch
+kasan-move-and-simplify-kasan_report_async.patch
+kasan-rename-kasan_access_info-to-kasan_report_info.patch
+kasan-add-comment-about-uaccess-regions-to-kasan_report.patch
+kasan-respect-kasan_bit_reported-in-all-reporting-routines.patch
+kasan-reorder-reporting-functions.patch
+kasan-move-and-hide-kasan_save_enable-restore_multi_shot.patch
+kasan-disable-lockdep-when-printing-reports.patch
 #
 #mm/mlock
 #mm-munlock-rmap-call-mlock_vma_page-munlock_vma_page.patch: https://lkml.kernel.org/r/ee50d553-e183-eaae-eed2-c4823a30f693@intel.com
@@ -1383,6 +1432,8 @@ mm-rmap-fix-argument-list-that-the-kdoc-format-and-script-verified.patch
 mm-enable-madv_dontneed-for-hugetlb-mappings.patch
 selftests-vm-add-hugetlb-madvise-madv_dontneed-madv_remove-test.patch
 userfaultfd-selftests-enable-hugetlb-remap-and-remove-event-testing.patch
+#
+mm-huge_memory-make-is_transparent_hugepage-static.patch
 #
 #mm/hmm
 #mm-add-zone-device-coherent-type-memory-support.patch: TBU?
@@ -1403,8 +1454,11 @@ selftests-vm-remove-dependecy-from-internal-kernel-macros.patch
 #
 selftests-kselftest-framework-provide-finished-helper.patch
 #
+#selftests-vm-add-test-for-soft-dirty-pte-bit.patch: check review, TBU
+selftests-vm-add-test-for-soft-dirty-pte-bit.patch
 #
-#mm/selftests
+kselftest-vm-override-targets-from-arguments.patch
+kselftest-vm-fix-tests-build-with-old-libc.patch
 #
 #sysctl
 #
@@ -1604,3 +1658,87 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]mm-hwpoison-add-in-use-hugepage-hwpoison-filter-judgement.patch
 #[wrecked]selftest-vm-add-utilh-and-and-move-helper-functions-there.patch
 #[wrecked]selftest-vm-add-helpers-to-detect-page_size-and-page_shift.patch
+#[alternative-merged]fix-shmem-huge-page-failed-to-set-f_seal_write-attribute-problem.patch
+#[to-be-updated]mm-memcg-revert-mm-memcg-optimize-user-context-object-stock-access.patch
+#[to-be-updated]mm-memcg-disable-threshold-event-handlers-on-preempt_rt.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix-2.patch
+#[to-be-updated]mm-memcg-opencode-the-inner-part-of-obj_cgroup_uncharge_pages-in-drain_obj_stock.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t-fix.patch
+#[to-be-updated]mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock.patch
+#[to-be-updated]mm-memcg-revert-mm-memcg-optimize-user-context-object-stock-access.patch
+#[to-be-updated]mm-memcg-revert-mm-memcg-optimize-user-context-object-stock-access.patch
+#[to-be-updated]mm-memcg-disable-threshold-event-handlers-on-preempt_rt.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix-2.patch
+#[to-be-updated]mm-memcg-opencode-the-inner-part-of-obj_cgroup_uncharge_pages-in-drain_obj_stock.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t-fix.patch
+#[to-be-updated]mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock.patch
+#[to-be-updated]mm-memcg-revert-mm-memcg-optimize-user-context-object-stock-access.patch
+#[to-be-updated]mm-memcg-disable-threshold-event-handlers-on-preempt_rt.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix-2.patch
+#[to-be-updated]mm-memcg-opencode-the-inner-part-of-obj_cgroup_uncharge_pages-in-drain_obj_stock.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t-fix.patch
+#[to-be-updated]mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock.patch
+#[to-be-updated]mm-memcg-revert-mm-memcg-optimize-user-context-object-stock-access.patch
+#[to-be-updated]mm-memcg-disable-threshold-event-handlers-on-preempt_rt.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix.patch
+#[to-be-updated]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-fix-2.patch
+#[to-be-updated]mm-memcg-opencode-the-inner-part-of-obj_cgroup_uncharge_pages-in-drain_obj_stock.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t.patch
+#[to-be-updated]mm-memcg-protect-memcg_stock-with-a-local_lock_t-fix.patch
+#[to-be-updated]mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock.patch
+#[obsolete]mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed-v5.patch
+#[obsolete]linux-next-git-rejects.patch
+#[to-be-updated]mm-debug_vm_pgtable-drop-protection_map-usage.patch
+#[to-be-updated]mm-mmap-clarify-protection_map-indices.patch
+#[to-be-updated]mm-mmap-add-new-config-arch_has_vm_get_page_prot.patch
+#[to-be-updated]powerpc-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]arm64-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]sparc-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]mips-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]m68k-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]arm-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]x86-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]x86-mm-enable-arch_has_vm_get_page_prot-fix.patch
+#[to-be-updated]mm-mmap-drop-protection_map.patch
+#[to-be-updated]mm-mmap-drop-arch_filter_pgprot.patch
+#[to-be-updated]mm-mmap-drop-arch_vm_get_page_pgprot.patch
+#[to-be-updated]s390-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]riscv-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]alpha-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]sh-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]arc-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]csky-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]extensa-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]parisc-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]openrisc-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]um-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]microblaze-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]nios2-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]hexagon-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]nds32-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]ia64-mm-enable-arch_has_vm_get_page_prot.patch
+#[to-be-updated]mm-mmap-drop-generic-vm_get_page_prot.patch
+#[to-be-updated]mm-mmap-drop-arch_has_vm_get_page_prot.patch
+#[merged]nfs42-use-a-specific-kmem_cache-to-allocate-nfs4_xattr_entry.patch
+#[to-be-updated]mm-rmap-fix-cache-flush-on-thp-pages.patch
+#[to-be-updated]dax-fix-cache-flush-on-pmd-mapped-pages.patch
+#[to-be-updated]mm-rmap-introduce-pfn_mkclean_range-to-cleans-ptes.patch
+#[to-be-updated]mm-pvmw-add-support-for-walking-devmap-pages.patch
+#[to-be-updated]dax-fix-missing-writeprotect-the-pte-entry.patch
+#[to-be-updated]mm-remove-range-parameter-from-follow_invalidate_pte.patch
+#[nacked]scripts-checkpatchpl-remove-_deferred-and-_deferred_once-false-warning.patch
+#[alternative-merged]mm-migrate-fix-remove_migration_pte-of-hugetlb-entry.patch
+#[merged]mm-thp-fix-collapse_files-try_to_unmapfolio.patch
+#[withdrawn]lib-stackdepot-use-page-allocator-if-both-slab-and-memblock-is-unavailable.patch
+#[folded-merged]kallsyms-enhance-%ps-s-b-printing-when-kallsysms-is-disabled-fix.patch
+#[to-be-updated]kallsyms-enhance-%ps-s-b-printing-when-kallsysms-is-disabled.patch

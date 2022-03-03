@@ -1,0 +1,55 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: rmap: fix cache flush on THP pages
+
+Patch series "Fix some bugs related to rmap and dax", v4.
+
+Patches 1-2 fix a cache flush bug.  Because subsequent patches depend on
+those changes, they are placed in this series.  Patches 3-4 are
+preparation for fixing a dax bug in patch 5.  Patch 6 is a code cleanup
+since the previous patch removed the usage of follow_invalidate_pte().
+
+
+This patch (of 6):
+
+The flush_cache_page() only remove a PAGE_SIZE sized range from the cache.
+However, it does not cover the full pages in a THP except a head page. 
+Replace it with flush_cache_range() to fix this issue.  At least, no
+problems were found due to this.  Maybe because the architectures that
+have virtual indexed caches is less.
+
+Link: https://lkml.kernel.org/r/20220302082718.32268-1-songmuchun@bytedance.com
+Link: https://lkml.kernel.org/r/20220302082718.32268-2-songmuchun@bytedance.com
+Fixes: f27176cfc363 ("mm: convert page_mkclean_one() to use page_vma_mapped_walk()")
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Ross Zwisler <zwisler@kernel.org>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/rmap.c~mm-rmap-fix-cache-flush-on-thp-pages
++++ a/mm/rmap.c
+@@ -968,7 +968,8 @@ static bool page_mkclean_one(struct foli
+ 			if (!pmd_dirty(*pmd) && !pmd_write(*pmd))
+ 				continue;
+ 
+-			flush_cache_page(vma, address, folio_pfn(folio));
++			flush_cache_range(vma, address,
++					  address + HPAGE_PMD_SIZE);
+ 			entry = pmdp_invalidate(vma, address, pmd);
+ 			entry = pmd_wrprotect(entry);
+ 			entry = pmd_mkclean(entry);
+_

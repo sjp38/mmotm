@@ -1,0 +1,106 @@
+From: Muchun Song <songmuchun@bytedance.com>
+Subject: mm: remove range parameter from follow_invalidate_pte()
+
+The only user (DAX) of range parameter of follow_invalidate_pte() is gone,
+it safe to remove the range parameter and make it static to simlify the
+code.
+
+Link: https://lkml.kernel.org/r/20220302082718.32268-7-songmuchun@bytedance.com
+Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Alistair Popple <apopple@nvidia.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Ralph Campbell <rcampbell@nvidia.com>
+Cc: Ross Zwisler <zwisler@kernel.org>
+Cc: Xiongchun Duan <duanxiongchun@bytedance.com>
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mm.h |    3 ---
+ mm/memory.c        |   23 +++--------------------
+ 2 files changed, 3 insertions(+), 23 deletions(-)
+
+--- a/include/linux/mm.h~mm-remove-range-parameter-from-follow_invalidate_pte
++++ a/include/linux/mm.h
+@@ -1850,9 +1850,6 @@ void free_pgd_range(struct mmu_gather *t
+ 		unsigned long end, unsigned long floor, unsigned long ceiling);
+ int
+ copy_page_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma);
+-int follow_invalidate_pte(struct mm_struct *mm, unsigned long address,
+-			  struct mmu_notifier_range *range, pte_t **ptepp,
+-			  pmd_t **pmdpp, spinlock_t **ptlp);
+ int follow_pte(struct mm_struct *mm, unsigned long address,
+ 	       pte_t **ptepp, spinlock_t **ptlp);
+ int follow_pfn(struct vm_area_struct *vma, unsigned long address,
+--- a/mm/memory.c~mm-remove-range-parameter-from-follow_invalidate_pte
++++ a/mm/memory.c
+@@ -4890,9 +4890,8 @@ int __pmd_alloc(struct mm_struct *mm, pu
+ }
+ #endif /* __PAGETABLE_PMD_FOLDED */
+ 
+-int follow_invalidate_pte(struct mm_struct *mm, unsigned long address,
+-			  struct mmu_notifier_range *range, pte_t **ptepp,
+-			  pmd_t **pmdpp, spinlock_t **ptlp)
++static int follow_invalidate_pte(struct mm_struct *mm, unsigned long address,
++				 pte_t **ptepp, pmd_t **pmdpp, spinlock_t **ptlp)
+ {
+ 	pgd_t *pgd;
+ 	p4d_t *p4d;
+@@ -4919,31 +4918,17 @@ int follow_invalidate_pte(struct mm_stru
+ 		if (!pmdpp)
+ 			goto out;
+ 
+-		if (range) {
+-			mmu_notifier_range_init(range, MMU_NOTIFY_CLEAR, 0,
+-						NULL, mm, address & PMD_MASK,
+-						(address & PMD_MASK) + PMD_SIZE);
+-			mmu_notifier_invalidate_range_start(range);
+-		}
+ 		*ptlp = pmd_lock(mm, pmd);
+ 		if (pmd_huge(*pmd)) {
+ 			*pmdpp = pmd;
+ 			return 0;
+ 		}
+ 		spin_unlock(*ptlp);
+-		if (range)
+-			mmu_notifier_invalidate_range_end(range);
+ 	}
+ 
+ 	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+ 		goto out;
+ 
+-	if (range) {
+-		mmu_notifier_range_init(range, MMU_NOTIFY_CLEAR, 0, NULL, mm,
+-					address & PAGE_MASK,
+-					(address & PAGE_MASK) + PAGE_SIZE);
+-		mmu_notifier_invalidate_range_start(range);
+-	}
+ 	ptep = pte_offset_map_lock(mm, pmd, address, ptlp);
+ 	if (!pte_present(*ptep))
+ 		goto unlock;
+@@ -4951,8 +4936,6 @@ int follow_invalidate_pte(struct mm_stru
+ 	return 0;
+ unlock:
+ 	pte_unmap_unlock(ptep, *ptlp);
+-	if (range)
+-		mmu_notifier_invalidate_range_end(range);
+ out:
+ 	return -EINVAL;
+ }
+@@ -4981,7 +4964,7 @@ out:
+ int follow_pte(struct mm_struct *mm, unsigned long address,
+ 	       pte_t **ptepp, spinlock_t **ptlp)
+ {
+-	return follow_invalidate_pte(mm, address, NULL, ptepp, NULL, ptlp);
++	return follow_invalidate_pte(mm, address, ptepp, NULL, ptlp);
+ }
+ EXPORT_SYMBOL_GPL(follow_pte);
+ 
+_

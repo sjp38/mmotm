@@ -42,6 +42,7 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: Shuah Khan <skhan@linuxfoundation.org>
 Cc: Xin Hao <xhao@linux.alibaba.com>
+Cc: Colin Ian King <colin.i.king@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
@@ -296,7 +297,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static ssize_t action_show(struct kobject *kobj, struct kobj_attribute *attr,
-@@ -1803,6 +2012,7 @@ static struct damos *damon_sysfs_mk_sche
+@@ -1805,6 +2014,7 @@ static struct damos *damon_sysfs_mk_sche
  		sysfs_scheme->access_pattern;
  	struct damon_sysfs_quotas *sysfs_quotas = sysfs_scheme->quotas;
  	struct damon_sysfs_weights *sysfs_weights = sysfs_quotas->weights;
@@ -304,7 +305,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct damos_quota quota = {
  		.ms = sysfs_quotas->ms,
  		.sz = sysfs_quotas->sz,
-@@ -1812,11 +2022,11 @@ static struct damos *damon_sysfs_mk_sche
+@@ -1814,11 +2024,11 @@ static struct damos *damon_sysfs_mk_sche
  		.weight_age = sysfs_weights->age,
  	};
  	struct damos_watermarks wmarks = {

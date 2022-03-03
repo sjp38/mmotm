@@ -43,18 +43,20 @@ test results shows that the pmbench score can improve up to 95.9%.
 
 This patch (of 3):
 
-In a system with multiple memory types, e.g.  DRAM and PMEM, the CPU and
-DRAM in one socket will be put in one NUMA node as before, while the PMEM
-will be put in another NUMA node as described in the description of the
-commit c221c0b0308f ("device-dax: "Hotplug" persistent memory for use like
-normal RAM").  So, the NUMA balancing mechanism will identify all PMEM
-accesses as remote access and try to promote the PMEM pages to DRAM.
+In a system with multiple memory types, e.g.  DRAM and PMEM, the CPU
+and DRAM in one socket will be put in one NUMA node as before, while
+the PMEM will be put in another NUMA node as described in the
+description of the commit c221c0b0308f ("device-dax: "Hotplug"
+persistent memory for use like normal RAM").  So, the NUMA balancing
+mechanism will identify all PMEM accesses as remote access and try to
+promote the PMEM pages to DRAM.
 
 To distinguish the number of the inter-type promoted pages from that of
 the inter-socket migrated pages.  A new vmstat count is added.  The
 counter is per-node (count in the target node).  So this can be used to
 identify promotion imbalance among the NUMA nodes.
 
+Link: https://lkml.kernel.org/r/20220301085329.3210428-1-ying.huang@intel.com
 Link: https://lkml.kernel.org/r/20220221084529.1052339-1-ying.huang@intel.com
 Link: https://lkml.kernel.org/r/20220221084529.1052339-2-ying.huang@intel.com
 Signed-off-by: "Huang, Ying" <ying.huang@intel.com>
@@ -109,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* _LINUX_NODE_H_ */
 --- a/mm/migrate.c~numa-balancing-add-page-promotion-counter
 +++ a/mm/migrate.c
-@@ -2080,6 +2080,7 @@ int migrate_misplaced_page(struct page *
+@@ -2078,6 +2078,7 @@ int migrate_misplaced_page(struct page *
  	pg_data_t *pgdat = NODE_DATA(node);
  	int isolated;
  	int nr_remaining;
@@ -117,7 +119,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	LIST_HEAD(migratepages);
  	new_page_t *new;
  	bool compound;
-@@ -2118,7 +2119,8 @@ int migrate_misplaced_page(struct page *
+@@ -2116,7 +2117,8 @@ int migrate_misplaced_page(struct page *
  
  	list_add(&page->lru, &migratepages);
  	nr_remaining = migrate_pages(&migratepages, *new, NULL, node,
@@ -127,7 +129,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (nr_remaining) {
  		if (!list_empty(&migratepages)) {
  			list_del(&page->lru);
-@@ -2127,8 +2129,13 @@ int migrate_misplaced_page(struct page *
+@@ -2125,8 +2127,13 @@ int migrate_misplaced_page(struct page *
  			putback_lru_page(page);
  		}
  		isolated = 0;

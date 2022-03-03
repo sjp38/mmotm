@@ -1,0 +1,143 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: move update_kunit_status to start_report
+
+Instead of duplicating calls to update_kunit_status() in every error
+report routine, call it once in start_report().  Pass the sync flag as an
+additional argument to start_report().
+
+Link: https://lkml.kernel.org/r/cae5c845a0b6f3c867014e53737cdac56b11edc7.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/report.c |   75 +++++++++++++++++++-------------------------
+ 1 file changed, 34 insertions(+), 41 deletions(-)
+
+--- a/mm/kasan/report.c~kasan-move-update_kunit_status-to-start_report
++++ a/mm/kasan/report.c
+@@ -98,13 +98,40 @@ static void print_error_description(stru
+ 			info->access_addr, current->comm, task_pid_nr(current));
+ }
+ 
++#if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST)
++static void update_kunit_status(bool sync)
++{
++	struct kunit *test;
++	struct kunit_resource *resource;
++	struct kunit_kasan_status *status;
++
++	test = current->kunit_test;
++	if (!test)
++		return;
++
++	resource = kunit_find_named_resource(test, "kasan_status");
++	if (!resource) {
++		kunit_set_failure(test);
++		return;
++	}
++
++	status = (struct kunit_kasan_status *)resource->data;
++	WRITE_ONCE(status->report_found, true);
++	WRITE_ONCE(status->sync_fault, sync);
++
++	kunit_put_resource(resource);
++}
++#else
++static void update_kunit_status(bool sync) { }
++#endif
++
+ static DEFINE_SPINLOCK(report_lock);
+ 
+-static void start_report(unsigned long *flags)
++static void start_report(unsigned long *flags, bool sync)
+ {
+-	/*
+-	 * Make sure we don't end up in loop.
+-	 */
++	/* Update status of the currently running KASAN test. */
++	update_kunit_status(sync);
++	/* Make sure we don't end up in loop. */
+ 	kasan_disable_current();
+ 	spin_lock_irqsave(&report_lock, *flags);
+ 	pr_err("==================================================================\n");
+@@ -356,33 +383,6 @@ static bool report_enabled(void)
+ 	return !test_and_set_bit(KASAN_BIT_REPORTED, &kasan_flags);
+ }
+ 
+-#if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST)
+-static void update_kunit_status(bool sync)
+-{
+-	struct kunit *test;
+-	struct kunit_resource *resource;
+-	struct kunit_kasan_status *status;
+-
+-	test = current->kunit_test;
+-	if (!test)
+-		return;
+-
+-	resource = kunit_find_named_resource(test, "kasan_status");
+-	if (!resource) {
+-		kunit_set_failure(test);
+-		return;
+-	}
+-
+-	status = (struct kunit_kasan_status *)resource->data;
+-	WRITE_ONCE(status->report_found, true);
+-	WRITE_ONCE(status->sync_fault, sync);
+-
+-	kunit_put_resource(resource);
+-}
+-#else
+-static void update_kunit_status(bool sync) { }
+-#endif
+-
+ void kasan_report_invalid_free(void *object, unsigned long ip)
+ {
+ 	unsigned long flags;
+@@ -390,9 +390,7 @@ void kasan_report_invalid_free(void *obj
+ 
+ 	object = kasan_reset_tag(object);
+ 
+-	update_kunit_status(true);
+-
+-	start_report(&flags);
++	start_report(&flags, true);
+ 	pr_err("BUG: KASAN: double-free or invalid-free in %pS\n", (void *)ip);
+ 	kasan_print_tags(tag, object);
+ 	pr_err("\n");
+@@ -406,9 +404,7 @@ void kasan_report_async(void)
+ {
+ 	unsigned long flags;
+ 
+-	update_kunit_status(false);
+-
+-	start_report(&flags);
++	start_report(&flags, false);
+ 	pr_err("BUG: KASAN: invalid-access\n");
+ 	pr_err("Asynchronous mode enabled: no access details available\n");
+ 	pr_err("\n");
+@@ -425,9 +421,8 @@ static void __kasan_report(unsigned long
+ 	void *untagged_addr;
+ 	unsigned long flags;
+ 
+-	update_kunit_status(true);
+-
+ 	disable_trace_on_warning();
++	start_report(&flags, true);
+ 
+ 	tagged_addr = (void *)addr;
+ 	untagged_addr = kasan_reset_tag(tagged_addr);
+@@ -442,8 +437,6 @@ static void __kasan_report(unsigned long
+ 	info.is_write = is_write;
+ 	info.ip = ip;
+ 
+-	start_report(&flags);
+-
+ 	print_error_description(&info);
+ 	if (addr_has_metadata(untagged_addr))
+ 		kasan_print_tags(get_tag(tagged_addr), info.first_bad_addr);
+_

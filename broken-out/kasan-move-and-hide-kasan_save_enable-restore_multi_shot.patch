@@ -1,0 +1,101 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: move and hide kasan_save_enable/restore_multi_shot
+
+- Move kasan_save_enable/restore_multi_shot() declarations to
+  mm/kasan/kasan.h, as there is no need for them to be visible outside
+  of KASAN implementation.
+
+- Only define and export these functions when KASAN tests are enabled.
+
+- Move their definitions closer to other test-related code in report.c.
+
+Link: https://lkml.kernel.org/r/6ba637333b78447f027d775f2d55ab1a40f63c99.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kasan.h |    4 ----
+ mm/kasan/kasan.h      |    7 +++++++
+ mm/kasan/report.c     |   30 +++++++++++++++++-------------
+ 3 files changed, 24 insertions(+), 17 deletions(-)
+
+--- a/include/linux/kasan.h~kasan-move-and-hide-kasan_save_enable-restore_multi_shot
++++ a/include/linux/kasan.h
+@@ -267,10 +267,6 @@ static __always_inline bool kasan_check_
+ 	return true;
+ }
+ 
+-
+-bool kasan_save_enable_multi_shot(void);
+-void kasan_restore_multi_shot(bool enabled);
+-
+ #else /* CONFIG_KASAN */
+ 
+ static inline slab_flags_t kasan_never_merge(void)
+--- a/mm/kasan/kasan.h~kasan-move-and-hide-kasan_save_enable-restore_multi_shot
++++ a/mm/kasan/kasan.h
+@@ -492,6 +492,13 @@ static inline bool kasan_arch_is_ready(v
+ #error kasan_arch_is_ready only works in KASAN generic outline mode!
+ #endif
+ 
++#if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST) || IS_ENABLED(CONFIG_KASAN_MODULE_TEST)
++
++bool kasan_save_enable_multi_shot(void);
++void kasan_restore_multi_shot(bool enabled);
++
++#endif
++
+ /*
+  * Exported functions for interfaces called from assembly or from generated
+  * code. Declarations here to avoid warning about missing declarations.
+--- a/mm/kasan/report.c~kasan-move-and-hide-kasan_save_enable-restore_multi_shot
++++ a/mm/kasan/report.c
+@@ -64,19 +64,6 @@ static int __init early_kasan_fault(char
+ }
+ early_param("kasan.fault", early_kasan_fault);
+ 
+-bool kasan_save_enable_multi_shot(void)
+-{
+-	return test_and_set_bit(KASAN_BIT_MULTI_SHOT, &kasan_flags);
+-}
+-EXPORT_SYMBOL_GPL(kasan_save_enable_multi_shot);
+-
+-void kasan_restore_multi_shot(bool enabled)
+-{
+-	if (!enabled)
+-		clear_bit(KASAN_BIT_MULTI_SHOT, &kasan_flags);
+-}
+-EXPORT_SYMBOL_GPL(kasan_restore_multi_shot);
+-
+ static int __init kasan_set_multi_shot(char *str)
+ {
+ 	set_bit(KASAN_BIT_MULTI_SHOT, &kasan_flags);
+@@ -109,6 +96,23 @@ static bool report_enabled(void)
+ 	return !test_and_set_bit(KASAN_BIT_REPORTED, &kasan_flags);
+ }
+ 
++#if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST) || IS_ENABLED(CONFIG_KASAN_MODULE_TEST)
++
++bool kasan_save_enable_multi_shot(void)
++{
++	return test_and_set_bit(KASAN_BIT_MULTI_SHOT, &kasan_flags);
++}
++EXPORT_SYMBOL_GPL(kasan_save_enable_multi_shot);
++
++void kasan_restore_multi_shot(bool enabled)
++{
++	if (!enabled)
++		clear_bit(KASAN_BIT_MULTI_SHOT, &kasan_flags);
++}
++EXPORT_SYMBOL_GPL(kasan_restore_multi_shot);
++
++#endif
++
+ #if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST)
+ static void update_kunit_status(bool sync)
+ {
+_

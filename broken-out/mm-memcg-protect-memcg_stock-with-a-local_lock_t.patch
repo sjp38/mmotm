@@ -1,26 +1,23 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: Protect memcg_stock with a local_lock_t
+Subject: mm/memcg: protect memcg_stock with a local_lock_t
 
 The members of the per-CPU structure memcg_stock_pcp are protected by
-disabling interrupts. This is not working on PREEMPT_RT because it
+disabling interrupts.  This is not working on PREEMPT_RT because it
 creates atomic context in which actions are performed which require
-preemptible context. One example is obj_cgroup_release().
+preemptible context.  One example is obj_cgroup_release().
 
-The IRQ-disable sections can be replaced with local_lock_t which
-preserves the explicit disabling of interrupts while keeps the code
-preemptible on PREEMPT_RT.
+The IRQ-disable sections can be replaced with local_lock_t which preserves
+the explicit disabling of interrupts while keeps the code preemptible on
+PREEMPT_RT.
 
-drain_obj_stock() drops a reference on obj_cgroup which leads to an invocat=
-ion
-of obj_cgroup_release() if it is the last object. This in turn leads to
-recursive locking of the local_lock_t. To avoid this, obj_cgroup_release() =
-is
-invoked outside of the locked section.
+drain_obj_stock() drops a reference on obj_cgroup which leads to an
+invocat= ion of obj_cgroup_release() if it is the last object.  This in
+turn leads to recursive locking of the local_lock_t.  To avoid this,
+obj_cgroup_release() = is invoked outside of the locked section.
 
-obj_cgroup_uncharge_pages() can be invoked with the local_lock_t acquired a=
-nd
-without it. This will lead later to a recursion in refill_stock(). To
-avoid the locking recursion provide obj_cgroup_uncharge_pages_locked()
+obj_cgroup_uncharge_pages() can be invoked with the local_lock_t acquired
+a= nd without it.  This will lead later to a recursion in refill_stock(). 
+To avoid the locking recursion provide obj_cgroup_uncharge_pages_locked()
 which uses the locked version of refill_stock().
 
 - Replace disabling interrupts for memcg_stock with a local_lock_t.
@@ -34,8 +31,17 @@ which uses the locked version of refill_stock().
 
 Link: https://lkml.kernel.org/r/20220209014709.GA26885@xsang-OptiPlex-9020
 Link: https://lkml.kernel.org/r/20220226204144.1008339-6-bigeasy@linutronix.de
-Reported-by: kernel test robot <oliver.sang@intel.com>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Reported-by: kernel test robot <oliver.sang@intel.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Michal Koutný <mkoutny@suse.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Waiman Long <longman@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

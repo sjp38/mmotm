@@ -1,23 +1,26 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: mm/memcg: Opencode the inner part of obj_cgroup_uncharge_pages() in drain_obj_stock()
-
 From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: mm/memcg: opencode the inner part of obj_cgroup_uncharge_pages() in drain_obj_stock()
 
 Provide the inner part of refill_stock() as __refill_stock() without
-disabling interrupts. This eases the integration of local_lock_t where
-recursive locking must be avoided.
-Open code obj_cgroup_uncharge_pages() in drain_obj_stock() and use
-__refill_stock(). The caller of drain_obj_stock() already disables
-interrupts.
+disabling interrupts.  This eases the integration of local_lock_t where
+recursive locking must be avoided.  Open code obj_cgroup_uncharge_pages()
+in drain_obj_stock() and use __refill_stock().  The caller of
+drain_obj_stock() already disables interrupts.
 
-[bigeasy: Patch body around Johannes' diff ]
-
+[bigeasy@linutronix.de: patch body around Johannes' diff]
 Link: https://lkml.kernel.org/r/20220226204144.1008339-5-bigeasy@linutronix.de
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
 Reviewed-by: Roman Gushchin <guro@fb.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
+Cc: kernel test robot <oliver.sang@intel.com>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Michal Koutný <mkoutny@suse.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
+Cc: Waiman Long <longman@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

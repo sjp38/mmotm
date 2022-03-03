@@ -1,0 +1,36 @@
+From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Subject: mm/damon/sysfs: fix missing error code in damon_sysfs_attrs_add_dirs()
+
+The error code is missing in this code scenario, add the error code
+'-ENOMEM' to the return value 'err'.
+
+Eliminate the follow smatch warning:
+
+mm/damon/sysfs.c:1647 damon_sysfs_attrs_add_dirs() warn: missing error
+code 'err'.
+
+Link: https://lkml.kernel.org/r/20220302111120.24984-1-jiapeng.chong@linux.alibaba.com
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Reviewed-by: SeongJae Park <sj@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/sysfs.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/mm/damon/sysfs.c~mm-damon-implement-a-minimal-stub-for-sysfs-based-damon-interface-fix
++++ a/mm/damon/sysfs.c
+@@ -452,8 +452,10 @@ static int damon_sysfs_attrs_add_dirs(st
+ 	attrs->intervals = intervals;
+ 
+ 	nr_regions_range = damon_sysfs_ul_range_alloc(10, 1000);
+-	if (!nr_regions_range)
++	if (!nr_regions_range) {
++		err = -ENOMEM;
+ 		goto put_intervals_out;
++	}
+ 
+ 	err = kobject_init_and_add(&nr_regions_range->kobj,
+ 			&damon_sysfs_ul_range_ktype, &attrs->kobj,
+_

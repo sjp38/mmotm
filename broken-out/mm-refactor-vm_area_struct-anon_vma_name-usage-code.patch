@@ -10,6 +10,7 @@ Link: https://lkml.kernel.org/r/20220223153613.835563-1-surenb@google.com
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 Suggested-by: Matthew Wilcox <willy@infradead.org>
 Suggested-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
 Cc: Colin Cross <ccross@google.com>
 Cc: Sumit Semwal <sumit.semwal@linaro.org>
 Cc: Dave Hansen <dave.hansen@intel.com>

@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~memcg-do-not-tweak-node-in-alloc_mem_cgroup_per_node_info
 +++ a/mm/memcontrol.c
-@@ -5114,18 +5114,8 @@ struct mem_cgroup *mem_cgroup_from_id(un
+@@ -5017,18 +5017,8 @@ struct mem_cgroup *mem_cgroup_from_id(un
  static int alloc_mem_cgroup_per_node_info(struct mem_cgroup *memcg, int node)
  {
  	struct mem_cgroup_per_node *pn;

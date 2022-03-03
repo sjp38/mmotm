@@ -1,0 +1,57 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan, scs: support tagged vmalloc mappings
+
+Fix up the custom KASAN instrumentation for Shadow Call Stack to support
+vmalloc() mappings and pointers being tagged.
+
+- Use the tagged pointer returned by kasan_unpoison_vmalloc() in
+  __scs_alloc() when calling memset() to avoid false-positives.
+
+- Do not return a tagged Shadow Call Stack pointer from __scs_alloc(),
+  as this might lead to conflicts with the instrumentation.
+
+Link: https://lkml.kernel.org/r/2f6605e3a358cf64d73a05710cb3da356886ad29.1646233925.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Marco Elver <elver@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Evgenii Stepanov <eugenis@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/scs.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+--- a/kernel/scs.c~kasan-vmalloc-only-tag-normal-vmalloc-allocations-fix-fix
++++ a/kernel/scs.c
+@@ -32,16 +32,19 @@ static void *__scs_alloc(int node)
+ 	for (i = 0; i < NR_CACHED_SCS; i++) {
+ 		s = this_cpu_xchg(scs_cache[i], NULL);
+ 		if (s) {
+-			kasan_unpoison_vmalloc(s, SCS_SIZE,
+-					       KASAN_VMALLOC_PROT_NORMAL);
++			s = kasan_unpoison_vmalloc(s, SCS_SIZE,
++						   KASAN_VMALLOC_PROT_NORMAL);
+ 			memset(s, 0, SCS_SIZE);
+-			return s;
++			goto out;
+ 		}
+ 	}
+ 
+-	return __vmalloc_node_range(SCS_SIZE, 1, VMALLOC_START, VMALLOC_END,
++	s = __vmalloc_node_range(SCS_SIZE, 1, VMALLOC_START, VMALLOC_END,
+ 				    GFP_SCS, PAGE_KERNEL, 0, node,
+ 				    __builtin_return_address(0));
++
++out:
++	return kasan_reset_tag(s);
+ }
+ 
+ void *scs_alloc(int node)
+_

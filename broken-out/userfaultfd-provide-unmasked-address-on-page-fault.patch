@@ -79,7 +79,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	uwq.waken = false;
 --- a/include/linux/mm.h~userfaultfd-provide-unmasked-address-on-page-fault
 +++ a/include/linux/mm.h
-@@ -472,7 +472,8 @@ struct vm_fault {
+@@ -478,7 +478,8 @@ struct vm_fault {
  		struct vm_area_struct *vma;	/* Target VMA */
  		gfp_t gfp_mask;			/* gfp mask to be used for allocations */
  		pgoff_t pgoff;			/* Logical page offset based on vma */
@@ -122,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	__u64 ioctls;
 --- a/mm/memory.c~userfaultfd-provide-unmasked-address-on-page-fault
 +++ a/mm/memory.c
-@@ -4637,6 +4637,7 @@ static vm_fault_t __handle_mm_fault(stru
+@@ -4633,6 +4633,7 @@ static vm_fault_t __handle_mm_fault(stru
  	struct vm_fault vmf = {
  		.vma = vma,
  		.address = address & PAGE_MASK,

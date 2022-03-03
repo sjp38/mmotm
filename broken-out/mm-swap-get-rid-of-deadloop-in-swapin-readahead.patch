@@ -49,13 +49,13 @@ Reported-by: Zeal Robot <zealci@zte.com.cn>
 Reviewed-by: Ran Xiaokai <ran.xiaokai@zte.com.cn>
 Reviewed-by: Jiang Xuexin <jiang.xuexin@zte.com.cn>
 Reviewed-by: Yang Yang <yang.yang29@zte.com.cn>
+Acked-by: Hugh Dickins <hughd@google.com>
 Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Minchan Kim <minchan@kernel.org>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Roger Quadros <rogerq@kernel.org>
 Cc: Ziliang Guo <guo.ziliang@zte.com.cn>
-Cc: Hugh Dickins <hughd@google.com>
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

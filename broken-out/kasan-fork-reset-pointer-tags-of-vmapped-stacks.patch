@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/kernel/fork.c~kasan-fork-reset-pointer-tags-of-vmapped-stacks
 +++ a/kernel/fork.c
-@@ -325,6 +325,8 @@ static int alloc_thread_stack_node(struc
+@@ -326,6 +326,8 @@ static int alloc_thread_stack_node(struc
  	 * so cache the vm_struct.
  	 */
  	tsk->stack_vm_area = vm;

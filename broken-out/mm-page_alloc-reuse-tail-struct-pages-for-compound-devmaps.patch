@@ -13,7 +13,7 @@ struct per 4K.
 
 With @vmemmap_shift > 0 and when struct pages are stored in ram (!altmap)
 most tail pages are reused.  Consequently, the amount of unique struct
-pages is a lot smaller that the total amount of struct pages being mapped.
+pages is a lot smaller than the total amount of struct pages being mapped.
 
 The altmap path is left alone since it does not support memory savings
 based on compound pages devmap.
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps
 +++ a/mm/page_alloc.c
-@@ -6622,6 +6622,20 @@ static void __ref __init_zone_device_pag
+@@ -6625,6 +6625,20 @@ static void __ref __init_zone_device_pag
  	}
  }
  
@@ -58,7 +58,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void __ref memmap_init_compound(struct page *head,
  				       unsigned long head_pfn,
  				       unsigned long zone_idx, int nid,
-@@ -6686,7 +6700,7 @@ void __ref memmap_init_zone_device(struc
+@@ -6689,7 +6703,7 @@ void __ref memmap_init_zone_device(struc
  			continue;
  
  		memmap_init_compound(page, pfn, zone_idx, nid, pgmap,

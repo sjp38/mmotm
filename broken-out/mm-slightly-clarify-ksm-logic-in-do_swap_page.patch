@@ -39,7 +39,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory.c~mm-slightly-clarify-ksm-logic-in-do_swap_page
 +++ a/mm/memory.c
-@@ -3626,21 +3626,29 @@ vm_fault_t do_swap_page(struct vm_fault
+@@ -3607,21 +3607,29 @@ vm_fault_t do_swap_page(struct vm_fault
  		goto out_release;
  	}
  

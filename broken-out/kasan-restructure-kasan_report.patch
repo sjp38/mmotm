@@ -1,0 +1,46 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: restructure kasan_report
+
+Restructure kasan_report() to make reviewing the subsequent patches
+easier.
+
+Link: https://lkml.kernel.org/r/ca28042889858b8cc4724d3d4378387f90d7a59d.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/report.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+--- a/mm/kasan/report.c~kasan-restructure-kasan_report
++++ a/mm/kasan/report.c
+@@ -457,15 +457,18 @@ static void __kasan_report(void *addr, s
+ bool kasan_report(unsigned long addr, size_t size, bool is_write,
+ 			unsigned long ip)
+ {
+-	unsigned long flags = user_access_save();
+-	bool ret = false;
++	unsigned long ua_flags = user_access_save();
++	bool ret = true;
+ 
+-	if (likely(report_enabled())) {
+-		__kasan_report((void *)addr, size, is_write, ip);
+-		ret = true;
++	if (unlikely(!report_enabled())) {
++		ret = false;
++		goto out;
+ 	}
+ 
+-	user_access_restore(flags);
++	__kasan_report((void *)addr, size, is_write, ip);
++
++out:
++	user_access_restore(ua_flags);
+ 
+ 	return ret;
+ }
+_

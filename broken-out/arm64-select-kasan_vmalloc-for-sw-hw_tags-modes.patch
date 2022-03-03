@@ -35,7 +35,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/arch/arm64/Kconfig~arm64-select-kasan_vmalloc-for-sw-hw_tags-modes
 +++ a/arch/arm64/Kconfig
-@@ -207,7 +207,7 @@ config ARM64
+@@ -208,7 +208,7 @@ config ARM64
  	select IOMMU_DMA if IOMMU_SUPPORT
  	select IRQ_DOMAIN
  	select IRQ_FORCED_THREADING

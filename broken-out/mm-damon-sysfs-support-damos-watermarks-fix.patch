@@ -1,0 +1,35 @@
+From: SeongJae Park <sj@kernel.org>
+Subject: mm/damon/sysfs: fix out-of-bound array access for wmark_metric_strs[]
+
+Commit 7a8630be880e ("mm/damon/sysfs: support DAMOS watermarks") on -mm
+tree which introduced by a patch[1] titled
+mm-damon-sysfs-support-damos-watermarks.patch allows out-of-bound access
+to damon_sysfs_wmark_metric_strs[] array due to wrong bound check.  This
+commit fixes the wrong bound check.  The issue has found by Coverity
+report for linux-next.
+
+[1] https://www.ozlabs.org/~akpm/mmotm/broken-out/mm-damon-sysfs-support-damos-watermarks.patch
+
+Addresses-Coverity: ("Out-of-bounds read")
+Link: https://lkml.kernel.org/r/20220301185619.2904-1-sj@kernel.org
+Fixes: 7a8630be880e ("mm/damon/sysfs: support DAMOS watermarks")
+Signed-off-by: SeongJae Park <sj@kernel.org>
+Cc: Colin Ian King <colin.i.king@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/damon/sysfs.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/damon/sysfs.c~mm-damon-sysfs-support-damos-watermarks-fix
++++ a/mm/damon/sysfs.c
+@@ -167,7 +167,7 @@ static ssize_t metric_store(struct kobje
+ 			struct damon_sysfs_watermarks, kobj);
+ 	enum damos_wmark_metric metric;
+ 
+-	for (metric = 0; metric <= NR_DAMOS_WMARK_METRICS; metric++) {
++	for (metric = 0; metric < NR_DAMOS_WMARK_METRICS; metric++) {
+ 		if (sysfs_streq(buf, damon_sysfs_wmark_metric_strs[metric])) {
+ 			watermarks->metric = metric;
+ 			return count;
+_

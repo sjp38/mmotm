@@ -1,0 +1,75 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: simplify kasan_find_first_bad_addr call sites
+
+Move the addr_has_metadata() check into kasan_find_first_bad_addr().
+
+Link: https://lkml.kernel.org/r/a49576f7a23283d786ba61579cb0c5057e8f0b9b.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/report.c         |    5 +----
+ mm/kasan/report_generic.c |    4 ++++
+ mm/kasan/report_hw_tags.c |    1 +
+ mm/kasan/report_sw_tags.c |    4 ++++
+ 4 files changed, 10 insertions(+), 4 deletions(-)
+
+--- a/mm/kasan/report.c~kasan-simplify-kasan_find_first_bad_addr-call-sites
++++ a/mm/kasan/report.c
+@@ -444,10 +444,7 @@ static void __kasan_report(void *addr, s
+ 	start_report(&flags, true);
+ 
+ 	info.access_addr = addr;
+-	if (addr_has_metadata(addr))
+-		info.first_bad_addr = kasan_find_first_bad_addr(addr, size);
+-	else
+-		info.first_bad_addr = addr;
++	info.first_bad_addr = kasan_find_first_bad_addr(addr, size);
+ 	info.access_size = size;
+ 	info.is_write = is_write;
+ 	info.ip = ip;
+--- a/mm/kasan/report_generic.c~kasan-simplify-kasan_find_first_bad_addr-call-sites
++++ a/mm/kasan/report_generic.c
+@@ -34,8 +34,12 @@ void *kasan_find_first_bad_addr(void *ad
+ {
+ 	void *p = addr;
+ 
++	if (!addr_has_metadata(p))
++		return p;
++
+ 	while (p < addr + size && !(*(u8 *)kasan_mem_to_shadow(p)))
+ 		p += KASAN_GRANULE_SIZE;
++
+ 	return p;
+ }
+ 
+--- a/mm/kasan/report_hw_tags.c~kasan-simplify-kasan_find_first_bad_addr-call-sites
++++ a/mm/kasan/report_hw_tags.c
+@@ -17,6 +17,7 @@
+ 
+ void *kasan_find_first_bad_addr(void *addr, size_t size)
+ {
++	/* Return the same value regardless of whether addr_has_metadata(). */
+ 	return kasan_reset_tag(addr);
+ }
+ 
+--- a/mm/kasan/report_sw_tags.c~kasan-simplify-kasan_find_first_bad_addr-call-sites
++++ a/mm/kasan/report_sw_tags.c
+@@ -35,8 +35,12 @@ void *kasan_find_first_bad_addr(void *ad
+ 	void *p = kasan_reset_tag(addr);
+ 	void *end = p + size;
+ 
++	if (!addr_has_metadata(p))
++		return p;
++
+ 	while (p < end && tag == *(u8 *)kasan_mem_to_shadow(p))
+ 		p += KASAN_GRANULE_SIZE;
++
+ 	return p;
+ }
+ 
+_

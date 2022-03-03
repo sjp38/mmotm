@@ -1,0 +1,48 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: print basic stack frame info for SW_TAGS
+
+Software Tag-Based mode tags stack allocations when CONFIG_KASAN_STACK
+is enabled. Print task name and id in reports for stack-related bugs.
+
+Link: https://lkml.kernel.org/r/029aaa87ceadde0702f3312a34697c9139c9fb53.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/kasan.h          |    2 +-
+ mm/kasan/report_sw_tags.c |   11 +++++++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+--- a/mm/kasan/kasan.h~kasan-print-basic-stack-frame-info-for-sw_tags
++++ a/mm/kasan/kasan.h
+@@ -274,7 +274,7 @@ void *kasan_find_first_bad_addr(void *ad
+ const char *kasan_get_bug_type(struct kasan_access_info *info);
+ void kasan_metadata_fetch_row(char *buffer, void *row);
+ 
+-#if defined(CONFIG_KASAN_GENERIC) && defined(CONFIG_KASAN_STACK)
++#if defined(CONFIG_KASAN_STACK)
+ void kasan_print_address_stack_frame(const void *addr);
+ #else
+ static inline void kasan_print_address_stack_frame(const void *addr) { }
+--- a/mm/kasan/report_sw_tags.c~kasan-print-basic-stack-frame-info-for-sw_tags
++++ a/mm/kasan/report_sw_tags.c
+@@ -51,3 +51,14 @@ void kasan_print_tags(u8 addr_tag, const
+ 
+ 	pr_err("Pointer tag: [%02x], memory tag: [%02x]\n", addr_tag, *shadow);
+ }
++
++#ifdef CONFIG_KASAN_STACK
++void kasan_print_address_stack_frame(const void *addr)
++{
++	if (WARN_ON(!object_is_on_stack(addr)))
++		return;
++
++	pr_err("The buggy address belongs to stack of task %s/%d\n",
++	       current->comm, task_pid_nr(current));
++}
++#endif
+_

@@ -1,0 +1,39 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: kasan: move disable_trace_on_warning to start_report
+
+Move the disable_trace_on_warning() call, which enables the
+/proc/sys/kernel/traceoff_on_warning interface for KASAN bugs, to
+start_report(), so that it functions for all types of KASAN reports.
+
+Link: https://lkml.kernel.org/r/7c066c5de26234ad2cebdd931adfe437f8a95d58.1646237226.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reviewed-by: Alexander Potapenko <glider@google.com>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Marco Elver <elver@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/report.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/kasan/report.c~kasan-move-disable_trace_on_warning-to-start_report
++++ a/mm/kasan/report.c
+@@ -129,6 +129,8 @@ static DEFINE_SPINLOCK(report_lock);
+ 
+ static void start_report(unsigned long *flags, bool sync)
+ {
++	/* Respect the /proc/sys/kernel/traceoff_on_warning interface. */
++	disable_trace_on_warning();
+ 	/* Update status of the currently running KASAN test. */
+ 	update_kunit_status(sync);
+ 	/* Make sure we don't end up in loop. */
+@@ -421,7 +423,6 @@ static void __kasan_report(unsigned long
+ 	void *untagged_addr;
+ 	unsigned long flags;
+ 
+-	disable_trace_on_warning();
+ 	start_report(&flags, true);
+ 
+ 	tagged_addr = (void *)addr;
+_
