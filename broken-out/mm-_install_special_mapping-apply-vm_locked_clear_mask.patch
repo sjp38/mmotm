@@ -1,0 +1,29 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: mm: _install_special_mapping() apply VM_LOCKED_CLEAR_MASK
+
+_install_special_mapping() adds the VM_SPECIAL bit VM_DONTEXPAND (and
+never attempts to update locked_vm), so it ought to be consistent with
+mmap_region() and mlock_fixup(), making sure not to add VM_LOCKED or
+VM_LOCKONFAULT.  I doubt that this fixes any problem in practice: just do
+it for consistency.
+
+Link: https://lkml.kernel.org/r/a85315a9-21d1-6133-c5fc-c89863dfb25b@google.com
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mmap.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/mmap.c~mm-_install_special_mapping-apply-vm_locked_clear_mask
++++ a/mm/mmap.c
+@@ -3448,6 +3448,7 @@ static struct vm_area_struct *__install_
+ 	vma->vm_end = addr + len;
+ 
+ 	vma->vm_flags = vm_flags | mm->def_flags | VM_DONTEXPAND | VM_SOFTDIRTY;
++	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
+ 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+ 
+ 	vma->vm_ops = ops;
+_

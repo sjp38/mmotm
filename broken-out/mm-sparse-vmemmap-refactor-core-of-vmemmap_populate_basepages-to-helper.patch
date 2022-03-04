@@ -3,13 +3,13 @@ Subject: mm/sparse-vmemmap: refactor core of vmemmap_populate_basepages() to hel
 
 In preparation for describing a memmap with compound pages, move the
 actual pte population logic into a separate function
-vmemmap_populate_address() and have vmemmap_populate_basepages() walk
-through all base pages it needs to populate.
+vmemmap_populate_address() and have a new helper vmemmap_populate_range()
+walk through all base pages it needs to populate.
 
 While doing that, change the helper to use a pte_t* as return value,
 rather than an hardcoded errno of 0 or -ENOMEM.
 
-Link: https://lkml.kernel.org/r/20220223194807.12070-3-joao.m.martins@oracle.com
+Link: https://lkml.kernel.org/r/20220303213252.28593-3-joao.m.martins@oracle.com
 Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 Reviewed-by: Muchun Song <songmuchun@bytedance.com>
 Cc: Christoph Hellwig <hch@lst.de>
@@ -17,18 +17,18 @@ Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Jane Chu <jane.chu@oracle.com>
 Cc: Jason Gunthorpe <jgg@ziepe.ca>
 Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Vishal Verma <vishal.l.verma@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- mm/sparse-vmemmap.c |   46 ++++++++++++++++++++++++++----------------
- 1 file changed, 29 insertions(+), 17 deletions(-)
+ mm/sparse-vmemmap.c |   53 ++++++++++++++++++++++++++++--------------
+ 1 file changed, 36 insertions(+), 17 deletions(-)
 
 --- a/mm/sparse-vmemmap.c~mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper
 +++ a/mm/sparse-vmemmap.c
-@@ -570,33 +570,45 @@ pgd_t * __meminit vmemmap_pgd_populate(u
+@@ -608,38 +608,57 @@ pgd_t * __meminit vmemmap_pgd_populate(u
  	return pgd;
  }
  
@@ -64,8 +64,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	return pte;
 +}
 +
-+int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
-+					 int node, struct vmem_altmap *altmap)
++static int __meminit vmemmap_populate_range(unsigned long start,
++					    unsigned long end, int node,
++					    struct vmem_altmap *altmap)
 +{
 +	unsigned long addr = start;
 +	pte_t *pte;
@@ -91,4 +92,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	return 0;
+ }
+ 
++int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
++					 int node, struct vmem_altmap *altmap)
++{
++	return vmemmap_populate_range(start, end, node, altmap);
++}
++
+ struct page * __meminit __populate_section_memmap(unsigned long pfn,
+ 		unsigned long nr_pages, int nid, struct vmem_altmap *altmap,
+ 		struct dev_pagemap *pgmap)
 _

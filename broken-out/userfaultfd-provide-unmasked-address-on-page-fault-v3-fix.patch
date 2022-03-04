@@ -1,0 +1,30 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: userfaultfd-provide-unmasked-address-on-page-fault-v3-fix
+
+fix typo in comment, per Jan
+
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Nadav Amit <namit@vmware.com>
+Cc: Peter Xu <peterx@redhat.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/mm.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/mm.h~userfaultfd-provide-unmasked-address-on-page-fault-v3-fix
++++ a/include/linux/mm.h
+@@ -479,7 +479,7 @@ struct vm_fault {
+ 		gfp_t gfp_mask;			/* gfp mask to be used for allocations */
+ 		pgoff_t pgoff;			/* Logical page offset based on vma */
+ 		unsigned long address;		/* Faulting virtual address - masked */
+-		unsigned long real_address;	/* Faulting virtual address - unmaked */
++		unsigned long real_address;	/* Faulting virtual address - unmasked */
+ 	};
+ 	enum fault_flag flags;		/* FAULT_FLAG_xxx flags
+ 					 * XXX: should really be 'const' */
+_

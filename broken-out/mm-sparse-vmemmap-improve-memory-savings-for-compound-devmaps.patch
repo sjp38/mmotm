@@ -27,25 +27,25 @@ worth noting that altmap for devmap mappings was there to relieve the
 pressure of inordinate amounts of memmap space to map terabytes of pmem. 
 With compound pages the motivation for altmaps for pmem gets reduced.
 
-Link: https://lkml.kernel.org/r/20220223194807.12070-5-joao.m.martins@oracle.com
+Link: https://lkml.kernel.org/r/20220303213252.28593-5-joao.m.martins@oracle.com
 Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 Cc: Christoph Hellwig <hch@lst.de>
 Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Jane Chu <jane.chu@oracle.com>
 Cc: Jason Gunthorpe <jgg@ziepe.ca>
 Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Mike Kravetz <mike.kravetz@oracle.com>
 Cc: Muchun Song <songmuchun@bytedance.com>
 Cc: Vishal Verma <vishal.l.verma@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- Documentation/vm/vmemmap_dedup.rst |   56 ++++++++++
+ Documentation/vm/vmemmap_dedup.rst |   55 ++++++++++-
  include/linux/mm.h                 |    2 
  mm/memremap.c                      |    1 
- mm/sparse-vmemmap.c                |  141 +++++++++++++++++++++++++--
- 4 files changed, 188 insertions(+), 12 deletions(-)
+ mm/sparse-vmemmap.c                |  132 ++++++++++++++++++++++++---
+ 4 files changed, 176 insertions(+), 14 deletions(-)
 
 --- a/Documentation/vm/vmemmap_dedup.rst~mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps
 +++ a/Documentation/vm/vmemmap_dedup.rst
@@ -65,11 +65,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  The struct page structures (page structs) are used to describe a physical
  page frame. By default, there is a one-to-one mapping from a page frame to
-@@ -173,3 +176,50 @@ tail vmemmap pages are mapped to the hea
- more than one struct page struct with PG_head (e.g. 8 per 2 MB HugeTLB page)
- associated with each HugeTLB page. The compound_head() can handle this
- correctly (more details refer to the comment above compound_head()).
-+
+@@ -168,3 +171,49 @@ The contiguous bit is used to increase t
+ (last) level. So this type of HugeTLB page can be optimized only when its
+ size of the struct page structs is greater than 2 pages.
+ 
 +Device DAX
 +==========
 +
@@ -118,18 +117,18 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 + +-----------+
 --- a/include/linux/mm.h~mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps
 +++ a/include/linux/mm.h
-@@ -3165,7 +3165,7 @@ p4d_t *vmemmap_p4d_populate(pgd_t *pgd,
+@@ -3162,7 +3162,7 @@ p4d_t *vmemmap_p4d_populate(pgd_t *pgd,
  pud_t *vmemmap_pud_populate(p4d_t *p4d, unsigned long addr, int node);
  pmd_t *vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node);
  pte_t *vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node,
 -			    struct vmem_altmap *altmap);
-+			    struct vmem_altmap *altmap, struct page *block);
++			    struct vmem_altmap *altmap, struct page *reuse);
  void *vmemmap_alloc_block(unsigned long size, int node);
  struct vmem_altmap;
  void *vmemmap_alloc_block_buf(unsigned long size, int node,
 --- a/mm/memremap.c~mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps
 +++ a/mm/memremap.c
-@@ -320,6 +320,7 @@ void *memremap_pages(struct dev_pagemap
+@@ -321,6 +321,7 @@ void *memremap_pages(struct dev_pagemap
  {
  	struct mhp_params params = {
  		.altmap = pgmap_altmap(pgmap),
@@ -139,7 +138,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	const int nr_range = pgmap->nr_range;
 --- a/mm/sparse-vmemmap.c~mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps
 +++ a/mm/sparse-vmemmap.c
-@@ -495,16 +495,31 @@ void __meminit vmemmap_verify(pte_t *pte
+@@ -533,16 +533,31 @@ void __meminit vmemmap_verify(pte_t *pte
  }
  
  pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node,
@@ -175,7 +174,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		entry = pfn_pte(__pa(p) >> PAGE_SHIFT, PAGE_KERNEL);
  		set_pte_at(&init_mm, addr, pte, entry);
  	}
-@@ -571,7 +586,8 @@ pgd_t * __meminit vmemmap_pgd_populate(u
+@@ -609,7 +624,8 @@ pgd_t * __meminit vmemmap_pgd_populate(u
  }
  
  static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
@@ -185,7 +184,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	pgd_t *pgd;
  	p4d_t *p4d;
-@@ -591,7 +607,7 @@ static pte_t * __meminit vmemmap_populat
+@@ -629,7 +645,7 @@ static pte_t * __meminit vmemmap_populat
  	pmd = vmemmap_pmd_populate(pud, addr, node);
  	if (!pmd)
  		return NULL;
@@ -194,33 +193,29 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!pte)
  		return NULL;
  	vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
-@@ -606,9 +622,111 @@ int __meminit vmemmap_populate_basepages
+@@ -639,13 +655,14 @@ static pte_t * __meminit vmemmap_populat
+ 
+ static int __meminit vmemmap_populate_range(unsigned long start,
+ 					    unsigned long end, int node,
+-					    struct vmem_altmap *altmap)
++					    struct vmem_altmap *altmap,
++					    struct page *reuse)
+ {
+ 	unsigned long addr = start;
  	pte_t *pte;
  
  	for (; addr < end; addr += PAGE_SIZE) {
 -		pte = vmemmap_populate_address(addr, node, altmap);
-+		pte = vmemmap_populate_address(addr, node, altmap, NULL);
-+		if (!pte)
-+			return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __meminit vmemmap_populate_range(unsigned long start,
-+					    unsigned long end,
-+					    int node, struct page *page)
-+{
-+	unsigned long addr = start;
-+	pte_t *pte;
-+
-+	for (; addr < end; addr += PAGE_SIZE) {
-+		pte = vmemmap_populate_address(addr, node, NULL, page);
-+		if (!pte)
-+			return -ENOMEM;
-+	}
-+
-+	return 0;
++		pte = vmemmap_populate_address(addr, node, altmap, reuse);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 	}
+@@ -656,7 +673,95 @@ static int __meminit vmemmap_populate_ra
+ int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
+ 					 int node, struct vmem_altmap *altmap)
+ {
+-	return vmemmap_populate_range(start, end, node, altmap);
++	return vmemmap_populate_range(start, end, node, altmap, NULL);
 +}
 +
 +/*
@@ -271,14 +266,15 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +
 +	if (reuse_compound_section(start_pfn, pgmap)) {
 +		pte = compound_section_tail_page(start);
- 		if (!pte)
- 			return -ENOMEM;
++		if (!pte)
++			return -ENOMEM;
 +
 +		/*
 +		 * Reuse the page that was populated in the prior iteration
 +		 * with just tail struct pages.
 +		 */
-+		return vmemmap_populate_range(start, end, node, pte_page(*pte));
++		return vmemmap_populate_range(start, end, node, NULL,
++					      pte_page(*pte));
 +	}
 +
 +	size = min(end - start, pgmap_vmemmap_nr(pgmap) * sizeof(struct page));
@@ -301,13 +297,17 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +		 * See layout diagram in Documentation/vm/vmemmap_dedup.rst
 +		 */
 +		next += PAGE_SIZE;
-+		rc = vmemmap_populate_range(next, last, node, pte_page(*pte));
++		rc = vmemmap_populate_range(next, last, node, NULL,
++					    pte_page(*pte));
 +		if (rc)
 +			return -ENOMEM;
- 	}
++	}
++
++	return 0;
+ }
  
- 	return 0;
-@@ -620,12 +738,19 @@ struct page * __meminit __populate_secti
+ struct page * __meminit __populate_section_memmap(unsigned long pfn,
+@@ -665,12 +770,19 @@ struct page * __meminit __populate_secti
  {
  	unsigned long start = (unsigned long) pfn_to_page(pfn);
  	unsigned long end = start + nr_pages * sizeof(struct page);

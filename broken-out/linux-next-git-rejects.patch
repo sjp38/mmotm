@@ -1,0 +1,80 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next-git-rejects
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ net/dcb/dcbnl.c  |    8 --------
+ net/dsa/dsa2.c   |    4 ----
+ net/smc/af_smc.c |    6 ------
+ 3 files changed, 18 deletions(-)
+
+--- a/net/dcb/dcbnl.c~linux-next-git-rejects
++++ a/net/dcb/dcbnl.c
+@@ -2077,11 +2077,7 @@ static void dcbnl_flush_dev(struct net_d
+ {
+ 	struct dcb_app_type *itr, *tmp;
+ 
+-<<<<<<< HEAD
+-	spin_lock_bh(&dcb_lock);
+-=======
+ 	spin_lock(&dcb_lock);
+->>>>>>> linux-next/akpm-base
+ 
+ 	list_for_each_entry_safe(itr, tmp, &dcb_app_list, list) {
+ 		if (itr->ifindex == dev->ifindex) {
+@@ -2090,11 +2086,7 @@ static void dcbnl_flush_dev(struct net_d
+ 		}
+ 	}
+ 
+-<<<<<<< HEAD
+-	spin_unlock_bh(&dcb_lock);
+-=======
+ 	spin_unlock(&dcb_lock);
+->>>>>>> linux-next/akpm-base
+ }
+ 
+ static int dcbnl_netdevice_event(struct notifier_block *nb,
+--- a/net/dsa/dsa2.c~linux-next-git-rejects
++++ a/net/dsa/dsa2.c
+@@ -1294,11 +1294,7 @@ int dsa_tree_change_tag_proto(struct dsa
+ 	info.tag_ops = tag_ops;
+ 	err = dsa_tree_notify(dst, DSA_NOTIFIER_TAG_PROTO, &info);
+ 	if (err)
+-<<<<<<< HEAD
+-		goto out_unwind_tagger;
+-=======
+ 		goto out_unlock;
+->>>>>>> linux-next/akpm-base
+ 
+ 	err = dsa_tree_bind_tag_proto(dst, tag_ops);
+ 	if (err)
+--- a/net/smc/af_smc.c~linux-next-git-rejects
++++ a/net/smc/af_smc.c
+@@ -3294,25 +3294,19 @@ static int __init smc_init(void)
+ 	if (rc) {
+ 		pr_err("%s: tcp_ulp_register fails with %d\n", __func__, rc);
+ 		goto out_ib;
+-<<<<<<< HEAD
+-=======
+ 	}
+ 
+ 	rc = smc_sysctl_init();
+ 	if (rc) {
+ 		pr_err("%s: sysctl_init fails with %d\n", __func__, rc);
+ 		goto out_ulp;
+->>>>>>> linux-next/akpm-base
+ 	}
+ 
+ 	static_branch_enable(&tcp_have_smc);
+ 	return 0;
+ 
+-<<<<<<< HEAD
+-=======
+ out_ulp:
+ 	tcp_unregister_ulp(&smc_ulp_ops);
+->>>>>>> linux-next/akpm-base
+ out_ib:
+ 	smc_ib_unregister_client();
+ out_sock:
+_

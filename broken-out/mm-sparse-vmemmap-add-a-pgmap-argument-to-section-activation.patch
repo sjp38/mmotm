@@ -1,9 +1,10 @@
 From: Joao Martins <joao.m.martins@oracle.com>
 Subject: mm/sparse-vmemmap: add a pgmap argument to section activation
 
-Patch series "sparse-vmemmap: memory savings for compound devmaps (device-dax)", v6.
+Patch series "sparse-vmemmap: memory savings for compound devmaps (device-dax)", v7.
 
-This series, minimizes 'struct page' overhead by pursuing a similar
+
+This series minimizes 'struct page' overhead by pursuing a similar
 approach as Muchun Song series "Free some vmemmap pages of hugetlb page"
 (now merged since v5.14), but applied to devmap with @vmemmap_shift
 (device-dax).  
@@ -47,7 +48,7 @@ arch-specific).  altmap case unchanged and still goes via the
 vmemmap_populate().  Also adjust the newly added docs to the device-dax
 case.
 
-[Note that, device-dax is still a little behind HugeTLB in terms of
+[Note that device-dax is still a little behind HugeTLB in terms of
 savings.  I have an additional simple patch that reuses the head vmemmap
 page too, as a follow-up.  That will double the savings and namespaces
 initialization.]
@@ -86,13 +87,13 @@ While at it, fix the kdoc for @altmap for sparse_add_section().
 
 [*] https://lore.kernel.org/linux-mm/20210319092635.6214-1-osalvador@suse.de/
 
-Link: https://lkml.kernel.org/r/20220223194807.12070-1-joao.m.martins@oracle.com
-Link: https://lkml.kernel.org/r/20220223194807.12070-2-joao.m.martins@oracle.com
+Link: https://lkml.kernel.org/r/20220303213252.28593-1-joao.m.martins@oracle.com
+Link: https://lkml.kernel.org/r/20220303213252.28593-2-joao.m.martins@oracle.com
 Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 Reviewed-by: Dan Williams <dan.j.williams@intel.com>
 Reviewed-by: Muchun Song <songmuchun@bytedance.com>
 Cc: Vishal Verma <vishal.l.verma@intel.com>
-Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Jason Gunthorpe <jgg@ziepe.ca>
 Cc: Jane Chu <jane.chu@oracle.com>
 Cc: Mike Kravetz <mike.kravetz@oracle.com>
@@ -138,7 +139,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		unsigned long map_offset, struct vmem_altmap *altmap);
 --- a/include/linux/mm.h~mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation
 +++ a/include/linux/mm.h
-@@ -3158,7 +3158,8 @@ int vmemmap_remap_alloc(unsigned long st
+@@ -3155,7 +3155,8 @@ int vmemmap_remap_alloc(unsigned long st
  
  void *sparse_buffer_alloc(unsigned long size);
  struct page * __populate_section_memmap(unsigned long pfn,
@@ -254,7 +255,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/sparse-vmemmap.c~mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation
 +++ a/mm/sparse-vmemmap.c
-@@ -603,7 +603,8 @@ int __meminit vmemmap_populate_basepages
+@@ -641,7 +641,8 @@ int __meminit vmemmap_populate_basepages
  }
  
  struct page * __meminit __populate_section_memmap(unsigned long pfn,

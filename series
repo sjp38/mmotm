@@ -14,6 +14,9 @@ mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
 #memfd
 memfd-fix-f_seal_write-after-shmem-huge-page-allocated.patch
 #
+#selftests
+kselftest-vm-fix-tests-build-with-old-libc.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/pagealloc
@@ -31,6 +34,10 @@ mm-swap-get-rid-of-deadloop-in-swapin-readahead.patch
 #
 #kconfig
 configs-debug-set-config_debug_info=y-properly.patch
+#
+#selftests
+#selftests-vm-fix-clang-build-error-multiple-output-files.patch: acks?
+selftests-vm-fix-clang-build-error-multiple-output-files.patch
 #
 #mm/pagealloc
 #mm-page_alloc-add-scheduling-point-to-free_unref_page_list.patch: -stable?
@@ -360,14 +367,6 @@ mm.patch
 #mm/kconfig
 #mm/kcsan
 #mm/kmemleak
-#mm/dax
-mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation.patch
-mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper.patch
-mm-hugetlb_vmemmap-move-comment-block-to-documentation-vm.patch
-#mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch: TBU?
-mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch
-mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
-#
 #mm/kasan
 mm-memremap-avoid-calling-kasan_remove_zero_shadow-for-device-private-memory.patch
 #
@@ -502,10 +501,11 @@ mm-rework-swap-handling-of-zap_pte_range.patch
 #
 mm-mmap-return-1-from-stack_guard_gap-__setup-handler.patch
 #
-#
 mm-use-helper-function-range_in_vma.patch
 #
 mm-use-helper-macro-min-and-max-in-unmap_mapping_range_tree.patch
+#
+mm-_install_special_mapping-apply-vm_locked_clear_mask.patch
 #
 #mm/mprotect
 #mm/mremap
@@ -624,13 +624,22 @@ mm-hugetlb-use-helper-macro-__attr_rw.patch
 mm-export-pageheadhuge.patch
 mm-export-pageheadhuge-fix.patch
 #
-#mm/userfaultfd
+#mm/dax
+mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation.patch
+mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper.patch
+mm-hugetlb_vmemmap-move-comment-block-to-documentation-vm.patch
+mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch
+mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
 #
-#userfaultfd-provide-unmasked-address-on-page-fault.patch: https://lkml.kernel.org/r/20220222090002.24lg2fdhrihquzaj@quack3.lan TBU
+#mm/userfaultfd
 userfaultfd-provide-unmasked-address-on-page-fault.patch
+userfaultfd-provide-unmasked-address-on-page-fault-v3.patch
+userfaultfd-provide-unmasked-address-on-page-fault-v3-fix.patch
 #
 #mm/vmscan
 mm-workingset-replace-irq-off-check-with-a-lockdep-assert.patch
+#
+mm-lru_cache_disable-replace-work-queue-synchronization-with-synchronize_rcu.patch
 #
 #mm/tools
 #mm/proc
@@ -656,6 +665,8 @@ mmmigrate-fix-establishing-demotion-target.patch
 #
 #mm/kmap
 #mm/thp
+mm-thp-refix-__split_huge_pmd_locked-for-migration-pmd.patch
+#
 #mm/cma
 mm-cma-provide-option-to-opt-out-from-exposing-pages-on-activation-failure.patch
 powerpc-fadump-opt-out-from-freeing-pages-on-cma-activation-failure.patch
@@ -715,6 +726,8 @@ drivers-base-memory-clarify-adding-and-removing-of-memory-blocks.patch
 #mm/rmap
 #mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch: bloat!
 mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch
+#
+mm-thp-clearpagedoublemap-in-first-page_add_file_rmap.patch
 #
 #mm/zswap
 mm-zswapc-allow-handling-just-same-value-filled-pages.patch
@@ -786,6 +799,8 @@ mm-damon-sysfs-support-damos-stats.patch
 selftests-damon-add-a-test-for-damon-sysfs-interface.patch
 docs-admin-guide-mm-damon-usage-document-damon-sysfs-interface.patch
 docs-abi-testing-add-damon-sysfs-interface-abi-document.patch
+#
+mm-damon-sysfs-remove-repeat-container_of-in-damon_sysfs_kdamond_release.patch
 #
 # mmend
 #
@@ -882,7 +897,7 @@ ilog2-force-inlining-of-__ilog2_u32-and-__ilog2_u64.patch
 #
 bitfield-add-explicit-inclusions-to-the-example.patch
 #
-#
+lib-kconfigdebug-add-arch-dependency-for-function_align-option.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitmap
@@ -1312,11 +1327,12 @@ ipc-mqueue-use-get_tree_nodev-in-mqueue_get_tree.patch
 # next
 linux-next.patch
 linux-next-rejects.patch
-drivers-gpu-drm-dp-drm_dpc-fix-build.patch
+linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-post
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-urgent
 arch-x86-kernel-resourcec-needs-spinlockh.patch
+#
 #
 mm-oom_killc-fix-vm_oom_kill_table-ifdeffery.patch
 #NEXT_PATCHES_END
@@ -1324,6 +1340,8 @@ mm-oom_killc-fix-vm_oom_kill_table-ifdeffery.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START post-linux-next
 #
+#mm/thp
+mm-thp-fix-nr_file_mapped-accounting-in-page__file_rmap.patch
 #
 #mm/rmap
 mm-rmap-fix-cache-flush-on-thp-pages.patch
@@ -1332,13 +1350,6 @@ mm-rmap-introduce-pfn_mkclean_range-to-cleans-ptes.patch
 mm-pvmw-add-support-for-walking-devmap-pages.patch
 dax-fix-missing-writeprotect-the-pte-entry.patch
 mm-remove-range-parameter-from-follow_invalidate_pte.patch
-#
-#mm/madvise
-#mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch: check review
-mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch
-mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read-v4.patch
-#
-#mm/folios
 #
 #mm/migration
 mm-migration-add-trace-events-for-thp-migrations.patch
@@ -1449,6 +1460,12 @@ mm-khugepaged-remove-reuse_swap_page-usage.patch
 mm-swapfile-remove-stale-reuse_swap_page.patch
 mm-huge_memory-remove-stale-page_trans_huge_mapcount.patch
 #
+#mm/madvise
+#mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch: check review
+mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch
+mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read-v4.patch
+#
+#
 #selftests
 selftests-vm-remove-dependecy-from-internal-kernel-macros.patch
 #
@@ -1457,8 +1474,8 @@ selftests-kselftest-framework-provide-finished-helper.patch
 #selftests-vm-add-test-for-soft-dirty-pte-bit.patch: check review, TBU
 selftests-vm-add-test-for-soft-dirty-pte-bit.patch
 #
+#kselftest-vm-override-targets-from-arguments.patch: TBU
 kselftest-vm-override-targets-from-arguments.patch
-kselftest-vm-fix-tests-build-with-old-libc.patch
 #
 #sysctl
 #
@@ -1742,3 +1759,11 @@ workaround-for-a-pci-restoring-bug.patch
 #[withdrawn]lib-stackdepot-use-page-allocator-if-both-slab-and-memblock-is-unavailable.patch
 #[folded-merged]kallsyms-enhance-%ps-s-b-printing-when-kallsysms-is-disabled-fix.patch
 #[to-be-updated]kallsyms-enhance-%ps-s-b-printing-when-kallsysms-is-disabled.patch
+#[obsolete]drivers-gpu-drm-dp-drm_dpc-fix-build.patch
+#[to-be-updated]mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation.patch
+#[to-be-updated]mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper.patch
+#[to-be-updated]mm-hugetlb_vmemmap-move-comment-block-to-documentation-vm.patch
+#[to-be-updated]mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch
+#[to-be-updated]mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
+#[to-be-updated]mm-thp-dont-have-to-lock-page-anymore-when-splitting-pmd.patch
+#[wrecked]mm-madvise-madv_dontneed_locked.patch

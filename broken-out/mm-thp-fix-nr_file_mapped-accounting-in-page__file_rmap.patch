@@ -1,0 +1,117 @@
+From: Hugh Dickins <hughd@google.com>
+Subject: mm/thp: fix NR_FILE_MAPPED accounting in page_*_file_rmap()
+
+NR_FILE_MAPPED accounting in mm/rmap.c (for /proc/meminfo "Mapped" and
+/proc/vmstat "nr_mapped" and the memcg's memory.stat "mapped_file") is
+slightly flawed for file or shmem huge pages.
+
+It is well thought out, and looks convincing, but there's a racy case when
+the careful counting in page_remove_file_rmap() (without page lock) gets
+discarded.  So that in a workload like two "make -j20" kernel builds under
+memory pressure, with cc1 on hugepage text, "Mapped" can easily grow by a
+spurious 5MB or more on each iteration, ending up implausibly bigger than
+most other numbers in /proc/meminfo.  And, hypothetically, might grow to
+the point of seriously interfering in mm/vmscan.c's heuristics, which do
+take NR_FILE_MAPPED into some consideration.
+
+Fixed by moving the __mod_lruvec_page_state() down to where it will not be
+missed before return (and I've grown a bit tired of that oft-repeated
+but-not-everywhere comment on the __ness: it gets lost in the move here).
+
+Does page_add_file_rmap() need the same change?  I suspect not, because
+page lock is held in all relevant cases, and its skipping case looks safe;
+but it's much easier to be sure, if we do make the same change.
+
+Link: https://lkml.kernel.org/r/e02e52a1-8550-a57c-ed29-f51191ea2375@google.com
+Fixes: dd78fedde4b9 ("rmap: support file thp")
+Signed-off-by: Hugh Dickins <hughd@google.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
+Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/rmap.c |   31 ++++++++++++++-----------------
+ 1 file changed, 14 insertions(+), 17 deletions(-)
+
+--- a/mm/rmap.c~mm-thp-fix-nr_file_mapped-accounting-in-page__file_rmap
++++ a/mm/rmap.c
+@@ -1236,14 +1236,14 @@ void page_add_new_anon_rmap(struct page
+ void page_add_file_rmap(struct page *page,
+ 	struct vm_area_struct *vma, bool compound)
+ {
+-	int i, nr = 1;
++	int i, nr = 0;
+ 
+ 	VM_BUG_ON_PAGE(compound && !PageTransHuge(page), page);
+ 	lock_page_memcg(page);
+ 	if (compound && PageTransHuge(page)) {
+ 		int nr_pages = thp_nr_pages(page);
+ 
+-		for (i = 0, nr = 0; i < nr_pages; i++) {
++		for (i = 0; i < nr_pages; i++) {
+ 			if (atomic_inc_and_test(&page[i]._mapcount))
+ 				nr++;
+ 		}
+@@ -1271,11 +1271,12 @@ void page_add_file_rmap(struct page *pag
+ 			VM_WARN_ON_ONCE(!PageLocked(page));
+ 			SetPageDoubleMap(compound_head(page));
+ 		}
+-		if (!atomic_inc_and_test(&page->_mapcount))
+-			goto out;
++		if (atomic_inc_and_test(&page->_mapcount))
++			nr++;
+ 	}
+-	__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
+ out:
++	if (nr)
++		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
+ 	unlock_page_memcg(page);
+ 
+ 	mlock_vma_page(page, vma, compound);
+@@ -1283,7 +1284,7 @@ out:
+ 
+ static void page_remove_file_rmap(struct page *page, bool compound)
+ {
+-	int i, nr = 1;
++	int i, nr = 0;
+ 
+ 	VM_BUG_ON_PAGE(compound && !PageHead(page), page);
+ 
+@@ -1298,12 +1299,12 @@ static void page_remove_file_rmap(struct
+ 	if (compound && PageTransHuge(page)) {
+ 		int nr_pages = thp_nr_pages(page);
+ 
+-		for (i = 0, nr = 0; i < nr_pages; i++) {
++		for (i = 0; i < nr_pages; i++) {
+ 			if (atomic_add_negative(-1, &page[i]._mapcount))
+ 				nr++;
+ 		}
+ 		if (!atomic_add_negative(-1, compound_mapcount_ptr(page)))
+-			return;
++			goto out;
+ 		if (PageSwapBacked(page))
+ 			__mod_lruvec_page_state(page, NR_SHMEM_PMDMAPPED,
+ 						-nr_pages);
+@@ -1311,16 +1312,12 @@ static void page_remove_file_rmap(struct
+ 			__mod_lruvec_page_state(page, NR_FILE_PMDMAPPED,
+ 						-nr_pages);
+ 	} else {
+-		if (!atomic_add_negative(-1, &page->_mapcount))
+-			return;
++		if (atomic_add_negative(-1, &page->_mapcount))
++			nr++;
+ 	}
+-
+-	/*
+-	 * We use the irq-unsafe __{inc|mod}_lruvec_page_state because
+-	 * these counters are not modified in interrupt context, and
+-	 * pte lock(a spinlock) is held, which implies preemption disabled.
+-	 */
+-	__mod_lruvec_page_state(page, NR_FILE_MAPPED, -nr);
++out:
++	if (nr)
++		__mod_lruvec_page_state(page, NR_FILE_MAPPED, -nr);
+ }
+ 
+ static void page_remove_anon_compound_rmap(struct page *page)
+_

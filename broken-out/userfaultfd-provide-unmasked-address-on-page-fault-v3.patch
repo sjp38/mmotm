@@ -1,0 +1,67 @@
+From: Nadav Amit <namit@vmware.com>
+Subject: userfaultfd: provide unmasked address on page-fault
+
+initialize real_address on all code paths, per Jan
+
+Link: https://lkml.kernel.org/r/20220226022655.350562-1-namit@vmware.com
+Signed-off-by: Nadav Amit <namit@vmware.com>
+Acked-by: Peter Xu <peterx@redhat.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
+Reviewed-by: Jan Kara <jack@suse.cz>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/hugetlb.c  |    6 ++++--
+ mm/swapfile.c |    1 +
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+--- a/mm/hugetlb.c~userfaultfd-provide-unmasked-address-on-page-fault-v3
++++ a/mm/hugetlb.c
+@@ -5341,6 +5341,7 @@ static inline vm_fault_t hugetlb_handle_
+ 						  pgoff_t idx,
+ 						  unsigned int flags,
+ 						  unsigned long haddr,
++						  unsigned long addr,
+ 						  unsigned long reason)
+ {
+ 	vm_fault_t ret;
+@@ -5348,6 +5349,7 @@ static inline vm_fault_t hugetlb_handle_
+ 	struct vm_fault vmf = {
+ 		.vma = vma,
+ 		.address = haddr,
++		.real_address = addr,
+ 		.flags = flags,
+ 
+ 		/*
+@@ -5416,7 +5418,7 @@ retry:
+ 		/* Check for page in userfault range */
+ 		if (userfaultfd_missing(vma)) {
+ 			ret = hugetlb_handle_userfault(vma, mapping, idx,
+-						       flags, haddr,
++						       flags, haddr, address,
+ 						       VM_UFFD_MISSING);
+ 			goto out;
+ 		}
+@@ -5480,7 +5482,7 @@ retry:
+ 			unlock_page(page);
+ 			put_page(page);
+ 			ret = hugetlb_handle_userfault(vma, mapping, idx,
+-						       flags, haddr,
++						       flags, haddr, address,
+ 						       VM_UFFD_MINOR);
+ 			goto out;
+ 		}
+--- a/mm/swapfile.c~userfaultfd-provide-unmasked-address-on-page-fault-v3
++++ a/mm/swapfile.c
+@@ -1951,6 +1951,7 @@ static int unuse_pte_range(struct vm_are
+ 			struct vm_fault vmf = {
+ 				.vma = vma,
+ 				.address = addr,
++				.real_address = addr,
+ 				.pmd = pmd,
+ 			};
+ 
+_

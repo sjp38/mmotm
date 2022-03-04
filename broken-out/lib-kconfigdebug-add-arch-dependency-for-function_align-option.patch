@@ -1,0 +1,42 @@
+From: Feng Tang <feng.tang@intel.com>
+Subject: lib/Kconfig.debug: add ARCH dependency for FUNCTION_ALIGN option
+
+0Day robots reported there is compiling issue for 'csky' ARCH
+when CONFIG_DEBUG_FORCE_DATA_SECTION_ALIGNED is enabled [1]:
+
+All errors (new ones prefixed by >>):
+
+   {standard input}: Assembler messages:
+>> {standard input}:2277: Error: pcrel offset for branch to .LS000B too far (0x3c)
+
+
+Which was discussed in [2].  And as there is no solution for csky yet, add
+some dependency for this config to limit it to several ARCHs which have no
+compiling issue so far.
+
+[1]. https://lore.kernel.org/lkml/202202271612.W32UJAj2-lkp@intel.com/
+[2]. https://www.spinics.net/lists/linux-kbuild/msg30298.html
+
+Link: https://lkml.kernel.org/r/20220304021100.GN4548@shbuild999.sh.intel.com
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Feng Tang <feng.tang@intel.com>
+Cc: Guo Ren <guoren@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ lib/Kconfig.debug |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/lib/Kconfig.debug~lib-kconfigdebug-add-arch-dependency-for-function_align-option
++++ a/lib/Kconfig.debug
+@@ -439,7 +439,8 @@ config SECTION_MISMATCH_WARN_ONLY
+ 	  If unsure, say Y.
+ 
+ config DEBUG_FORCE_FUNCTION_ALIGN_64B
+-	bool "Force all function address 64B aligned" if EXPERT
++	bool "Force all function address 64B aligned"
++	depends on EXPERT && (X86_64 || ARM64 || PPC32 || PPC64 || ARC)
+ 	help
+ 	  There are cases that a commit from one domain changes the function
+ 	  address alignment of other domains, and cause magic performance
+_
