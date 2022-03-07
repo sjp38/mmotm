@@ -1,0 +1,138 @@
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: mm: madvise: MADV_DONTNEED_LOCKED
+
+MADV_DONTNEED historically rejects mlocked ranges, but with MLOCK_ONFAULT
+and MCL_ONFAULT allowing to mlock without populating, there are valid use
+cases for depopulating locked ranges as well.
+
+Users mlock memory to protect secrets.  There are allocators for secure
+buffers that want in-use memory generally mlocked, but cleared and
+invalidated memory to give up the physical pages.  This could be done with
+explicit munlock -> mlock calls on free -> alloc of course, but that adds
+two unnecessary syscalls, heavy mmap_sem write locks, vma splits and
+re-merges - only to get rid of the backing pages.
+
+Users also mlockall(MCL_ONFAULT) to suppress sustained paging, but are
+okay with on-demand initial population.  It seems valid to selectively
+free some memory during the lifetime of such a process, without having to
+mess with its overall policy.
+
+Why add a separate flag? Isn't this a pretty niche usecase?
+
+- MADV_DONTNEED has been bailing on locked vmas forever. It's at least
+  conceivable that someone, somewhere is relying on mlock to protect
+  data from perhaps broader invalidation calls. Changing this behavior
+  now could lead to quiet data corruption.
+
+- It also clarifies expectations around MADV_FREE and maybe
+  MADV_REMOVE. It avoids the situation where one quietly behaves
+  different than the others. MADV_FREE_LOCKED can be added later.
+
+- The combination of mlock() and madvise() in the first place is
+  probably niche. But where it happens, I'd say that dropping pages
+  from a locked region once they don't contain secrets or won't page
+  anymore is much saner than relying on mlock to protect memory from
+  speculative or errant invalidation calls. It's just that we can't
+  change the default behavior because of the two previous points.
+
+Given that, an explicit new flag seems to make the most sense.
+
+Link: https://lkml.kernel.org/r/20220304171912.305060-1-hannes@cmpxchg.org
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
+Reviewed-by: Shakeel Butt <shakeelb@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Nadav Amit <nadav.amit@gmail.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Dr. David Alan Gilbert <dgilbert@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/uapi/asm-generic/mman-common.h |    2 +
+ mm/madvise.c                           |   24 +++++++++++++----------
+ 2 files changed, 16 insertions(+), 10 deletions(-)
+
+--- a/include/uapi/asm-generic/mman-common.h~mm-madvise-madv_dontneed_locked
++++ a/include/uapi/asm-generic/mman-common.h
+@@ -75,6 +75,8 @@
+ #define MADV_POPULATE_READ	22	/* populate (prefault) page tables readable */
+ #define MADV_POPULATE_WRITE	23	/* populate (prefault) page tables writable */
+ 
++#define MADV_DONTNEED_LOCKED	24	/* like DONTNEED, but drop locked pages too */
++
+ /* compatibility flags */
+ #define MAP_FILE	0
+ 
+--- a/mm/madvise.c~mm-madvise-madv_dontneed_locked
++++ a/mm/madvise.c
+@@ -52,6 +52,7 @@ static int madvise_need_mmap_write(int b
+ 	case MADV_REMOVE:
+ 	case MADV_WILLNEED:
+ 	case MADV_DONTNEED:
++	case MADV_DONTNEED_LOCKED:
+ 	case MADV_COLD:
+ 	case MADV_PAGEOUT:
+ 	case MADV_FREE:
+@@ -502,14 +503,9 @@ static void madvise_cold_page_range(stru
+ 	tlb_end_vma(tlb, vma);
+ }
+ 
+-static inline bool can_madv_lru_non_huge_vma(struct vm_area_struct *vma)
+-{
+-	return !(vma->vm_flags & (VM_LOCKED|VM_PFNMAP));
+-}
+-
+ static inline bool can_madv_lru_vma(struct vm_area_struct *vma)
+ {
+-	return can_madv_lru_non_huge_vma(vma) && !is_vm_hugetlb_page(vma);
++	return !(vma->vm_flags & (VM_LOCKED|VM_PFNMAP|VM_HUGETLB));
+ }
+ 
+ static long madvise_cold(struct vm_area_struct *vma,
+@@ -787,10 +783,16 @@ static bool madvise_dontneed_free_valid_
+ 					    unsigned long *end,
+ 					    int behavior)
+ {
+-	if (!is_vm_hugetlb_page(vma))
+-		return can_madv_lru_non_huge_vma(vma);
++	if (!is_vm_hugetlb_page(vma)) {
++		unsigned int forbidden = VM_PFNMAP;
++
++		if (behavior != MADV_DONTNEED_LOCKED)
++			forbidden |= VM_LOCKED;
++
++		return !(vma->vm_flags & forbidden);
++	}
+ 
+-	if (behavior != MADV_DONTNEED)
++	if (behavior != MADV_DONTNEED && behavior != MADV_DONTNEED_LOCKED)
+ 		return false;
+ 	if (start & ~huge_page_mask(hstate_vma(vma)))
+ 		return false;
+@@ -854,7 +856,7 @@ static long madvise_dontneed_free(struct
+ 		VM_WARN_ON(start >= end);
+ 	}
+ 
+-	if (behavior == MADV_DONTNEED)
++	if (behavior == MADV_DONTNEED || behavior == MADV_DONTNEED_LOCKED)
+ 		return madvise_dontneed_single_vma(vma, start, end);
+ 	else if (behavior == MADV_FREE)
+ 		return madvise_free_single_vma(vma, start, end);
+@@ -993,6 +995,7 @@ static int madvise_vma_behavior(struct v
+ 		return madvise_pageout(vma, prev, start, end);
+ 	case MADV_FREE:
+ 	case MADV_DONTNEED:
++	case MADV_DONTNEED_LOCKED:
+ 		return madvise_dontneed_free(vma, prev, start, end, behavior);
+ 	case MADV_POPULATE_READ:
+ 	case MADV_POPULATE_WRITE:
+@@ -1123,6 +1126,7 @@ madvise_behavior_valid(int behavior)
+ 	case MADV_REMOVE:
+ 	case MADV_WILLNEED:
+ 	case MADV_DONTNEED:
++	case MADV_DONTNEED_LOCKED:
+ 	case MADV_FREE:
+ 	case MADV_COLD:
+ 	case MADV_PAGEOUT:
+_

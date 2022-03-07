@@ -42,9 +42,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-protect-per-cpu-counter-by-disabling-preemption-on-preempt_rt-where-needed
 +++ a/mm/memcontrol.c
-@@ -629,6 +629,35 @@ static DEFINE_SPINLOCK(stats_flush_lock)
- static DEFINE_PER_CPU(unsigned int, stats_updates);
- static atomic_t stats_flush_threshold = ATOMIC_INIT(0);
+@@ -632,6 +632,35 @@ static u64 flush_next_time;
+ 
+ #define FLUSH_TIME (2UL*HZ)
  
 +/*
 + * Accessors to ensure that preemption is disabled on PREEMPT_RT because it can
@@ -78,7 +78,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline void memcg_rstat_updated(struct mem_cgroup *memcg, int val)
  {
  	unsigned int x;
-@@ -705,6 +734,27 @@ void __mod_memcg_lruvec_state(struct lru
+@@ -715,6 +744,27 @@ void __mod_memcg_lruvec_state(struct lru
  	pn = container_of(lruvec, struct mem_cgroup_per_node, lruvec);
  	memcg = pn->memcg;
  
@@ -106,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	/* Update memcg */
  	__this_cpu_add(memcg->vmstats_percpu->state[idx], val);
  
-@@ -712,6 +762,7 @@ void __mod_memcg_lruvec_state(struct lru
+@@ -722,6 +772,7 @@ void __mod_memcg_lruvec_state(struct lru
  	__this_cpu_add(pn->lruvec_stats_percpu->state[idx], val);
  
  	memcg_rstat_updated(memcg, val);
@@ -114,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  /**
-@@ -794,8 +845,10 @@ void __count_memcg_events(struct mem_cgr
+@@ -804,8 +855,10 @@ void __count_memcg_events(struct mem_cgr
  	if (mem_cgroup_disabled())
  		return;
  
@@ -125,7 +125,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static unsigned long memcg_events(struct mem_cgroup *memcg, int event)
-@@ -7151,8 +7204,9 @@ void mem_cgroup_swapout(struct page *pag
+@@ -7161,8 +7214,9 @@ void mem_cgroup_swapout(struct page *pag
  	 * important here to have the interrupts disabled because it is the
  	 * only synchronisation we have for updating the per-CPU variables.
  	 */

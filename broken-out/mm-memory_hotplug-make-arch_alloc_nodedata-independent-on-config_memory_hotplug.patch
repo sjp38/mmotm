@@ -80,9 +80,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
 --- a/include/linux/memory_hotplug.h~mm-memory_hotplug-make-arch_alloc_nodedata-independent-on-config_memory_hotplug
 +++ a/include/linux/memory_hotplug.h
-@@ -17,6 +17,65 @@ struct resource;
+@@ -16,6 +16,65 @@ struct memory_group;
+ struct resource;
  struct vmem_altmap;
- struct dev_pagemap;
  
 +#ifdef CONFIG_HAVE_ARCH_NODEDATA_EXTENSION
 +/*
@@ -146,7 +146,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #ifdef CONFIG_MEMORY_HOTPLUG
  struct page *pfn_to_online_page(unsigned long pfn);
  
-@@ -156,66 +215,6 @@ int add_pages(int nid, unsigned long sta
+@@ -154,66 +213,6 @@ int add_pages(int nid, unsigned long sta
  	      struct mhp_params *params);
  #endif /* ARCH_HAS_ADD_PAGES */
  

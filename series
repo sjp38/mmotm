@@ -2,21 +2,6 @@ origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
-#mm/hugetlb
-selftests-vm-cleanup-hugetlb-file-after-mremap-test.patch
-#
-#mm/pagemap
-mm-refactor-vm_area_struct-anon_vma_name-usage-code.patch
-mm-refactor-vm_area_struct-anon_vma_name-usage-code-v3.patch
-mm-prevent-vm_area_struct-anon_name-refcount-saturation.patch
-mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
-#
-#memfd
-memfd-fix-f_seal_write-after-shmem-huge-page-allocated.patch
-#
-#selftests
-kselftest-vm-fix-tests-build-with-old-libc.patch
-#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START mainline-later (next week, approximately)
 #mm/pagealloc
@@ -27,13 +12,8 @@ mm-fix-panic-in-__alloc_pages.patch
 #userfaultfd-mark-uffd_wp-regardless-of-vm_write-flag.patch: acks? check review
 userfaultfd-mark-uffd_wp-regardless-of-vm_write-flag.patch
 #
-proc-fix-documentation-and-description-of-pagemap.patch
-#
 #mm/swap
 mm-swap-get-rid-of-deadloop-in-swapin-readahead.patch
-#
-#kconfig
-configs-debug-set-config_debug_info=y-properly.patch
 #
 #selftests
 #selftests-vm-fix-clang-build-error-multiple-output-files.patch: acks?
@@ -42,6 +22,10 @@ selftests-vm-fix-clang-build-error-multiple-output-files.patch
 #mm/pagealloc
 #mm-page_alloc-add-scheduling-point-to-free_unref_page_list.patch: -stable?
 mm-page_alloc-add-scheduling-point-to-free_unref_page_list.patch
+#
+#mm/memcg
+memcg-sync-flush-only-if-periodic-flush-is-delayed.patch
+memcg-sync-flush-only-if-periodic-flush-is-delayed-fix.patch
 #
 #proc
 proc-kpageflags-prevent-an-integer-overflow-in-stable_page_flags.patch
@@ -330,6 +314,12 @@ f2fs-replace-congestion_wait-calls-with-io_schedule_timeout.patch
 block-bfq-ioschedc-use-false-rather-than-blk_rw_async.patch
 remove-congestion-tracking-framework.patch
 #
+#mm/vmscan
+#mm-fs-delete-pf_swapwrite.patch: needs remove-inode_congested.patch
+mm-fs-delete-pf_swapwrite.patch
+#
+mm-__isolate_lru_page_prepare-in-isolate_migratepages_block.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START sparc
 #NEXT_PATCHES_END
@@ -406,6 +396,9 @@ tools-vm-page_owner_sortc-fix-comments.patch
 tools-vm-page_owner_sortc-add-a-security-check.patch
 tools-vm-page_owner_sortc-support-sorting-by-tgid-and-update-documentation.patch
 #
+tools-vm-page_owner_sort-fix-three-trivival-places.patch
+tools-vm-page_owner_sort-support-for-sorting-by-task-command-name.patch
+#
 #mm/folios
 #mm/pagecache
 filemap-remove-find_get_pages.patch
@@ -425,6 +418,10 @@ mm-gup-remove-unused-get_user_pages_locked.patch
 #mm/shmem
 tmpfs-support-for-file-creation-time.patch
 tmpfs-support-for-file-creation-time-fix.patch
+#
+shmem-mapping_set_exiting-to-help-mapped-resilience.patch
+#
+tmpfs-do-not-allocate-pages-on-read.patch
 #
 #mm/frontswap
 #mm/memremap
@@ -536,6 +533,7 @@ mm-vmallocc-fix-unused-function-warning.patch
 #vmap-dont-allow-invalid-pages.patch: TBU (changelog)
 vmap-dont-allow-invalid-pages.patch
 #
+mm-vmalloc-fix-comments-about-vmap_area-struct.patch
 #
 #mm/documentation
 #mm/initialization
@@ -577,6 +575,8 @@ arch-x86-mm-numa-do-not-initialize-nodes-twice-v2.patch
 #
 mm-count-time-in-drain_all_pages-during-direct-reclaim-as-memory-pressure.patch
 #
+mm-page_alloc-call-check_new_pages-while-zone-spinlock-is-not-held.patch
+#
 #mm/memory-failure
 mm-hwpoison-remove-obsolete-comment.patch
 #
@@ -601,10 +601,6 @@ mm-hwpoison-inject-support-injecting-hwpoison-to-free-page-fix.patch
 mm-hwpoison-avoid-the-impact-of-hwpoison_filter-return-value-on-mce-handler.patch
 mm-hwpoison-add-in-use-hugepage-hwpoison-filter-judgement.patch
 #
-mm-memory-failurec-fix-race-with-changing-page-compound-again.patch
-mm-memory-failurec-fix-wrong-user-reference-report.patch
-mm-memory-failurec-avoid-calling-invalidate_inode_page-with-unexpected-pages.patch
-mm-memory-failurec-fix-potential-vm_bug_on_page-in-split_huge_page_to_list.patch
 #
 #mm/mlock
 #mm/hugetlb
@@ -625,21 +621,17 @@ mm-export-pageheadhuge.patch
 mm-export-pageheadhuge-fix.patch
 #
 #mm/dax
-mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation.patch
-mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper.patch
-mm-hugetlb_vmemmap-move-comment-block-to-documentation-vm.patch
-mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch
-mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
 #
 #mm/userfaultfd
 userfaultfd-provide-unmasked-address-on-page-fault.patch
 userfaultfd-provide-unmasked-address-on-page-fault-v3.patch
 userfaultfd-provide-unmasked-address-on-page-fault-v3-fix.patch
 #
+userfaultfd-selftests-fix-uninitialized_varcocci-warning.patch
+#
 #mm/vmscan
 mm-workingset-replace-irq-off-check-with-a-lockdep-assert.patch
 #
-mm-lru_cache_disable-replace-work-queue-synchronization-with-synchronize_rcu.patch
 #
 #mm/tools
 #mm/proc
@@ -648,6 +640,8 @@ mm-lru_cache_disable-replace-work-queue-synchronization-with-synchronize_rcu.pat
 #mm/ras
 #mm/compaction
 #mm/mempolicy
+#
+mempolicy-mbind_range-set_policy-after-vma_merge.patch
 #
 #mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt.patch: bloat!
 mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt.patch
@@ -755,6 +749,7 @@ mm-use-strtobool-for-param-parsing.patch
 #mm/secretmem
 #mm/kfence
 mm-kfence-remove-unnecessary-config_kfence-option.patch
+#
 #
 #mm/hmm
 mm-hmmc-remove-unneeded-local-variable-ret.patch
@@ -898,6 +893,8 @@ ilog2-force-inlining-of-__ilog2_u32-and-__ilog2_u64.patch
 bitfield-add-explicit-inclusions-to-the-example.patch
 #
 lib-kconfigdebug-add-arch-dependency-for-function_align-option.patch
+#
+lib-bitmap-fix-many-kernel-doc-warnings.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START bitmap
@@ -1333,15 +1330,21 @@ linux-next-git-rejects.patch
 #NEXT_PATCHES_START linux-next-urgent
 arch-x86-kernel-resourcec-needs-spinlockh.patch
 #
-#
 mm-oom_killc-fix-vm_oom_kill_table-ifdeffery.patch
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START linux-next-resolution
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START post-linux-next
 #
+#mm/pagecache
+mm-delete-__clearpagewaiters.patch
+#
+mm-filemap_unaccount_folio-large-skip-mapcount-fixup.patch
+#
 #mm/thp
 mm-thp-fix-nr_file_mapped-accounting-in-page__file_rmap.patch
+#
+mm-thp-dont-have-to-lock-page-anymore-when-splitting-pmd.patch
 #
 #mm/rmap
 mm-rmap-fix-cache-flush-on-thp-pages.patch
@@ -1460,11 +1463,17 @@ mm-khugepaged-remove-reuse_swap_page-usage.patch
 mm-swapfile-remove-stale-reuse_swap_page.patch
 mm-huge_memory-remove-stale-page_trans_huge_mapcount.patch
 #
+#mm-warn-on-deleting-redirtied-only-if-accounted.patch: Willy checking
+mm-warn-on-deleting-redirtied-only-if-accounted.patch
+#
+mm-unmap_mapping_range_tree-with-i_mmap_rwsem-shared.patch
+#
 #mm/madvise
 #mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch: check review
 mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read.patch
 mm-fix-race-between-madv_free-reclaim-and-blkdev-direct-io-read-v4.patch
 #
+mm-madvise-madv_dontneed_locked.patch
 #
 #selftests
 selftests-vm-remove-dependecy-from-internal-kernel-macros.patch
@@ -1767,3 +1776,25 @@ workaround-for-a-pci-restoring-bug.patch
 #[to-be-updated]mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
 #[to-be-updated]mm-thp-dont-have-to-lock-page-anymore-when-splitting-pmd.patch
 #[wrecked]mm-madvise-madv_dontneed_locked.patch
+#[obsolete]linux-next-git-rejects.patch
+#[folded-merged]mm-refactor-vm_area_struct-anon_vma_name-usage-code-v3.patch
+#[merged]selftests-vm-cleanup-hugetlb-file-after-mremap-test.patch
+#[merged]mm-refactor-vm_area_struct-anon_vma_name-usage-code.patch
+#[merged]mm-prevent-vm_area_struct-anon_name-refcount-saturation.patch
+#[merged]mm-fix-use-after-free-when-anon-vma-name-is-used-after-vma-is-freed.patch
+#[merged]memfd-fix-f_seal_write-after-shmem-huge-page-allocated.patch
+#[merged]kselftest-vm-fix-tests-build-with-old-libc.patch
+#[merged]proc-fix-documentation-and-description-of-pagemap.patch
+#[merged]configs-debug-set-config_debug_info=y-properly.patch
+#[to-be-updated]mm-sparse-vmemmap-add-a-pgmap-argument-to-section-activation.patch
+#[to-be-updated]mm-sparse-vmemmap-refactor-core-of-vmemmap_populate_basepages-to-helper.patch
+#[to-be-updated]mm-hugetlb_vmemmap-move-comment-block-to-documentation-vm.patch
+#[to-be-updated]mm-sparse-vmemmap-improve-memory-savings-for-compound-devmaps.patch
+#[to-be-updated]mm-page_alloc-reuse-tail-struct-pages-for-compound-devmaps.patch
+#[to-be-updated]mm-memory-failurec-fix-race-with-changing-page-compound-again.patch
+#[to-be-updated]mm-memory-failurec-fix-wrong-user-reference-report.patch
+#[to-be-updated]mm-memory-failurec-avoid-calling-invalidate_inode_page-with-unexpected-pages.patch
+#[to-be-updated]mm-memory-failurec-fix-potential-vm_bug_on_page-in-split_huge_page_to_list.patch
+#[to-be-updated]kfence-allow-re-enabling-kfence-after-system-startup.patch
+#[to-be-updated]kfence-alloc-kfence_pool-after-system-startup.patch
+#[failures]memcg-sync-flush-only-if-periodic-flush-is-delayed.patch

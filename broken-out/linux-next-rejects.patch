@@ -6,7 +6,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
  Documentation/admin-guide/sysctl/kernel.rst |   50 ---
  arch/nds32/mm/init.c                        |  262 ------------------
- kernel/fork.c                               |    1 
  lib/Kconfig.debug                           |    1 
  mm/huge_memory.c                            |    4 
  mm/memcontrol.c                             |    2 
@@ -17,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  mm/vmscan.c                                 |    2 
  tools/include/linux/gfp.h                   |    3 
  tools/testing/radix-tree/linux/gfp.h        |   32 --
- 13 files changed, 18 insertions(+), 374 deletions(-)
+ 12 files changed, 18 insertions(+), 373 deletions(-)
 
 --- a/Documentation/admin-guide/sysctl/kernel.rst~linux-next-rejects
 +++ a/Documentation/admin-guide/sysctl/kernel.rst
@@ -78,16 +77,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  oops_all_cpu_backtrace
  ======================
---- a/kernel/fork.c~linux-next-rejects
-+++ a/kernel/fork.c
-@@ -472,7 +472,6 @@ struct vm_area_struct *vm_area_dup(struc
- 		 */
- 		*new = data_race(*orig);
- 		INIT_LIST_HEAD(&new->anon_vma_chain);
--		new->vm_next = new->vm_prev = NULL;
- 		dup_anon_vma_name(orig, new);
- 	}
- 	return new;
 --- a/lib/Kconfig.debug~linux-next-rejects
 +++ a/lib/Kconfig.debug
 @@ -275,6 +275,7 @@ config DEBUG_INFO_DWARF5
@@ -114,7 +103,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	update_mmu_cache_pmd(vma, address, pvmw->pmd);
 --- a/mm/memcontrol.c~linux-next-rejects
 +++ a/mm/memcontrol.c
-@@ -7107,7 +7107,7 @@ void mem_cgroup_swapout(struct folio *fo
+@@ -7117,7 +7117,7 @@ void mem_cgroup_swapout(struct folio *fo
  	memcg_stats_lock();
  	mem_cgroup_charge_statistics(memcg, -nr_entries);
  	memcg_stats_unlock();
@@ -180,7 +169,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	struct range *range = &pgmap->ranges[range_id];
 --- a/mm/rmap.c~linux-next-rejects
 +++ a/mm/rmap.c
-@@ -1524,22 +1524,22 @@ static bool try_to_unmap_one(struct foli
+@@ -1535,22 +1535,22 @@ static bool try_to_unmap_one(struct foli
  			pteval = ptep_clear_flush(vma, address, pvmw.pte);
  		}
  
@@ -208,7 +197,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  				set_pte_at(mm, address, pvmw.pte, pteval);
  			}
  
-@@ -1852,16 +1852,16 @@ static bool try_to_migrate_one(struct fo
+@@ -1863,16 +1863,16 @@ static bool try_to_migrate_one(struct fo
  			 * changed when hugepage migrations to device private
  			 * memory are supported.
  			 */
