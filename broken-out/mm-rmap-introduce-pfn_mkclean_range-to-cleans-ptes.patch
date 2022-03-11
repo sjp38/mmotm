@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
 --- a/mm/internal.h~mm-rmap-introduce-pfn_mkclean_range-to-cleans-ptes
 +++ a/mm/internal.h
-@@ -448,26 +448,22 @@ void mlock_page_drain(int cpu);
+@@ -455,26 +455,22 @@ void mlock_page_drain(int cpu);
  extern pmd_t maybe_pmd_mkwrite(pmd_t pmd, struct vm_area_struct *vma);
  
  /*
@@ -77,7 +77,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		/* Test above avoids possibility of wrap to 0 on 32-bit */
  		address = vma->vm_start;
  	} else {
-@@ -477,6 +473,18 @@ vma_address(struct page *page, struct vm
+@@ -484,6 +480,18 @@ vma_address(struct page *page, struct vm
  }
  
  /*

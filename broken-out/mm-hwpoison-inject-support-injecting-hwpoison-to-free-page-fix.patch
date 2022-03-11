@@ -15,7 +15,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-hwpoison-inject-support-injecting-hwpoison-to-free-page-fix
 +++ a/mm/page_alloc.c
-@@ -9425,6 +9425,7 @@ bool is_free_buddy_page(struct page *pag
+@@ -9408,6 +9408,7 @@ bool is_free_buddy_page(struct page *pag
  
  	return order < MAX_ORDER;
  }

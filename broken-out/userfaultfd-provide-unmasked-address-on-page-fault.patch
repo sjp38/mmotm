@@ -10,11 +10,11 @@ wrong output (and contradicts the man page).  Notice that
 "UFFD_EVENT_PAGEFAULT event" shows the masked address (7fc5e30b3000) and
 not the first read address (0x7fc5e30b300f).
 
-	Address returned by mmap() =3D 0x7fc5e30b3000
+	Address returned by mmap() = 0x7fc5e30b3000
 
 	fault_handler_thread():
-	    poll() returns: nready =3D 1; POLLIN =3D 1; POLLERR =3D 0
-	    UFFD_EVENT_PAGEFAULT event: flags =3D 0; address =3D 7fc5e30b3000
+	    poll() returns: nready = 1; POLLIN = 1; POLLERR = 0
+	    UFFD_EVENT_PAGEFAULT event: flags = 0; address = 7fc5e30b3000
 		(uffdio_copy.copy returned 4096)
 	Read address 0x7fc5e30b300f in main(): A
 	Read address 0x7fc5e30b340f in main(): A

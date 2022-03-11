@@ -178,7 +178,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return &bi->vfs_inode;
 --- a/fs/btrfs/inode.c~fs-allocate-inode-by-using-alloc_inode_sb
 +++ a/fs/btrfs/inode.c
-@@ -8759,7 +8759,7 @@ struct inode *btrfs_alloc_inode(struct s
+@@ -8787,7 +8787,7 @@ struct inode *btrfs_alloc_inode(struct s
  	struct btrfs_inode *ei;
  	struct inode *inode;
  
@@ -310,7 +310,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	inode_init_once(&vi->vfs_inode);
 --- a/fs/fuse/inode.c~fs-allocate-inode-by-using-alloc_inode_sb
 +++ a/fs/fuse/inode.c
-@@ -73,7 +73,7 @@ static struct inode *fuse_alloc_inode(st
+@@ -72,7 +72,7 @@ static struct inode *fuse_alloc_inode(st
  {
  	struct fuse_inode *fi;
  
@@ -684,7 +684,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return &ei->vfs_inode;
 --- a/mm/shmem.c~fs-allocate-inode-by-using-alloc_inode_sb
 +++ a/mm/shmem.c
-@@ -3715,7 +3715,7 @@ static struct kmem_cache *shmem_inode_ca
+@@ -3708,7 +3708,7 @@ static struct kmem_cache *shmem_inode_ca
  static struct inode *shmem_alloc_inode(struct super_block *sb)
  {
  	struct shmem_inode_info *info;

@@ -60,7 +60,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	struct list_lru_node *nlru = &lru->node[nid];
  	int dst_idx = dst_memcg->kmemcg_id;
-@@ -486,22 +486,22 @@ out:
+@@ -492,22 +492,22 @@ out:
  	spin_unlock_irq(&nlru->lock);
  }
  
@@ -88,7 +88,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Change kmemcg_id of this cgroup and all its descendants to the
-@@ -517,17 +517,17 @@ void memcg_drain_all_list_lrus(struct me
+@@ -523,17 +523,17 @@ void memcg_drain_all_list_lrus(struct me
  	 * call.
  	 */
  	rcu_read_lock();
@@ -113,7 +113,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/memcontrol.c~mm-list_lru-rename-memcg_drain_all_list_lrus-to-memcg_reparent_list_lrus
 +++ a/mm/memcontrol.c
-@@ -3707,7 +3707,7 @@ static void memcg_offline_kmem(struct me
+@@ -3717,7 +3717,7 @@ static void memcg_offline_kmem(struct me
  	memcg_reparent_objcgs(memcg, parent);
  
  	/*
@@ -122,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 * Cache it to local @kmemcg_id.
  	 */
  	kmemcg_id = memcg->kmemcg_id;
-@@ -3716,9 +3716,9 @@ static void memcg_offline_kmem(struct me
+@@ -3726,9 +3726,9 @@ static void memcg_offline_kmem(struct me
  	 * After we have finished memcg_reparent_objcgs(), all list_lrus
  	 * corresponding to this cgroup are guaranteed to remain empty.
  	 * The ordering is imposed by list_lru_node->lock taken by

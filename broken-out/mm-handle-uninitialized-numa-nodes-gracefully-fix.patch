@@ -23,7 +23,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-handle-uninitialized-numa-nodes-gracefully-fix
 +++ a/mm/page_alloc.c
-@@ -8090,12 +8090,16 @@ void __init free_area_init(unsigned long
+@@ -8073,12 +8073,16 @@ void __init free_area_init(unsigned long
  			}
  			arch_refresh_nodedata(nid, pgdat);
  			free_area_init_memoryless_node(nid);

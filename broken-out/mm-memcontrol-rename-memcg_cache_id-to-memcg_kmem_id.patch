@@ -41,7 +41,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/memcontrol.h~mm-memcontrol-rename-memcg_cache_id-to-memcg_kmem_id
 +++ a/include/linux/memcontrol.h
-@@ -1708,7 +1708,7 @@ static inline void memcg_kmem_uncharge_p
+@@ -1713,7 +1713,7 @@ static inline void memcg_kmem_uncharge_p
   * A helper for accessing memcg's kmem_id, used for getting
   * corresponding LRU lists.
   */
@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	return memcg ? memcg->kmemcg_id : -1;
  }
-@@ -1746,7 +1746,7 @@ static inline bool memcg_kmem_enabled(vo
+@@ -1751,7 +1751,7 @@ static inline bool memcg_kmem_enabled(vo
  	return false;
  }
  

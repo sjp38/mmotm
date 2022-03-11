@@ -41,7 +41,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/memory_hotplug.h~mm-memory_hotplug-reorganize-new-pgdat-initialization
 +++ a/include/linux/memory_hotplug.h
-@@ -321,7 +321,7 @@ extern void set_zone_contiguous(struct z
+@@ -319,7 +319,7 @@ extern void set_zone_contiguous(struct z
  extern void clear_zone_contiguous(struct zone *zone);
  
  #ifdef CONFIG_MEMORY_HOTPLUG
@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern int add_memory_resource(int nid, struct resource *resource,
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-reorganize-new-pgdat-initialization
 +++ a/mm/memory_hotplug.c
-@@ -1167,39 +1167,16 @@ static pg_data_t __ref *hotadd_init_pgda
+@@ -1166,39 +1166,16 @@ static pg_data_t __ref *hotadd_init_pgda
  {
  	struct pglist_data *pgdat;
  
@@ -94,7 +94,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * The node we allocated has no zone fallback lists. For avoiding
-@@ -1211,6 +1188,7 @@ static pg_data_t __ref *hotadd_init_pgda
+@@ -1210,6 +1187,7 @@ static pg_data_t __ref *hotadd_init_pgda
  	 * When memory is hot-added, all the memory is in offline state. So
  	 * clear all zones' present_pages because they will be updated in
  	 * online_pages() and offline_pages().
@@ -104,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	reset_node_present_pages(pgdat);
 --- a/mm/page_alloc.c~mm-memory_hotplug-reorganize-new-pgdat-initialization
 +++ a/mm/page_alloc.c
-@@ -7474,12 +7474,33 @@ static void __meminit zone_init_internal
+@@ -7457,12 +7457,33 @@ static void __meminit zone_init_internal
   * NOTE: this function is only called during memory hotplug
   */
  #ifdef CONFIG_MEMORY_HOTPLUG

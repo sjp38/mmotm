@@ -81,7 +81,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  void arch_free_nodedata(pg_data_t *pgdat)
 --- a/include/linux/memory_hotplug.h~mm-handle-uninitialized-numa-nodes-gracefully
 +++ a/include/linux/memory_hotplug.h
-@@ -45,7 +45,7 @@ extern void arch_refresh_nodedata(int ni
+@@ -44,7 +44,7 @@ extern void arch_refresh_nodedata(int ni
   */
  #define generic_alloc_nodedata(nid)				\
  ({								\
@@ -101,7 +101,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif	/* __MM_INTERNAL_H */
 --- a/mm/memory_hotplug.c~mm-handle-uninitialized-numa-nodes-gracefully
 +++ a/mm/memory_hotplug.c
-@@ -1163,19 +1163,21 @@ static void reset_node_present_pages(pg_
+@@ -1162,19 +1162,21 @@ static void reset_node_present_pages(pg_
  }
  
  /* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
@@ -129,7 +129,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	} else {
  		int cpu;
  		/*
-@@ -1194,8 +1196,6 @@ static pg_data_t __ref *hotadd_new_pgdat
+@@ -1193,8 +1195,6 @@ static pg_data_t __ref *hotadd_new_pgdat
  		}
  	}
  
@@ -138,7 +138,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	pgdat->node_start_pfn = 0;
  
  	/* init node's zones as empty zones, we don't have any present pages.*/
-@@ -1247,7 +1247,7 @@ static int __try_online_node(int nid, bo
+@@ -1246,7 +1246,7 @@ static int __try_online_node(int nid, bo
  	if (node_online(nid))
  		return 0;
  
@@ -147,7 +147,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (!pgdat) {
  		pr_err("Cannot online node %d due to NULL pgdat\n", nid);
  		ret = -ENOMEM;
-@@ -1446,9 +1446,6 @@ int __ref add_memory_resource(int nid, s
+@@ -1445,9 +1445,6 @@ int __ref add_memory_resource(int nid, s
  
  	return ret;
  error:
@@ -159,7 +159,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  error_mem_hotplug_end:
 --- a/mm/page_alloc.c~mm-handle-uninitialized-numa-nodes-gracefully
 +++ a/mm/page_alloc.c
-@@ -6335,7 +6335,7 @@ static void per_cpu_pages_init(struct pe
+@@ -6332,7 +6332,7 @@ static void per_cpu_pages_init(struct pe
  #define BOOT_PAGESET_BATCH	1
  static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
  static DEFINE_PER_CPU(struct per_cpu_zonestat, boot_zonestats);
@@ -168,7 +168,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  static void __build_all_zonelists(void *data)
  {
-@@ -6357,7 +6357,11 @@ static void __build_all_zonelists(void *
+@@ -6354,7 +6354,11 @@ static void __build_all_zonelists(void *
  	if (self && !node_online(self->node_id)) {
  		build_zonelists(self);
  	} else {
@@ -181,7 +181,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			pg_data_t *pgdat = NODE_DATA(nid);
  
  			build_zonelists(pgdat);
-@@ -8071,8 +8075,32 @@ void __init free_area_init(unsigned long
+@@ -8054,8 +8058,32 @@ void __init free_area_init(unsigned long
  	/* Initialise every node */
  	mminit_verify_pageflags_layout();
  	setup_nr_node_ids();

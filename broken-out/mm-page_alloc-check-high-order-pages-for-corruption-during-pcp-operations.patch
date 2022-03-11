@@ -1,0 +1,126 @@
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: mm/page_alloc: check high-order pages for corruption during PCP operations
+
+Eric Dumazet pointed out that commit 44042b449872 ("mm/page_alloc: allow
+high-order pages to be stored on the per-cpu lists") only checks the head
+page during PCP refill and allocation operations.  This was an oversight
+and all pages should be checked.  This will incur a small performance
+penalty but it's necessary for correctness.
+
+Link: https://lkml.kernel.org/r/20220310092456.GJ15701@techsingularity.net
+Fixes: 44042b449872 ("mm/page_alloc: allow high-order pages to be stored on the per-cpu lists")
+Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+Reported-by: Eric Dumazet <edumazet@google.com>
+Acked-by: Eric Dumazet <edumazet@google.com>
+Reviewed-by: Shakeel Butt <shakeelb@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Wei Xu <weixugc@google.com>
+Cc: Greg Thelen <gthelen@google.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: David Rientjes <rientjes@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |   46 +++++++++++++++++++++++-----------------------
+ 1 file changed, 23 insertions(+), 23 deletions(-)
+
+--- a/mm/page_alloc.c~mm-page_alloc-check-high-order-pages-for-corruption-during-pcp-operations
++++ a/mm/page_alloc.c
+@@ -2291,23 +2291,36 @@ static inline int check_new_page(struct
+ 	return 1;
+ }
+ 
++static bool check_new_pages(struct page *page, unsigned int order)
++{
++	int i;
++	for (i = 0; i < (1 << order); i++) {
++		struct page *p = page + i;
++
++		if (unlikely(check_new_page(p)))
++			return true;
++	}
++
++	return false;
++}
++
+ #ifdef CONFIG_DEBUG_VM
+ /*
+  * With DEBUG_VM enabled, order-0 pages are checked for expected state when
+  * being allocated from pcp lists. With debug_pagealloc also enabled, they are
+  * also checked when pcp lists are refilled from the free lists.
+  */
+-static inline bool check_pcp_refill(struct page *page)
++static inline bool check_pcp_refill(struct page *page, unsigned int order)
+ {
+ 	if (debug_pagealloc_enabled_static())
+-		return check_new_page(page);
++		return check_new_pages(page, order);
+ 	else
+ 		return false;
+ }
+ 
+-static inline bool check_new_pcp(struct page *page)
++static inline bool check_new_pcp(struct page *page, unsigned int order)
+ {
+-	return check_new_page(page);
++	return check_new_pages(page, order);
+ }
+ #else
+ /*
+@@ -2315,32 +2328,19 @@ static inline bool check_new_pcp(struct
+  * when pcp lists are being refilled from the free lists. With debug_pagealloc
+  * enabled, they are also checked when being allocated from the pcp lists.
+  */
+-static inline bool check_pcp_refill(struct page *page)
++static inline bool check_pcp_refill(struct page *page, unsigned int order)
+ {
+-	return check_new_page(page);
++	return check_new_pages(page, order);
+ }
+-static inline bool check_new_pcp(struct page *page)
++static inline bool check_new_pcp(struct page *page, unsigned int order)
+ {
+ 	if (debug_pagealloc_enabled_static())
+-		return check_new_page(page);
++		return check_new_pages(page, order);
+ 	else
+ 		return false;
+ }
+ #endif /* CONFIG_DEBUG_VM */
+ 
+-static bool check_new_pages(struct page *page, unsigned int order)
+-{
+-	int i;
+-	for (i = 0; i < (1 << order); i++) {
+-		struct page *p = page + i;
+-
+-		if (unlikely(check_new_page(p)))
+-			return true;
+-	}
+-
+-	return false;
+-}
+-
+ inline void post_alloc_hook(struct page *page, unsigned int order,
+ 				gfp_t gfp_flags)
+ {
+@@ -2982,7 +2982,7 @@ static int rmqueue_bulk(struct zone *zon
+ 		if (unlikely(page == NULL))
+ 			break;
+ 
+-		if (unlikely(check_pcp_refill(page)))
++		if (unlikely(check_pcp_refill(page, order)))
+ 			continue;
+ 
+ 		/*
+@@ -3600,7 +3600,7 @@ struct page *__rmqueue_pcplist(struct zo
+ 		page = list_first_entry(list, struct page, lru);
+ 		list_del(&page->lru);
+ 		pcp->count -= 1 << order;
+-	} while (check_new_pcp(page));
++	} while (check_new_pcp(page, order));
+ 
+ 	return page;
+ }
+_

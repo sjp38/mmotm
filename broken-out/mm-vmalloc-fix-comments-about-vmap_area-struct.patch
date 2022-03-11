@@ -7,7 +7,7 @@ free_vmap_area_root should be in the "free" tree.
 Link: https://lkml.kernel.org/r/20220305011510.33596-1-libang.linuxer@gmail.com
 Fixes: 688fcbfc06e4 ("mm/vmalloc: modify struct vmap_area to reduce its size")
 Signed-off-by: Bang Li <libang.linuxer@gmail.com>
-Cc: Uladzislau Rezki (Sony) <urezki@gmail.com>
+Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
 Cc: Pengfei Li <lpf.vector@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

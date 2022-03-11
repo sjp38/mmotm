@@ -21,7 +21,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-move-generation-assignment-and-comparison-together
 +++ a/mm/memcontrol.c
-@@ -996,7 +996,14 @@ struct mem_cgroup *mem_cgroup_iter(struc
+@@ -1006,7 +1006,14 @@ struct mem_cgroup *mem_cgroup_iter(struc
  		mz = root->nodeinfo[reclaim->pgdat->node_id];
  		iter = &mz->iter;
  
@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			goto out_unlock;
  
  		while (1) {
-@@ -1056,8 +1063,6 @@ struct mem_cgroup *mem_cgroup_iter(struc
+@@ -1066,8 +1073,6 @@ struct mem_cgroup *mem_cgroup_iter(struc
  
  		if (!memcg)
  			iter->generation++;

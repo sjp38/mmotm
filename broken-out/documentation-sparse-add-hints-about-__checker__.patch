@@ -1,0 +1,51 @@
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Documentation/sparse: add hints about __CHECKER__
+
+Several attributes depend on __CHECKER__, but previously there was no clue
+in the tree about when __CHECKER__ might be defined.  Add hints at the
+most common places (__kernel, __user, __iomem, __bitwise) and in the
+sparse documentation.
+
+Link: https://lkml.kernel.org/r/20220310220927.245704-3-helgaas@kernel.org
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: "Michael S . Tsirkin" <mst@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/dev-tools/sparse.rst |    2 ++
+ include/linux/compiler_types.h     |    1 +
+ include/uapi/linux/types.h         |    1 +
+ 3 files changed, 4 insertions(+)
+
+--- a/Documentation/dev-tools/sparse.rst~documentation-sparse-add-hints-about-__checker__
++++ a/Documentation/dev-tools/sparse.rst
+@@ -100,3 +100,5 @@ have already built it.
+ 
+ The optional make variable CF can be used to pass arguments to sparse.  The
+ build system passes -Wbitwise to sparse automatically.
++
++Note that sparse defines the __CHECKER__ preprocessor symbol.
+--- a/include/linux/compiler_types.h~documentation-sparse-add-hints-about-__checker__
++++ a/include/linux/compiler_types.h
+@@ -4,6 +4,7 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++/* sparse defines __CHECKER__; see Documentation/dev-tools/sparse.rst */
+ #ifdef __CHECKER__
+ /* address spaces */
+ # define __kernel	__attribute__((address_space(0)))
+--- a/include/uapi/linux/types.h~documentation-sparse-add-hints-about-__checker__
++++ a/include/uapi/linux/types.h
+@@ -19,6 +19,7 @@
+  * any application/library that wants linux/types.h.
+  */
+ 
++/* sparse defines __CHECKER__; see Documentation/dev-tools/sparse.rst */
+ #ifdef __CHECKER__
+ #define __bitwise	__attribute__((bitwise))
+ #else
+_

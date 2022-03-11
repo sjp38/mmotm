@@ -38,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~memcg-refactor-mem_cgroup_oom
 +++ a/mm/memcontrol.c
-@@ -1796,20 +1796,16 @@ static void memcg_oom_recover(struct mem
+@@ -1806,20 +1806,16 @@ static void memcg_oom_recover(struct mem
  		__wake_up(&memcg_oom_waitq, TASK_NORMAL, 0, memcg);
  }
  
@@ -66,7 +66,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	memcg_memory_event(memcg, MEMCG_OOM);
  
-@@ -1832,14 +1828,13 @@ static enum oom_status mem_cgroup_oom(st
+@@ -1842,14 +1838,13 @@ static enum oom_status mem_cgroup_oom(st
  	 * victim and then we have to bail out from the charge path.
  	 */
  	if (memcg->oom_kill_disable) {
@@ -88,7 +88,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	mem_cgroup_mark_under_oom(memcg);
-@@ -1850,10 +1845,7 @@ static enum oom_status mem_cgroup_oom(st
+@@ -1860,10 +1855,7 @@ static enum oom_status mem_cgroup_oom(st
  		mem_cgroup_oom_notify(memcg);
  
  	mem_cgroup_unmark_under_oom(memcg);
@@ -100,7 +100,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (locked)
  		mem_cgroup_oom_unlock(memcg);
-@@ -2546,7 +2538,6 @@ static int try_charge_memcg(struct mem_c
+@@ -2556,7 +2548,6 @@ static int try_charge_memcg(struct mem_c
  	int nr_retries = MAX_RECLAIM_RETRIES;
  	struct mem_cgroup *mem_over_limit;
  	struct page_counter *counter;
@@ -108,7 +108,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	unsigned long nr_reclaimed;
  	bool passed_oom = false;
  	bool may_swap = true;
-@@ -2649,9 +2640,8 @@ retry:
+@@ -2659,9 +2650,8 @@ retry:
  	 * a forward progress or bypass the charge if the oom killer
  	 * couldn't make any progress.
  	 */

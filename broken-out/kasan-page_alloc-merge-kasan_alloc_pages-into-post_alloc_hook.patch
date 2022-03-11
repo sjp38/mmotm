@@ -106,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  void kasan_enable_tagging_sync(void)
 --- a/mm/page_alloc.c~kasan-page_alloc-merge-kasan_alloc_pages-into-post_alloc_hook
 +++ a/mm/page_alloc.c
-@@ -2346,6 +2346,9 @@ static bool check_new_pages(struct page
+@@ -2346,6 +2346,9 @@ static inline bool check_new_pcp(struct
  inline void post_alloc_hook(struct page *page, unsigned int order,
  				gfp_t gfp_flags)
  {

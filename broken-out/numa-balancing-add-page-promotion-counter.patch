@@ -111,7 +111,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif /* _LINUX_NODE_H_ */
 --- a/mm/migrate.c~numa-balancing-add-page-promotion-counter
 +++ a/mm/migrate.c
-@@ -2078,6 +2078,7 @@ int migrate_misplaced_page(struct page *
+@@ -2071,6 +2071,7 @@ int migrate_misplaced_page(struct page *
  	pg_data_t *pgdat = NODE_DATA(node);
  	int isolated;
  	int nr_remaining;
@@ -119,7 +119,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	LIST_HEAD(migratepages);
  	new_page_t *new;
  	bool compound;
-@@ -2116,7 +2117,8 @@ int migrate_misplaced_page(struct page *
+@@ -2109,7 +2110,8 @@ int migrate_misplaced_page(struct page *
  
  	list_add(&page->lru, &migratepages);
  	nr_remaining = migrate_pages(&migratepages, *new, NULL, node,
@@ -129,7 +129,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (nr_remaining) {
  		if (!list_empty(&migratepages)) {
  			list_del(&page->lru);
-@@ -2125,8 +2127,13 @@ int migrate_misplaced_page(struct page *
+@@ -2118,8 +2120,13 @@ int migrate_misplaced_page(struct page *
  			putback_lru_page(page);
  		}
  		isolated = 0;

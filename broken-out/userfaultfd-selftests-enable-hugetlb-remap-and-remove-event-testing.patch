@@ -45,7 +45,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  echo "running userfaultfd_shmem"
 --- a/tools/testing/selftests/vm/userfaultfd.c~userfaultfd-selftests-enable-hugetlb-remap-and-remove-event-testing
 +++ a/tools/testing/selftests/vm/userfaultfd.c
-@@ -88,7 +88,6 @@ static bool test_uffdio_minor = false;
+@@ -89,7 +89,6 @@ static bool test_uffdio_minor = false;
  static bool map_shared;
  static int shm_fd;
  static int huge_fd;
@@ -53,7 +53,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static unsigned long long *count_verify;
  static int uffd = -1;
  static int uffd_flags, finished, *pipefd;
-@@ -127,9 +126,9 @@ const char *examples =
+@@ -128,9 +127,9 @@ const char *examples =
      "./userfaultfd anon 100 99999\n\n"
      "# Run share memory test on 1GiB region with 99 bounces:\n"
      "./userfaultfd shmem 1000 99\n\n"
@@ -66,7 +66,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
      "./userfaultfd hugetlb_shared 256 50 /dev/hugepages/hugefile\n\n"
      "# 10MiB-~6GiB 999 bounces anonymous test, "
      "continue forever unless an error triggers\n"
-@@ -226,10 +225,13 @@ static void noop_alias_mapping(__u64 *st
+@@ -227,10 +226,13 @@ static void noop_alias_mapping(__u64 *st
  
  static void hugetlb_release_pages(char *rel_area)
  {
@@ -84,7 +84,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static void hugetlb_allocate_area(void **alloc_area)
-@@ -237,26 +239,37 @@ static void hugetlb_allocate_area(void *
+@@ -238,26 +240,37 @@ static void hugetlb_allocate_area(void *
  	void *area_alias = NULL;
  	char **alloc_area_alias;
  
@@ -133,7 +133,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		alloc_area_alias = &area_src_alias;
  	} else {
  		alloc_area_alias = &area_dst_alias;
-@@ -269,12 +282,7 @@ static void hugetlb_alias_mapping(__u64
+@@ -270,12 +283,7 @@ static void hugetlb_alias_mapping(__u64
  {
  	if (!map_shared)
  		return;
@@ -147,7 +147,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	*start = (unsigned long) area_dst_alias + offset;
  }
  
-@@ -427,7 +435,6 @@ static void uffd_test_ctx_clear(void)
+@@ -428,7 +436,6 @@ static void uffd_test_ctx_clear(void)
  		uffd = -1;
  	}
  
@@ -155,7 +155,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	munmap_area((void **)&area_src);
  	munmap_area((void **)&area_src_alias);
  	munmap_area((void **)&area_dst);
-@@ -925,10 +932,7 @@ static int faulting_process(int signal_t
+@@ -926,10 +933,7 @@ static int faulting_process(int signal_t
  	struct sigaction act;
  	unsigned long signalled = 0;
  
@@ -167,7 +167,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (signal_test) {
  		sigbuf = &jbuf;
-@@ -985,9 +989,6 @@ static int faulting_process(int signal_t
+@@ -986,9 +990,6 @@ static int faulting_process(int signal_t
  	if (signal_test)
  		return signalled != split_nr_pages;
  
@@ -177,7 +177,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	area_dst = mremap(area_dst, nr_pages * page_size,  nr_pages * page_size,
  			  MREMAP_MAYMOVE | MREMAP_FIXED, area_src);
  	if (area_dst == MAP_FAILED)
-@@ -1675,7 +1676,7 @@ int main(int argc, char **argv)
+@@ -1676,7 +1677,7 @@ int main(int argc, char **argv)
  	}
  	nr_pages = nr_pages_per_cpu * nr_cpus;
  

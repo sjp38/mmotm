@@ -1,0 +1,32 @@
+From: Charan Teja Kalla <quic_charante@quicinc.com>
+Subject: mm: vmscan: fix documentation for page_check_references()
+
+commit b518154e59aa ("mm/vmscan: protect the workingset on anonymous LRU")
+requires to look twice for both mapped anon/file pages are used more than
+once to take the decission of reclaim or activation.  Correct the
+documentation accordingly.
+
+Link: https://lkml.kernel.org/r/1646925640-21324-1-git-send-email-quic_charante@quicinc.com
+Signed-off-by: Charan Teja Kalla <quic_charante@quicinc.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/vmscan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/vmscan.c~mm-vmscan-fix-documentation-for-page_check_references
++++ a/mm/vmscan.c
+@@ -1385,7 +1385,7 @@ static enum page_references page_check_r
+ 		/*
+ 		 * All mapped pages start out with page table
+ 		 * references from the instantiating fault, so we need
+-		 * to look twice if a mapped file page is used more
++		 * to look twice if a mapped file/anon page is used more
+ 		 * than once.
+ 		 *
+ 		 * Mark it and spare it for another trip around the
+_

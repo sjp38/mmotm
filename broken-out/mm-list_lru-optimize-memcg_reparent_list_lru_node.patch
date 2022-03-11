@@ -1,0 +1,50 @@
+From: Waiman Long <longman@redhat.com>
+Subject: mm/list_lru: optimize memcg_reparent_list_lru_node()
+
+Since commit 2c80cd57c743 ("mm/list_lru.c: fix list_lru_count_node() to be
+race free"), we are tracking the total number of lru entries in a
+list_lru_node in its nr_items field.  In the case of
+memcg_reparent_list_lru_node(), there is nothing to be done if nr_items is
+0.  We don't even need to take the nlru->lock as no new lru entry could be
+added by a racing list_lru_add() to the draining src_idx memcg at this
+point.
+
+On systems that serve a lot of containers, it is possible that there can
+be thousands of list_lru's present due to the fact that each container may
+mount its own container specific filesystems.  As a typical container uses
+only a few cpus, it is likely that only the list_lru_node that contains
+those cpus will be utilized while the rests may be empty.  In other words,
+there can be a lot of list_lru_node with 0 nr_items.  By skipping a
+lock/unlock operation and loading a cacheline from memcg_lrus, a sizeable
+number of cpu cycles can be saved.  That can be substantial if we are
+talking about thousands of list_lru_node's with 0 nr_items.
+
+Link: https://lkml.kernel.org/r/20220309144000.1470138-1-longman@redhat.com
+Signed-off-by: Waiman Long <longman@redhat.com>
+Reviewed-by: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Shakeel Butt <shakeelb@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/list_lru.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+--- a/mm/list_lru.c~mm-list_lru-optimize-memcg_reparent_list_lru_node
++++ a/mm/list_lru.c
+@@ -519,6 +519,12 @@ static void memcg_drain_list_lru_node(st
+ 	struct list_lru_one *src, *dst;
+ 
+ 	/*
++	 * If there is no lru entry in this nlru, we can skip it immediately.
++	 */
++	if (!READ_ONCE(nlru->nr_items))
++		return;
++
++	/*
+ 	 * Since list_lru_{add,del} may be called under an IRQ-safe lock,
+ 	 * we have to use IRQ-safe primitives here to avoid deadlock.
+ 	 */
+_

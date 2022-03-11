@@ -35,7 +35,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcontrol-fix-cannot-alloc-the-maximum-memcg-id
 +++ a/mm/memcontrol.c
-@@ -5085,8 +5085,7 @@ static struct mem_cgroup *mem_cgroup_all
+@@ -5095,8 +5095,7 @@ static struct mem_cgroup *mem_cgroup_all
  		return ERR_PTR(error);
  
  	memcg->id.id = idr_alloc(&mem_cgroup_idr, NULL,

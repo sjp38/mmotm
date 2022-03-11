@@ -24,6 +24,7 @@ Fixes: f7e1cb6ec51b0 ("mm: memcontrol: account socket memory in unified hierarch
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Reported-by: Igor Zhbanov <i.zhbanov@omprussia.ru>
 Link: lore.kernel.org/r/64644a2f-4a20-bab3-1e15-3b2cdd0defe3@omprussia.ru
+Reviewed-by: Michal Koutný <mkoutny@suse.com>
 Cc: Johannes Weiner <hannes@cmpxchg.org>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Vladimir Davydov <vdavydov.dev@gmail.com>
@@ -36,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcontrol-return-1-from-cgroupmemory-__setup-handler
 +++ a/mm/memcontrol.c
-@@ -7058,7 +7058,7 @@ static int __init cgroup_memory(char *s)
+@@ -7068,7 +7068,7 @@ static int __init cgroup_memory(char *s)
  		if (!strcmp(token, "nokmem"))
  			cgroup_memory_nokmem = true;
  	}

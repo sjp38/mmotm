@@ -38,7 +38,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  long pin_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
 --- a/mm/gup.c~mm-gup-remove-unused-pin_user_pages_locked
 +++ a/mm/gup.c
-@@ -3146,32 +3146,3 @@ long pin_user_pages_unlocked(unsigned lo
+@@ -3127,32 +3127,3 @@ long pin_user_pages_unlocked(unsigned lo
  	return get_user_pages_unlocked(start, nr_pages, pages, gup_flags);
  }
  EXPORT_SYMBOL(pin_user_pages_unlocked);

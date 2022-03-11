@@ -15,8 +15,8 @@ Link: https://lkml.kernel.org/r/20220304170215.1868106-1-eric.dumazet@gmail.com
 Signed-off-by: Eric Dumazet <edumazet@google.com>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
 Acked-by: David Rientjes <rientjes@google.com>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Vlastimil Babka <vbabka@suse.cz>
+Acked-by: Mel Gorman <mgorman@techsingularity.net>
+Reviewed-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Wei Xu <weixugc@google.com>
 Cc: Greg Thelen <gthelen@google.com>
@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-page_alloc-call-check_new_pages-while-zone-spinlock-is-not-held
 +++ a/mm/page_alloc.c
-@@ -3668,10 +3668,10 @@ struct page *rmqueue(struct zone *prefer
+@@ -3665,10 +3665,10 @@ struct page *rmqueue(struct zone *prefer
  	 * allocate greater than order-1 page units with __GFP_NOFAIL.
  	 */
  	WARN_ON_ONCE((gfp_flags & __GFP_NOFAIL) && (order > 1));
@@ -41,7 +41,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		/*
  		 * order-0 request can reach here when the pcplist is skipped
  		 * due to non-CMA allocation context. HIGHATOMIC area is
-@@ -3683,15 +3683,15 @@ struct page *rmqueue(struct zone *prefer
+@@ -3680,15 +3680,15 @@ struct page *rmqueue(struct zone *prefer
  			if (page)
  				trace_mm_page_alloc_zone_locked(page, order, migratetype);
  		}

@@ -67,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			ret = PTR_ERR(page);
 --- a/mm/migrate.c~mm-gup-follow_pfn_pte-eexist-cleanup
 +++ a/mm/migrate.c
-@@ -1762,6 +1762,13 @@ static int do_pages_move(struct mm_struc
+@@ -1755,6 +1755,13 @@ static int do_pages_move(struct mm_struc
  		}
  
  		/*

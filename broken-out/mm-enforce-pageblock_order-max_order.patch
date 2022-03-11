@@ -157,7 +157,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	adjust_managed_page_count(page, pageblock_nr_pages);
  	page_zone(page)->cma_pages += pageblock_nr_pages;
-@@ -7390,16 +7377,15 @@ static inline void setup_usemap(struct z
+@@ -7373,16 +7360,15 @@ static inline void setup_usemap(struct z
  /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
  void __init set_pageblock_order(void)
  {
@@ -177,7 +177,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * Assume the largest contiguous order of interest is a huge page.
-@@ -8987,14 +8973,12 @@ struct page *has_unmovable_pages(struct
+@@ -8970,14 +8956,12 @@ struct page *has_unmovable_pages(struct
  #ifdef CONFIG_CONTIG_ALLOC
  static unsigned long pfn_max_align_down(unsigned long pfn)
  {

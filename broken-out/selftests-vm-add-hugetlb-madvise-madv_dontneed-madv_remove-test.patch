@@ -450,7 +450,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +}
 --- a/tools/testing/selftests/vm/Makefile~selftests-vm-add-hugetlb-madvise-madv_dontneed-madv_remove-test
 +++ a/tools/testing/selftests/vm/Makefile
-@@ -28,6 +28,7 @@ LDLIBS = -lrt -lpthread
+@@ -30,6 +30,7 @@ LDLIBS = -lrt -lpthread
  TEST_GEN_FILES = compaction_test
  TEST_GEN_FILES += gup_test
  TEST_GEN_FILES += hmm-tests

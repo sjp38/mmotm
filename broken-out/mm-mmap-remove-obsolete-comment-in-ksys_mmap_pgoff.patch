@@ -1,0 +1,28 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/mmap: remove obsolete comment in ksys_mmap_pgoff
+
+RLIMIT_MEMLOCK is already reimplemented on top of ucounts now.  And since
+commit 83c1fd763b32 ("mm,hugetlb: remove mlock ulimit for SHM_HUGETLB"),
+mlock ulimit for SHM_HUGETLB is further removed.  So we should remove this
+obsolete comment.
+
+Link: https://lkml.kernel.org/r/20220309090623.13036-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mmap.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- a/mm/mmap.c~mm-mmap-remove-obsolete-comment-in-ksys_mmap_pgoff
++++ a/mm/mmap.c
+@@ -1616,8 +1616,6 @@ unsigned long ksys_mmap_pgoff(unsigned l
+ 		/*
+ 		 * VM_NORESERVE is used because the reservations will be
+ 		 * taken when vm_ops->mmap() is called
+-		 * A dummy user value is used because we are not locking
+-		 * memory so no accounting is necessary
+ 		 */
+ 		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len,
+ 				VM_NORESERVE,
+_

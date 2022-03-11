@@ -40,7 +40,8 @@ Link: https://lkml.kernel.org/r/90bc5e69-9984-b5fa-a685-be55f2b64b@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Reported-by: Mikulas Patocka <mpatocka@redhat.com>
 Reported-by: Lukas Czerner <lczerner@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
+Acked-by: Darrick J. Wong <djwong@kernel.org>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 Cc: Zdenek Kabelac <zkabelac@redhat.com>
 Cc: "Darrick J. Wong" <djwong@kernel.org>
 Cc: Miklos Szeredi <miklos@szeredi.hu>

@@ -88,7 +88,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/page_alloc.c~mm-pages_allocc-dont-create-zone_movable-beyond-the-end-of-a-node
 +++ a/mm/page_alloc.c
-@@ -7959,10 +7959,17 @@ restart:
+@@ -7942,10 +7942,17 @@ restart:
  
  out2:
  	/* Align start of ZONE_MOVABLE on all nids to MAX_ORDER_NR_PAGES */

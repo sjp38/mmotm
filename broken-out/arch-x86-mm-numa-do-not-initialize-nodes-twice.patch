@@ -200,7 +200,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
 --- a/mm/page_alloc.c~arch-x86-mm-numa-do-not-initialize-nodes-twice
 +++ a/mm/page_alloc.c
-@@ -7634,7 +7634,7 @@ static void __init free_area_init_node(i
+@@ -7617,7 +7617,7 @@ static void __init free_area_init_node(i
  	free_area_init_core(pgdat);
  }
  

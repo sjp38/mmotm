@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/migrate.c~mmmigrate-fix-establishing-demotion-target
 +++ a/mm/migrate.c
-@@ -3088,18 +3088,21 @@ static int establish_migrate_target(int
+@@ -3081,18 +3081,21 @@ static int establish_migrate_target(int
  	if (best_distance != -1) {
  		val = node_distance(node, migration_target);
  		if (val > best_distance)

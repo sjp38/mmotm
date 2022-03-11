@@ -552,7 +552,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  int memcg_update_all_list_lrus(int new_size)
-@@ -524,8 +470,8 @@ static void memcg_drain_list_lru_node(st
+@@ -530,8 +476,8 @@ static void memcg_drain_list_lru_node(st
  	 */
  	spin_lock_irq(&nlru->lock);
  

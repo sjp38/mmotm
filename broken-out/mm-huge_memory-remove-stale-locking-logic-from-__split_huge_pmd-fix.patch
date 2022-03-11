@@ -1,0 +1,55 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-huge_memory-remove-stale-locking-logic-from-__split_huge_pmd-fix
+
+simplificatoin, per Yang Shi
+
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Don Dutile <ddutile@redhat.com>
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Jann Horn <jannh@google.com>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: John Hubbard <jhubbard@nvidia.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Liang Zhang <zhangliang5@huawei.com>
+Cc: Matthew Wilcox (Oracle) <willy@infradead.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Nadav Amit <nadav.amit@gmail.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Peter Xu <peterx@redhat.com>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Roman Gushchin <roman.gushchin@linux.dev>
+Cc: Shakeel Butt <shakeelb@google.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/huge_memory.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+--- a/mm/huge_memory.c~mm-huge_memory-remove-stale-locking-logic-from-__split_huge_pmd-fix
++++ a/mm/huge_memory.c
+@@ -2151,12 +2151,10 @@ void __split_huge_pmd(struct vm_area_str
+ 			goto out;
+ 	}
+ 
+-	if (pmd_trans_huge(*pmd)) {
+-		if (!folio)
+-			folio = page_folio(pmd_page(*pmd));
+-	} else if (!(pmd_devmap(*pmd) || is_pmd_migration_entry(*pmd)))
+-		goto out;
+-	__split_huge_pmd_locked(vma, pmd, range.start, freeze);
++	if (pmd_trans_huge(*pmd) || pmd_devmap(*pmd) ||
++	    is_pmd_migration_entry(*pmd))
++		__split_huge_pmd_locked(vma, pmd, range.start, freeze);
++
+ out:
+ 	spin_unlock(ptl);
+ 	/*
+_

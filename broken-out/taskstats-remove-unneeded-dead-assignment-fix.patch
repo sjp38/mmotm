@@ -1,0 +1,35 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: taskstats-remove-unneeded-dead-assignment-fix
+
+reduce scope of `rc'
+
+Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Nathan Chancellor <natechancellor@gmail.com>
+Cc: Tom Rix <trix@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/taskstats.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/kernel/taskstats.c~taskstats-remove-unneeded-dead-assignment-fix
++++ a/kernel/taskstats.c
+@@ -113,12 +113,14 @@ static void send_cpu_listeners(struct sk
+ 	struct listener *s, *tmp;
+ 	struct sk_buff *skb_next, *skb_cur = skb;
+ 	void *reply = genlmsg_data(genlhdr);
+-	int rc, delcount = 0;
++	int delcount = 0;
+ 
+ 	genlmsg_end(skb, reply);
+ 
+ 	down_read(&listeners->sem);
+ 	list_for_each_entry(s, &listeners->list, list) {
++		int rc;
++
+ 		skb_next = NULL;
+ 		if (!list_is_last(&s->list, &listeners->list)) {
+ 			skb_next = skb_clone(skb_cur, GFP_KERNEL);
+_

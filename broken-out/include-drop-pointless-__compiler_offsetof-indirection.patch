@@ -37,7 +37,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/include/linux/compiler_types.h~include-drop-pointless-__compiler_offsetof-indirection
 +++ a/include/linux/compiler_types.h
-@@ -137,8 +137,6 @@ struct ftrace_likely_data {
+@@ -138,8 +138,6 @@ struct ftrace_likely_data {
   */
  #define __naked			__attribute__((__naked__)) notrace
  

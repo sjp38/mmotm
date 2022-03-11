@@ -99,9 +99,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/mm/page_alloc.c~kasan-page_alloc-allow-skipping-unpoisoning-for-hw_tags
 +++ a/mm/page_alloc.c
-@@ -2343,6 +2343,26 @@ static bool check_new_pages(struct page
- 	return false;
+@@ -2343,6 +2343,26 @@ static inline bool check_new_pcp(struct
  }
+ #endif /* CONFIG_DEBUG_VM */
  
 +static inline bool should_skip_kasan_unpoison(gfp_t flags, bool init_tags)
 +{

@@ -8,10 +8,10 @@ Replace it with flush_cache_range() to fix this issue.
 Link: https://lkml.kernel.org/r/20220302082718.32268-3-songmuchun@bytedance.com
 Fixes: f729c8c9b24f ("dax: wrprotect pmd_t in dax_mapping_entry_mkclean")
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+Reviewed-by: Dan Williams <dan.j.williams@intel.com>
 Cc: Alexander Viro <viro@zeniv.linux.org.uk>
 Cc: Alistair Popple <apopple@nvidia.com>
 Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Hugh Dickins <hughd@google.com>
 Cc: Jan Kara <jack@suse.cz>
 Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>

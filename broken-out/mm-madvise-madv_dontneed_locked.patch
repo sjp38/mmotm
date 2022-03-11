@@ -42,7 +42,7 @@ Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 Acked-by: Michal Hocko <mhocko@suse.com>
 Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 Cc: Nadav Amit <nadav.amit@gmail.com>
 Cc: David Hildenbrand <david@redhat.com>
 Cc: Dr. David Alan Gilbert <dgilbert@redhat.com>

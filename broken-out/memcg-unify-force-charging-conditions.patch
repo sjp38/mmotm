@@ -32,7 +32,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~memcg-unify-force-charging-conditions
 +++ a/mm/memcontrol.c
-@@ -2566,15 +2566,6 @@ retry:
+@@ -2576,15 +2576,6 @@ retry:
  	}
  
  	/*
@@ -48,7 +48,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 * Prevent unbounded recursion when reclaim operations need to
  	 * allocate memory. This might exceed the limits temporarily,
  	 * but we prefer facilitating memory reclaim and getting back
-@@ -2647,7 +2638,13 @@ retry:
+@@ -2657,7 +2648,13 @@ retry:
  		goto retry;
  	}
  nomem:

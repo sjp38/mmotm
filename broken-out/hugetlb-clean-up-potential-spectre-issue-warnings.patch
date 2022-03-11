@@ -43,7 +43,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include <asm/page.h>
  #include <asm/pgalloc.h>
-@@ -4161,7 +4162,7 @@ static int __init hugepages_setup(char *
+@@ -4164,7 +4165,7 @@ static int __init hugepages_setup(char *
  			}
  			if (tmp >= nr_online_nodes)
  				goto invalid;
@@ -52,7 +52,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			p += count + 1;
  			/* Parse hugepages */
  			if (sscanf(p, "%lu%n", &tmp, &count) != 1)
-@@ -6889,9 +6890,9 @@ static int __init cmdline_parse_hugetlb_
+@@ -6892,9 +6893,9 @@ static int __init cmdline_parse_hugetlb_
  			break;
  
  		if (s[count] == ':') {

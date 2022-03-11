@@ -67,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/memcontrol.c~memcg-add-per-memcg-total-kernel-memory-stat
 +++ a/mm/memcontrol.c
-@@ -1371,6 +1371,7 @@ struct memory_stat {
+@@ -1381,6 +1381,7 @@ struct memory_stat {
  static const struct memory_stat memory_stats[] = {
  	{ "anon",			NR_ANON_MAPPED			},
  	{ "file",			NR_FILE_PAGES			},
@@ -75,7 +75,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	{ "kernel_stack",		NR_KERNEL_STACK_KB		},
  	{ "pagetables",			NR_PAGETABLE			},
  	{ "percpu",			MEMCG_PERCPU_B			},
-@@ -2114,6 +2115,7 @@ static DEFINE_MUTEX(percpu_charge_mutex)
+@@ -2124,6 +2125,7 @@ static DEFINE_MUTEX(percpu_charge_mutex)
  static void drain_obj_stock(struct obj_stock *stock);
  static bool obj_stock_flush_required(struct memcg_stock_pcp *stock,
  				     struct mem_cgroup *root_memcg);
@@ -83,7 +83,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #else
  static inline void drain_obj_stock(struct obj_stock *stock)
-@@ -2124,6 +2126,9 @@ static bool obj_stock_flush_required(str
+@@ -2134,6 +2136,9 @@ static bool obj_stock_flush_required(str
  {
  	return false;
  }
@@ -93,7 +93,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
  
  /**
-@@ -2979,6 +2984,18 @@ static void memcg_free_cache_id(int id)
+@@ -2989,6 +2994,18 @@ static void memcg_free_cache_id(int id)
  	ida_simple_remove(&memcg_cache_ida, id);
  }
  
@@ -112,7 +112,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
   * obj_cgroup_uncharge_pages: uncharge a number of kernel pages from a objcg
   * @objcg: object cgroup to uncharge
-@@ -2991,8 +3008,7 @@ static void obj_cgroup_uncharge_pages(st
+@@ -3001,8 +3018,7 @@ static void obj_cgroup_uncharge_pages(st
  
  	memcg = get_mem_cgroup_from_objcg(objcg);
  
@@ -122,7 +122,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	refill_stock(memcg, nr_pages);
  
  	css_put(&memcg->css);
-@@ -3018,8 +3034,7 @@ static int obj_cgroup_charge_pages(struc
+@@ -3028,8 +3044,7 @@ static int obj_cgroup_charge_pages(struc
  	if (ret)
  		goto out;
  
@@ -132,7 +132,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  out:
  	css_put(&memcg->css);
  
-@@ -6801,8 +6816,8 @@ static void uncharge_batch(const struct
+@@ -6811,8 +6826,8 @@ static void uncharge_batch(const struct
  		page_counter_uncharge(&ug->memcg->memory, ug->nr_memory);
  		if (do_memsw_account())
  			page_counter_uncharge(&ug->memcg->memsw, ug->nr_memory);

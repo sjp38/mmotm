@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/test_kasan.c~kasan-improve-vmalloc-tests-fix-3-fix
 +++ a/lib/test_kasan.c
-@@ -1065,7 +1065,6 @@ static void kmalloc_double_kzfree(struct
+@@ -1066,7 +1066,6 @@ static void kmalloc_double_kzfree(struct
  static void vmalloc_helpers_tags(struct kunit *test)
  {
  	void *ptr;
@@ -28,7 +28,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/* This test is intended for tag-based modes. */
  	KASAN_TEST_NEEDS_CONFIG_OFF(test, CONFIG_KASAN_GENERIC);
-@@ -1084,11 +1083,15 @@ static void vmalloc_helpers_tags(struct
+@@ -1085,11 +1084,15 @@ static void vmalloc_helpers_tags(struct
  	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, vmalloc_to_page(ptr));
  
  #if !IS_MODULE(CONFIG_KASAN_KUNIT_TEST)

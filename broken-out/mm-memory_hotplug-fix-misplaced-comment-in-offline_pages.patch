@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memory_hotplug.c~mm-memory_hotplug-fix-misplaced-comment-in-offline_pages
 +++ a/mm/memory_hotplug.c
-@@ -1964,6 +1964,7 @@ int __ref offline_pages(unsigned long st
+@@ -1963,6 +1963,7 @@ int __ref offline_pages(unsigned long st
  	return 0;
  
  failed_removal_isolated:
@@ -24,7 +24,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	undo_isolate_page_range(start_pfn, end_pfn, MIGRATE_MOVABLE);
  	memory_notify(MEM_CANCEL_OFFLINE, &arg);
  failed_removal_pcplists_disabled:
-@@ -1974,7 +1975,6 @@ failed_removal:
+@@ -1973,7 +1974,6 @@ failed_removal:
  		 (unsigned long long) start_pfn << PAGE_SHIFT,
  		 ((unsigned long long) end_pfn << PAGE_SHIFT) - 1,
  		 reason);

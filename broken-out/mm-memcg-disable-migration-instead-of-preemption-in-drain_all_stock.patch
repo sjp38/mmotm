@@ -40,7 +40,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/memcontrol.c~mm-memcg-disable-migration-instead-of-preemption-in-drain_all_stock
 +++ a/mm/memcontrol.c
-@@ -2297,7 +2297,8 @@ static void drain_all_stock(struct mem_c
+@@ -2307,7 +2307,8 @@ static void drain_all_stock(struct mem_c
  	 * as well as workers from this path always operate on the local
  	 * per-cpu data. CPU up doesn't touch memcg_stock at all.
  	 */
@@ -50,7 +50,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	for_each_online_cpu(cpu) {
  		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
  		struct mem_cgroup *memcg;
-@@ -2320,7 +2321,7 @@ static void drain_all_stock(struct mem_c
+@@ -2330,7 +2331,7 @@ static void drain_all_stock(struct mem_c
  				schedule_work_on(cpu, &stock->work);
  		}
  	}

@@ -1,0 +1,33 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-typesh-remove-unnecessary-__bitwise__-fix
+
+change the tools/include/linux/types.h definition also
+
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ tools/include/linux/types.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- a/tools/include/linux/types.h~linux-typesh-remove-unnecessary-__bitwise__-fix
++++ a/tools/include/linux/types.h
+@@ -43,11 +43,10 @@ typedef __u8  u8;
+ typedef __s8  s8;
+ 
+ #ifdef __CHECKER__
+-#define __bitwise__ __attribute__((bitwise))
++#define __bitwise	__attribute__((bitwise))
+ #else
+-#define __bitwise__
++#define __bitwise
+ #endif
+-#define __bitwise __bitwise__
+ 
+ #define __force
+ #define __user
+_

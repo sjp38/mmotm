@@ -1,0 +1,46 @@
+From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Subject: taskstats: remove unneeded dead assignment
+
+make clang-analyzer on x86_64 defconfig caught my attention with:
+
+  kernel/taskstats.c:120:2: warning: Value stored to 'rc' is never read \
+  [clang-analyzer-deadcode.DeadStores]
+          rc = 0;
+          ^
+
+Commit d94a041519f3 ("taskstats: free skb, avoid returns in
+send_cpu_listeners") made send_cpu_listeners() not return a value and
+hence, the rc variable remained only to be used within the loop where
+it is always assigned before read and it does not need any other
+initialisation.
+
+So, simply remove this unneeded dead initializing assignment.
+
+As compilers will detect this unneeded assignment and optimize this anyway,
+the resulting object code is identical before and after this change.
+
+No functional change. No change to object code.
+
+Link: https://lkml.kernel.org/r/20220307093942.21310-1-lukas.bulwahn@gmail.com
+Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Tom Rix <trix@redhat.com>
+Cc: Nathan Chancellor <natechancellor@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/taskstats.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/kernel/taskstats.c~taskstats-remove-unneeded-dead-assignment
++++ a/kernel/taskstats.c
+@@ -117,7 +117,6 @@ static void send_cpu_listeners(struct sk
+ 
+ 	genlmsg_end(skb, reply);
+ 
+-	rc = 0;
+ 	down_read(&listeners->sem);
+ 	list_for_each_entry(s, &listeners->list, list) {
+ 		skb_next = NULL;
+_

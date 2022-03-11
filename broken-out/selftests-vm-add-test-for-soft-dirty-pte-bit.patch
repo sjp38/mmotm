@@ -44,7 +44,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  ksm_tests
 --- a/tools/testing/selftests/vm/Makefile~selftests-vm-add-test-for-soft-dirty-pte-bit
 +++ a/tools/testing/selftests/vm/Makefile
-@@ -47,6 +47,7 @@ TEST_GEN_FILES += on-fault-limit
+@@ -49,6 +49,7 @@ TEST_GEN_FILES += on-fault-limit
  TEST_GEN_FILES += thuge-gen
  TEST_GEN_FILES += transhuge-stress
  TEST_GEN_FILES += userfaultfd

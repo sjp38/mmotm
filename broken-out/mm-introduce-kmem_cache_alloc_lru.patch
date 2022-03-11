@@ -185,7 +185,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kvfree_rcu(old, rcu);
  	return 0;
  }
-@@ -502,6 +516,78 @@ void memcg_drain_all_list_lrus(int src_i
+@@ -508,6 +522,78 @@ void memcg_drain_all_list_lrus(int src_i
  		memcg_drain_list_lru(lru, src_idx, dst_memcg);
  	mutex_unlock(&list_lrus_mutex);
  }
@@ -266,7 +266,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
 --- a/mm/memcontrol.c~mm-introduce-kmem_cache_alloc_lru
 +++ a/mm/memcontrol.c
-@@ -2802,20 +2802,6 @@ static void commit_charge(struct folio *
+@@ -2812,20 +2812,6 @@ static void commit_charge(struct folio *
  	folio->memcg_data = (unsigned long)memcg;
  }
  

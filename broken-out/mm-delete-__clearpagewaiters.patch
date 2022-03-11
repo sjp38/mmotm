@@ -14,11 +14,11 @@ comments in folio_wake_bit(), and delete the superfluous comments.
 Link: https://lkml.kernel.org/r/3eafa969-5b1a-accf-88fe-318784c791a@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Tested-by: Yu Zhao <yuzhao@google.com>
-Cc: David Hildenbrand <david@redhat.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
+Reviewed-by: David Hildenbrand <david@redhat.com>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Cc: Yu Zhao <yuzhao@google.com>
-Cc: Yang Shi <shy828301@gmail.com>
 Cc: Michal Hocko <mhocko@suse.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
@@ -42,7 +42,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	TESTCLEARFLAG(Referenced, referenced, PF_HEAD)
 --- a/mm/filemap.c~mm-delete-__clearpagewaiters
 +++ a/mm/filemap.c
-@@ -1179,24 +1179,17 @@ static void folio_wake_bit(struct folio
+@@ -1185,24 +1185,17 @@ static void folio_wake_bit(struct folio
  	}
  
  	/*
@@ -104,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  
  	free_unref_page_list(pages);
-@@ -966,8 +964,6 @@ void release_pages(struct page **pages,
+@@ -971,8 +969,6 @@ void release_pages(struct page **pages,
  			count_vm_event(UNEVICTABLE_PGCLEARED);
  		}
  

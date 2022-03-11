@@ -72,7 +72,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	select ARCH_WANT_HUGE_PMD_SHARE
  	select ARCH_WANT_LD_ORPHAN_WARN
  	select ARCH_WANTS_THP_SWAP		if X86_64
-@@ -344,9 +345,6 @@ config ARCH_NR_GPIO
+@@ -347,9 +348,6 @@ config ARCH_NR_GPIO
  config ARCH_SUSPEND_POSSIBLE
  	def_bool y
  

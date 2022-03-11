@@ -85,7 +85,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /**
 --- a/include/linux/memcontrol.h~mm-list_lru-replace-linear-array-with-xarray
 +++ a/include/linux/memcontrol.h
-@@ -1685,18 +1685,6 @@ void obj_cgroup_uncharge(struct obj_cgro
+@@ -1690,18 +1690,6 @@ void obj_cgroup_uncharge(struct obj_cgro
  
  extern struct static_key_false memcg_kmem_enabled_key;
  
@@ -104,7 +104,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline bool memcg_kmem_enabled(void)
  {
  	return static_branch_likely(&memcg_kmem_enabled_key);
-@@ -1753,9 +1741,6 @@ static inline void __memcg_kmem_uncharge
+@@ -1758,9 +1746,6 @@ static inline void __memcg_kmem_uncharge
  {
  }
  
@@ -114,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline bool memcg_kmem_enabled(void)
  {
  	return false;
-@@ -1766,14 +1751,6 @@ static inline int memcg_cache_id(struct
+@@ -1771,14 +1756,6 @@ static inline int memcg_cache_id(struct
  	return -1;
  }
  
@@ -319,7 +319,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static void memcg_reparent_list_lru_node(struct list_lru *lru, int nid,
-@@ -521,7 +451,7 @@ void memcg_reparent_list_lrus(struct mem
+@@ -527,7 +457,7 @@ void memcg_reparent_list_lrus(struct mem
  		struct mem_cgroup *child;
  
  		child = mem_cgroup_from_css(css);
@@ -328,7 +328,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  	rcu_read_unlock();
  
-@@ -531,21 +461,12 @@ void memcg_reparent_list_lrus(struct mem
+@@ -537,21 +467,12 @@ void memcg_reparent_list_lrus(struct mem
  	mutex_unlock(&list_lrus_mutex);
  }
  
@@ -354,7 +354,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  int memcg_list_lru_alloc(struct mem_cgroup *memcg, struct list_lru *lru,
-@@ -558,6 +479,7 @@ int memcg_list_lru_alloc(struct mem_cgro
+@@ -564,6 +485,7 @@ int memcg_list_lru_alloc(struct mem_cgro
  		struct list_lru_per_memcg *mlru;
  		struct mem_cgroup *memcg;
  	} *table;
@@ -362,7 +362,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!list_lru_memcg_aware(lru) || memcg_list_lru_allocated(memcg, lru))
  		return 0;
-@@ -586,27 +508,48 @@ int memcg_list_lru_alloc(struct mem_cgro
+@@ -592,27 +514,48 @@ int memcg_list_lru_alloc(struct mem_cgro
  		}
  	}
  
@@ -422,7 +422,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  
  static void memcg_destroy_list_lru(struct list_lru *lru)
-@@ -618,7 +561,6 @@ int __list_lru_init(struct list_lru *lru
+@@ -624,7 +567,6 @@ int __list_lru_init(struct list_lru *lru
  		    struct lock_class_key *key, struct shrinker *shrinker)
  {
  	int i;
@@ -430,7 +430,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #ifdef CONFIG_MEMCG_KMEM
  	if (shrinker)
-@@ -626,11 +568,10 @@ int __list_lru_init(struct list_lru *lru
+@@ -632,11 +574,10 @@ int __list_lru_init(struct list_lru *lru
  	else
  		lru->shrinker_id = -1;
  #endif
@@ -443,7 +443,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	for_each_node(i) {
  		spin_lock_init(&lru->node[i].lock);
-@@ -639,18 +580,10 @@ int __list_lru_init(struct list_lru *lru
+@@ -645,18 +586,10 @@ int __list_lru_init(struct list_lru *lru
  		init_one_lru(&lru->node[i].lru);
  	}
  
@@ -465,7 +465,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
  EXPORT_SYMBOL_GPL(__list_lru_init);
  
-@@ -660,8 +593,6 @@ void list_lru_destroy(struct list_lru *l
+@@ -666,8 +599,6 @@ void list_lru_destroy(struct list_lru *l
  	if (!lru->node)
  		return;
  
@@ -474,7 +474,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	list_lru_unregister(lru);
  
  	memcg_destroy_list_lru(lru);
-@@ -671,6 +602,5 @@ void list_lru_destroy(struct list_lru *l
+@@ -677,6 +608,5 @@ void list_lru_destroy(struct list_lru *l
  #ifdef CONFIG_MEMCG_KMEM
  	lru->shrinker_id = -1;
  #endif
@@ -527,7 +527,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #define MEMCG_CACHES_MAX_SIZE MEM_CGROUP_ID_MAX
  
  /*
-@@ -2941,49 +2916,6 @@ __always_inline struct obj_cgroup *get_o
+@@ -2951,49 +2926,6 @@ __always_inline struct obj_cgroup *get_o
  	return objcg;
  }
  
@@ -577,7 +577,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static void memcg_account_kmem(struct mem_cgroup *memcg, int nr_pages)
  {
  	mod_memcg_state(memcg, MEMCG_KMEM, nr_pages);
-@@ -3670,13 +3602,14 @@ static int memcg_online_kmem(struct mem_
+@@ -3680,13 +3612,14 @@ static int memcg_online_kmem(struct mem_
  	if (unlikely(mem_cgroup_is_root(memcg)))
  		return 0;
  
@@ -594,7 +594,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return -ENOMEM;
  	}
  	objcg->memcg = memcg;
-@@ -3720,7 +3653,7 @@ static void memcg_offline_kmem(struct me
+@@ -3730,7 +3663,7 @@ static void memcg_offline_kmem(struct me
  	 */
  	memcg_reparent_list_lrus(memcg, parent);
  

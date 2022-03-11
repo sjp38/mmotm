@@ -1,0 +1,34 @@
+From: Qian Cai <quic_qiancai@quicinc.com>
+Subject: configs/debug: restore DEBUG_INFO=y for overriding
+
+Previously, I failed to realize that Kees' patch [1] has not been merged
+into the mainline yet, and dropped DEBUG_INFO=y too eagerly from the
+mainline.  As the results, "make debug.config" won't be able to flip
+DEBUG_INFO=n from the existing .config.  This should close the gaps of a
+few weeks before Kees' patch is there, and work regardless of their
+merging status anyway.
+
+[1] https://lore.kernel.org/all/20220125075126.891825-1-keescook@chromium.org/
+
+Link: https://lkml.kernel.org/r/20220308153524.8618-1-quic_qiancai@quicinc.com
+Signed-off-by: Qian Cai <quic_qiancai@quicinc.com>
+Reported-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Kees Cook <keescook@chromium.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/configs/debug.config |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/kernel/configs/debug.config~configs-debug-restore-debug_info=y-for-overriding
++++ a/kernel/configs/debug.config
+@@ -16,6 +16,7 @@ CONFIG_SYMBOLIC_ERRNAME=y
+ #
+ # Compile-time checks and compiler options
+ #
++CONFIG_DEBUG_INFO=y
+ CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT=y
+ CONFIG_DEBUG_SECTION_MISMATCH=y
+ CONFIG_FRAME_WARN=2048
+_

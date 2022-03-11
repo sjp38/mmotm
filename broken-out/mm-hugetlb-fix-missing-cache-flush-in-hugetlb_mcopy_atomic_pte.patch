@@ -33,7 +33,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/hugetlb.c~mm-hugetlb-fix-missing-cache-flush-in-hugetlb_mcopy_atomic_pte
 +++ a/mm/hugetlb.c
-@@ -5816,7 +5816,8 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
+@@ -5819,7 +5819,8 @@ int hugetlb_mcopy_atomic_pte(struct mm_s
  			*pagep = NULL;
  			goto out;
  		}

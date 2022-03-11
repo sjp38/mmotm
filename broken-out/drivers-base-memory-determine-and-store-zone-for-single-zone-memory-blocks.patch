@@ -345,7 +345,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  /*
 --- a/include/linux/memory_hotplug.h~drivers-base-memory-determine-and-store-zone-for-single-zone-memory-blocks
 +++ a/include/linux/memory_hotplug.h
-@@ -165,8 +165,6 @@ extern int mhp_init_memmap_on_memory(uns
+@@ -163,8 +163,6 @@ extern int mhp_init_memmap_on_memory(uns
  extern void mhp_deinit_memmap_on_memory(unsigned long pfn, unsigned long nr_pages);
  extern int online_pages(unsigned long pfn, unsigned long nr_pages,
  			struct zone *zone, struct memory_group *group);
@@ -354,7 +354,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern void __offline_isolated_pages(unsigned long start_pfn,
  				     unsigned long end_pfn);
  
-@@ -295,7 +293,7 @@ static inline void pgdat_resize_init(str
+@@ -293,7 +291,7 @@ static inline void pgdat_resize_init(str
  
  extern void try_offline_node(int nid);
  extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages,
@@ -363,7 +363,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  extern int remove_memory(u64 start, u64 size);
  extern void __remove_memory(u64 start, u64 size);
  extern int offline_and_remove_memory(u64 start, u64 size);
-@@ -304,7 +302,7 @@ extern int offline_and_remove_memory(u64
+@@ -302,7 +300,7 @@ extern int offline_and_remove_memory(u64
  static inline void try_offline_node(int nid) {}
  
  static inline int offline_pages(unsigned long start_pfn, unsigned long nr_pages,
@@ -374,7 +374,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  }
 --- a/mm/memory_hotplug.c~drivers-base-memory-determine-and-store-zone-for-single-zone-memory-blocks
 +++ a/mm/memory_hotplug.c
-@@ -1550,38 +1550,6 @@ bool mhp_range_allowed(u64 start, u64 si
+@@ -1549,38 +1549,6 @@ bool mhp_range_allowed(u64 start, u64 si
  
  #ifdef CONFIG_MEMORY_HOTREMOVE
  /*
@@ -413,7 +413,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * Scan pfn range [start,end) to find movable/migratable pages (LRU pages,
   * non-lru movable pages and hugepages). Will skip over most unmovable
   * pages (esp., pages that can be skipped when offlining), but bail out on
-@@ -1804,15 +1772,15 @@ static int count_system_ram_pages_cb(uns
+@@ -1803,15 +1771,15 @@ static int count_system_ram_pages_cb(uns
  }
  
  int __ref offline_pages(unsigned long start_pfn, unsigned long nr_pages,
@@ -432,7 +432,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	/*
  	 * {on,off}lining is constrained to full memory sections (or more
-@@ -1844,15 +1812,17 @@ int __ref offline_pages(unsigned long st
+@@ -1843,15 +1811,17 @@ int __ref offline_pages(unsigned long st
  		goto failed_removal;
  	}
  

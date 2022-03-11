@@ -18,7 +18,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/lib/test_kasan.c~kasan-update-function-name-in-comments
 +++ a/lib/test_kasan.c
-@@ -790,7 +790,7 @@ static void ksize_uaf(struct kunit *test
+@@ -791,7 +791,7 @@ static void ksize_uaf(struct kunit *test
  static void kasan_stack_oob(struct kunit *test)
  {
  	char stack_array[10];
@@ -27,7 +27,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	char *volatile array = stack_array;
  	char *p = &array[ARRAY_SIZE(stack_array) + OOB_TAG_OFF];
  
-@@ -803,7 +803,7 @@ static void kasan_alloca_oob_left(struct
+@@ -804,7 +804,7 @@ static void kasan_alloca_oob_left(struct
  {
  	volatile int i = 10;
  	char alloca_array[i];
@@ -36,7 +36,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	char *volatile array = alloca_array;
  	char *p = array - 1;
  
-@@ -818,7 +818,7 @@ static void kasan_alloca_oob_right(struc
+@@ -819,7 +819,7 @@ static void kasan_alloca_oob_right(struc
  {
  	volatile int i = 10;
  	char alloca_array[i];

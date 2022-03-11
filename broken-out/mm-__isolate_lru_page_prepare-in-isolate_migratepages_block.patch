@@ -18,7 +18,7 @@ Simplify isolate_lru_pages() with a "move_to" list pointer.
 Link: https://lkml.kernel.org/r/879d62a8-91cc-d3c6-fb3b-69768236df68@google.com
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: David Rientjes <rientjes@google.com>
-Cc: Alex Shi <alexs@kernel.org>
+Reviewed-by: Alex Shi <alexs@kernel.org>
 Cc: Alexander Duyck <alexander.duyck@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---

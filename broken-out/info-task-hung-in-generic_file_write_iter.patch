@@ -94,7 +94,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	}
  }
  
-@@ -3192,6 +3223,11 @@ EXPORT_SYMBOL(sync_dirty_buffer);
+@@ -3194,6 +3225,11 @@ EXPORT_SYMBOL(sync_dirty_buffer);
   */
  static inline int buffer_busy(struct buffer_head *bh)
  {
@@ -106,7 +106,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	return atomic_read(&bh->b_count) |
  		(bh->b_state & ((1 << BH_Dirty) | (1 << BH_Lock)));
  }
-@@ -3230,11 +3266,18 @@ int try_to_free_buffers(struct page *pag
+@@ -3232,11 +3268,18 @@ int try_to_free_buffers(struct page *pag
  	int ret = 0;
  
  	BUG_ON(!PageLocked(page));
@@ -126,7 +126,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		goto out;
  	}
  
-@@ -3258,6 +3301,9 @@ int try_to_free_buffers(struct page *pag
+@@ -3260,6 +3303,9 @@ int try_to_free_buffers(struct page *pag
  	if (ret)
  		cancel_dirty_page(page);
  	spin_unlock(&mapping->private_lock);

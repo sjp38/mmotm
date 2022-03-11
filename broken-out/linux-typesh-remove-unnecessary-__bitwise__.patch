@@ -1,0 +1,38 @@
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: linux/types.h: remove unnecessary __bitwise__
+
+There are no users of "__bitwise__" except the definition of "__bitwise". 
+Remove __bitwise__ and define __bitwise directly.
+
+This is a follow-up to 05de97003c77 ("linux/types.h: enable endian checks
+for all sparse builds").
+
+Link: https://lkml.kernel.org/r/20220310220927.245704-2-helgaas@kernel.org
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Nathan Chancellor <nathan@kernel.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/uapi/linux/types.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+--- a/include/uapi/linux/types.h~linux-typesh-remove-unnecessary-__bitwise__
++++ a/include/uapi/linux/types.h
+@@ -20,11 +20,10 @@
+  */
+ 
+ #ifdef __CHECKER__
+-#define __bitwise__ __attribute__((bitwise))
++#define __bitwise	__attribute__((bitwise))
+ #else
+-#define __bitwise__
++#define __bitwise
+ #endif
+-#define __bitwise __bitwise__
+ 
+ typedef __u16 __bitwise __le16;
+ typedef __u16 __bitwise __be16;
+_

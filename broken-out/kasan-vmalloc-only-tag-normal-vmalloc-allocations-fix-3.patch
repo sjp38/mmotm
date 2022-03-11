@@ -1,0 +1,32 @@
+From: Andrey Konovalov <andreyknvl@google.com>
+Subject: fix for "kasan, vmalloc: only tag normal vmalloc allocations"
+
+"kasan, vmalloc: only tag normal vmalloc allocations" unintentionally
+disabled poisoning of executable memory for the Generic mode.  Fix it.
+
+Link: https://lkml.kernel.org/r/de4587d6a719232e83c760113e46ed2d4d8da61e.1646757322.git.andreyknvl@google.com
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Reported-by: Vasily Gorbik <gor@linux.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/kasan/shadow.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- a/mm/kasan/shadow.c~kasan-vmalloc-only-tag-normal-vmalloc-allocations-fix-3
++++ a/mm/kasan/shadow.c
+@@ -489,10 +489,11 @@ void *__kasan_unpoison_vmalloc(const voi
+ 		return (void *)start;
+ 
+ 	/*
+-	 * Don't tag executable memory.
++	 * Don't tag executable memory with the tag-based mode.
+ 	 * The kernel doesn't tolerate having the PC register tagged.
+ 	 */
+-	if (!(flags & KASAN_VMALLOC_PROT_NORMAL))
++	if (IS_ENABLED(CONFIG_KASAN_SW_TAGS) &&
++	    !(flags & KASAN_VMALLOC_PROT_NORMAL))
+ 		return (void *)start;
+ 
+ 	start = set_tag(start, kasan_random_tag());
+_

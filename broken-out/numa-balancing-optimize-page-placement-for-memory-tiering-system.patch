@@ -243,7 +243,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  #endif
 --- a/kernel/sysctl.c~numa-balancing-optimize-page-placement-for-memory-tiering-system
 +++ a/kernel/sysctl.c
-@@ -1689,7 +1689,7 @@ static struct ctl_table kern_table[] = {
+@@ -1696,7 +1696,7 @@ static struct ctl_table kern_table[] = {
  		.mode		= 0644,
  		.proc_handler	= sysctl_numa_balancing,
  		.extra1		= SYSCTL_ZERO,
@@ -262,7 +262,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include <asm/tlbflush.h>
  
-@@ -2040,16 +2041,27 @@ static int numamigrate_isolate_page(pg_d
+@@ -2033,16 +2034,27 @@ static int numamigrate_isolate_page(pg_d
  {
  	int page_lru;
  	int nr_pages = thp_nr_pages(page);
@@ -294,7 +294,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		return 0;
 --- a/mm/page_alloc.c~numa-balancing-optimize-page-placement-for-memory-tiering-system
 +++ a/mm/page_alloc.c
-@@ -8449,7 +8449,8 @@ static void __setup_per_zone_wmarks(void
+@@ -8432,7 +8432,8 @@ static void __setup_per_zone_wmarks(void
  
  		zone->watermark_boost = 0;
  		zone->_watermark[WMARK_LOW]  = min_wmark_pages(zone) + tmp;
@@ -314,7 +314,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  #include "internal.h"
  
-@@ -3960,7 +3961,10 @@ static bool pgdat_balanced(pg_data_t *pg
+@@ -3895,7 +3896,10 @@ static bool pgdat_balanced(pg_data_t *pg
  		if (!managed_zone(zone))
  			continue;
  

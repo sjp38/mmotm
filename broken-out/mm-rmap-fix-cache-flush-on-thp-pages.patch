@@ -22,7 +22,7 @@ Link: https://lkml.kernel.org/r/20220302082718.32268-2-songmuchun@bytedance.com
 Fixes: f27176cfc363 ("mm: convert page_mkclean_one() to use page_vma_mapped_walk()")
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 Reviewed-by: Yang Shi <shy828301@gmail.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
+Reviewed-by: Dan Williams <dan.j.williams@intel.com>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Jan Kara <jack@suse.cz>
 Cc: Alexander Viro <viro@zeniv.linux.org.uk>

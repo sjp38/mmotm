@@ -60,7 +60,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
   * A lot of the calls to the cache allocation functions are expected to be
   * inlined by the compiler. Since the calls to memcg_slab_pre_alloc_hook() are
   * conditional to this static branch, we'll have to allow modules that does
-@@ -3594,7 +3577,6 @@ static u64 mem_cgroup_read_u64(struct cg
+@@ -3604,7 +3587,6 @@ static u64 mem_cgroup_read_u64(struct cg
  static int memcg_online_kmem(struct mem_cgroup *memcg)
  {
  	struct obj_cgroup *objcg;
@@ -68,7 +68,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (cgroup_memory_nokmem)
  		return 0;
-@@ -3602,22 +3584,16 @@ static int memcg_online_kmem(struct mem_
+@@ -3612,22 +3594,16 @@ static int memcg_online_kmem(struct mem_
  	if (unlikely(mem_cgroup_is_root(memcg)))
  		return 0;
  
@@ -94,7 +94,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return 0;
  }
-@@ -3625,7 +3601,6 @@ static int memcg_online_kmem(struct mem_
+@@ -3635,7 +3611,6 @@ static int memcg_online_kmem(struct mem_
  static void memcg_offline_kmem(struct mem_cgroup *memcg)
  {
  	struct mem_cgroup *parent;
@@ -102,7 +102,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (cgroup_memory_nokmem)
  		return;
-@@ -3640,20 +3615,12 @@ static void memcg_offline_kmem(struct me
+@@ -3650,20 +3625,12 @@ static void memcg_offline_kmem(struct me
  	memcg_reparent_objcgs(memcg, parent);
  
  	/*

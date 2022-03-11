@@ -16,7 +16,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/mm/hugetlb.c~mm-hugetlb-use-helper-macro-__attr_rw
 +++ a/mm/hugetlb.c
-@@ -3499,8 +3499,7 @@ static int demote_pool_huge_page(struct
+@@ -3502,8 +3502,7 @@ static int demote_pool_huge_page(struct
  	static struct kobj_attribute _name##_attr = __ATTR_WO(_name)
  
  #define HSTATE_ATTR(_name) \

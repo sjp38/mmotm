@@ -15,34 +15,13 @@ Cc: "H. Peter Anvin" <hpa@zytor.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/arm64/Kconfig |    4 +---
- arch/x86/Kconfig   |    3 ---
- mm/Kconfig         |    3 +++
- 3 files changed, 4 insertions(+), 6 deletions(-)
+ arch/x86/Kconfig |    3 ---
+ mm/Kconfig       |    3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/arm64/Kconfig~mm-generalize-arch_has_filter_pgprot
-+++ a/arch/arm64/Kconfig
-@@ -23,6 +23,7 @@ config ARM64
- 	select ARCH_HAS_DMA_PREP_COHERENT
- 	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
- 	select ARCH_HAS_FAST_MULTIPLIER
-+	select ARCH_HAS_FILTER_PGPROT
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_GIGANTIC_PAGE
-@@ -1252,9 +1253,6 @@ config HW_PERF_EVENTS
- 	def_bool y
- 	depends on ARM_PMU
- 
--config ARCH_HAS_FILTER_PGPROT
--	def_bool y
--
- # Supported by clang >= 7.0
- config CC_HAVE_SHADOW_CALL_STACK
- 	def_bool $(cc-option, -fsanitize=shadow-call-stack -ffixed-x18)
 --- a/arch/x86/Kconfig~mm-generalize-arch_has_filter_pgprot
 +++ a/arch/x86/Kconfig
-@@ -333,9 +333,6 @@ config GENERIC_CALIBRATE_DELAY
+@@ -337,9 +337,6 @@ config GENERIC_CALIBRATE_DELAY
  config ARCH_HAS_CPU_RELAX
  	def_bool y
  
@@ -54,9 +33,9 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
 --- a/mm/Kconfig~mm-generalize-arch_has_filter_pgprot
 +++ a/mm/Kconfig
-@@ -744,6 +744,9 @@ config IDLE_PAGE_TRACKING
- config ARCH_HAS_CACHE_LINE_SIZE
- 	bool
+@@ -762,6 +762,9 @@ config ARCH_HAS_CURRENT_STACK_POINTER
+ 	  register alias named "current_stack_pointer", this config can be
+ 	  selected.
  
 +config ARCH_HAS_FILTER_PGPROT
 +	bool

@@ -96,7 +96,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	if (!list_lru_memcg_aware(lru))
  		return;
-@@ -475,7 +475,7 @@ int memcg_list_lru_alloc(struct mem_cgro
+@@ -481,7 +481,7 @@ int memcg_list_lru_alloc(struct mem_cgro
  	int i;
  	unsigned long flags;
  	struct list_lru_memcg_table {
@@ -105,7 +105,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  		struct mem_cgroup *memcg;
  	} *table;
  	XA_STATE(xas, &lru->xa, 0);
-@@ -491,7 +491,7 @@ int memcg_list_lru_alloc(struct mem_cgro
+@@ -497,7 +497,7 @@ int memcg_list_lru_alloc(struct mem_cgro
  	/*
  	 * Because the list_lru can be reparented to the parent cgroup's
  	 * list_lru, we should make sure that this cgroup and all its
@@ -114,7 +114,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	 */
  	for (i = 0; memcg; memcg = parent_mem_cgroup(memcg), i++) {
  		if (memcg_list_lru_allocated(memcg, lru))
-@@ -510,7 +510,7 @@ int memcg_list_lru_alloc(struct mem_cgro
+@@ -516,7 +516,7 @@ int memcg_list_lru_alloc(struct mem_cgro
  	xas_lock_irqsave(&xas, flags);
  	while (i--) {
  		int index = READ_ONCE(table[i].memcg->kmemcg_id);
