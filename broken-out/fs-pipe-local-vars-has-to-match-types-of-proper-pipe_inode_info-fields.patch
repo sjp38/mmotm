@@ -20,7 +20,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/pipe.c~fs-pipe-local-vars-has-to-match-types-of-proper-pipe_inode_info-fields
 +++ a/fs/pipe.c
-@@ -606,7 +606,7 @@ out:
+@@ -607,7 +607,7 @@ out:
  static long pipe_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
  {
  	struct pipe_inode_info *pipe = filp->private_data;
@@ -29,7 +29,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	switch (cmd) {
  	case FIONREAD:
-@@ -828,7 +828,7 @@ out_free_uid:
+@@ -829,7 +829,7 @@ out_free_uid:
  
  void free_pipe_info(struct pipe_inode_info *pipe)
  {
@@ -37,5 +37,5 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 +	unsigned int i;
  
  #ifdef CONFIG_WATCH_QUEUE
- 	if (pipe->watch_queue) {
+ 	if (pipe->watch_queue)
 _

@@ -31,7 +31,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
 --- a/fs/pipe.c~fs-pipe-use-kvcalloc-to-allocate-a-pipe_buffer-array
 +++ a/fs/pipe.c
-@@ -803,7 +803,7 @@ struct pipe_inode_info *alloc_pipe_info(
+@@ -804,7 +804,7 @@ struct pipe_inode_info *alloc_pipe_info(
  	if (too_many_pipe_buffers_hard(user_bufs) && pipe_is_unprivileged_user())
  		goto out_revert_acct;
  
@@ -40,8 +40,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			     GFP_KERNEL_ACCOUNT);
  
  	if (pipe->bufs) {
-@@ -846,7 +846,7 @@ void free_pipe_info(struct pipe_inode_in
- 	}
+@@ -849,7 +849,7 @@ void free_pipe_info(struct pipe_inode_in
+ #endif
  	if (pipe->tmp_page)
  		__free_page(pipe->tmp_page);
 -	kfree(pipe->bufs);
@@ -49,7 +49,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	kfree(pipe);
  }
  
-@@ -1261,8 +1261,7 @@ int pipe_resize_ring(struct pipe_inode_i
+@@ -1264,8 +1264,7 @@ int pipe_resize_ring(struct pipe_inode_i
  	if (nr_slots < n)
  		return -EBUSY;
  
@@ -59,7 +59,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	if (unlikely(!bufs))
  		return -ENOMEM;
  
-@@ -1289,7 +1288,7 @@ int pipe_resize_ring(struct pipe_inode_i
+@@ -1292,7 +1291,7 @@ int pipe_resize_ring(struct pipe_inode_i
  	head = n;
  	tail = 0;
  

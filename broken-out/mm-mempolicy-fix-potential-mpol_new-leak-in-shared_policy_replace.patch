@@ -1,0 +1,31 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/mempolicy: fix potential mpol_new leak in shared_policy_replace
+
+If mpol_new is allocated but not used in restart loop, mpol_new will be
+freed via mpol_put before returning to the caller.  But refcnt is not
+initialized yet, so mpol_put could not do the right things and might leak
+the unused mpol_new.
+
+Link: https://lkml.kernel.org/r/20220311093624.39546-1-linmiaohe@huawei.com
+Fixes: 42288fe366c4 ("mm: mempolicy: Convert shared_policy mutex to spinlock")
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Mel Gorman <mgorman@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mempolicy.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/mm/mempolicy.c~mm-mempolicy-fix-potential-mpol_new-leak-in-shared_policy_replace
++++ a/mm/mempolicy.c
+@@ -2733,6 +2733,7 @@ alloc_new:
+ 	mpol_new = kmem_cache_alloc(policy_cache, GFP_KERNEL);
+ 	if (!mpol_new)
+ 		goto err_out;
++	refcount_set(&mpol_new->refcnt, 1);
+ 	goto restart;
+ }
+ 
+_

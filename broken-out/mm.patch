@@ -18,8 +18,8 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  VERSION = 5
  PATCHLEVEL = 17
  SUBLEVEL = 0
--EXTRAVERSION = -rc7
-+EXTRAVERSION = -rc7-mm1
+-EXTRAVERSION = -rc8
++EXTRAVERSION = -rc8-mm1
  NAME = Superb Owl
  
  # *DOCUMENTATION*

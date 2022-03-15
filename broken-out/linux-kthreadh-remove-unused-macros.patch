@@ -1,0 +1,76 @@
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: linux/kthread.h: remove unused macros
+
+Ever since these macros were introduced in commit b56c0d8937e6 ("kthread:
+implement kthread_worker"), there has been precisely one user (commit
+4d115420707a, "NVMe: Async IO queue deletion"), and that user went away in
+2016 with db3cbfff5bcc ("NVMe: IO queue deletion re-write").
+
+Apart from being unused, these macros are also awkward to use (which may
+contribute to them not being used): Having a way to statically (or
+on-stack) allocating the storage for the struct kthread_worker itself
+doesn't help much, since obviously one needs to have some code for
+actually _spawning_ the worker thread, which must have error checking. 
+And these days we have the kthread_create_worker() interface which both
+allocates the struct kthread_worker and spawns the kthread.
+
+Link: https://lkml.kernel.org/r/20220314145343.494694-1-linux@rasmusvillemoes.dk
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Acked-by: Tejun Heo <tj@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Yafang Shao <laoar.shao@gmail.com>
+Cc: Cai Huoqing <caihuoqing@baidu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/kthread.h |   22 ----------------------
+ 1 file changed, 22 deletions(-)
+
+--- a/include/linux/kthread.h~linux-kthreadh-remove-unused-macros
++++ a/include/linux/kthread.h
+@@ -141,12 +141,6 @@ struct kthread_delayed_work {
+ 	struct timer_list timer;
+ };
+ 
+-#define KTHREAD_WORKER_INIT(worker)	{				\
+-	.lock = __RAW_SPIN_LOCK_UNLOCKED((worker).lock),		\
+-	.work_list = LIST_HEAD_INIT((worker).work_list),		\
+-	.delayed_work_list = LIST_HEAD_INIT((worker).delayed_work_list),\
+-	}
+-
+ #define KTHREAD_WORK_INIT(work, fn)	{				\
+ 	.node = LIST_HEAD_INIT((work).node),				\
+ 	.func = (fn),							\
+@@ -158,9 +152,6 @@ struct kthread_delayed_work {
+ 				     TIMER_IRQSAFE),			\
+ 	}
+ 
+-#define DEFINE_KTHREAD_WORKER(worker)					\
+-	struct kthread_worker worker = KTHREAD_WORKER_INIT(worker)
+-
+ #define DEFINE_KTHREAD_WORK(work, fn)					\
+ 	struct kthread_work work = KTHREAD_WORK_INIT(work, fn)
+ 
+@@ -168,19 +159,6 @@ struct kthread_delayed_work {
+ 	struct kthread_delayed_work dwork =				\
+ 		KTHREAD_DELAYED_WORK_INIT(dwork, fn)
+ 
+-/*
+- * kthread_worker.lock needs its own lockdep class key when defined on
+- * stack with lockdep enabled.  Use the following macros in such cases.
+- */
+-#ifdef CONFIG_LOCKDEP
+-# define KTHREAD_WORKER_INIT_ONSTACK(worker)				\
+-	({ kthread_init_worker(&worker); worker; })
+-# define DEFINE_KTHREAD_WORKER_ONSTACK(worker)				\
+-	struct kthread_worker worker = KTHREAD_WORKER_INIT_ONSTACK(worker)
+-#else
+-# define DEFINE_KTHREAD_WORKER_ONSTACK(worker) DEFINE_KTHREAD_WORKER(worker)
+-#endif
+-
+ extern void __kthread_init_worker(struct kthread_worker *worker,
+ 			const char *name, struct lock_class_key *key);
+ 
+_

@@ -6,9 +6,10 @@ Abhishek reported that after patch [1], hotplug operations are taking
 
 The reason behind is that the CPU callbacks that migrate_on_reclaim_init()
 sets always call set_migration_target_nodes() whenever a CPU is brought
-up/down.  But we only care about numa nodes going from having cpus to
-become cpuless, and vice versa, as that influences the demotion_target
-order.
+up/down.
+
+But we only care about numa nodes going from having cpus to become
+cpuless, and vice versa, as that influences the demotion_target order.
 
 We do already have two CPU callbacks (vmstat_cpu_online() and
 vmstat_cpu_dead()) that check exactly that, so get rid of the CPU
@@ -57,7 +58,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  static inline int migrate_pages(struct list_head *l, new_page_t new,
 --- a/mm/migrate.c~mm-only-re-generate-demotion-targets-when-a-numa-node-changes-its-n_cpu-state
 +++ a/mm/migrate.c
-@@ -3211,7 +3211,7 @@ again:
+@@ -3209,7 +3209,7 @@ again:
  /*
   * For callers that do not hold get_online_mems() already.
   */
@@ -66,7 +67,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  {
  	get_online_mems();
  	__set_migration_target_nodes();
-@@ -3275,51 +3275,20 @@ static int __meminit migrate_on_reclaim_
+@@ -3273,51 +3273,20 @@ static int __meminit migrate_on_reclaim_
  	return notifier_from_errno(0);
  }
  

@@ -15,20 +15,6 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  net/dsa/dsa2.c                                  |    3 --
  7 files changed, 1 insertion(+), 56 deletions(-)
 
---- a/drivers/staging/gdm724x/gdm_lte.c~linux-next-git-rejects
-+++ a/drivers/staging/gdm724x/gdm_lte.c
-@@ -79,11 +79,7 @@ static int gdm_lte_rx(struct sk_buff *sk
- 	int ret, len;
- 
- 	len = skb->len + ETH_HLEN;
--<<<<<<< HEAD
--	ret = netif_rx_ni(skb);
--=======
- 	ret = netif_rx(skb);
-->>>>>>> linux-next/akpm-base
- 	if (ret == NET_RX_DROP) {
- 		nic->stats.rx_dropped++;
- 	} else {
 --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c~linux-next-git-rejects
 +++ a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 @@ -1845,22 +1845,6 @@ static void iavf_netdev_features_vlan_st
@@ -113,6 +99,20 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  
  	return IRQ_HANDLED;
  }
+--- a/drivers/staging/gdm724x/gdm_lte.c~linux-next-git-rejects
++++ a/drivers/staging/gdm724x/gdm_lte.c
+@@ -79,11 +79,7 @@ static int gdm_lte_rx(struct sk_buff *sk
+ 	int ret, len;
+ 
+ 	len = skb->len + ETH_HLEN;
+-<<<<<<< HEAD
+-	ret = netif_rx_ni(skb);
+-=======
+ 	ret = netif_rx(skb);
+->>>>>>> linux-next/akpm-base
+ 	if (ret == NET_RX_DROP) {
+ 		nic->stats.rx_dropped++;
+ 	} else {
 --- a/net/bluetooth/hci_sync.c~linux-next-git-rejects
 +++ a/net/bluetooth/hci_sync.c
 @@ -290,17 +290,10 @@ static void hci_cmd_sync_work(struct wor

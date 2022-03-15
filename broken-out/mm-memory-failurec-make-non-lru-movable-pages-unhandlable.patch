@@ -1,0 +1,88 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: make non-LRU movable pages unhandlable
+
+We can not really handle non-LRU movable pages in memory failure. 
+Typically they are balloon, zsmalloc, etc.  Assuming we run into a base
+(4K) non-LRU movable page, we could reach as far as identify_page_state(),
+it should not fall into any category except me_unknown.
+
+For the non-LRU compound movable pages, they could be taken for transhuge
+pages but it's unexpected to split non-LRU movable pages using
+split_huge_page_to_list in memory_failure.  So we could just simply make
+non-LRU movable pages unhandlable to avoid these possible nasty cases.
+
+Link: https://lkml.kernel.org/r/20220312074613.4798-4-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Suggested-by: Yang Shi <shy828301@gmail.com>
+Reviewed-by: Yang Shi <shy828301@gmail.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |   20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+--- a/mm/memory-failure.c~mm-memory-failurec-make-non-lru-movable-pages-unhandlable
++++ a/mm/memory-failure.c
+@@ -1176,12 +1176,18 @@ void ClearPageHWPoisonTakenOff(struct pa
+  * does not return true for hugetlb or device memory pages, so it's assumed
+  * to be called only in the context where we never have such pages.
+  */
+-static inline bool HWPoisonHandlable(struct page *page)
++static inline bool HWPoisonHandlable(struct page *page, unsigned long flags)
+ {
+-	return PageLRU(page) || __PageMovable(page) || is_free_buddy_page(page);
++	bool movable = false;
++
++	/* Soft offline could mirgate non-LRU movable pages */
++	if ((flags & MF_SOFT_OFFLINE) && __PageMovable(page))
++		movable = true;
++
++	return movable || PageLRU(page) || is_free_buddy_page(page);
+ }
+ 
+-static int __get_hwpoison_page(struct page *page)
++static int __get_hwpoison_page(struct page *page, unsigned long flags)
+ {
+ 	struct page *head = compound_head(page);
+ 	int ret = 0;
+@@ -1196,7 +1202,7 @@ static int __get_hwpoison_page(struct pa
+ 	 * for any unsupported type of page in order to reduce the risk of
+ 	 * unexpected races caused by taking a page refcount.
+ 	 */
+-	if (!HWPoisonHandlable(head))
++	if (!HWPoisonHandlable(head, flags))
+ 		return -EBUSY;
+ 
+ 	if (get_page_unless_zero(head)) {
+@@ -1221,7 +1227,7 @@ static int get_any_page(struct page *p,
+ 
+ try_again:
+ 	if (!count_increased) {
+-		ret = __get_hwpoison_page(p);
++		ret = __get_hwpoison_page(p, flags);
+ 		if (!ret) {
+ 			if (page_count(p)) {
+ 				/* We raced with an allocation, retry. */
+@@ -1249,7 +1255,7 @@ try_again:
+ 		}
+ 	}
+ 
+-	if (PageHuge(p) || HWPoisonHandlable(p)) {
++	if (PageHuge(p) || HWPoisonHandlable(p, flags)) {
+ 		ret = 1;
+ 	} else {
+ 		/*
+@@ -2302,7 +2308,7 @@ int soft_offline_page(unsigned long pfn,
+ 
+ retry:
+ 	get_online_mems();
+-	ret = get_hwpoison_page(page, flags);
++	ret = get_hwpoison_page(page, flags | MF_SOFT_OFFLINE);
+ 	put_online_mems();
+ 
+ 	if (ret > 0) {
+_

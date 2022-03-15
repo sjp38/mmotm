@@ -368,7 +368,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  	update_mmu_cache_pmd(vma, address, pvmw->pmd);
 --- a/mm/memcontrol.c~linux-next-rejects
 +++ a/mm/memcontrol.c
-@@ -7117,7 +7117,7 @@ void mem_cgroup_swapout(struct folio *fo
+@@ -7123,7 +7123,7 @@ void mem_cgroup_swapout(struct folio *fo
  	memcg_stats_lock();
  	mem_cgroup_charge_statistics(memcg, -nr_entries);
  	memcg_stats_unlock();
@@ -390,7 +390,7 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
  			/* Genuine swap entry, hence a private anon page */
 --- a/mm/memory-failure.c~linux-next-rejects
 +++ a/mm/memory-failure.c
-@@ -1416,12 +1416,12 @@ static bool hwpoison_user_mappings(struc
+@@ -1423,12 +1423,12 @@ static bool hwpoison_user_mappings(struc
  		 */
  		mapping = hugetlb_page_mapping_lock_write(hpage);
  		if (mapping) {

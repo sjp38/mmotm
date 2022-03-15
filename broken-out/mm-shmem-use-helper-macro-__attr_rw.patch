@@ -1,0 +1,28 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm: shmem: use helper macro __ATTR_RW
+
+Use helper macro __ATTR_RW to define shmem_enabled_attr to make code more
+clear.  Minor readability improvement.
+
+Link: https://lkml.kernel.org/r/20220312082252.55586-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Hugh Dickins <hughd@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/shmem.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/mm/shmem.c~mm-shmem-use-helper-macro-__attr_rw
++++ a/mm/shmem.c
+@@ -3965,8 +3965,7 @@ static ssize_t shmem_enabled_store(struc
+ 	return count;
+ }
+ 
+-struct kobj_attribute shmem_enabled_attr =
+-	__ATTR(shmem_enabled, 0644, shmem_enabled_show, shmem_enabled_store);
++struct kobj_attribute shmem_enabled_attr = __ATTR_RW(shmem_enabled);
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE && CONFIG_SYSFS */
+ 
+ #else /* !CONFIG_SHMEM */
+_

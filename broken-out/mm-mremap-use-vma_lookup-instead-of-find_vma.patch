@@ -1,0 +1,29 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/mremap:: use vma_lookup() instead of find_vma()
+
+Using vma_lookup() verifies the address is contained in the found vma. 
+This results in easier to read code.
+
+Link: https://lkml.kernel.org/r/20220312083118.48284-1-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/mremap.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/mremap.c~mm-mremap-use-vma_lookup-instead-of-find_vma
++++ a/mm/mremap.c
+@@ -942,8 +942,8 @@ SYSCALL_DEFINE5(mremap, unsigned long, a
+ 
+ 	if (mmap_write_lock_killable(current->mm))
+ 		return -EINTR;
+-	vma = find_vma(mm, addr);
+-	if (!vma || vma->vm_start > addr) {
++	vma = vma_lookup(mm, addr);
++	if (!vma) {
+ 		ret = EFAULT;
+ 		goto out;
+ 	}
+_

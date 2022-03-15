@@ -1,0 +1,35 @@
+From: Miaohe Lin <linmiaohe@huawei.com>
+Subject: mm/memory-failure.c: avoid calling invalidate_inode_page() with unexpected pages
+
+Since commit 042c4f32323b ("mm/truncate: Inline invalidate_complete_page()
+into its one caller"), invalidate_inode_page() can invalidate the pages in
+the swap cache because the check of page->mapping != mapping is removed. 
+But invalidate_inode_page() is not expected to deal with the pages in swap
+cache.  Also non-lru movable page can reach here too.  They're not page
+cache pages.  Skip these pages by checking PageSwapCache and PageLRU.
+
+Link: https://lkml.kernel.org/r/20220312074613.4798-3-linmiaohe@huawei.com
+Signed-off-by: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memory-failure.c~mm-memory-failurec-avoid-calling-invalidate_inode_page-with-unexpected-pages
++++ a/mm/memory-failure.c
+@@ -2184,7 +2184,7 @@ static int __soft_offline_page(struct pa
+ 		return 0;
+ 	}
+ 
+-	if (!PageHuge(page))
++	if (!PageHuge(page) && PageLRU(page) && !PageSwapCache(page))
+ 		/*
+ 		 * Try to invalidate first. This should work for
+ 		 * non dirty unmapped page cache pages.
+_

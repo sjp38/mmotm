@@ -1,0 +1,29 @@
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: mm-memory-failurec-fix-race-with-changing-page-compound-again-fix
+
+s@/**@/*@, per Naoya Horiguchi
+
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Yang Shi <shy828301@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/memory-failure.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/memory-failure.c~mm-memory-failurec-fix-race-with-changing-page-compound-again-fix
++++ a/mm/memory-failure.c
+@@ -1534,7 +1534,7 @@ static int memory_failure_hugetlb(unsign
+ 
+ 	lock_page(head);
+ 
+-	/**
++	/*
+ 	 * The page could have changed compound pages due to race window.
+ 	 * If this happens just bail out.
+ 	 */
+_

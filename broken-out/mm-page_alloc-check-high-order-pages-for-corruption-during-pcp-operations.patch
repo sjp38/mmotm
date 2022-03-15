@@ -13,12 +13,12 @@ Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
 Reported-by: Eric Dumazet <edumazet@google.com>
 Acked-by: Eric Dumazet <edumazet@google.com>
 Reviewed-by: Shakeel Butt <shakeelb@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
+Acked-by: David Rientjes <rientjes@google.com>
 Cc: Michal Hocko <mhocko@kernel.org>
 Cc: Wei Xu <weixugc@google.com>
 Cc: Greg Thelen <gthelen@google.com>
 Cc: Hugh Dickins <hughd@google.com>
-Cc: David Rientjes <rientjes@google.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

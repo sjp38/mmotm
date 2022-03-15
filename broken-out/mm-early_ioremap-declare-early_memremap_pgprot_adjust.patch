@@ -1,0 +1,49 @@
+From: Vlastimil Babka <vbabka@suse.cz>
+Subject: mm/early_ioremap: declare early_memremap_pgprot_adjust()
+
+The mm/ directory can almost fully be built with W=1, which would help in
+local development.  One remaining issue is missing prototype for
+early_memremap_pgprot_adjust().
+
+Thus add a declaration for this function.  Use mm/internal.h instead of
+asm/early_ioremap.h to avoid missing type definitions and unnecessary
+exposure.
+
+Link: https://lkml.kernel.org/r/20220314165724.16071-2-vbabka@suse.cz
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: David Hildenbrand <david@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/early_ioremap.c |    1 +
+ mm/internal.h      |    6 ++++++
+ 2 files changed, 7 insertions(+)
+
+--- a/mm/early_ioremap.c~mm-early_ioremap-declare-early_memremap_pgprot_adjust
++++ a/mm/early_ioremap.c
+@@ -17,6 +17,7 @@
+ #include <linux/vmalloc.h>
+ #include <asm/fixmap.h>
+ #include <asm/early_ioremap.h>
++#include "internal.h"
+ 
+ #ifdef CONFIG_MMU
+ static int early_ioremap_debug __initdata;
+--- a/mm/internal.h~mm-early_ioremap-declare-early_memremap_pgprot_adjust
++++ a/mm/internal.h
+@@ -155,6 +155,12 @@ extern unsigned long highest_memmap_pfn;
+ #define MAX_RECLAIM_RETRIES 16
+ 
+ /*
++ * in mm/early_ioremap.c
++ */
++pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
++					unsigned long size, pgprot_t prot);
++
++/*
+  * in mm/vmscan.c:
+  */
+ extern int isolate_lru_page(struct page *page);
+_

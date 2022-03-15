@@ -16,6 +16,12 @@ right way, but chose to optimize out an unnecessary mpol_dup() with a
 prior mpol_equal() test.  But on tmpfs, that also pessimized out the vital
 call to its ->set_policy(), leaving the new mbind unenforced.
 
+The user visible effect was that the pages got allocated on the local
+node (happened to be 0), after the mbind() caller had specifically
+asked for them to be allocated on node 1.  There was not any page
+migration involved in the case reported: the pages simply got allocated
+on the wrong node.
+
 Just delete that optimization now (though it could be made conditional on
 vma not having a set_policy).  Also remove the "next" variable: it turned
 out to be blameless, but also pointless.
@@ -25,6 +31,8 @@ Fixes: 3964acd0dbec ("mm: mempolicy: fix mbind_range() && vma_adjust() interacti
 Signed-off-by: Hugh Dickins <hughd@google.com>
 Acked-by: Oleg Nesterov <oleg@redhat.com>
 Reviewed-by: Liam R. Howlett <Liam.Howlett@oracle.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: <stable@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 

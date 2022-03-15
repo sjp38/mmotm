@@ -1,0 +1,25 @@
+From: Bang Li <libang.linuxer@gmail.com>
+Subject: mm/swap: fix confusing comment in folio_mark_accessed
+
+For unevictable pages, we don't need mark them.
+
+Link: https://lkml.kernel.org/r/20220311141519.59948-1-libang.linuxer@gmail.com
+Signed-off-by: Bang Li <libang.linuxer@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/swap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/swap.c~mm-swap-fix-confusing-comment-in-folio_mark_accessed
++++ a/mm/swap.c
+@@ -425,7 +425,7 @@ void folio_mark_accessed(struct folio *f
+ 		/*
+ 		 * Unevictable pages are on the "LRU_UNEVICTABLE" list. But,
+ 		 * this list is never rotated or maintained, so marking an
+-		 * evictable page accessed has no effect.
++		 * unevictable page accessed has no effect.
+ 		 */
+ 	} else if (!folio_test_active(folio)) {
+ 		/*
+_

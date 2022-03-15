@@ -1,4 +1,4 @@
-origin.patch
+#origin.patch
 #NEXT_PATCHES_START linus
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START next-for-linus
@@ -6,6 +6,7 @@ origin.patch
 mm-swap-get-rid-of-deadloop-in-swapin-readahead.patch
 #
 #mm/memcg
+#memcg-sync-flush-only-if-periodic-flush-is-delayed.patch: check review https://lkml.kernel.org/r/20220314125709.GA12347@blackbody.suse.cz
 memcg-sync-flush-only-if-periodic-flush-is-delayed.patch
 memcg-sync-flush-only-if-periodic-flush-is-delayed-fix.patch
 #
@@ -52,6 +53,8 @@ procfs-prevent-unpriveleged-processes-accessing-fdinfo-dir.patch
 #NEXT_PATCHES_START platform-drivers
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START kthread
+linux-kthreadh-remove-unused-macros.patch
+#
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START x86
 #NEXT_PATCHES_END
@@ -331,7 +334,7 @@ mm-__isolate_lru_page_prepare-in-isolate_migratepages_block.patch
 #
 mm-list_lru-optimize-memcg_reparent_list_lru_node.patch
 #
-#mm-lru_cache_disable-replace-work-queue-synchronization-with-synchronize_rcu.patch: fake Fixes:
+#mm-lru_cache_disable-replace-work-queue-synchronization-with-synchronize_rcu.patch: fake Fixes:?
 mm-lru_cache_disable-replace-work-queue-synchronization-with-synchronize_rcu.patch
 #
 #NEXT_PATCHES_END
@@ -402,8 +405,6 @@ mm-page_ownerc-record-tgid.patch
 #
 tools-vm-page_owner_sortc-fix-the-instructions-for-use.patch
 #
-mm-unexport-page_init_poison.patch
-#
 tools-vm-page_owner_sortc-fix-comments.patch
 tools-vm-page_owner_sortc-add-a-security-check.patch
 tools-vm-page_owner_sortc-support-sorting-by-tgid-and-update-documentation.patch
@@ -412,6 +413,10 @@ tools-vm-page_owner_sort-fix-three-trivival-places.patch
 tools-vm-page_owner_sort-support-for-sorting-by-task-command-name.patch
 #
 tools-vm-page_owner_sortc-support-for-selecting-by-pid-tgid-or-task-command-name.patch
+#
+tools-vm-page_owner_sortc-support-for-user-defined-culling-rules.patch
+#
+mm-unexport-page_init_poison.patch
 #
 #mm/folios
 #mm/pagecache
@@ -431,6 +436,8 @@ mm-change-lookup_node-to-use-get_user_pages_fast.patch
 mm-gup-remove-unused-get_user_pages_locked.patch
 #
 #mm/swap
+mm-swap-fix-confusing-comment-in-folio_mark_accessed.patch
+#
 #mm/shmem
 tmpfs-support-for-file-creation-time.patch
 tmpfs-support-for-file-creation-time-fix.patch
@@ -438,6 +445,8 @@ tmpfs-support-for-file-creation-time-fix.patch
 shmem-mapping_set_exiting-to-help-mapped-resilience.patch
 #
 tmpfs-do-not-allocate-pages-on-read.patch
+#
+mm-shmem-use-helper-macro-__attr_rw.patch
 #
 #mm/frontswap
 #mm/memremap
@@ -491,6 +500,8 @@ mm-memcontrol-rename-memcg_cache_id-to-memcg_kmem_id.patch
 memcg-enable-accounting-for-tty-related-objects.patch
 #
 #mm/selftests
+selftests-x86-fix-how-check_ccsh-is-being-invoked.patch
+#
 #mm/pagemap
 mm-merge-pte_mkhuge-call-into-arch_make_huge_pte.patch
 #
@@ -522,6 +533,8 @@ mm-mmap-remove-obsolete-comment-in-ksys_mmap_pgoff.patch
 #
 #mm/mprotect
 #mm/mremap
+mm-mremap-use-vma_lookup-instead-of-find_vma.patch
+#
 #mm/memfd
 #
 #mm/infrastructure
@@ -619,7 +632,13 @@ mm-hwpoison-inject-support-injecting-hwpoison-to-free-page-fix.patch
 mm-hwpoison-avoid-the-impact-of-hwpoison_filter-return-value-on-mce-handler.patch
 mm-hwpoison-add-in-use-hugepage-hwpoison-filter-judgement.patch
 #
-#mm-hwpoison-set-pagehwpoison-after-taking-page-lock-in-memory_failure_hugetlb.patch: shy828301@gmail.com comments, TBU
+#mm-memory-failurec-fix-race-with-changing-page-compound-again.patch+2: acks? Mike comment.  check review
+mm-memory-failurec-fix-race-with-changing-page-compound-again.patch
+mm-memory-failurec-fix-race-with-changing-page-compound-again-fix.patch
+mm-memory-failurec-avoid-calling-invalidate_inode_page-with-unexpected-pages.patch
+mm-memory-failurec-make-non-lru-movable-pages-unhandlable.patch
+#
+mm-fault-injection-declare-should_fail_alloc_page.patch
 #
 #mm/mlock
 mm-mlock-fix-potential-imbalanced-rlimit-ucounts-adjustment.patch
@@ -642,7 +661,7 @@ mm-hugetlb-use-helper-macro-__attr_rw.patch
 mm-export-pageheadhuge.patch
 mm-export-pageheadhuge-fix.patch
 #
-mm-huge_memory-remove-unneeded-local-variable-follflags.patch
+mm-remove-unneeded-local-variable-follflags-v2.patch
 #
 #mm/dax
 #mm/userfaultfd
@@ -663,9 +682,13 @@ mm-vmscan-fix-documentation-for-page_check_references.patch
 #mm/zbud
 #mm/ras
 #mm/compaction
-#mm/mempolicy
+mm-compaction-cleanup-the-compaction-trace-events.patch
 #
+#mm/mempolicy
 mempolicy-mbind_range-set_policy-after-vma_merge.patch
+#
+#mm-mempolicy-fix-potential-mpol_new-leak-in-shared_policy_replace.patch: https://lkml.kernel.org/r/Yi9w7TCYbj+OLGXJ@dhcp22.suse.cz
+mm-mempolicy-fix-potential-mpol_new-leak-in-shared_policy_replace.patch
 #
 #mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt.patch: bloat!
 mm-mempolicy-convert-from-atomic_t-to-refcount_t-on-mempolicy-refcnt.patch
@@ -680,6 +703,8 @@ mm-oom_kill-remove-unneeded-is_memcg_oom-check.patch
 #mm/migration
 mmmigrate-fix-establishing-demotion-target.patch
 #
+#mm-migrate-fix-race-between-lock-page-and-clear-pg_isolated.patch: https://lkml.kernel.org/r/YjAIwAT6PnQnbckn@casper.infradead.org
+mm-migrate-fix-race-between-lock-page-and-clear-pg_isolated.patch
 #
 #mm/kmap
 #mm/thp
@@ -712,6 +737,12 @@ mm-hwpoison-check-the-subpage-not-the-head-page.patch
 #mm/balloon-compaction
 #mm/mmap
 #mm/madvise
+mm-madvise-use-vma_lookup-instead-of-find_vma.patch
+#
+#mm-madvise-return-correct-bytes-advised-with-process_madvise.patch+1: 5.17?
+mm-madvise-return-correct-bytes-advised-with-process_madvise.patch
+mm-madvise-skip-unmapped-vma-holes-passed-to-process_madvise.patch
+#
 #mm/virtio
 #mm/util
 #mm/memory-hotplug
@@ -740,6 +771,7 @@ drivers-base-memory-determine-and-store-zone-for-single-zone-memory-blocks.patch
 drivers-base-memory-clarify-adding-and-removing-of-memory-blocks.patch
 #
 mm-only-re-generate-demotion-targets-when-a-numa-node-changes-its-n_cpu-state.patch
+mm-only-re-generate-demotion-targets-when-a-numa-node-changes-its-n_cpu-state-v3.patch
 #
 #mm/rmap
 #mm-rmap-convert-from-atomic_t-to-refcount_t-on-anon_vma-refcount.patch: bloat!
@@ -759,6 +791,8 @@ mm-uninline-copy_overflow.patch
 mm-usercopy-return-1-from-hardened_usercopy-__setup-handler.patch
 #
 #mm/ioremap
+mm-early_ioremap-declare-early_memremap_pgprot_adjust.patch
+#
 #mm/highmem
 highmem-document-kunmap_local.patch
 highmem-document-kunmap_local-v2.patch
@@ -1342,7 +1376,6 @@ ipc-mqueue-use-get_tree_nodev-in-mqueue_get_tree.patch
 #NEXT_PATCHES_START scatterlist
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START seccomp
-kernel-seccompc-remove-unreachable-code.patch
 #
 #NEXT_PATCHES_END
 #NEXT_PATCHES_START splice
@@ -1465,8 +1498,8 @@ kasan-drop-addr-check-from-describe_object_addr.patch
 kasan-more-line-breaks-in-reports.patch
 kasan-rearrange-stack-frame-info-in-reports.patch
 kasan-improve-stack-frame-info-in-reports.patch
-#kasan-print-basic-stack-frame-info-for-sw_tags.patch: TBU
 kasan-print-basic-stack-frame-info-for-sw_tags.patch
+kasan-print-basic-stack-frame-info-for-sw_tags-fix.patch
 #kasan-simplify-async-check-in-end_report.patch: check review
 kasan-simplify-async-check-in-end_report.patch
 kasan-simplify-kasan_update_kunit_status-and-call-sites.patch
@@ -1854,3 +1887,9 @@ workaround-for-a-pci-restoring-bug.patch
 #[alternative-merged]arch-x86-kernel-resourcec-needs-spinlockh.patch
 #[nacked]mm-page_alloc-add-scheduling-point-to-free_unref_page_list.patch
 #[to-be-updated]mm-hwpoison-set-pagehwpoison-after-taking-page-lock-in-memory_failure_hugetlb.patch
+#[withdrawn]kernel-seccompc-remove-unreachable-code.patch
+#[to-be-updated]mm-huge_memory-remove-unneeded-local-variable-follflags.patch
+#[obsolete]a.patch
+#[to-be-updated]mm-memcg-mz-already-removed-from-rb_tree-in-mem_cgroup_largest_soft_limit_node.patch
+#[to-be-updated]mm-memcg-__mem_cgroup_remove_exceeded-could-handle-a-on-tree-mz-properly.patch
+#[to-be-updated]mm-memcg-add-next_mz-back-to-soft-limit-tree-if-not-reclaimed-yet.patch:TBU.patch
